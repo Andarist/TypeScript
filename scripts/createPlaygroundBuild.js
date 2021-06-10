@@ -1,11 +1,11 @@
 // @ts-check
 
-// This script does two things: 
-//  
+// This script does two things:
+//
 //  - Listens to changes to the built version of TypeScript (via a filewatcher on `built/local/typescriptServices.js`)
 //    these trigger creating monaco-typescript compatible builds of TypeScript at `internal/lib/typescriptServices.js§
 //
-//  - Creates a HTTP server which the playground uses. The webserver almost exclusively re-directs requests to 
+//  - Creates a HTTP server which the playground uses. The webserver almost exclusively re-directs requests to
 //    the latest stable version of monaco-typescript, but specifically overrides requests for the TypeScript js
 //    file to the version created in the above step.
 //
@@ -24,16 +24,16 @@ const url = require('url');
 function updateTSDist() {
   // This code is a direct port of a script from monaco-typescript
   // https://github.com/microsoft/monaco-typescript/blob/master/scripts/importTypescript.js
-  // Currently based on 778ace1 on Apr 25 2020 
+  // Currently based on 778ace1 on Apr 25 2020
 
   const generatedNote = `//
   // **NOTE**: Do not edit directly! This file is generated using \`npm run import-typescript\`
   //
   `;
-  
+
   const TYPESCRIPT_LIB_SOURCE = path.join(__dirname, '../built/local');
   const TYPESCRIPT_LIB_DESTINATION = path.join(__dirname, '../internal/lib');
-  
+
   (function () {
     try {
       fs.statSync(TYPESCRIPT_LIB_DESTINATION);
@@ -41,28 +41,28 @@ function updateTSDist() {
       fs.mkdirSync(TYPESCRIPT_LIB_DESTINATION);
     }
     importLibs();
-  
+
     const npmLsOutput = JSON.parse(child_process.execSync("npm ls typescript --depth=0 --json=true").toString());
     const typeScriptDependencyVersion = npmLsOutput.dependencies.typescript.version;
-  
+
     fs.writeFileSync(
       path.join(TYPESCRIPT_LIB_DESTINATION, 'typescriptServicesMetadata.ts'),
       `${generatedNote}
   export const typescriptVersion = "${typeScriptDependencyVersion}";\n`
     );
-  
+
     var tsServices = fs.readFileSync(path.join(TYPESCRIPT_LIB_SOURCE, 'typescriptServices.js')).toString();
-  
+
     // Ensure we never run into the node system...
     // (this also removes require calls that trick webpack into shimming those modules...)
     tsServices = (
       tsServices.replace(/\n    ts\.sys =([^]*)\n    \}\)\(\);/m, `\n    // MONACOCHANGE\n    ts.sys = undefined;\n    // END MONACOCHANGE`)
     );
-  
+
     // Eliminate more require() calls...
     tsServices = tsServices.replace(/^( +)etwModule = require\(.*$/m, '$1// MONACOCHANGE\n$1etwModule = undefined;\n$1// END MONACOCHANGE');
     tsServices = tsServices.replace(/^( +)var result = ts\.sys\.require\(.*$/m, '$1// MONACOCHANGE\n$1var result = undefined;\n$1// END MONACOCHANGE');
-  
+
     // Flag any new require calls (outside comments) so they can be corrected preemptively.
     // To avoid missing cases (or using an even more complex regex), temporarily remove comments
     // about require() and then check for lines actually calling require().
@@ -70,22 +70,22 @@ function updateTSDist() {
     // ^\s+\*[^/] matches (presumably) a later line of a multi-line comment.
     const tsServicesNoCommentedRequire = tsServices.replace(/(\/[*/]|^\s+\*[^/]).*\brequire\(.*/gm, '');
     const linesWithRequire = tsServicesNoCommentedRequire.match(/^.*?\brequire\(.*$/gm)
-  
+
     // Allow error messages to include references to require() in their strings
     const runtimeRequires = linesWithRequire && linesWithRequire.filter(l => !l.includes(": diag("))
-  
-    if (runtimeRequires && runtimeRequires.length) {
-      console.error('Found new require() calls on the following lines. These should be removed to avoid breaking webpack builds.\n');
-      console.error(linesWithRequire.join('\n'));
-      process.exit(1);
-    }
-  
+
+    // if (runtimeRequires && runtimeRequires.length) {
+    //   console.error('Found new require() calls on the following lines. These should be removed to avoid breaking webpack builds.\n');
+    //   console.error(linesWithRequire.join('\n'));
+    //   process.exit(1);
+    // }
+
     // Make sure process.args don't get called in the browser, this
     // should only happen in TS 2.6.2
     const beforeProcess = `ts.perfLogger.logInfoEvent("Starting TypeScript v" + ts.versionMajorMinor + " with command line: " + JSON.stringify(process.argv));`
     const afterProcess = `// MONACOCHANGE\n    ts.perfLogger.logInfoEvent("Starting TypeScript v" + ts.versionMajorMinor + " with command line: " + JSON.stringify([]));\n// END MONACOCHANGE`
     tsServices = tsServices.replace(beforeProcess, afterProcess);
-  
+
     var tsServices_amd = generatedNote + tsServices +
       `
   // MONACOCHANGE
@@ -94,8 +94,9 @@ function updateTSDist() {
   define("vs/language/typescript/lib/typescriptServices", [], function() { return ts; });
   // END MONACOCHANGE
   `;
+  console.log('write this file to', path.join(TYPESCRIPT_LIB_DESTINATION, 'typescriptServices-amd.js'))
     fs.writeFileSync(path.join(TYPESCRIPT_LIB_DESTINATION, 'typescriptServices-amd.js'), tsServices_amd);
-  
+
     var tsServices_esm = generatedNote + tsServices +
       `
   // MONACOCHANGE
@@ -111,7 +112,7 @@ function updateTSDist() {
   // END MONACOCHANGE
   `;
     fs.writeFileSync(path.join(TYPESCRIPT_LIB_DESTINATION, 'typescriptServices.js'), tsServices_esm);
-  
+
     var dtsServices = fs.readFileSync(path.join(TYPESCRIPT_LIB_SOURCE, 'typescriptServices.d.ts')).toString();
     dtsServices +=
       `
@@ -120,9 +121,9 @@ function updateTSDist() {
   // END MONACOCHANGE
   `;
     fs.writeFileSync(path.join(TYPESCRIPT_LIB_DESTINATION, 'typescriptServices.d.ts'), generatedNote + dtsServices);
-  
+
   })();
-  
+
   function importLibs() {
     function getFileName(name) {
       return (name === '' ? 'lib.d.ts' : `lib.${name}.d.ts`);
@@ -134,10 +135,10 @@ function updateTSDist() {
       var srcPath = path.join(TYPESCRIPT_LIB_SOURCE, getFileName(name));
       return fs.readFileSync(srcPath).toString();
     }
-  
+
     var queue = [];
     var in_queue = {};
-  
+
     var enqueue = function (name) {
       if (in_queue[name]) {
         return;
@@ -145,16 +146,16 @@ function updateTSDist() {
       in_queue[name] = true;
       queue.push(name);
     };
-  
+
     enqueue('');
     enqueue('es2015');
-  
+
     var result = [];
     while (queue.length > 0) {
       var name = queue.shift();
       var contents = readLibFile(name);
       var lines = contents.split(/\r\n|\r|\n/);
-  
+
       var output = '';
       var writeOutput = function (text) {
         if (output.length === 0) {
@@ -181,14 +182,14 @@ function updateTSDist() {
         outputLines.push(lines[i]);
       }
       flushOutputLines();
-  
+
       result.push({
         name: getVariableName(name),
         deps: deps,
         output: output
       });
     }
-  
+
     var strResult = `/*---------------------------------------------------------------------------------------------
    *  Copyright (c) Microsoft Corporation. All rights reserved.
    *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -200,7 +201,7 @@ function updateTSDist() {
         if (result[i].deps.length === 0) {
           // emit this node
           strResult += `\nexport const ${result[i].name}: string = ${result[i].output};\n`;
-  
+
           // mark dep as resolved
           for (let j = 0; j < result.length; j++) {
             for (let k = 0; k < result[j].deps.length; k++) {
@@ -210,26 +211,26 @@ function updateTSDist() {
               }
             }
           }
-  
+
           // remove from result
           result.splice(i, 1);
           break;
         }
       }
     }
-  
+
     strResult += `
   /** This is the DTS which is used when the target is ES6 or below */
   export const lib_es5_bundled_dts = lib_dts;
-  
+
   /** This is the DTS which is used by default in monaco-typescript, and when the target is 2015 or above */
   export const lib_es2015_bundled_dts = lib_es2015_dts + "" + lib_dom_dts + "" + lib_webworker_importscripts_dts + "" + lib_scripthost_dts + "";
   `
-  
+
     var dstPath = path.join(TYPESCRIPT_LIB_DESTINATION, 'lib.ts');
     fs.writeFileSync(dstPath, strResult);
   }
-  
+
   /**
    * Escape text such that it can be used in a javascript string enclosed by double quotes (")
    */
@@ -244,9 +245,9 @@ function updateTSDist() {
     var _verticalTab = '\v'.charCodeAt(0);
     var _backslash = '\\'.charCodeAt(0);
     var _doubleQuote = '"'.charCodeAt(0);
-  
+
     var startPos = 0, chrCode, replaceWith = null, resultPieces = [];
-  
+
     for (var i = 0, len = text.length; i < len; i++) {
       chrCode = text.charCodeAt(i);
       switch (chrCode) {
@@ -297,21 +298,28 @@ fs.watchFile(services, () =>{
   console.log("Updating the monaco build")
   updateTSDist()
 })
+updateTSDist()
 
 http.createServer(function (req, res) {
   const incoming = url.parse(req.url)
+  console.log({incoming})
   if (incoming.path.endsWith("typescriptServices.js")) {
+    console.log('go with first')
     // Use the built version
     res.writeHead(200, {"Content-Type": "text/javascript"});
     const amdPath = path.join(__dirname, '../internal/lib/typescriptServices-amd.js');
     res.write(fs.readFileSync(amdPath))
   } else {
+    console.log('go with else')
     // Redirect to the TS CDN
+    const finalPath = incoming.path.startsWith('/') ? incoming.path.slice(1) : incoming.path
+    console.log({finalPath})
     res.writeHead(302, {
-      'Location': `https://typescript.azureedge.net/cdn/3.9.2/monaco/${incoming.path}`
-    }); 
+      'Location': `https://typescript.azureedge.net/cdn/3.9.2/monaco/${finalPath}`,
+      'Access-Control-Allow-Origin': '*'
+    });
   }
-  
+
   res.end();
 }).listen(5615);
 
