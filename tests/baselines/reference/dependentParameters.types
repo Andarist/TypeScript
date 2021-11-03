@@ -1,0 +1,40 @@
+=== tests/cases/conformance/controlFlow/dependentParameters.ts ===
+type Args = ['A', number] | ['B', string]
+>Args : Args
+
+declare function fn10(cb: (...args: Args) => void): void
+>fn10 : (cb: (...args: Args) => void) => void
+>cb : (...args: Args) => void
+>args : Args
+
+fn10((kind, data) => {
+>fn10((kind, data) => {    if (kind === 'A') {        data.toFixed();    }    if (kind === 'B') {        data.toUpperCase();    }}) : void
+>fn10 : (cb: (...args: Args) => void) => void
+>(kind, data) => {    if (kind === 'A') {        data.toFixed();    }    if (kind === 'B') {        data.toUpperCase();    }} : (kind: "A" | "B", data: string | number) => void
+>kind : "A" | "B"
+>data : string | number
+
+    if (kind === 'A') {
+>kind === 'A' : boolean
+>kind : "A" | "B"
+>'A' : "A"
+
+        data.toFixed();
+>data.toFixed() : any
+>data.toFixed : any
+>data : string | number
+>toFixed : any
+    }
+    if (kind === 'B') {
+>kind === 'B' : boolean
+>kind : "A" | "B"
+>'B' : "B"
+
+        data.toUpperCase();
+>data.toUpperCase() : any
+>data.toUpperCase : any
+>data : string | number
+>toUpperCase : any
+    }
+})
+

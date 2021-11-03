@@ -1,0 +1,29 @@
+=== tests/cases/conformance/controlFlow/dependentParameters.ts ===
+type Args = ['A', number] | ['B', string]
+>Args : Symbol(Args, Decl(dependentParameters.ts, 0, 0))
+
+declare function fn10(cb: (...args: Args) => void): void
+>fn10 : Symbol(fn10, Decl(dependentParameters.ts, 0, 41))
+>cb : Symbol(cb, Decl(dependentParameters.ts, 2, 22))
+>args : Symbol(args, Decl(dependentParameters.ts, 2, 27))
+>Args : Symbol(Args, Decl(dependentParameters.ts, 0, 0))
+
+fn10((kind, data) => {
+>fn10 : Symbol(fn10, Decl(dependentParameters.ts, 0, 41))
+>kind : Symbol(kind, Decl(dependentParameters.ts, 4, 6))
+>data : Symbol(data, Decl(dependentParameters.ts, 4, 11))
+
+    if (kind === 'A') {
+>kind : Symbol(kind, Decl(dependentParameters.ts, 4, 6))
+
+        data.toFixed();
+>data : Symbol(data, Decl(dependentParameters.ts, 4, 11))
+    }
+    if (kind === 'B') {
+>kind : Symbol(kind, Decl(dependentParameters.ts, 4, 6))
+
+        data.toUpperCase();
+>data : Symbol(data, Decl(dependentParameters.ts, 4, 11))
+    }
+})
+
