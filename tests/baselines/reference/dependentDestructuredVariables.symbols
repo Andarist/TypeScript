@@ -595,3 +595,44 @@ reducer("concat", { firstArr: [1, 2], secondArr: [3, 4] });
 >firstArr : Symbol(firstArr, Decl(dependentDestructuredVariables.ts, 225, 19))
 >secondArr : Symbol(secondArr, Decl(dependentDestructuredVariables.ts, 225, 37))
 
+type XStateActionArgs =
+>XStateActionArgs : Symbol(XStateActionArgs, Decl(dependentDestructuredVariables.ts, 225, 59))
+
+  | [event: { type: "LOG_OUT" }, context: { user: { name: string } }]
+>type : Symbol(type, Decl(dependentDestructuredVariables.ts, 228, 13))
+>user : Symbol(user, Decl(dependentDestructuredVariables.ts, 228, 43))
+>name : Symbol(name, Decl(dependentDestructuredVariables.ts, 228, 51))
+
+  | [event: { type: "LOG_IN" }, context: { user: null }];
+>type : Symbol(type, Decl(dependentDestructuredVariables.ts, 229, 13))
+>user : Symbol(user, Decl(dependentDestructuredVariables.ts, 229, 42))
+
+const xstateAction: (...args: XStateActionArgs) => void = (
+>xstateAction : Symbol(xstateAction, Decl(dependentDestructuredVariables.ts, 230, 5))
+>args : Symbol(args, Decl(dependentDestructuredVariables.ts, 230, 21))
+>XStateActionArgs : Symbol(XStateActionArgs, Decl(dependentDestructuredVariables.ts, 225, 59))
+
+  event,
+>event : Symbol(event, Decl(dependentDestructuredVariables.ts, 230, 59))
+
+  context
+>context : Symbol(context, Decl(dependentDestructuredVariables.ts, 231, 8))
+
+) => {
+  if (event.type === 'LOG_OUT') {
+>event.type : Symbol(type, Decl(dependentDestructuredVariables.ts, 228, 13), Decl(dependentDestructuredVariables.ts, 229, 13))
+>event : Symbol(event, Decl(dependentDestructuredVariables.ts, 230, 59))
+>type : Symbol(type, Decl(dependentDestructuredVariables.ts, 228, 13), Decl(dependentDestructuredVariables.ts, 229, 13))
+
+    console.log(context.user.name)
+>console.log : Symbol(Console.log, Decl(lib.dom.d.ts, --, --))
+>console : Symbol(console, Decl(lib.dom.d.ts, --, --))
+>log : Symbol(Console.log, Decl(lib.dom.d.ts, --, --))
+>context.user.name : Symbol(name, Decl(dependentDestructuredVariables.ts, 228, 51))
+>context.user : Symbol(user, Decl(dependentDestructuredVariables.ts, 228, 43), Decl(dependentDestructuredVariables.ts, 229, 42))
+>context : Symbol(context, Decl(dependentDestructuredVariables.ts, 231, 8))
+>user : Symbol(user, Decl(dependentDestructuredVariables.ts, 228, 43), Decl(dependentDestructuredVariables.ts, 229, 42))
+>name : Symbol(name, Decl(dependentDestructuredVariables.ts, 228, 51))
+  }
+};
+

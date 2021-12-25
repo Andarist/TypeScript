@@ -226,6 +226,18 @@ const reducer: (...args: ReducerArgs) => void = (op, args) => {
 reducer("add", { a: 1, b: 3 });
 reducer("concat", { firstArr: [1, 2], secondArr: [3, 4] });
 
+type XStateActionArgs =
+  | [event: { type: "LOG_OUT" }, context: { user: { name: string } }]
+  | [event: { type: "LOG_IN" }, context: { user: null }];
+const xstateAction: (...args: XStateActionArgs) => void = (
+  event,
+  context
+) => {
+  if (event.type === 'LOG_OUT') {
+    console.log(context.user.name)
+  }
+};
+
 
 //// [dependentDestructuredVariables.js]
 "use strict";
@@ -394,6 +406,11 @@ const reducer = (op, args) => {
 };
 reducer("add", { a: 1, b: 3 });
 reducer("concat", { firstArr: [1, 2], secondArr: [3, 4] });
+const xstateAction = (event, context) => {
+    if (event.type === 'LOG_OUT') {
+        console.log(context.user.name);
+    }
+};
 
 
 //// [dependentDestructuredVariables.d.ts]
@@ -469,3 +486,15 @@ declare type ReducerArgs = ["add", {
     secondArr: any[];
 }];
 declare const reducer: (...args: ReducerArgs) => void;
+declare type XStateActionArgs = [event: {
+    type: "LOG_OUT";
+}, context: {
+    user: {
+        name: string;
+    };
+}] | [event: {
+    type: "LOG_IN";
+}, context: {
+    user: null;
+}];
+declare const xstateAction: (...args: XStateActionArgs) => void;

@@ -677,3 +677,48 @@ reducer("concat", { firstArr: [1, 2], secondArr: [3, 4] });
 >3 : 3
 >4 : 4
 
+type XStateActionArgs =
+>XStateActionArgs : XStateActionArgs
+
+  | [event: { type: "LOG_OUT" }, context: { user: { name: string } }]
+>type : "LOG_OUT"
+>user : { name: string; }
+>name : string
+
+  | [event: { type: "LOG_IN" }, context: { user: null }];
+>type : "LOG_IN"
+>user : null
+>null : null
+
+const xstateAction: (...args: XStateActionArgs) => void = (
+>xstateAction : (...args: XStateActionArgs) => void
+>args : XStateActionArgs
+>(  event,  context) => {  if (event.type === 'LOG_OUT') {    console.log(context.user.name)  }} : (event: { type: "LOG_OUT"; } | { type: "LOG_IN"; }, context: { user: { name: string; }; } | { user: null; }) => void
+
+  event,
+>event : { type: "LOG_OUT"; } | { type: "LOG_IN"; }
+
+  context
+>context : { user: { name: string; }; } | { user: null; }
+
+) => {
+  if (event.type === 'LOG_OUT') {
+>event.type === 'LOG_OUT' : boolean
+>event.type : "LOG_OUT" | "LOG_IN"
+>event : { type: "LOG_OUT"; } | { type: "LOG_IN"; }
+>type : "LOG_OUT" | "LOG_IN"
+>'LOG_OUT' : "LOG_OUT"
+
+    console.log(context.user.name)
+>console.log(context.user.name) : void
+>console.log : (...data: any[]) => void
+>console : Console
+>log : (...data: any[]) => void
+>context.user.name : string
+>context.user : { name: string; } | null
+>context : { user: { name: string; }; } | { user: null; }
+>user : { name: string; } | null
+>name : string
+  }
+};
+
