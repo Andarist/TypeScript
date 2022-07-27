@@ -23,7 +23,7 @@ type GetCharsRec<S, Acc> =
 type T20 = GetChars<'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'>;
 >T20 : "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 
-type Reverse<T> = any[] extends T ? T : ReverseRec<T, []>;
+type Reverse<T> = ReverseRec<T, []>;
 >Reverse : Reverse<T>
 
 type ReverseRec<T, Acc extends unknown[]> =
@@ -35,7 +35,7 @@ type T30 = Reverse<[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
 >T30 : [9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 
 type T31 = Reverse<string[]>;
->T31 : string[]
+>T31 : []
 
 type TupleOf<T, N extends number> = number extends N ? T[] : TupleOfRec<T, N, []>;
 >TupleOf : TupleOf<T, N>

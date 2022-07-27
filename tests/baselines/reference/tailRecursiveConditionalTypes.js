@@ -13,7 +13,7 @@ type GetCharsRec<S, Acc> =
 
 type T20 = GetChars<'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'>;
 
-type Reverse<T> = any[] extends T ? T : ReverseRec<T, []>;
+type Reverse<T> = ReverseRec<T, []>;
 type ReverseRec<T, Acc extends unknown[]> =
     T extends [infer Head, ...infer Tail] ? ReverseRec<Tail, [Head, ...Acc]> : Acc;
 
@@ -39,7 +39,7 @@ declare type T11 = Trim<' hello                                                 
 declare type GetChars<S> = GetCharsRec<S, never>;
 declare type GetCharsRec<S, Acc> = S extends `${infer Char}${infer Rest}` ? GetCharsRec<Rest, Char | Acc> : Acc;
 declare type T20 = GetChars<'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'>;
-declare type Reverse<T> = any[] extends T ? T : ReverseRec<T, []>;
+declare type Reverse<T> = ReverseRec<T, []>;
 declare type ReverseRec<T, Acc extends unknown[]> = T extends [infer Head, ...infer Tail] ? ReverseRec<Tail, [Head, ...Acc]> : Acc;
 declare type T30 = Reverse<[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]>;
 declare type T31 = Reverse<string[]>;

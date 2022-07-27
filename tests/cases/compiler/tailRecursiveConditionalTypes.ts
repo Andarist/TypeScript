@@ -15,7 +15,7 @@ type GetCharsRec<S, Acc> =
 
 type T20 = GetChars<'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'>;
 
-type Reverse<T> = any[] extends T ? T : ReverseRec<T, []>;
+type Reverse<T> = ReverseRec<T, []>;
 type ReverseRec<T, Acc extends unknown[]> =
     T extends [infer Head, ...infer Tail] ? ReverseRec<Tail, [Head, ...Acc]> : Acc;
 

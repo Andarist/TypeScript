@@ -51,16 +51,14 @@ type T20 = GetChars<'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456
 >T20 : Symbol(T20, Decl(tailRecursiveConditionalTypes.ts, 10, 81))
 >GetChars : Symbol(GetChars, Decl(tailRecursiveConditionalTypes.ts, 6, 170))
 
-type Reverse<T> = any[] extends T ? T : ReverseRec<T, []>;
+type Reverse<T> = ReverseRec<T, []>;
 >Reverse : Symbol(Reverse, Decl(tailRecursiveConditionalTypes.ts, 12, 86))
 >T : Symbol(T, Decl(tailRecursiveConditionalTypes.ts, 14, 13))
->T : Symbol(T, Decl(tailRecursiveConditionalTypes.ts, 14, 13))
->T : Symbol(T, Decl(tailRecursiveConditionalTypes.ts, 14, 13))
->ReverseRec : Symbol(ReverseRec, Decl(tailRecursiveConditionalTypes.ts, 14, 58))
+>ReverseRec : Symbol(ReverseRec, Decl(tailRecursiveConditionalTypes.ts, 14, 36))
 >T : Symbol(T, Decl(tailRecursiveConditionalTypes.ts, 14, 13))
 
 type ReverseRec<T, Acc extends unknown[]> =
->ReverseRec : Symbol(ReverseRec, Decl(tailRecursiveConditionalTypes.ts, 14, 58))
+>ReverseRec : Symbol(ReverseRec, Decl(tailRecursiveConditionalTypes.ts, 14, 36))
 >T : Symbol(T, Decl(tailRecursiveConditionalTypes.ts, 15, 16))
 >Acc : Symbol(Acc, Decl(tailRecursiveConditionalTypes.ts, 15, 18))
 
@@ -68,7 +66,7 @@ type ReverseRec<T, Acc extends unknown[]> =
 >T : Symbol(T, Decl(tailRecursiveConditionalTypes.ts, 15, 16))
 >Head : Symbol(Head, Decl(tailRecursiveConditionalTypes.ts, 16, 20))
 >Tail : Symbol(Tail, Decl(tailRecursiveConditionalTypes.ts, 16, 35))
->ReverseRec : Symbol(ReverseRec, Decl(tailRecursiveConditionalTypes.ts, 14, 58))
+>ReverseRec : Symbol(ReverseRec, Decl(tailRecursiveConditionalTypes.ts, 14, 36))
 >Tail : Symbol(Tail, Decl(tailRecursiveConditionalTypes.ts, 16, 35))
 >Head : Symbol(Head, Decl(tailRecursiveConditionalTypes.ts, 16, 20))
 >Acc : Symbol(Acc, Decl(tailRecursiveConditionalTypes.ts, 15, 18))
