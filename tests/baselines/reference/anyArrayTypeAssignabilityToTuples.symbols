@@ -1,0 +1,20 @@
+=== tests/cases/conformance/types/typeRelationships/assignmentCompatibility/anyArrayTypeAssignabilityToTuples.ts ===
+const anyArray: any[] = []
+>anyArray : Symbol(anyArray, Decl(anyArrayTypeAssignabilityToTuples.ts, 0, 5))
+
+const t1: [] = anyArray // any is not assignable to never
+>t1 : Symbol(t1, Decl(anyArrayTypeAssignabilityToTuples.ts, 2, 5))
+>anyArray : Symbol(anyArray, Decl(anyArrayTypeAssignabilityToTuples.ts, 0, 5))
+
+const t2: [string] = anyArray
+>t2 : Symbol(t2, Decl(anyArrayTypeAssignabilityToTuples.ts, 3, 5))
+>anyArray : Symbol(anyArray, Decl(anyArrayTypeAssignabilityToTuples.ts, 0, 5))
+
+const t3: [string, ...any[]] = anyArray
+>t3 : Symbol(t3, Decl(anyArrayTypeAssignabilityToTuples.ts, 4, 5))
+>anyArray : Symbol(anyArray, Decl(anyArrayTypeAssignabilityToTuples.ts, 0, 5))
+
+const t4: [...any[], string] = anyArray
+>t4 : Symbol(t4, Decl(anyArrayTypeAssignabilityToTuples.ts, 5, 5))
+>anyArray : Symbol(anyArray, Decl(anyArrayTypeAssignabilityToTuples.ts, 0, 5))
+

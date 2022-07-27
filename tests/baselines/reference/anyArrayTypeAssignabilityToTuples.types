@@ -1,0 +1,21 @@
+=== tests/cases/conformance/types/typeRelationships/assignmentCompatibility/anyArrayTypeAssignabilityToTuples.ts ===
+const anyArray: any[] = []
+>anyArray : any[]
+>[] : never[]
+
+const t1: [] = anyArray // any is not assignable to never
+>t1 : []
+>anyArray : any[]
+
+const t2: [string] = anyArray
+>t2 : [string]
+>anyArray : any[]
+
+const t3: [string, ...any[]] = anyArray
+>t3 : [string, ...any[]]
+>anyArray : any[]
+
+const t4: [...any[], string] = anyArray
+>t4 : [...any[], string]
+>anyArray : any[]
+

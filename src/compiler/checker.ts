@@ -20239,6 +20239,9 @@ namespace ts {
                 }
                 let result = Ternary.True;
                 if (isTupleType(target)) {
+                    if (source === anyArrayType) {
+                        return Ternary.True;
+                    }
                     if (isArrayOrTupleType(source)) {
                         if (!target.target.readonly && (isReadonlyArrayType(source) || isTupleType(source) && source.target.readonly)) {
                             return Ternary.False;

@@ -1,0 +1,17 @@
+tests/cases/conformance/types/typeRelationships/assignmentCompatibility/anyArrayTypeAssignabilityToTuples.ts(3,7): error TS2322: Type 'any[]' is not assignable to type '[]'.
+  'number' index signatures are incompatible.
+    Type 'any' is not assignable to type 'never'.
+
+
+==== tests/cases/conformance/types/typeRelationships/assignmentCompatibility/anyArrayTypeAssignabilityToTuples.ts (1 errors) ====
+    const anyArray: any[] = []
+    
+    const t1: [] = anyArray // any is not assignable to never
+          ~~
+!!! error TS2322: Type 'any[]' is not assignable to type '[]'.
+!!! error TS2322:   'number' index signatures are incompatible.
+!!! error TS2322:     Type 'any' is not assignable to type 'never'.
+    const t2: [string] = anyArray
+    const t3: [string, ...any[]] = anyArray
+    const t4: [...any[], string] = anyArray
+    
