@@ -11934,17 +11934,23 @@ namespace ts {
 
         function isMappedTypeWithKeyofConstraintDeclaration(type: MappedType) {
             const constraintDeclaration = getConstraintDeclarationForMappedType(type)!; // TODO: GH#18217
-            return constraintDeclaration.kind === SyntaxKind.TypeOperator &&
-                (constraintDeclaration as TypeOperatorNode).operator === SyntaxKind.KeyOfKeyword;
+            return isTypeOperatorNode(constraintDeclaration) && constraintDeclaration.operator === SyntaxKind.KeyOfKeyword
+                || isIntersectionTypeNode(constraintDeclaration) && isTypeOperatorNode(constraintDeclaration.types[0]) && constraintDeclaration.types[0].operator === SyntaxKind.KeyOfKeyword;
         }
 
         function getModifiersTypeFromMappedType(type: MappedType) {
             if (!type.modifiersType) {
                 if (isMappedTypeWithKeyofConstraintDeclaration(type)) {
+                    const constraintDeclaration = getConstraintDeclarationForMappedType(type)!;
+                    const indexTypeDeclaration = isTypeOperatorNode(constraintDeclaration)
+                        ? constraintDeclaration.type
+                        : isIntersectionTypeNode(constraintDeclaration) && isTypeOperatorNode(constraintDeclaration.types[0])
+                        ? constraintDeclaration.types[0].type
+                        : undefined;
                     // If the constraint declaration is a 'keyof T' node, the modifiers type is T. We check
                     // AST nodes here because, when T is a non-generic type, the logic below eagerly resolves
                     // 'keyof T' to a literal union type and we can't recover T from that type.
-                    type.modifiersType = instantiateType(getTypeFromTypeNode((getConstraintDeclarationForMappedType(type) as TypeOperatorNode).type), type.mapper);
+                    type.modifiersType = instantiateType(getTypeFromTypeNode(indexTypeDeclaration!), type.mapper);
                 }
                 else {
                     // Otherwise, get the declared constraint type, and if the constraint type is a type parameter,
@@ -17207,8 +17213,13 @@ namespace ts {
 
         function getHomomorphicTypeVariable(type: MappedType) {
             const constraintType = getConstraintTypeFromMappedType(type);
-            if (constraintType.flags & TypeFlags.Index) {
-                const typeVariable = getActualTypeVariable((constraintType as IndexType).type);
+            const indexType = constraintType.flags & TypeFlags.Index
+                ? (constraintType as IndexType).type
+                : constraintType.flags & TypeFlags.Intersection && (constraintType as IntersectionType).types[0].flags & TypeFlags.Index
+                ? ((constraintType as IntersectionType).types[0] as IndexType).type
+                : undefined;
+            if (indexType) {
+                const typeVariable = getActualTypeVariable(indexType);
                 if (typeVariable.flags & TypeFlags.TypeParameter) {
                     return typeVariable as TypeParameter;
                 }
