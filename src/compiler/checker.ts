@@ -17345,6 +17345,9 @@ namespace ts {
             // we consider the type parameter possibly referenced.
             return tp.symbol.declarations.some(decl => {
                 const container = decl.parent;
+                if (container.kind & SyntaxKind.InferType) {
+                    return true;
+                }
                 for (let n = node; n !== container; n = n.parent) {
                     if (!n) {
                         break;
