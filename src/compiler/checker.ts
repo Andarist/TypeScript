@@ -17336,20 +17336,26 @@ namespace ts {
         }
 
         function isTypeParameterPossiblyReferenced(tp: TypeParameter, node: Node) {
+            if (!tp.symbol.declarations) {
+                return true;
+            }
             // If the type parameter doesn't have exactly one declaration, if there are intervening statement blocks
             // between the node and the type parameter declaration, if the node contains actual references to the
             // type parameter, or if the node contains type queries that we can't prove couldn't contain references to the type parameter,
             // we consider the type parameter possibly referenced.
-            if (tp.symbol && tp.symbol.declarations && tp.symbol.declarations.length === 1) {
-                const container = tp.symbol.declarations[0].parent;
+            return tp.symbol.declarations.some(decl => {
+                const container = decl.parent;
                 for (let n = node; n !== container; n = n.parent) {
-                    if (!n || n.kind === SyntaxKind.Block || n.kind === SyntaxKind.ConditionalType && forEachChild((n as ConditionalTypeNode).extendsType, containsReference)) {
+                    if (!n) {
+                        break;
+                    }
+                    if (n.kind === SyntaxKind.Block || n.kind === SyntaxKind.ConditionalType && forEachChild((n as ConditionalTypeNode).extendsType, containsReference)) {
                         return true;
                     }
                 }
                 return containsReference(node);
-            }
-            return true;
+            });
+
             function containsReference(node: Node): boolean {
                 switch (node.kind) {
                     case SyntaxKind.ThisType:

@@ -1,0 +1,13 @@
+=== tests/cases/compiler/myTest.ts ===
+export interface Foo<T> {}
+export class Foo<T> {
+>Foo : Foo<T>
+
+  public bar(): T extends string ? string | number : number {
+>bar : () => T extends string ? string | number : number
+
+    return 1;
+>1 : 1
+  }
+}
+

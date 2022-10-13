@@ -1,0 +1,17 @@
+=== tests/cases/compiler/myTest.ts ===
+export interface Foo<T> {}
+>Foo : Symbol(Foo, Decl(myTest.ts, 0, 0), Decl(myTest.ts, 0, 26))
+>T : Symbol(T, Decl(myTest.ts, 0, 21), Decl(myTest.ts, 1, 17))
+
+export class Foo<T> {
+>Foo : Symbol(Foo, Decl(myTest.ts, 0, 0), Decl(myTest.ts, 0, 26))
+>T : Symbol(T, Decl(myTest.ts, 0, 21), Decl(myTest.ts, 1, 17))
+
+  public bar(): T extends string ? string | number : number {
+>bar : Symbol(Foo.bar, Decl(myTest.ts, 1, 21))
+>T : Symbol(T, Decl(myTest.ts, 0, 21), Decl(myTest.ts, 1, 17))
+
+    return 1;
+  }
+}
+
