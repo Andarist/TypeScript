@@ -17345,12 +17345,24 @@ namespace ts {
             // we consider the type parameter possibly referenced.
             return tp.symbol.declarations.some(decl => {
                 const container = decl.parent;
+                // console.log({
+                //     node: (node as any).__debugGetText(),
+                //     decl: (decl as any).__debugGetText(),
+                //     container: (container as any).__debugGetText(),
+
+                // })
                 if (container.kind & SyntaxKind.InferType) {
                     return true;
                 }
                 for (let n = node; n !== container; n = n.parent) {
+                    // console.log('---')
+                    // console.log({
+                    //     n: n && (n as any).__debugGetText(),
+
+                    // })
                     if (!n) {
                         break;
+                        // return false
                     }
                     if (n.kind === SyntaxKind.Block || n.kind === SyntaxKind.ConditionalType && forEachChild((n as ConditionalTypeNode).extendsType, containsReference)) {
                         return true;
