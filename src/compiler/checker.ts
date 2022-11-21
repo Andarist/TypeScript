@@ -22661,7 +22661,20 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     function getTypeFromInference(inference: InferenceInfo) {
         return inference.candidates ? getUnionType(inference.candidates, UnionReduction.Subtype) :
             inference.contraCandidates ? getIntersectionType(inference.contraCandidates) :
-            undefined;
+            getObjectTypeFromPropInferences(inference);
+    }
+
+    function getObjectTypeFromPropInferences(inference: InferenceInfo) {
+        if (!inference.propInferences) {
+            return;
+        }
+        const members = createSymbolTable();
+        for (const [prop, types] of inference.propInferences) {
+            const symbol = createSymbol(SymbolFlags.Property, prop as __String, CheckFlags.ReverseMapped) as ReverseMappedSymbol;
+            symbol.propertyType = getUnionType(types);
+            members.set(prop as __String, symbol);
+        }
+        return createAnonymousType(undefined, members, emptyArray, emptyArray, emptyArray);
     }
 
     function hasSkipDirectInferenceFlag(node: Node) {
@@ -22875,6 +22888,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         let sourceStack: object[];
         let targetStack: object[];
         let expandingFlags = ExpandingFlags.None;
+
         inferFromTypes(originalSource, originalTarget);
 
         function inferFromTypes(source: Type, target: Type): void {
@@ -23013,12 +23027,33 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 }
                 else if (target.flags & TypeFlags.IndexedAccess) {
                     const indexType = getSimplifiedType((target as IndexedAccessType).indexType, /*writing*/ false);
+                    const objectType = getSimplifiedType((target as IndexedAccessType).objectType, /*writing*/ false);
+                    debugger
                     // Generally simplifications of instantiable indexes are avoided to keep relationship checking correct, however if our target is an access, we can consider
                     // that key of that access to be "instantiated", since we're looking to find the infernce goal in any way we can.
                     if (indexType.flags & TypeFlags.Instantiable) {
-                        const simplified = distributeIndexOverObjectType(getSimplifiedType((target as IndexedAccessType).objectType, /*writing*/ false), indexType, /*writing*/ false);
+                        const simplified = distributeIndexOverObjectType(objectType, indexType, /*writing*/ false);
                         if (simplified && simplified !== target) {
                             inferFromTypes(source, simplified);
+                        }
+                    }
+                    else {
+                        const inference = getInferenceInfoForType(objectType);
+                        // andarist
+                        if (inference) {
+                            if (getObjectFlags(source) & ObjectFlags.NonInferrableType || source === nonInferrableAnyType) {
+                                return;
+                            }
+                            if (!inference.isFixed && indexType.flags & TypeFlags.StringLiteral) {
+                                // TODO: handle prorities somehow?
+                                const propInference = getInferenceInfoForPropertyType(objectType, (indexType as StringLiteralType).value);
+                                const candidate = propagationType || source;
+
+                                if (!contains(propInference, candidate)) {
+                                    propInference.push(candidate);
+                                }
+                                return;
+                            }
                         }
                     }
                 }
@@ -23187,6 +23222,21 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             else {
                 inferFromTypes(source, target);
             }
+        }
+
+        function getInferenceInfoForPropertyType(type: Type, propName: string) {
+            const inferenceInfo = getInferenceInfoForType(type)!;
+            let propInferences = inferenceInfo.propInferences;
+            if (!propInferences) {
+                propInferences = new Map();
+                inferenceInfo.propInferences = propInferences;
+            }
+            let propCandidates = propInferences.get(propName);
+            if (!propCandidates) {
+                propCandidates = [];
+                propInferences.set(propName, propCandidates);
+            }
+            return propCandidates;
         }
 
         function getInferenceInfoForType(type: Type) {
@@ -23680,6 +23730,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
             const constraint = getConstraintOfTypeParameter(inference.typeParameter);
             if (constraint) {
+                // inferredType: '{ a: unknown; b: unknown; }'
+                // instantiatedConstraint: 'StateSchema'
                 const instantiatedConstraint = instantiateType(constraint, context.nonFixingMapper);
                 if (!inferredType || !context.compareTypes(inferredType, getTypeWithThisArgument(instantiatedConstraint, inferredType))) {
                     inference.inferredType = inferredType = instantiatedConstraint;

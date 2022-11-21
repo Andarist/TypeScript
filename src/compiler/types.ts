@@ -6415,6 +6415,7 @@ export interface InferenceInfo {
     topLevel: boolean;                       // True if all inferences are to top level occurrences
     isFixed: boolean;                        // True if inferences are fixed
     impliedArity?: number;
+    propInferences?: Map<string, Type[]>;
 }
 
 /** @internal */
