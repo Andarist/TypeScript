@@ -28577,33 +28577,58 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
     function getTypeOfPropertyOfContextualType(type: Type, name: __String, nameType?: Type) {
         return mapType(type, t => {
-            if (everyContainedType(t, t => isGenericMappedType(t) && !t.declaration.nameType)) {
-                const newTypes = mapDefined(t.flags & TypeFlags.Intersection ? (t as IntersectionType).types : [t], t => {
-                    const mappedType = t as MappedType;
-                    const constraint = getConstraintTypeFromMappedType(mappedType);
-                    const constraintOfConstraint = getBaseConstraintOfType(constraint) || constraint;
-                    const propertyNameType = nameType || getStringLiteralType(unescapeLeadingUnderscores(name));
-                    if (isTypeAssignableTo(propertyNameType, constraintOfConstraint)) {
-                        return substituteIndexedMappedType(mappedType, propertyNameType);
-                    }
-                });
-                return newTypes.length ? getIntersectionType(newTypes) : undefined;
+            if (t.flags & TypeFlags.Intersection) {
+                const intersection = t as IntersectionType;
+                let newTypes = mapDefined(intersection.types, getTypeOfConcreteLikePropertyOfContextualType);
+                if (newTypes.length > 0) {
+                    return getIntersectionType(newTypes);
+                }
+                newTypes = mapDefined(intersection.types, getTypeOfApplicableIndexInfoOfContextualType);
+                if (newTypes.length > 0) {
+                    return getIntersectionType(newTypes);
+                }
+                return undefined;
             }
-            else if (t.flags & TypeFlags.StructuredType) {
+            const concretePropertyType = getTypeOfConcreteLikePropertyOfContextualType(t);
+            if (concretePropertyType) {
+                return concretePropertyType;
+            }
+            return getTypeOfApplicableIndexInfoOfContextualType(t);
+        }, /*noReductions*/ true);
+
+        function getTypeOfConcreteLikePropertyOfContextualType(t: Type) {
+            if (isGenericMappedType(t) && !t.declaration.nameType) {
+                const constraint = getConstraintTypeFromMappedType(t);
+                const constraintOfConstraint = getBaseConstraintOfType(constraint) || constraint;
+                const propertyNameType = nameType || getStringLiteralType(unescapeLeadingUnderscores(name));
+                if (isTypeAssignableTo(propertyNameType, constraintOfConstraint)) {
+                    return substituteIndexedMappedType(t, propertyNameType);
+                }
+                return undefined;
+            }
+            if (t.flags & TypeFlags.StructuredType) {
                 const prop = getPropertyOfType(t, name);
                 if (prop) {
                     return isCircularMappedProperty(prop) ? undefined : getTypeOfSymbol(prop);
                 }
-                if (isTupleType(t)) {
+                if (isTupleType(t) && isNumericLiteralName(name) && +name >= 0) {
                     const restType = getRestTypeOfTupleType(t);
-                    if (restType && isNumericLiteralName(name) && +name >= 0) {
+                    if (restType) {
                         return restType;
                     }
                 }
-                return findApplicableIndexInfo(getIndexInfosOfStructuredType(t), nameType || getStringLiteralType(unescapeLeadingUnderscores(name)))?.type;
+                if (getObjectFlags(t) & ObjectFlags.Mapped) {
+                    return getTypeOfApplicableIndexInfoOfContextualType(t);
+                }
             }
             return undefined;
-        }, /*noReductions*/ true);
+        }
+        function getTypeOfApplicableIndexInfoOfContextualType(t: Type) {
+            if (!(t.flags & TypeFlags.StructuredType)) {
+                return undefined;
+            }
+            return findApplicableIndexInfo(getIndexInfosOfStructuredType(t), nameType || getStringLiteralType(unescapeLeadingUnderscores(name)))?.type;
+        }
     }
 
     // In an object literal contextually typed by a type T, the contextual type of a property assignment is the type of
