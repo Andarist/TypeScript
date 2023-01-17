@@ -28596,7 +28596,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             return getTypeOfApplicableIndexInfoOfContextualType(t);
         }, /*noReductions*/ true);
 
-        function getTypeOfConcreteLikePropertyOfContextualType(t: Type) {
+        function getTypeOfConcreteLikePropertyOfContextualType(t: Type): Type | undefined {
             if (isGenericMappedType(t) && !t.declaration.nameType) {
                 const constraint = getConstraintTypeFromMappedType(t);
                 const constraintOfConstraint = getBaseConstraintOfType(constraint) || constraint;
@@ -28612,6 +28612,15 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     return isCircularMappedProperty(prop) ? undefined : getTypeOfSymbol(prop);
                 }
                 if (isTupleType(t) && isNumericLiteralName(name) && +name >= 0) {
+                    if (t.target.hasRestElement) {
+                        // TODO: handle trailing fixed elements somehow
+                        const restElement = getTypeArguments(t)[t.target.fixedLength];
+                        const type = getTypeOfPropertyOfContextualType(restElement, name);
+                        if (type) {
+                            return type;
+                        }
+                    }
+
                     const restType = getRestTypeOfTupleType(t);
                     if (restType) {
                         return restType;
