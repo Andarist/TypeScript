@@ -1,8 +1,9 @@
 tests/cases/conformance/jsdoc/declarations/jsDeclarationsExportAssignedConstructorFunctionWithSub.js(4,1): error TS9005: Declaration emit for this file requires using private name 'Sub'. An explicit type annotation may unblock declaration emit.
 tests/cases/conformance/jsdoc/declarations/jsDeclarationsExportAssignedConstructorFunctionWithSub.js(4,1): error TS9005: Declaration emit for this file requires using private name 'exports'. An explicit type annotation may unblock declaration emit.
+tests/cases/conformance/jsdoc/declarations/jsDeclarationsExportAssignedConstructorFunctionWithSub.js(5,5): error TS2322: Type 'number' is not assignable to type 'undefined'.
 
 
-==== tests/cases/conformance/jsdoc/declarations/jsDeclarationsExportAssignedConstructorFunctionWithSub.js (2 errors) ====
+==== tests/cases/conformance/jsdoc/declarations/jsDeclarationsExportAssignedConstructorFunctionWithSub.js (3 errors) ====
     /**
      * @param {number} p
      */
@@ -12,6 +13,8 @@ tests/cases/conformance/jsdoc/declarations/jsDeclarationsExportAssignedConstruct
     ~~~~~~
 !!! error TS9005: Declaration emit for this file requires using private name 'exports'. An explicit type annotation may unblock declaration emit.
         this.t = 12 + p;
+        ~~~~~~
+!!! error TS2322: Type 'number' is not assignable to type 'undefined'.
     }
     module.exports.Sub = function() {
         this.instance = new module.exports(10);

@@ -1,0 +1,49 @@
+// @strict: true
+// @noEmit: true
+
+// type Box<T> = { value: T }
+
+// declare function box<T>(x: T): Box<T>;
+// declare function eatZeroBoxG<T extends Box<0>>(x: T): void;
+
+// eatZeroBoxG(box(0));
+
+
+
+// const empty: "" = "";
+// let foo = empty;
+
+// // pre1
+// foo
+// // post1
+
+// foo = foo + "bar";
+
+// // pre2
+// foo
+// // post2
+
+
+// const empty: "" = "";
+// let foo = empty;
+// // pre1
+// foo
+// // post1
+// foo += "bar";
+
+// // pre2
+// foo
+// // post2
+
+
+// True#1 (cond) ─ Loop ┬ Assignment (x) ─ Start
+//                      ╰ Assignment (x) ─ Circular(True#1 (cond))
+
+function h1() {
+    let x: string | number | boolean;
+    x = "0";
+    while (cond) {
+        x = +x + 1;
+        x
+    }
+}

@@ -3910,7 +3910,7 @@ export function getAssignmentTargetKind(node: Node): AssignmentKind {
             case SyntaxKind.BinaryExpression:
                 const binaryOperator = (parent as BinaryExpression).operatorToken.kind;
                 return isAssignmentOperator(binaryOperator) && (parent as BinaryExpression).left === node ?
-                    binaryOperator === SyntaxKind.EqualsToken || isLogicalOrCoalescingAssignmentOperator(binaryOperator) ? AssignmentKind.Definite : AssignmentKind.Compound :
+                    (binaryOperator === SyntaxKind.EqualsToken && !isPlusEqualsLikeAssignment(parent as BinaryExpression)) || isLogicalOrCoalescingAssignmentOperator(binaryOperator) ? AssignmentKind.Definite : AssignmentKind.Compound :
                     AssignmentKind.None;
             case SyntaxKind.PrefixUnaryExpression:
             case SyntaxKind.PostfixUnaryExpression:
@@ -3954,6 +3954,11 @@ export function getAssignmentTargetKind(node: Node): AssignmentKind {
 /** @internal */
 export function isAssignmentTarget(node: Node): boolean {
     return getAssignmentTargetKind(node) !== AssignmentKind.None;
+}
+
+function isPlusEqualsLikeAssignment(assignment: BinaryExpression): boolean {
+    const right = skipParentheses(assignment.right);
+    return right.kind === SyntaxKind.BinaryExpression && (right as BinaryExpression).operatorToken.kind === SyntaxKind.PlusToken;
 }
 
 /** @internal */

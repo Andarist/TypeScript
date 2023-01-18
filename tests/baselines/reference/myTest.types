@@ -1,0 +1,49 @@
+=== tests/cases/compiler/myTest.ts ===
+// type Box<T> = { value: T }
+
+// declare function box<T>(x: T): Box<T>;
+// declare function eatZeroBoxG<T extends Box<0>>(x: T): void;
+
+// eatZeroBoxG(box(0));
+
+
+
+const empty: "" = "";
+>empty : ""
+>"" : ""
+
+let foo = empty;
+>foo : ""
+>empty : ""
+
+// pre1
+foo
+>foo : ""
+
+// post1
+
+foo = foo + "bar";
+>foo = foo + "bar" : string
+>foo : string
+>foo + "bar" : string
+>foo : ""
+>"bar" : "bar"
+
+// pre2
+foo
+>foo : string
+
+// post2
+
+
+// const empty: "" = "";
+// let foo = empty;
+// // pre1
+// foo
+// // post1
+// foo += "bar";
+
+// // pre2
+// foo
+// // post2
+

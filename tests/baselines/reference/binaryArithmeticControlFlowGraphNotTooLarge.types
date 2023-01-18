@@ -49,7 +49,7 @@ const foo = function (this: any) {
 
         d = ((a & 0xefcdab89) | (~a & 0x98badcfe)) + blocks[1] + 271733878;
 >d = ((a & 0xefcdab89) | (~a & 0x98badcfe)) + blocks[1] + 271733878 : any
->d : any
+>d : undefined
 >((a & 0xefcdab89) | (~a & 0x98badcfe)) + blocks[1] + 271733878 : any
 >((a & 0xefcdab89) | (~a & 0x98badcfe)) + blocks[1] : any
 >((a & 0xefcdab89) | (~a & 0x98badcfe)) : number
@@ -74,11 +74,11 @@ const foo = function (this: any) {
 >(d << 7) | (d >>> 25) : number
 >(d << 7) : number
 >d << 7 : number
->d : any
+>d : undefined
 >7 : 7
 >(d >>> 25) : number
 >d >>> 25 : number
->d : any
+>d : undefined
 >25 : 25
 
         c = ((d & a) | (~d & 0xefcdab89)) + blocks[2] - 1732584194;
