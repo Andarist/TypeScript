@@ -3899,7 +3899,7 @@ export function hasTypeArguments(node: Node): node is HasTypeArguments {
 
 /** @internal */
 export const enum AssignmentKind {
-    None, Definite, Compound
+    None, Definite, Compound, CompoundLike
 }
 
 /** @internal */
@@ -3910,7 +3910,8 @@ export function getAssignmentTargetKind(node: Node): AssignmentKind {
             case SyntaxKind.BinaryExpression:
                 const binaryOperator = (parent as BinaryExpression).operatorToken.kind;
                 return isAssignmentOperator(binaryOperator) && (parent as BinaryExpression).left === node ?
-                    (binaryOperator === SyntaxKind.EqualsToken && !isPlusEqualsLikeAssignment(parent as BinaryExpression)) || isLogicalOrCoalescingAssignmentOperator(binaryOperator) ? AssignmentKind.Definite : AssignmentKind.Compound :
+                    binaryOperator === SyntaxKind.EqualsToken ? (isPlusEqualsLikeAssignment(parent as BinaryExpression) ? AssignmentKind.CompoundLike : AssignmentKind.Definite) :
+                    isLogicalOrCoalescingAssignmentOperator(binaryOperator) ? AssignmentKind.Definite : AssignmentKind.Compound :
                     AssignmentKind.None;
             case SyntaxKind.PrefixUnaryExpression:
             case SyntaxKind.PostfixUnaryExpression:

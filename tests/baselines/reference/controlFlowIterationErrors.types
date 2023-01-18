@@ -157,14 +157,14 @@ function h1() {
 
         x = +x + 1;
 >x = +x + 1 : number
->x : string
+>x : string | number
 >+x + 1 : number
 >+x : number
->x : string
+>x : string | number
 >1 : 1
 
         x;
->x : string
+>x : number
     }
 }
 
@@ -184,15 +184,15 @@ function h2() {
 
         x = asNumber(x) + 1;
 >x = asNumber(x) + 1 : number
->x : string
+>x : string | number
 >asNumber(x) + 1 : number
 >asNumber(x) : number
 >asNumber : (x: string | number) => number
->x : string
+>x : string | number
 >1 : 1
 
         x;
->x : string
+>x : number
     }
 }
 
@@ -214,17 +214,17 @@ function h3() {
 >y : number
 >asNumber(x) : number
 >asNumber : (x: string | number) => number
->x : string
+>x : string | number
 
         x = y + 1;
 >x = y + 1 : number
->x : string
+>x : string | number
 >y + 1 : number
 >y : number
 >1 : 1
 
         x;
->x : string
+>x : number
     }
 }
 
@@ -243,23 +243,23 @@ function h4() {
 >cond : boolean
 
         x;
->x : string
+>x : string | number
 
         let y = asNumber(x);
 >y : number
 >asNumber(x) : number
 >asNumber : (x: string | number) => number
->x : string
+>x : string | number
 
         x = y + 1;
 >x = y + 1 : number
->x : string
+>x : string | number
 >y + 1 : number
 >y : number
 >1 : 1
 
         x;
->x : string
+>x : number
     }
 }
 

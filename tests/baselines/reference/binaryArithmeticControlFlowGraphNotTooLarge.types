@@ -74,11 +74,11 @@ const foo = function (this: any) {
 >(d << 7) | (d >>> 25) : number
 >(d << 7) : number
 >d << 7 : number
->d : undefined
+>d : any
 >7 : 7
 >(d >>> 25) : number
 >d >>> 25 : number
->d : undefined
+>d : any
 >25 : 25
 
         c = ((d & a) | (~d & 0xefcdab89)) + blocks[2] - 1732584194;

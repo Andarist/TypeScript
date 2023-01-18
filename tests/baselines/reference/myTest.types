@@ -31,7 +31,7 @@ foo = foo + "bar";
 
 // pre2
 foo
->foo : string
+>foo : ""
 
 // post2
 
@@ -46,4 +46,19 @@ foo
 // // pre2
 // foo
 // // post2
+
+
+// True#1 (cond) ─ Loop ┬ Assignment (x) ─ Start
+//                      ╰ Assignment (x) ─ Circular(True#1 (cond))
+
+// declare let cond: boolean
+
+// function h1() {
+//     let x: string | number | boolean;
+//     x = "0";
+//     while (cond) {
+//         x = +x + 1;
+//         x
+//     }
+// }
 

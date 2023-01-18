@@ -161,7 +161,7 @@ async function h1() {
 
         x = +x + 1;
 >x = +x + 1 : number
->x : string | number | boolean
+>x : string | number
 >+x + 1 : number
 >+x : number
 >x : string | number
@@ -188,7 +188,7 @@ async function h2() {
 
         x = await asNumber(x) + 1;
 >x = await asNumber(x) + 1 : number
->x : string | number | boolean
+>x : string | number
 >await asNumber(x) + 1 : number
 >await asNumber(x) : number
 >asNumber(x) : Promise<number>
@@ -224,7 +224,7 @@ async function h3() {
 
         x = y + 1;
 >x = y + 1 : number
->x : string | number | boolean
+>x : string | number
 >y + 1 : number
 >y : number
 >1 : 1
@@ -260,7 +260,7 @@ async function h4() {
 
         x = y + 1;
 >x = y + 1 : number
->x : string | number | boolean
+>x : string | number
 >y + 1 : number
 >y : number
 >1 : 1

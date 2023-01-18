@@ -10,18 +10,18 @@
 
 
 
-// const empty: "" = "";
-// let foo = empty;
+const empty: "" = "";
+let foo = empty;
 
-// // pre1
-// foo
-// // post1
+// pre1
+foo
+// post1
 
-// foo = foo + "bar";
+foo = foo + "bar";
 
-// // pre2
-// foo
-// // post2
+// pre2
+foo
+// post2
 
 
 // const empty: "" = "";
@@ -39,11 +39,13 @@
 // True#1 (cond) ─ Loop ┬ Assignment (x) ─ Start
 //                      ╰ Assignment (x) ─ Circular(True#1 (cond))
 
-function h1() {
-    let x: string | number | boolean;
-    x = "0";
-    while (cond) {
-        x = +x + 1;
-        x
-    }
-}
+// declare let cond: boolean
+
+// function h1() {
+//     let x: string | number | boolean;
+//     x = "0";
+//     while (cond) {
+//         x = +x + 1;
+//         x
+//     }
+// }
