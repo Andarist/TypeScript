@@ -1,0 +1,188 @@
+=== tests/cases/compiler/myTest.ts ===
+type QueryKey = readonly unknown[];
+>QueryKey : readonly unknown[]
+
+type GetQueryFnDatas<
+>GetQueryFnDatas : GetQueryFnDatas<TQueryFnDatas, TQueryKeys>
+
+  TQueryFnDatas extends readonly unknown[],
+  TQueryKeys extends readonly QueryKey[]
+> = {
+  [K in keyof TQueryFnDatas]: {
+    queryFn?: (key: TQueryKeys[K & keyof TQueryKeys]) => Promise<TQueryFnDatas[K]>;
+>queryFn : ((key: TQueryKeys[K & keyof TQueryKeys]) => Promise<TQueryFnDatas[K]>) | undefined
+>key : TQueryKeys[K & keyof TQueryKeys]
+
+  };
+};
+
+type GetDatas<
+>GetDatas : GetDatas<TDatas, TQueryFnDatas>
+
+  TDatas extends readonly unknown[],
+  TQueryFnDatas extends readonly unknown[],
+> = {
+  [K in keyof TDatas]: {
+    select?: (data: TQueryFnDatas[K & keyof TQueryFnDatas]) => TDatas[K]
+>select : ((data: TQueryFnDatas[K & keyof TQueryFnDatas]) => TDatas[K]) | undefined
+>data : TQueryFnDatas[K & keyof TQueryFnDatas]
+  }
+}
+
+type GetQueryKeys<TQueryKeys extends readonly QueryKey[]> = {
+>GetQueryKeys : GetQueryKeys<TQueryKeys>
+
+  [K in keyof TQueryKeys]: { queryKey: TQueryKeys[K] };
+>queryKey : TQueryKeys[K]
+
+};
+
+declare function useQueries<
+>useQueries : <TQueryFnDatas extends readonly unknown[], TDatas extends readonly unknown[], TQueryKeys extends readonly QueryKey[]>({ queries, }: {    queries: [        ...(GetQueryKeys<TQueryKeys> & GetDatas<TDatas, TQueryFnDatas> & GetQueryFnDatas<TQueryFnDatas, TQueryKeys>)    ];}) => [TQueryFnDatas, TDatas, TQueryKeys]
+
+  TQueryFnDatas extends readonly unknown[],
+  TDatas extends readonly unknown[],
+  TQueryKeys extends readonly QueryKey[]
+>({
+  queries,
+>queries : [...GetQueryKeys<TQueryKeys> & GetDatas<TDatas, TQueryFnDatas> & GetQueryFnDatas<TQueryFnDatas, TQueryKeys>]
+
+}: {
+  queries: [
+>queries : [...GetQueryKeys<TQueryKeys> & GetDatas<TDatas, TQueryFnDatas> & GetQueryFnDatas<TQueryFnDatas, TQueryKeys>]
+
+    ...(GetQueryKeys<TQueryKeys> & GetDatas<TDatas, TQueryFnDatas> & GetQueryFnDatas<TQueryFnDatas, TQueryKeys>)
+  ];
+}): [TQueryFnDatas, TDatas, TQueryKeys];
+
+const res = useQueries({
+>res : [[number], [unknown], [readonly ["todos"]]]
+>useQueries({  queries: [    {      queryKey: ["todos"] as const,      queryFn: (ctx) => Promise.resolve(5),    //   select: (x) => [[x]] as const,    },    // {    //   queryKey: ["users"] as const,    //   queryFn: (ctx) => Promise.resolve(""),    //   select: (x) => [x, x] as const,    // },  ],}) : [[number], [unknown], [readonly ["todos"]]]
+>useQueries : <TQueryFnDatas extends readonly unknown[], TDatas extends readonly unknown[], TQueryKeys extends readonly QueryKey[]>({ queries, }: { queries: [...GetQueryKeys<TQueryKeys> & GetDatas<TDatas, TQueryFnDatas> & GetQueryFnDatas<TQueryFnDatas, TQueryKeys>]; }) => [TQueryFnDatas, TDatas, TQueryKeys]
+>{  queries: [    {      queryKey: ["todos"] as const,      queryFn: (ctx) => Promise.resolve(5),    //   select: (x) => [[x]] as const,    },    // {    //   queryKey: ["users"] as const,    //   queryFn: (ctx) => Promise.resolve(""),    //   select: (x) => [x, x] as const,    // },  ],} : { queries: { queryKey: readonly ["todos"]; queryFn: (ctx: readonly ["todos"]) => Promise<number>; }[]; }
+
+  queries: [
+>queries : { queryKey: readonly ["todos"]; queryFn: (ctx: readonly ["todos"]) => Promise<number>; }[]
+>[    {      queryKey: ["todos"] as const,      queryFn: (ctx) => Promise.resolve(5),    //   select: (x) => [[x]] as const,    },    // {    //   queryKey: ["users"] as const,    //   queryFn: (ctx) => Promise.resolve(""),    //   select: (x) => [x, x] as const,    // },  ] : { queryKey: readonly ["todos"]; queryFn: (ctx: readonly ["todos"]) => Promise<number>; }[]
+    {
+>{      queryKey: ["todos"] as const,      queryFn: (ctx) => Promise.resolve(5),    //   select: (x) => [[x]] as const,    } : { queryKey: readonly ["todos"]; queryFn: (ctx: readonly ["todos"]) => Promise<number>; }
+
+      queryKey: ["todos"] as const,
+>queryKey : readonly ["todos"]
+>["todos"] as const : readonly ["todos"]
+>["todos"] : readonly ["todos"]
+>"todos" : "todos"
+
+      queryFn: (ctx) => Promise.resolve(5),
+>queryFn : (ctx: readonly ["todos"]) => Promise<number>
+>(ctx) => Promise.resolve(5) : (ctx: readonly ["todos"]) => Promise<number>
+>ctx : readonly ["todos"]
+>Promise.resolve(5) : Promise<number>
+>Promise.resolve : { (): Promise<void>; <T>(value: T): Promise<Awaited<T>>; <T>(value: T | PromiseLike<T>): Promise<Awaited<T>>; }
+>Promise : PromiseConstructor
+>resolve : { (): Promise<void>; <T>(value: T): Promise<Awaited<T>>; <T>(value: T | PromiseLike<T>): Promise<Awaited<T>>; }
+>5 : 5
+
+    //   select: (x) => [[x]] as const,
+    },
+    // {
+    //   queryKey: ["users"] as const,
+    //   queryFn: (ctx) => Promise.resolve(""),
+    //   select: (x) => [x, x] as const,
+    // },
+  ],
+});
+
+res
+>res : [[number], [unknown], [readonly ["todos"]]]
+
+// type Results<T> = {
+//   [K in keyof T]: {
+//     data: T[K];
+//     onSuccess: (data: T[K]) => void;
+//   };
+// };
+
+// type Errors<E> = {
+//   [K in keyof E]: {
+//     error: E[K];
+//     onError: (data: E[K]) => void;
+//   };
+// };
+
+// declare function withTuples<T extends any[], E extends any[]>(
+//   arg: [...(Results<T> & Errors<E>)]
+// ): [T, E];
+
+// const res2 = withTuples([
+//   {
+//     data: "foo",
+//     onSuccess: (dataArg) => {
+//       dataArg;
+//     },
+//     error: 404,
+//     onError: (errorArg) => {
+//       errorArg;
+//     },
+//   },
+//   {
+//     data: true,
+//     onSuccess: (dataArg) => {
+//       dataArg;
+//     },
+//     error: 500,
+//     onError: (errorArg) => {
+//       errorArg;
+//     },
+//   },
+// ]);
+
+// declare function withKeyedObj<T, E>(
+//   arg: Results<T> & Errors<E>
+// ): [T, E];
+
+// const res = withKeyedObj({
+//   a: {
+//     data: "foo",
+//     onSuccess: (dataArg) => {
+//       dataArg;
+//     },
+//     error: 404,
+//     onError: (errorArg) => {
+//       errorArg;
+//     },
+//   },
+//   b: {
+//     data: true,
+//     onSuccess: (dataArg) => {
+//       dataArg;
+//     },
+//     error: 500,
+//     onError: (errorArg) => {
+//       errorArg;
+//     },
+//   },
+// });
+
+
+// type Chain<R1, R2, R3> = {
+//     a(): R1,
+//     b(a: R1): R2;
+//     c(b: R2): R3;
+//     d(b: R3): void;
+// };
+
+// declare function test<R1, R2, R3>(foo: Chain<R1, R2, R3>): [R1, R2, R3]
+
+// const res = test({
+//     a: () => 0,
+//     b: (a) => 'a',
+//     c: (b) => {
+//         return !!b
+//     },
+//     d: (c) => {
+//         const x: boolean = c;
+//     }
+// });
+
+// res

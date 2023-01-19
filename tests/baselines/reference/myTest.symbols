@@ -1,0 +1,229 @@
+=== tests/cases/compiler/myTest.ts ===
+type QueryKey = readonly unknown[];
+>QueryKey : Symbol(QueryKey, Decl(myTest.ts, 0, 0))
+
+type GetQueryFnDatas<
+>GetQueryFnDatas : Symbol(GetQueryFnDatas, Decl(myTest.ts, 0, 35))
+
+  TQueryFnDatas extends readonly unknown[],
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 2, 21))
+
+  TQueryKeys extends readonly QueryKey[]
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 3, 43))
+>QueryKey : Symbol(QueryKey, Decl(myTest.ts, 0, 0))
+
+> = {
+  [K in keyof TQueryFnDatas]: {
+>K : Symbol(K, Decl(myTest.ts, 6, 3))
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 2, 21))
+
+    queryFn?: (key: TQueryKeys[K & keyof TQueryKeys]) => Promise<TQueryFnDatas[K]>;
+>queryFn : Symbol(queryFn, Decl(myTest.ts, 6, 31))
+>key : Symbol(key, Decl(myTest.ts, 7, 15))
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 3, 43))
+>K : Symbol(K, Decl(myTest.ts, 6, 3))
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 3, 43))
+>Promise : Symbol(Promise, Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.iterable.d.ts, --, --), Decl(lib.es2015.promise.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.es2018.promise.d.ts, --, --))
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 2, 21))
+>K : Symbol(K, Decl(myTest.ts, 6, 3))
+
+  };
+};
+
+type GetDatas<
+>GetDatas : Symbol(GetDatas, Decl(myTest.ts, 9, 2))
+
+  TDatas extends readonly unknown[],
+>TDatas : Symbol(TDatas, Decl(myTest.ts, 11, 14))
+
+  TQueryFnDatas extends readonly unknown[],
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 12, 36))
+
+> = {
+  [K in keyof TDatas]: {
+>K : Symbol(K, Decl(myTest.ts, 15, 3))
+>TDatas : Symbol(TDatas, Decl(myTest.ts, 11, 14))
+
+    select?: (data: TQueryFnDatas[K & keyof TQueryFnDatas]) => TDatas[K]
+>select : Symbol(select, Decl(myTest.ts, 15, 24))
+>data : Symbol(data, Decl(myTest.ts, 16, 14))
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 12, 36))
+>K : Symbol(K, Decl(myTest.ts, 15, 3))
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 12, 36))
+>TDatas : Symbol(TDatas, Decl(myTest.ts, 11, 14))
+>K : Symbol(K, Decl(myTest.ts, 15, 3))
+  }
+}
+
+type GetQueryKeys<TQueryKeys extends readonly QueryKey[]> = {
+>GetQueryKeys : Symbol(GetQueryKeys, Decl(myTest.ts, 18, 1))
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 20, 18))
+>QueryKey : Symbol(QueryKey, Decl(myTest.ts, 0, 0))
+
+  [K in keyof TQueryKeys]: { queryKey: TQueryKeys[K] };
+>K : Symbol(K, Decl(myTest.ts, 21, 3))
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 20, 18))
+>queryKey : Symbol(queryKey, Decl(myTest.ts, 21, 28))
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 20, 18))
+>K : Symbol(K, Decl(myTest.ts, 21, 3))
+
+};
+
+declare function useQueries<
+>useQueries : Symbol(useQueries, Decl(myTest.ts, 22, 2))
+
+  TQueryFnDatas extends readonly unknown[],
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 24, 28))
+
+  TDatas extends readonly unknown[],
+>TDatas : Symbol(TDatas, Decl(myTest.ts, 25, 43))
+
+  TQueryKeys extends readonly QueryKey[]
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 26, 36))
+>QueryKey : Symbol(QueryKey, Decl(myTest.ts, 0, 0))
+
+>({
+  queries,
+>queries : Symbol(queries, Decl(myTest.ts, 28, 3))
+
+}: {
+  queries: [
+>queries : Symbol(queries, Decl(myTest.ts, 30, 4))
+
+    ...(GetQueryKeys<TQueryKeys> & GetDatas<TDatas, TQueryFnDatas> & GetQueryFnDatas<TQueryFnDatas, TQueryKeys>)
+>GetQueryKeys : Symbol(GetQueryKeys, Decl(myTest.ts, 18, 1))
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 26, 36))
+>GetDatas : Symbol(GetDatas, Decl(myTest.ts, 9, 2))
+>TDatas : Symbol(TDatas, Decl(myTest.ts, 25, 43))
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 24, 28))
+>GetQueryFnDatas : Symbol(GetQueryFnDatas, Decl(myTest.ts, 0, 35))
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 24, 28))
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 26, 36))
+
+  ];
+}): [TQueryFnDatas, TDatas, TQueryKeys];
+>TQueryFnDatas : Symbol(TQueryFnDatas, Decl(myTest.ts, 24, 28))
+>TDatas : Symbol(TDatas, Decl(myTest.ts, 25, 43))
+>TQueryKeys : Symbol(TQueryKeys, Decl(myTest.ts, 26, 36))
+
+const res = useQueries({
+>res : Symbol(res, Decl(myTest.ts, 36, 5))
+>useQueries : Symbol(useQueries, Decl(myTest.ts, 22, 2))
+
+  queries: [
+>queries : Symbol(queries, Decl(myTest.ts, 36, 24))
+    {
+      queryKey: ["todos"] as const,
+>queryKey : Symbol(queryKey, Decl(myTest.ts, 38, 5))
+>const : Symbol(const)
+
+      queryFn: (ctx) => Promise.resolve(5),
+>queryFn : Symbol(queryFn, Decl(myTest.ts, 39, 35))
+>ctx : Symbol(ctx, Decl(myTest.ts, 40, 16))
+>Promise.resolve : Symbol(PromiseConstructor.resolve, Decl(lib.es2015.promise.d.ts, --, --), Decl(lib.es2015.promise.d.ts, --, --), Decl(lib.es2015.promise.d.ts, --, --))
+>Promise : Symbol(Promise, Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.iterable.d.ts, --, --), Decl(lib.es2015.promise.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.es2018.promise.d.ts, --, --))
+>resolve : Symbol(PromiseConstructor.resolve, Decl(lib.es2015.promise.d.ts, --, --), Decl(lib.es2015.promise.d.ts, --, --), Decl(lib.es2015.promise.d.ts, --, --))
+
+    //   select: (x) => [[x]] as const,
+    },
+    // {
+    //   queryKey: ["users"] as const,
+    //   queryFn: (ctx) => Promise.resolve(""),
+    //   select: (x) => [x, x] as const,
+    // },
+  ],
+});
+
+res
+>res : Symbol(res, Decl(myTest.ts, 36, 5))
+
+// type Results<T> = {
+//   [K in keyof T]: {
+//     data: T[K];
+//     onSuccess: (data: T[K]) => void;
+//   };
+// };
+
+// type Errors<E> = {
+//   [K in keyof E]: {
+//     error: E[K];
+//     onError: (data: E[K]) => void;
+//   };
+// };
+
+// declare function withTuples<T extends any[], E extends any[]>(
+//   arg: [...(Results<T> & Errors<E>)]
+// ): [T, E];
+
+// const res2 = withTuples([
+//   {
+//     data: "foo",
+//     onSuccess: (dataArg) => {
+//       dataArg;
+//     },
+//     error: 404,
+//     onError: (errorArg) => {
+//       errorArg;
+//     },
+//   },
+//   {
+//     data: true,
+//     onSuccess: (dataArg) => {
+//       dataArg;
+//     },
+//     error: 500,
+//     onError: (errorArg) => {
+//       errorArg;
+//     },
+//   },
+// ]);
+
+// declare function withKeyedObj<T, E>(
+//   arg: Results<T> & Errors<E>
+// ): [T, E];
+
+// const res = withKeyedObj({
+//   a: {
+//     data: "foo",
+//     onSuccess: (dataArg) => {
+//       dataArg;
+//     },
+//     error: 404,
+//     onError: (errorArg) => {
+//       errorArg;
+//     },
+//   },
+//   b: {
+//     data: true,
+//     onSuccess: (dataArg) => {
+//       dataArg;
+//     },
+//     error: 500,
+//     onError: (errorArg) => {
+//       errorArg;
+//     },
+//   },
+// });
+
+
+// type Chain<R1, R2, R3> = {
+//     a(): R1,
+//     b(a: R1): R2;
+//     c(b: R2): R3;
+//     d(b: R3): void;
+// };
+
+// declare function test<R1, R2, R3>(foo: Chain<R1, R2, R3>): [R1, R2, R3]
+
+// const res = test({
+//     a: () => 0,
+//     b: (a) => 'a',
+//     c: (b) => {
+//         return !!b
+//     },
+//     d: (c) => {
+//         const x: boolean = c;
+//     }
+// });
+
+// res
