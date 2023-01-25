@@ -30937,7 +30937,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // assignment target, and the referenced property was declared as a variable, property,
         // accessor, or optional method.
         const assignmentKind = getAssignmentTargetKind(node);
-        if (assignmentKind === AssignmentKind.Definite) {
+        if (assignmentKind === AssignmentKind.Definite || assignmentKind === AssignmentKind.CompoundLike) {
             return removeMissingType(propType, !!(prop && prop.flags & SymbolFlags.Optional));
         }
         if (prop &&
