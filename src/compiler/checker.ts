@@ -26065,7 +26065,9 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 if (!isReachableFlowNode(flow)) {
                     return unreachableNeverType;
                 }
-                if (getAssignmentTargetKind(node) === AssignmentKind.Compound) {
+                const assignmentKind = getAssignmentTargetKind(node);
+                // don't check here because compund preserve the LHS type, and for CompoundLike we want to use the RHS
+                if (assignmentKind === AssignmentKind.Compound) {
                     const flowType = getTypeAtFlowNode(flow.antecedent);
                     return createFlowType(getBaseTypeOfLiteralType(getTypeFromFlowType(flowType)), isIncomplete(flowType));
                 }
@@ -26079,7 +26081,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 if (declaredType.flags & TypeFlags.Union) {
                     return getAssignmentReducedType(declaredType as UnionType, getInitialOrAssignedType(flow));
                 }
-                return declaredType;
+                return assignmentKind === AssignmentKind.CompoundLike ? getBaseTypeOfLiteralType(declaredType) : declaredType;
             }
             // We didn't have a direct match. However, if the reference is a dotted name, this
             // may be an assignment to a left hand part of the reference. For example, for a
