@@ -15961,6 +15961,53 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
     }
 
+    function normalizeArrayOrTupleType(type: Type): TypeReference {
+        // if (isArrayOrTupleType(type)) {
+        //     return type;
+        // }
+
+        const arrayElementTypes: Type[] = [];
+        let tupleElements: Type[][] | undefined;
+        let lastSeenTuple: TupleTypeReference | undefined;
+        // let isFixed = false;
+        let isTupleStructureMatching = true;
+
+        for (const t of (type as IntersectionType).types) {
+            if (isArrayType(t)) {
+                arrayElementTypes.push(getElementTypeOfArrayType(t)!);
+                continue;
+            }
+            const tupleType = t as TupleTypeReference;
+            const arity = getTypeReferenceArity(tupleType);
+
+            if (!tupleType.target.hasRestElement) {
+                // isFixed = true;
+                if (tupleElements && tupleElements.length > arity) {
+                    tupleElements = tupleElements.slice(0, arity);
+                }
+            }
+
+            if (isTupleStructureMatching && lastSeenTuple && !isTupleTypeStructureMatching(tupleType, lastSeenTuple)) {
+                isTupleStructureMatching = false;
+            }
+
+            lastSeenTuple = tupleType;
+
+            if (!tupleElements) {
+                tupleElements = arrayOf<Type[]>(arity, () => []);
+            }
+
+            for (let i = 0; i < arity; i++) {
+                tupleElements[i].push(getTupleElementType(tupleType, i)!);
+            }
+        }
+
+        if (!lastSeenTuple) {
+            return createArrayType(getIntersectionType(arrayElementTypes)) as any;
+        }
+        return createTupleType(map(tupleElements, (_, i) => getIntersectionType(tupleElements![i])) as any) as any;
+    }
+
     function sliceTupleType(type: TupleTypeReference, index: number, endSkipCount = 0) {
         const target = type.target;
         const endIndex = getTypeReferenceArity(type) - endSkipCount;
@@ -22856,7 +22903,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function isArrayOrTupleType(type: Type): type is TypeReference {
-        return isArrayType(type) || isTupleType(type);
+        return everyContainedType(type, t => isArrayType(t) || isTupleType(t));
     }
 
     function isMutableArrayOrTuple(type: Type): boolean {
@@ -24076,7 +24123,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 }
                 source = getUnionType(sources);
             }
-            else if (target.flags & TypeFlags.Intersection && !every((target as IntersectionType).types, isNonGenericObjectType)) {
+            else if (target.flags & TypeFlags.Intersection && !everyContainedType(target, isNonGenericObjectType)) {
                 // We reduce intersection types unless they're simple combinations of object types. For example,
                 // when inferring from 'string[] & { extra: any }' to 'string[] & T' we want to remove string[] and
                 // infer { extra: any } for T. But when inferring to 'string[] & Iterable<T>' we want to keep the
@@ -24590,28 +24637,30 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             if (!typesDefinitelyUnrelated(source, target)) {
                 if (isArrayOrTupleType(source)) {
                     if (isTupleType(target)) {
-                        const sourceArity = getTypeReferenceArity(source);
+                        const normalizedSource = normalizeArrayOrTupleType(source);
+                        console.log((normalizedSource as any).__debugTypeToString())
+                        const sourceArity = getTypeReferenceArity(normalizedSource);
                         const targetArity = getTypeReferenceArity(target);
                         const elementTypes = getTypeArguments(target);
                         const elementFlags = target.target.elementFlags;
                         // When source and target are tuple types with the same structure (fixed, variadic, and rest are matched
                         // to the same kind in each position), simply infer between the element types.
-                        if (isTupleType(source) && isTupleTypeStructureMatching(source, target)) {
+                        if (isTupleType(normalizedSource) && isTupleTypeStructureMatching(normalizedSource, target)) {
                             for (let i = 0; i < targetArity; i++) {
-                                inferFromTypes(getTypeArguments(source)[i], elementTypes[i]);
+                                inferFromTypes(getTypeArguments(normalizedSource)[i], elementTypes[i]);
                             }
                             return;
                         }
-                        const startLength = isTupleType(source) ? Math.min(source.target.fixedLength, target.target.fixedLength) : 0;
-                        const endLength = Math.min(isTupleType(source) ? getEndElementCount(source.target, ElementFlags.Fixed) : 0,
+                        const startLength = isTupleType(normalizedSource) ? Math.min(normalizedSource.target.fixedLength, target.target.fixedLength) : 0;
+                        const endLength = Math.min(isTupleType(normalizedSource) ? getEndElementCount(normalizedSource.target, ElementFlags.Fixed) : 0,
                             target.target.hasRestElement ? getEndElementCount(target.target, ElementFlags.Fixed) : 0);
                         // Infer between starting fixed elements.
                         for (let i = 0; i < startLength; i++) {
-                            inferFromTypes(getTypeArguments(source)[i], elementTypes[i]);
+                            inferFromTypes(getTypeArguments(normalizedSource)[i], elementTypes[i]);
                         }
-                        if (!isTupleType(source) || sourceArity - startLength - endLength === 1 && source.target.elementFlags[startLength] & ElementFlags.Rest) {
+                        if (!isTupleType(normalizedSource) || sourceArity - startLength - endLength === 1 && normalizedSource.target.elementFlags[startLength] & ElementFlags.Rest) {
                             // Single rest element remains in source, infer from that to every element in target
-                            const restType = getTypeArguments(source)[startLength];
+                            const restType = getTypeArguments(normalizedSource)[startLength];
                             for (let i = startLength; i < targetArity - endLength; i++) {
                                 inferFromTypes(elementFlags[i] & ElementFlags.Variadic ? createArrayType(restType) : restType, elementTypes[i]);
                             }
@@ -24624,8 +24673,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                                     const targetInfo = getInferenceInfoForType(elementTypes[startLength]);
                                     if (targetInfo && targetInfo.impliedArity !== undefined) {
                                         // Infer slices from source based on implied arity of T.
-                                        inferFromTypes(sliceTupleType(source, startLength, endLength + sourceArity - targetInfo.impliedArity), elementTypes[startLength]);
-                                        inferFromTypes(sliceTupleType(source, startLength + targetInfo.impliedArity, endLength), elementTypes[startLength + 1]);
+                                        inferFromTypes(sliceTupleType(normalizedSource, startLength, endLength + sourceArity - targetInfo.impliedArity), elementTypes[startLength]);
+                                        inferFromTypes(sliceTupleType(normalizedSource, startLength + targetInfo.impliedArity, endLength), elementTypes[startLength + 1]);
                                     }
                                 }
                                 else if (elementFlags[startLength] & ElementFlags.Variadic && elementFlags[startLength + 1] & ElementFlags.Rest) {
@@ -24635,8 +24684,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                                     const constraint = param && getBaseConstraintOfType(param);
                                     if (constraint && isTupleType(constraint) && !constraint.target.hasRestElement) {
                                         const impliedArity = constraint.target.fixedLength;
-                                        inferFromTypes(sliceTupleType(source, startLength, sourceArity - (startLength + impliedArity)), elementTypes[startLength]);
-                                        inferFromTypes(getElementTypeOfSliceOfTupleType(source, startLength + impliedArity, endLength)!, elementTypes[startLength + 1]);
+                                        inferFromTypes(sliceTupleType(normalizedSource, startLength, sourceArity - (startLength + impliedArity)), elementTypes[startLength]);
+                                        inferFromTypes(getElementTypeOfSliceOfTupleType(normalizedSource, startLength + impliedArity, endLength)!, elementTypes[startLength + 1]);
                                     }
                                 }
                                 else if (elementFlags[startLength] & ElementFlags.Rest && elementFlags[startLength + 1] & ElementFlags.Variadic) {
@@ -24648,10 +24697,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                                         const impliedArity = constraint.target.fixedLength;
                                         const endIndex = sourceArity - getEndElementCount(target.target, ElementFlags.Fixed);
                                         const startIndex = endIndex - impliedArity;
-                                        const trailingSlice = createTupleType(getTypeArguments(source).slice(startIndex, endIndex), source.target.elementFlags.slice(startIndex, endIndex),
-                                            /*readonly*/ false, source.target.labeledElementDeclarations && source.target.labeledElementDeclarations.slice(startIndex, endIndex));
+                                        const trailingSlice = createTupleType(getTypeArguments(normalizedSource).slice(startIndex, endIndex), normalizedSource.target.elementFlags.slice(startIndex, endIndex),
+                                            /*readonly*/ false, normalizedSource.target.labeledElementDeclarations && normalizedSource.target.labeledElementDeclarations.slice(startIndex, endIndex));
 
-                                        inferFromTypes(getElementTypeOfSliceOfTupleType(source, startLength, endLength + impliedArity)!, elementTypes[startLength]);
+                                        inferFromTypes(getElementTypeOfSliceOfTupleType(normalizedSource, startLength, endLength + impliedArity)!, elementTypes[startLength]);
                                         inferFromTypes(trailingSlice, elementTypes[startLength + 1]);
                                     }
                                 }
@@ -24660,12 +24709,12 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                                 // Middle of target is exactly one variadic element. Infer the slice between the fixed parts in the source.
                                 // If target ends in optional element(s), make a lower priority a speculative inference.
                                 const endsInOptional = target.target.elementFlags[targetArity - 1] & ElementFlags.Optional;
-                                const sourceSlice = sliceTupleType(source, startLength, endLength);
+                                const sourceSlice = sliceTupleType(normalizedSource, startLength, endLength);
                                 inferWithPriority(sourceSlice, elementTypes[startLength], endsInOptional ? InferencePriority.SpeculativeTuple : 0);
                             }
                             else if (middleLength === 1 && elementFlags[startLength] & ElementFlags.Rest) {
                                 // Middle of target is exactly one rest element. If middle of source is not empty, infer union of middle element types.
-                                const restType = getElementTypeOfSliceOfTupleType(source, startLength, endLength);
+                                const restType = getElementTypeOfSliceOfTupleType(normalizedSource, startLength, endLength);
                                 if (restType) {
                                     inferFromTypes(restType, elementTypes[startLength]);
                                 }
@@ -24673,7 +24722,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         }
                         // Infer between ending fixed elements
                         for (let i = 0; i < endLength; i++) {
-                            inferFromTypes(getTypeArguments(source)[sourceArity - i - 1], elementTypes[targetArity - i - 1]);
+                            inferFromTypes(getTypeArguments(normalizedSource)[sourceArity - i - 1], elementTypes[targetArity - i - 1]);
                         }
                         return;
                     }
@@ -30539,7 +30588,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         return !!(type.flags & TypeFlags.Object && !(getObjectFlags(type) & ObjectFlags.ObjectLiteralPatternWithComputedProperties) ||
             type.flags & TypeFlags.NonPrimitive ||
             type.flags & TypeFlags.Union && some((type as UnionType).types, isExcessPropertyCheckTarget) ||
-            type.flags & TypeFlags.Intersection && every((type as IntersectionType).types, isExcessPropertyCheckTarget));
+            type.flags & TypeFlags.Intersection && everyContainedType(type, isExcessPropertyCheckTarget));
     }
 
     function checkJsxExpression(node: JsxExpression, checkMode?: CheckMode) {
