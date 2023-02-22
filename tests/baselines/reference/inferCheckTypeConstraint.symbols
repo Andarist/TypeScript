@@ -1,0 +1,14 @@
+=== tests/cases/compiler/inferCheckTypeConstraint.ts ===
+type AcceptStr<T extends string> = T
+>AcceptStr : Symbol(AcceptStr, Decl(inferCheckTypeConstraint.ts, 0, 0))
+>T : Symbol(T, Decl(inferCheckTypeConstraint.ts, 0, 15))
+>T : Symbol(T, Decl(inferCheckTypeConstraint.ts, 0, 15))
+
+type Other<T extends string> = T extends infer R ? AcceptStr<R> : never
+>Other : Symbol(Other, Decl(inferCheckTypeConstraint.ts, 0, 36))
+>T : Symbol(T, Decl(inferCheckTypeConstraint.ts, 1, 11))
+>T : Symbol(T, Decl(inferCheckTypeConstraint.ts, 1, 11))
+>R : Symbol(R, Decl(inferCheckTypeConstraint.ts, 1, 46))
+>AcceptStr : Symbol(AcceptStr, Decl(inferCheckTypeConstraint.ts, 0, 0))
+>R : Symbol(R, Decl(inferCheckTypeConstraint.ts, 1, 46))
+

@@ -14967,6 +14967,16 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                             makeUnaryTypeMapper(getDeclaredTypeOfTypeParameter(getSymbolOfDeclaration(checkMappedType.typeParameter)), checkMappedType.typeParameter.constraint ? getTypeFromTypeNode(checkMappedType.typeParameter.constraint) : keyofConstraintType)
                         ));
                     }
+                    // When an `extendsType` is the `infer T` declaration then propagate the constraint of the `checkType`
+                    // type Alias<S extends string> = S extends infer T ? AcceptStr<T> : never
+                    else if (grandParent.kind === SyntaxKind.ConditionalType) {
+                        const checkType = getTypeFromTypeNode((grandParent as ConditionalTypeNode).checkType);
+                        const constraint = hasNonCircularBaseConstraint(checkType) && getBaseConstraintOfType(checkType);
+
+                        if (constraint) {
+                           inferences = append(inferences, constraint);
+                        }
+                    }
                 }
             }
         }
