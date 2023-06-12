@@ -2140,6 +2140,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     var inferenceContexts: (InferenceContext | undefined)[] = [];
     var inferenceContextCount = 0;
 
+    var intraExpressionInferenceSites: InferenceContext["intraExpressionInferenceSites"][] = [];
+    var intraExpressionInferenceSitesLengths: number[] = [];
+    var intraExpressionInferenceSitesCount = 0;
+
     var emptyStringType = getStringLiteralType("");
     var zeroType = getNumberLiteralType(0);
     var zeroBigIntType = getBigIntLiteralType({ negative: false, base10Value: "0" });
@@ -23956,6 +23960,15 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function addIntraExpressionInferenceSite(context: InferenceContext, node: Expression | MethodDeclaration, type: Type) {
+        const stored = intraExpressionInferenceSites[intraExpressionInferenceSitesCount];
+        if (stored && stored === context.intraExpressionInferenceSites) {
+            // if the `context.intraExpressionInferenceSites` are still the same as when we last stored into `intraExpressionInferenceSites`
+            // then we can just shrink the array and push to it since items that were pushed since then are guaranteed to be inside the node
+            // and we only need to keep the outermost site until it's pulled from and resetted by `inferFromIntraExpressionSites`
+            stored.length = intraExpressionInferenceSitesLengths[intraExpressionInferenceSitesCount];
+            stored.push({ node, type });
+            return;
+        }
         (context.intraExpressionInferenceSites ??= []).push({ node, type });
     }
 
@@ -29611,6 +29624,19 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
     }
 
+    function pushIntraExpressionInferenceSites(node: ObjectLiteralExpression | ArrayLiteralExpression | JsxAttributes, contextualType: Type | undefined, checkMode: CheckMode) {
+        const inIntraExpressionInferenceContext = !!(contextualType && checkMode & CheckMode.Inferential && !(checkMode & CheckMode.SkipContextSensitive));
+        const sites = inIntraExpressionInferenceContext ? getInferenceContext(node)!.intraExpressionInferenceSites : undefined;
+        intraExpressionInferenceSites[intraExpressionInferenceSitesCount] = sites;
+        intraExpressionInferenceSitesLengths[intraExpressionInferenceSitesCount] = sites?.length || 0;
+        intraExpressionInferenceSitesCount++;
+        return inIntraExpressionInferenceContext;
+    }
+
+    function popIntraExpressionInferenceSites() {
+        intraExpressionInferenceSitesCount--;
+    }
+
     function getContextualJsxElementAttributesType(node: JsxOpeningLikeElement, contextFlags: ContextFlags | undefined) {
         if (isJsxOpeningElement(node) && contextFlags !== ContextFlags.Completions) {
             const index = findContextualNode(node.parent, /*includeCaches*/ !contextFlags);
@@ -29936,7 +29962,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             (node.kind === SyntaxKind.BinaryExpression && (node as BinaryExpression).operatorToken.kind === SyntaxKind.EqualsToken);
     }
 
-    function checkArrayLiteral(node: ArrayLiteralExpression, checkMode: CheckMode | undefined, forceTuple: boolean | undefined): Type {
+    function checkArrayLiteral(node: ArrayLiteralExpression, checkMode = CheckMode.Normal, forceTuple: boolean | undefined): Type {
         const elements = node.elements;
         const elementCount = elements.length;
         const elementTypes: Type[] = [];
@@ -29946,6 +29972,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         const isSpreadIntoCallOrNew = isSpreadElement(node.parent) && isCallOrNewExpression(node.parent.parent);
         const inConstContext = isSpreadIntoCallOrNew || isConstContext(node);
         const contextualType = getApparentTypeOfContextualType(node, /*contextFlags*/ undefined);
+        const inIntraExpressionInferenceContext = pushIntraExpressionInferenceSites(node, contextualType, checkMode);
         const inTupleContext = isSpreadIntoCallOrNew || !!contextualType && someType(contextualType, isTupleLikeType);
         let hasOmittedExpression = false;
         for (let i = 0; i < elementCount; i++) {
@@ -29992,7 +30019,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 const type = checkExpressionForMutableLocation(e, checkMode, forceTuple);
                 elementTypes.push(addOptionality(type, /*isProperty*/ true, hasOmittedExpression));
                 elementFlags.push(hasOmittedExpression ? ElementFlags.Optional : ElementFlags.Required);
-                if (inTupleContext && checkMode && checkMode & CheckMode.Inferential && !(checkMode & CheckMode.SkipContextSensitive) && isContextSensitive(e)) {
+                if (inTupleContext && inIntraExpressionInferenceContext && isContextSensitive(e)) {
                     const inferenceContext = getInferenceContext(node);
                     Debug.assert(inferenceContext);  // In CheckMode.Inferential we should always have an inference context
                     addIntraExpressionInferenceSite(inferenceContext, e, type);
@@ -30000,6 +30027,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             }
         }
         popContextualType();
+        popIntraExpressionInferenceSites();
         if (inDestructuringPattern) {
             return createTupleType(elementTypes, elementFlags);
         }
@@ -30129,6 +30157,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         const contextualType = getApparentTypeOfContextualType(node, /*contextFlags*/ undefined);
         const contextualTypeHasPattern = contextualType && contextualType.pattern &&
             (contextualType.pattern.kind === SyntaxKind.ObjectBindingPattern || contextualType.pattern.kind === SyntaxKind.ObjectLiteralExpression);
+        const inIntraExpressionInferenceContext = pushIntraExpressionInferenceSites(node, contextualType, checkMode);
         const inConstContext = isConstContext(node);
         const checkFlags = inConstContext ? CheckFlags.Readonly : 0;
         const isInJavascript = isInJSFile(node) && !isInJsonFile(node);
@@ -30217,8 +30246,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 member = prop;
                 allPropertiesTable?.set(prop.escapedName, prop);
 
-                if (contextualType && checkMode & CheckMode.Inferential && !(checkMode & CheckMode.SkipContextSensitive) &&
-                    (memberDecl.kind === SyntaxKind.PropertyAssignment || memberDecl.kind === SyntaxKind.MethodDeclaration) && isContextSensitive(memberDecl)) {
+                if (inIntraExpressionInferenceContext && (memberDecl.kind === SyntaxKind.PropertyAssignment || memberDecl.kind === SyntaxKind.MethodDeclaration) && isContextSensitive(memberDecl)) {
                     const inferenceContext = getInferenceContext(node);
                     Debug.assert(inferenceContext);  // In CheckMode.Inferential we should always have an inference context
                     const inferenceNode = memberDecl.kind === SyntaxKind.PropertyAssignment ? memberDecl.initializer : memberDecl;
@@ -30287,6 +30315,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             propertiesArray.push(member);
         }
         popContextualType();
+        popIntraExpressionInferenceSites();
 
         // If object literal is contextually typed by the implied type of a binding pattern, augment the result
         // type with those properties for which the binding pattern specifies a default value.
@@ -30440,6 +30469,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     function createJsxAttributesTypeFromAttributesProperty(openingLikeElement: JsxOpeningLikeElement, checkMode: CheckMode = CheckMode.Normal) {
         const attributes = openingLikeElement.attributes;
         const contextualType = getContextualType(attributes, ContextFlags.None);
+        const inIntraExpressionInferenceContext = pushIntraExpressionInferenceSites(attributes, contextualType, checkMode);
         const allAttributesTable = strictNullChecks ? createSymbolTable() : undefined;
         let attributesTable = createSymbolTable();
         let spread: Type = emptyJsxObjectType;
@@ -30474,7 +30504,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         addDeprecatedSuggestion(attributeDecl.name, prop.declarations, attributeDecl.name.escapedText as string);
                     }
                 }
-                if (contextualType && checkMode & CheckMode.Inferential && !(checkMode & CheckMode.SkipContextSensitive) && isContextSensitive(attributeDecl)) {
+                if (inIntraExpressionInferenceContext && isContextSensitive(attributeDecl)) {
                     const inferenceContext = getInferenceContext(attributes);
                     Debug.assert(inferenceContext);  // In CheckMode.Inferential we should always have an inference context
                     const inferenceNode = (attributeDecl.initializer as JsxExpression).expression!;
@@ -30542,6 +30572,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
             }
         }
+
+        popIntraExpressionInferenceSites();
 
         if (hasSpreadAnyType) {
             return anyType;
