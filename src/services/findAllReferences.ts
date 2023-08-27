@@ -2316,7 +2316,7 @@ export namespace Core {
         const inherits = !!symbol.declarations && symbol.declarations.some(declaration =>
             getAllSuperTypeNodes(declaration).some(typeReference => {
                 const type = checker.getTypeAtLocation(typeReference);
-                return !!type && !!type.symbol && explicitlyInheritsFrom(type.symbol, parent, cachedResults, checker);
+                return !!type && !!type.symbol && (explicitlyInheritsFrom(type.symbol, parent, cachedResults, checker) || explicitlyInheritsFrom(parent, type.symbol, cachedResults, checker));
             })
         );
         cachedResults.set(key, inherits);

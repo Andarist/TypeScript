@@ -9,16 +9,16 @@
 // }
 // 
 // class BaseFooImpl implements BaseFoo {
-//  	 hello() {/**BaseFooImpl*/}    // Should not show up
+//  	 <|[|{| defId: 1 |}hello|]() {/**BaseFooImpl*/}|>
 // }
 // 
 // class BarImpl implements Bar {
-// 	 <|[|{| defId: 1 |}hello|]() {/**BarImpl*/}|>
+// 	 <|[|{| defId: 2 |}hello|]() {/**BarImpl*/}|>
 // 	 goodbye() {}
 // }
 // 
 // class FooAndBarImpl implements Foo, Bar {
-// 	 <|[|{| defId: 2 |}hello|]() {/**FooAndBarImpl*/}|>
+// 	 <|[|{| defId: 3 |}hello|]() {/**FooAndBarImpl*/}|>
 // 	 aloha() {}
 // 	 goodbye() {}
 // }
@@ -107,7 +107,7 @@
       "kind": "space"
      },
      {
-      "text": "BarImpl",
+      "text": "BaseFooImpl",
       "kind": "className"
      },
      {
@@ -143,6 +143,60 @@
    },
    {
     "defId": 2,
+    "displayParts": [
+     {
+      "text": "(",
+      "kind": "punctuation"
+     },
+     {
+      "text": "method",
+      "kind": "text"
+     },
+     {
+      "text": ")",
+      "kind": "punctuation"
+     },
+     {
+      "text": " ",
+      "kind": "space"
+     },
+     {
+      "text": "BarImpl",
+      "kind": "className"
+     },
+     {
+      "text": ".",
+      "kind": "punctuation"
+     },
+     {
+      "text": "hello",
+      "kind": "methodName"
+     },
+     {
+      "text": "(",
+      "kind": "punctuation"
+     },
+     {
+      "text": ")",
+      "kind": "punctuation"
+     },
+     {
+      "text": ":",
+      "kind": "punctuation"
+     },
+     {
+      "text": " ",
+      "kind": "space"
+     },
+     {
+      "text": "void",
+      "kind": "keyword"
+     }
+    ],
+    "kind": "method"
+   },
+   {
+    "defId": 3,
     "displayParts": [
      {
       "text": "(",
@@ -210,16 +264,16 @@
 // }
 // 
 // class BaseFooImpl implements BaseFoo {
-//  	 hello() {/**BaseFooImpl*/}    // Should not show up
+//  	 <|[|{| defId: 1 |}hello|]() {/**BaseFooImpl*/}|>
 // }
 // 
 // class BarImpl implements Bar {
-// 	 <|[|{| defId: 1 |}hello|]() {/**BarImpl*/}|>
+// 	 <|[|{| defId: 2 |}hello|]() {/**BarImpl*/}|>
 // 	 goodbye() {}
 // }
 // 
 // class FooAndBarImpl implements Foo, Bar {
-// 	 <|[|{| defId: 2 |}hello|]() {/**FooAndBarImpl*/}|>
+// 	 <|[|{| defId: 3 |}hello|]() {/**FooAndBarImpl*/}|>
 // 	 aloha() {}
 // 	 goodbye() {}
 // }
@@ -308,7 +362,7 @@
       "kind": "space"
      },
      {
-      "text": "BarImpl",
+      "text": "BaseFooImpl",
       "kind": "className"
      },
      {
@@ -344,6 +398,60 @@
    },
    {
     "defId": 2,
+    "displayParts": [
+     {
+      "text": "(",
+      "kind": "punctuation"
+     },
+     {
+      "text": "method",
+      "kind": "text"
+     },
+     {
+      "text": ")",
+      "kind": "punctuation"
+     },
+     {
+      "text": " ",
+      "kind": "space"
+     },
+     {
+      "text": "BarImpl",
+      "kind": "className"
+     },
+     {
+      "text": ".",
+      "kind": "punctuation"
+     },
+     {
+      "text": "hello",
+      "kind": "methodName"
+     },
+     {
+      "text": "(",
+      "kind": "punctuation"
+     },
+     {
+      "text": ")",
+      "kind": "punctuation"
+     },
+     {
+      "text": ":",
+      "kind": "punctuation"
+     },
+     {
+      "text": " ",
+      "kind": "space"
+     },
+     {
+      "text": "void",
+      "kind": "keyword"
+     }
+    ],
+    "kind": "method"
+   },
+   {
+    "defId": 3,
     "displayParts": [
      {
       "text": "(",

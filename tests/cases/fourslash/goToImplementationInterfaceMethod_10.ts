@@ -21,7 +21,7 @@
 //// }
 ////
 //// class BaseFooImpl implements BaseFoo {
-////  	 hello() {/**BaseFooImpl*/}    // Should not show up
+////  	 hello() {/**BaseFooImpl*/}
 //// }
 ////
 //// class BarImpl implements Bar {

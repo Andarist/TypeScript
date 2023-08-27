@@ -5,13 +5,25 @@
 // }
 // 
 // class SuperBar implements Foo {
-//     <|[|hello|]() {}|>
+//     <|[|{| defId: 0 |}hello|]() {}|>
 // }
 // 
 // class Bar extends SuperBar {
-// --- (line: 10) skipped ---
+//     hello2() {}
+// }
+// 
+// class OtherBar extends SuperBar {
+//     <|[|{| defId: 1 |}hello|]() {}|>
+//     hello2() {}
+//     hello3() {}
+// }
+// --- (line: 18) skipped ---
 
-// --- (line: 26) skipped ---
+// --- (line: 22) skipped ---
+// }
+// 
+// class NotBar extends SuperBar {
+//     <|[|{| defId: 2 |}hello|]() {}|>         // Should not be returned because it is not structurally equivalent to Bar
 // }
 // 
 // function whatever(x: Bar) {
@@ -21,6 +33,7 @@
   // === Details ===
   [
    {
+    "defId": 0,
     "displayParts": [
      {
       "text": "(",
@@ -40,6 +53,114 @@
      },
      {
       "text": "SuperBar",
+      "kind": "className"
+     },
+     {
+      "text": ".",
+      "kind": "punctuation"
+     },
+     {
+      "text": "hello",
+      "kind": "methodName"
+     },
+     {
+      "text": "(",
+      "kind": "punctuation"
+     },
+     {
+      "text": ")",
+      "kind": "punctuation"
+     },
+     {
+      "text": ":",
+      "kind": "punctuation"
+     },
+     {
+      "text": " ",
+      "kind": "space"
+     },
+     {
+      "text": "void",
+      "kind": "keyword"
+     }
+    ],
+    "kind": "method"
+   },
+   {
+    "defId": 1,
+    "displayParts": [
+     {
+      "text": "(",
+      "kind": "punctuation"
+     },
+     {
+      "text": "method",
+      "kind": "text"
+     },
+     {
+      "text": ")",
+      "kind": "punctuation"
+     },
+     {
+      "text": " ",
+      "kind": "space"
+     },
+     {
+      "text": "OtherBar",
+      "kind": "className"
+     },
+     {
+      "text": ".",
+      "kind": "punctuation"
+     },
+     {
+      "text": "hello",
+      "kind": "methodName"
+     },
+     {
+      "text": "(",
+      "kind": "punctuation"
+     },
+     {
+      "text": ")",
+      "kind": "punctuation"
+     },
+     {
+      "text": ":",
+      "kind": "punctuation"
+     },
+     {
+      "text": " ",
+      "kind": "space"
+     },
+     {
+      "text": "void",
+      "kind": "keyword"
+     }
+    ],
+    "kind": "method"
+   },
+   {
+    "defId": 2,
+    "displayParts": [
+     {
+      "text": "(",
+      "kind": "punctuation"
+     },
+     {
+      "text": "method",
+      "kind": "text"
+     },
+     {
+      "text": ")",
+      "kind": "punctuation"
+     },
+     {
+      "text": " ",
+      "kind": "space"
+     },
+     {
+      "text": "NotBar",
       "kind": "className"
      },
      {
