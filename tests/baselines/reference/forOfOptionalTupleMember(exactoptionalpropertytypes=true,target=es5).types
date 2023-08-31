@@ -18,12 +18,12 @@ declare const foo: Foo;
 >foo : Foo
 
 for (let item of foo) {
->item : Item
+>item : Item | undefined
 >foo : Foo
 
   item.value;
 >item.value : string
->item : Item
+>item : Item | undefined
 >value : string
 }
 

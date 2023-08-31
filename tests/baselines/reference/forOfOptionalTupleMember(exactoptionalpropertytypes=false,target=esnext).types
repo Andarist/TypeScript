@@ -12,7 +12,7 @@ type Item = {
 };
 
 type Foo = [Item?];
->Foo : [(Item | undefined)?]
+>Foo : [Item?]
 
 declare const foo: Foo;
 >foo : Foo

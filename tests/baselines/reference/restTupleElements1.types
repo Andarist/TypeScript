@@ -2,13 +2,13 @@
 
 === restTupleElements1.ts ===
 type T00 = [string?];
->T00 : [(string | undefined)?]
+>T00 : [string?]
 
 type T01 = [string, string?];
->T01 : [string, (string | undefined)?]
+>T01 : [string, string?]
 
 type T02 = [string?, string];  // Error
->T02 : [(string | undefined)?, string]
+>T02 : [string?, string]
 
 type T03 = [...string[]];
 >T03 : string[]

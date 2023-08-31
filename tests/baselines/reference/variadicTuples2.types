@@ -16,10 +16,10 @@ type V10 = [number, ...string[], ...boolean[]];  // Error
 >V10 : [number, ...string[], ...boolean[]]
 
 type V11 = [number, ...string[], boolean?];  // Error
->V11 : [number, ...string[], (boolean | undefined)?]
+>V11 : [number, ...string[], boolean?]
 
 type V12 = [number, string?, boolean];  // Error
->V12 : [number, (string | undefined)?, boolean]
+>V12 : [number, string?, boolean]
 
 // Normalization
 

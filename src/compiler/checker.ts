@@ -12862,7 +12862,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             indexInfos = source.declaredIndexInfos;
         }
         else {
-            mapper = createTypeMapper(typeParameters, typeArguments);
+            mapper = createTypeMapper(
+                typeParameters,
+                isTupleType(type) ? map(typeArguments, (t, i) => addOptionality(t, /*isProperty*/ true, !!(type.target.elementFlags[i] & ElementFlags.Optional))) : typeArguments
+            );
             members = createInstantiatedSymbolTable(source.declaredProperties, mapper, /*mappingThisOnly*/ typeParameters.length === 1);
             callSignatures = instantiateSignatures(source.declaredCallSignatures, mapper);
             constructSignatures = instantiateSignatures(source.declaredConstructSignatures, mapper);
@@ -15563,7 +15566,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             const typeArguments = !node ? emptyArray :
                 node.kind === SyntaxKind.TypeReference ? concatenate(type.target.outerTypeParameters, getEffectiveTypeArguments(node, type.target.localTypeParameters!)) :
                 node.kind === SyntaxKind.ArrayType ? [getTypeFromTypeNode(node.elementType)] :
-                map(node.elements, element => removeMissingType(getTypeFromTypeNode(element), element.kind === SyntaxKind.OptionalType));
+                map(node.elements, element => getTypeFromTypeNode(element.kind === SyntaxKind.OptionalType ? (element as OptionalTypeNode).type : element));
             if (popTypeResolution()) {
                 type.resolvedTypeArguments = type.mapper ? instantiateTypes(typeArguments, type.mapper) : typeArguments;
             }
@@ -22723,11 +22726,13 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                             }
                         }
 
+                        // TODO: recheck if `addOptionality` shouldn't get called here as well
                         const sourceType = removeMissingType(sourceTypeArguments[sourcePosition], !!(sourceFlags & targetFlags & ElementFlags.Optional));
                         const targetType = targetTypeArguments[targetPosition];
+                        const isTargetOptional = !!(targetFlags & ElementFlags.Optional);
 
                         const targetCheckType = sourceFlags & ElementFlags.Variadic && targetFlags & ElementFlags.Rest ? createArrayType(targetType) :
-                            removeMissingType(targetType, !!(targetFlags & ElementFlags.Optional));
+                            removeMissingType(addOptionality(targetType, /*isProperty*/ true, isTargetOptional), isTargetOptional);
                         const related = isRelatedTo(sourceType, targetCheckType, RecursionFlags.Both, reportErrors, /*headMessage*/ undefined, intersectionState);
                         if (!related) {
                             if (reportErrors && (targetArity > 1 || sourceArity > 1)) {
