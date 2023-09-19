@@ -29841,7 +29841,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 // in the type. It will just be "__computed", which does not appear in any
                 // SymbolTable.
                 const symbol = getSymbolOfDeclaration(element);
-                return getTypeOfPropertyOfContextualType(type, symbol.escapedName, getSymbolLinks(symbol).nameType);
+                const t = getTypeOfPropertyOfContextualType(type, symbol.escapedName, getSymbolLinks(symbol).nameType);
+                return t ? getApparentType(t) : undefined;
             }
             if (hasDynamicName(element)) {
                 const name = getNameOfDeclaration(element);
