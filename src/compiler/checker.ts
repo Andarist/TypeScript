@@ -29789,14 +29789,15 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         return !!(getCheckFlags(symbol) & CheckFlags.Mapped && !(symbol as MappedSymbol).links.type && findResolutionCycleStartIndex(symbol, TypeSystemPropertyName.Type) >= 0);
     }
 
-    function getTypeOfPropertyOfContextualType(type: Type, name: __String, nameType?: Type) {
+    function getTypeOfPropertyOfContextualType(type: Type, name: __String, nameType?: Type, needApparentType?: boolean) {
         return mapType(type, t => {
             if (isGenericMappedType(t) && !t.declaration.nameType) {
                 const constraint = getConstraintTypeFromMappedType(t);
                 const constraintOfConstraint = getBaseConstraintOfType(constraint) || constraint;
                 const propertyNameType = nameType || getStringLiteralType(unescapeLeadingUnderscores(name));
                 if (isTypeAssignableTo(propertyNameType, constraintOfConstraint)) {
-                    return substituteIndexedMappedType(t, propertyNameType);
+                    const substituted = substituteIndexedMappedType(t, propertyNameType);
+                    return needApparentType ? getApparentType(substituted) : substituted;
                 }
             }
             else if (t.flags & TypeFlags.StructuredType) {
@@ -29841,8 +29842,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 // in the type. It will just be "__computed", which does not appear in any
                 // SymbolTable.
                 const symbol = getSymbolOfDeclaration(element);
-                const t = getTypeOfPropertyOfContextualType(type, symbol.escapedName, getSymbolLinks(symbol).nameType);
-                return t ? getApparentType(t) : undefined;
+                return getTypeOfPropertyOfContextualType(type, symbol.escapedName, getSymbolLinks(symbol).nameType, /*needApparentType*/ true);
             }
             if (hasDynamicName(element)) {
                 const name = getNameOfDeclaration(element);
