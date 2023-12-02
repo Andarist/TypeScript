@@ -18324,7 +18324,13 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             if (getMappedTypeNameTypeKind(objectType) !== MappedTypeNameTypeKind.Remapping) {
                 const subtituted = mapType(substituteIndexedMappedType(objectType, type.indexType), t => getSimplifiedType(t, writing, forConstraint));
                 if (forConstraint) {
-                    return type[cache] = getHomomorphicTypeVariable(objectType) ? getUnionType([subtituted, undefinedType]) : subtituted;
+                    if (getHomomorphicTypeVariable(objectType)) {
+                        const modifiers = getMappedTypeModifiers(objectType);
+                        if (modifiers & MappedTypeModifiers.IncludeOptional || !(modifiers & MappedTypeModifiers.ExcludeOptional)) {
+                            return type[cache] = getUnionType([subtituted, undefinedType])
+                        }
+                    }
+                    return type[cache] =  subtituted;
                 }
                 return type[cache] = subtituted;
             }
