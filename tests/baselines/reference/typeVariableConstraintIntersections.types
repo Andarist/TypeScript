@@ -256,3 +256,46 @@ function handleOption<K extends Options['kind']>(option: Options & { kind: K }):
 
 };
 
+// https://github.com/microsoft/TypeScript/issues/56644
+interface CommonWrapper<P = {}> {
+  invoke<
+>invoke : <K extends NonNullable<{ [K_1 in keyof P]: P[K_1] extends ((...arg: any[]) => void) | undefined ? K_1 : never; }[keyof P]>>(invokePropName: K) => P[K]
+
+    K extends NonNullable<
+      {
+        [K in keyof P]: P[K] extends ((...arg: any[]) => void) | undefined
+>arg : any[]
+
+          ? K
+          : never;
+      }[keyof P]
+    >,
+  >(
+    invokePropName: K,
+>invokePropName : K
+
+  ): P[K];
+}
+
+interface OptionalFunctionProp {
+  functionProp?(): void;
+>functionProp : (() => void) | undefined
+}
+
+declare const wrapper: CommonWrapper<OptionalFunctionProp>;
+>wrapper : CommonWrapper<OptionalFunctionProp>
+
+wrapper.invoke("functionProp");
+>wrapper.invoke("functionProp") : (() => void) | undefined
+>wrapper.invoke : <K extends "functionProp">(invokePropName: K) => OptionalFunctionProp[K]
+>wrapper : CommonWrapper<OptionalFunctionProp>
+>invoke : <K extends "functionProp">(invokePropName: K) => OptionalFunctionProp[K]
+>"functionProp" : "functionProp"
+
+wrapper.invoke(undefined); // error
+>wrapper.invoke(undefined) : (() => void) | undefined
+>wrapper.invoke : <K extends "functionProp">(invokePropName: K) => OptionalFunctionProp[K]
+>wrapper : CommonWrapper<OptionalFunctionProp>
+>invoke : <K extends "functionProp">(invokePropName: K) => OptionalFunctionProp[K]
+>undefined : undefined
+

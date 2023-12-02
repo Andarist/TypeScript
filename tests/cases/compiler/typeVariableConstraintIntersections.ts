@@ -93,3 +93,27 @@ function handleOption<K extends Options['kind']>(option: Options & { kind: K }):
   const handler = optionHandlers[kind];
   return handler(option);
 };
+
+// https://github.com/microsoft/TypeScript/issues/56644
+interface CommonWrapper<P = {}> {
+  invoke<
+    K extends NonNullable<
+      {
+        [K in keyof P]: P[K] extends ((...arg: any[]) => void) | undefined
+          ? K
+          : never;
+      }[keyof P]
+    >,
+  >(
+    invokePropName: K,
+  ): P[K];
+}
+
+interface OptionalFunctionProp {
+  functionProp?(): void;
+}
+
+declare const wrapper: CommonWrapper<OptionalFunctionProp>;
+
+wrapper.invoke("functionProp");
+wrapper.invoke(undefined); // error

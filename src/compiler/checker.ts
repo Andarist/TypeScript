@@ -14124,7 +14124,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function getSimplifiedTypeOrConstraint(type: Type) {
-        const simplified = getSimplifiedType(type, /*writing*/ false);
+        const simplified = getSimplifiedType(type, /*writing*/ false, /*forConstraint*/ false);
         return simplified !== type ? simplified : getConstraintOfType(type);
     }
 
@@ -14178,7 +14178,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // a union - once negated types exist and are applied to the conditional false branch, this "constraint"
         // likely doesn't need to exist.
         if (type.root.isDistributive && type.restrictiveInstantiation !== type) {
-            const simplified = getSimplifiedType(type.checkType, /*writing*/ false);
+            const simplified = getSimplifiedType(type.checkType, /*writing*/ false, /*forConstraint*/ false);
             const constraint = simplified === type.checkType ? getConstraintOfType(simplified) : simplified;
             if (constraint && constraint !== type.checkType) {
                 const instantiated = getConditionalTypeInstantiation(type, prependTypeMapping(type.root.checkType, constraint, type.mapper), /*forConstraint*/ true);
@@ -14287,7 +14287,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 const identity = getRecursionIdentity(t);
                 if (stack.length < 10 || stack.length < 50 && !contains(stack, identity)) {
                     stack.push(identity);
-                    result = computeBaseConstraint(getSimplifiedType(t, /*writing*/ false));
+                    result = computeBaseConstraint(getSimplifiedType(t, /*writing*/ false, /*forConstraint*/ true));
                     stack.pop();
                 }
                 if (!popTypeResolution()) {
@@ -18251,27 +18251,27 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             (type.flags & (TypeFlags.InstantiableNonPrimitive | TypeFlags.Index | TypeFlags.TemplateLiteral | TypeFlags.StringMapping) && !isPatternLiteralType(type) ? ObjectFlags.IsGenericIndexType : 0);
     }
 
-    function getSimplifiedType(type: Type, writing: boolean): Type {
-        return type.flags & TypeFlags.IndexedAccess ? getSimplifiedIndexedAccessType(type as IndexedAccessType, writing) :
-            type.flags & TypeFlags.Conditional ? getSimplifiedConditionalType(type as ConditionalType, writing) :
+    function getSimplifiedType(type: Type, writing: boolean, forConstraint: boolean): Type {
+        return type.flags & TypeFlags.IndexedAccess ? getSimplifiedIndexedAccessType(type as IndexedAccessType, writing, forConstraint) :
+            type.flags & TypeFlags.Conditional ? getSimplifiedConditionalType(type as ConditionalType, writing, forConstraint) :
             type;
     }
 
-    function distributeIndexOverObjectType(objectType: Type, indexType: Type, writing: boolean) {
+    function distributeIndexOverObjectType(objectType: Type, indexType: Type, writing: boolean, forConstraint: boolean) {
         // (T | U)[K] -> T[K] | U[K] (reading)
         // (T | U)[K] -> T[K] & U[K] (writing)
         // (T & U)[K] -> T[K] & U[K]
         if (objectType.flags & TypeFlags.Union || objectType.flags & TypeFlags.Intersection && !shouldDeferIndexType(objectType)) {
-            const types = map((objectType as UnionOrIntersectionType).types, t => getSimplifiedType(getIndexedAccessType(t, indexType), writing));
+            const types = map((objectType as UnionOrIntersectionType).types, t => getSimplifiedType(getIndexedAccessType(t, indexType), writing, forConstraint));
             return objectType.flags & TypeFlags.Intersection || writing ? getIntersectionType(types) : getUnionType(types);
         }
     }
 
-    function distributeObjectOverIndexType(objectType: Type, indexType: Type, writing: boolean) {
+    function distributeObjectOverIndexType(objectType: Type, indexType: Type, writing: boolean, forConstraint: boolean) {
         // T[A | B] -> T[A] | T[B] (reading)
         // T[A | B] -> T[A] & T[B] (writing)
         if (indexType.flags & TypeFlags.Union) {
-            const types = map((indexType as UnionType).types, t => getSimplifiedType(getIndexedAccessType(objectType, t), writing));
+            const types = map((indexType as UnionType).types, t => getSimplifiedType(getIndexedAccessType(objectType, t), writing, forConstraint));
             return writing ? getIntersectionType(types) : getUnionType(types);
         }
     }
@@ -18279,19 +18279,19 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     // Transform an indexed access to a simpler form, if possible. Return the simpler form, or return
     // the type itself if no transformation is possible. The writing flag indicates that the type is
     // the target of an assignment.
-    function getSimplifiedIndexedAccessType(type: IndexedAccessType, writing: boolean): Type {
-        const cache = writing ? "simplifiedForWriting" : "simplifiedForReading";
+    function getSimplifiedIndexedAccessType(type: IndexedAccessType, writing: boolean, forConstraint: boolean): Type {
+        const cache = writing ? "simplifiedForWriting" : forConstraint ? "simplifiedForConstraint" : "simplifiedForReading";
         if (type[cache]) {
             return type[cache] === circularConstraintType ? type : type[cache]!;
         }
         type[cache] = circularConstraintType;
         // We recursively simplify the object type as it may in turn be an indexed access type. For example, with
         // '{ [P in T]: { [Q in U]: number } }[T][U]' we want to first simplify the inner indexed access type.
-        const objectType = getSimplifiedType(type.objectType, writing);
-        const indexType = getSimplifiedType(type.indexType, writing);
+        const objectType = getSimplifiedType(type.objectType, writing, forConstraint);
+        const indexType = getSimplifiedType(type.indexType, writing, forConstraint);
         // T[A | B] -> T[A] | T[B] (reading)
         // T[A | B] -> T[A] & T[B] (writing)
-        const distributedOverIndex = distributeObjectOverIndexType(objectType, indexType, writing);
+        const distributedOverIndex = distributeObjectOverIndexType(objectType, indexType, writing, forConstraint);
         if (distributedOverIndex) {
             return type[cache] = distributedOverIndex;
         }
@@ -18300,7 +18300,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             // (T | U)[K] -> T[K] | U[K] (reading)
             // (T | U)[K] -> T[K] & U[K] (writing)
             // (T & U)[K] -> T[K] & U[K]
-            const distributedOverObject = distributeIndexOverObjectType(objectType, indexType, writing);
+            const distributedOverObject = distributeIndexOverObjectType(objectType, indexType, writing, forConstraint);
             if (distributedOverObject) {
                 return type[cache] = distributedOverObject;
             }
@@ -18322,13 +18322,17 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // For example, for an index access { [P in K]: Box<T[P]> }[X], we construct the type Box<T[X]>.
         if (isGenericMappedType(objectType)) {
             if (getMappedTypeNameTypeKind(objectType) !== MappedTypeNameTypeKind.Remapping) {
-                return type[cache] = mapType(substituteIndexedMappedType(objectType, type.indexType), t => getSimplifiedType(t, writing));
+                const subtituted = mapType(substituteIndexedMappedType(objectType, type.indexType), t => getSimplifiedType(t, writing, forConstraint));
+                if (forConstraint) {
+                    return type[cache] = getHomomorphicTypeVariable(objectType) ? getUnionType([subtituted, undefinedType]) : subtituted;
+                }
+                return type[cache] = subtituted;
             }
         }
         return type[cache] = type;
     }
 
-    function getSimplifiedConditionalType(type: ConditionalType, writing: boolean) {
+    function getSimplifiedConditionalType(type: ConditionalType, writing: boolean, forConstraint: boolean) {
         const checkType = type.checkType;
         const extendsType = type.extendsType;
         const trueType = getTrueTypeFromConditionalType(type);
@@ -18336,7 +18340,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // Simplifications for types of the form `T extends U ? T : never` and `T extends U ? never : T`.
         if (falseType.flags & TypeFlags.Never && getActualTypeVariable(trueType) === getActualTypeVariable(checkType)) {
             if (checkType.flags & TypeFlags.Any || isTypeAssignableTo(getRestrictiveInstantiation(checkType), getRestrictiveInstantiation(extendsType))) { // Always true
-                return getSimplifiedType(trueType, writing);
+                return getSimplifiedType(trueType, writing, forConstraint);
             }
             else if (isIntersectionEmpty(checkType, extendsType)) { // Always false
                 return neverType;
@@ -18347,7 +18351,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 return neverType;
             }
             else if (checkType.flags & TypeFlags.Any || isIntersectionEmpty(checkType, extendsType)) { // Always false
-                return getSimplifiedType(falseType, writing);
+                return getSimplifiedType(falseType, writing, forConstraint);
             }
         }
         return type;
@@ -20985,7 +20989,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 getObjectFlags(type) & ObjectFlags.Reference ? (type as TypeReference).node ? createTypeReference((type as TypeReference).target, getTypeArguments(type as TypeReference)) : getSingleBaseForNonAugmentingSubtype(type) || type :
                 type.flags & TypeFlags.UnionOrIntersection ? getNormalizedUnionOrIntersectionType(type as UnionOrIntersectionType, writing) :
                 type.flags & TypeFlags.Substitution ? writing ? (type as SubstitutionType).baseType : getSubstitutionIntersection(type as SubstitutionType) :
-                type.flags & TypeFlags.Simplifiable ? getSimplifiedType(type, writing) :
+                type.flags & TypeFlags.Simplifiable ? getSimplifiedType(type, writing, /*forConstraint*/ false) :
                 type;
             if (t === type) return t;
             type = t;
@@ -21008,7 +21012,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
     function getNormalizedTupleType(type: TupleTypeReference, writing: boolean): Type {
         const elements = getElementTypes(type);
-        const normalizedElements = sameMap(elements, t => t.flags & TypeFlags.Simplifiable ? getSimplifiedType(t, writing) : t);
+        const normalizedElements = sameMap(elements, t => t.flags & TypeFlags.Simplifiable ? getSimplifiedType(t, writing, /*forConstraint*/ false) : t);
         return elements !== normalizedElements ? createNormalizedTupleType(type.target, normalizedElements) : type;
     }
 
@@ -25421,16 +25425,16 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     return;
                 }
                 // Infer to the simplified version of an indexed access, if possible, to (hopefully) expose more bare type parameters to the inference engine
-                const simplified = getSimplifiedType(target, /*writing*/ false);
+                const simplified = getSimplifiedType(target, /*writing*/ false, /*forConstraint*/ false);
                 if (simplified !== target) {
                     inferFromTypes(source, simplified);
                 }
                 else if (target.flags & TypeFlags.IndexedAccess) {
-                    const indexType = getSimplifiedType((target as IndexedAccessType).indexType, /*writing*/ false);
+                    const indexType = getSimplifiedType((target as IndexedAccessType).indexType, /*writing*/ false, /*forConstraint*/ false);
                     // Generally simplifications of instantiable indexes are avoided to keep relationship checking correct, however if our target is an access, we can consider
                     // that key of that access to be "instantiated", since we're looking to find the infernce goal in any way we can.
                     if (indexType.flags & TypeFlags.Instantiable) {
-                        const simplified = distributeIndexOverObjectType(getSimplifiedType((target as IndexedAccessType).objectType, /*writing*/ false), indexType, /*writing*/ false);
+                        const simplified = distributeIndexOverObjectType(getSimplifiedType((target as IndexedAccessType).objectType, /*writing*/ false, /*forConstraint*/ false), indexType, /*writing*/ false, /*forConstraint*/ false);
                         if (simplified && simplified !== target) {
                             inferFromTypes(source, simplified);
                         }

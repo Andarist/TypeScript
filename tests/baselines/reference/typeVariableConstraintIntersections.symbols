@@ -333,3 +333,63 @@ function handleOption<K extends Options['kind']>(option: Options & { kind: K }):
 
 };
 
+// https://github.com/microsoft/TypeScript/issues/56644
+interface CommonWrapper<P = {}> {
+>CommonWrapper : Symbol(CommonWrapper, Decl(typeVariableConstraintIntersections.ts, 91, 2))
+>P : Symbol(P, Decl(typeVariableConstraintIntersections.ts, 94, 24))
+
+  invoke<
+>invoke : Symbol(CommonWrapper.invoke, Decl(typeVariableConstraintIntersections.ts, 94, 33))
+
+    K extends NonNullable<
+>K : Symbol(K, Decl(typeVariableConstraintIntersections.ts, 95, 9))
+>NonNullable : Symbol(NonNullable, Decl(lib.es5.d.ts, --, --))
+      {
+        [K in keyof P]: P[K] extends ((...arg: any[]) => void) | undefined
+>K : Symbol(K, Decl(typeVariableConstraintIntersections.ts, 98, 9))
+>P : Symbol(P, Decl(typeVariableConstraintIntersections.ts, 94, 24))
+>P : Symbol(P, Decl(typeVariableConstraintIntersections.ts, 94, 24))
+>K : Symbol(K, Decl(typeVariableConstraintIntersections.ts, 98, 9))
+>arg : Symbol(arg, Decl(typeVariableConstraintIntersections.ts, 98, 39))
+
+          ? K
+>K : Symbol(K, Decl(typeVariableConstraintIntersections.ts, 98, 9))
+
+          : never;
+      }[keyof P]
+>P : Symbol(P, Decl(typeVariableConstraintIntersections.ts, 94, 24))
+
+    >,
+  >(
+    invokePropName: K,
+>invokePropName : Symbol(invokePropName, Decl(typeVariableConstraintIntersections.ts, 103, 4))
+>K : Symbol(K, Decl(typeVariableConstraintIntersections.ts, 95, 9))
+
+  ): P[K];
+>P : Symbol(P, Decl(typeVariableConstraintIntersections.ts, 94, 24))
+>K : Symbol(K, Decl(typeVariableConstraintIntersections.ts, 95, 9))
+}
+
+interface OptionalFunctionProp {
+>OptionalFunctionProp : Symbol(OptionalFunctionProp, Decl(typeVariableConstraintIntersections.ts, 106, 1))
+
+  functionProp?(): void;
+>functionProp : Symbol(OptionalFunctionProp.functionProp, Decl(typeVariableConstraintIntersections.ts, 108, 32))
+}
+
+declare const wrapper: CommonWrapper<OptionalFunctionProp>;
+>wrapper : Symbol(wrapper, Decl(typeVariableConstraintIntersections.ts, 112, 13))
+>CommonWrapper : Symbol(CommonWrapper, Decl(typeVariableConstraintIntersections.ts, 91, 2))
+>OptionalFunctionProp : Symbol(OptionalFunctionProp, Decl(typeVariableConstraintIntersections.ts, 106, 1))
+
+wrapper.invoke("functionProp");
+>wrapper.invoke : Symbol(CommonWrapper.invoke, Decl(typeVariableConstraintIntersections.ts, 94, 33))
+>wrapper : Symbol(wrapper, Decl(typeVariableConstraintIntersections.ts, 112, 13))
+>invoke : Symbol(CommonWrapper.invoke, Decl(typeVariableConstraintIntersections.ts, 94, 33))
+
+wrapper.invoke(undefined); // error
+>wrapper.invoke : Symbol(CommonWrapper.invoke, Decl(typeVariableConstraintIntersections.ts, 94, 33))
+>wrapper : Symbol(wrapper, Decl(typeVariableConstraintIntersections.ts, 112, 13))
+>invoke : Symbol(CommonWrapper.invoke, Decl(typeVariableConstraintIntersections.ts, 94, 33))
+>undefined : Symbol(undefined)
+
