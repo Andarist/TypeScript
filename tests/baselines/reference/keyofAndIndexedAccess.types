@@ -1839,8 +1839,8 @@ class B extends A<{ x: number}> {
 class Form<T> {
 >Form : Form<T>
 
-    private childFormFactories: {[K in keyof T]: (v: T[K]) => Form<T[K]>}
->childFormFactories : { [K in keyof T]: (v: T[K]) => Form<T[K]>; }
+    private childFormFactories: {[K in keyof T]-?: (v: T[K]) => Form<T[K]>}
+>childFormFactories : { [K in keyof T]-?: (v: T[K]) => Form<T[K]>; }
 >v : T[K]
 
     public set<K extends keyof T>(prop: K, value: T[K]) {
@@ -1850,10 +1850,10 @@ class Form<T> {
 
         this.childFormFactories[prop](value)
 >this.childFormFactories[prop](value) : Form<T[K]>
->this.childFormFactories[prop] : ((v: T[K]) => Form<T[K]>) | undefined
->this.childFormFactories : { [K_1 in keyof T]: (v: T[K_1]) => Form<T[K_1]>; }
+>this.childFormFactories[prop] : { [K_1 in keyof T]-?: (v: T[K_1]) => Form<T[K_1]>; }[K]
+>this.childFormFactories : { [K_1 in keyof T]-?: (v: T[K_1]) => Form<T[K_1]>; }
 >this : this
->childFormFactories : { [K_1 in keyof T]: (v: T[K_1]) => Form<T[K_1]>; }
+>childFormFactories : { [K_1 in keyof T]-?: (v: T[K_1]) => Form<T[K_1]>; }
 >prop : K
 >value : T[K]
     }

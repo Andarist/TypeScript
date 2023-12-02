@@ -4,7 +4,7 @@
 type ExtendedService<T> = {
 >ExtendedService : ExtendedService<T>
 
-    [K in keyof T]: T[K] & {
+    [K in keyof T]-?: T[K] & {
         __$daemonMode?: string;
 >__$daemonMode : string | undefined
 
@@ -17,7 +17,7 @@ type ExtendedService<T> = {
 type Service<T> = {
 >Service : Service<T>
 
-    [K in keyof T]: T[K] & {id?: string};
+    [K in keyof T]-?: T[K] & {id?: string};
 >id : string | undefined
 
 };
@@ -51,10 +51,10 @@ export const createService = <T>(
 >key : string
 
         const {__$daemonMode, __$action, id} = method;
->__$daemonMode : any
->__$action : any
->id : any
->method : ({ __$daemonMode?: string | undefined; __$action?: string | undefined; } & { id?: string | undefined; }) | undefined
+>__$daemonMode : string | undefined
+>__$action : string | undefined
+>id : string | undefined
+>method : (ExtendedService<T> & Service<T>)[keyof T]
 
     })
 }

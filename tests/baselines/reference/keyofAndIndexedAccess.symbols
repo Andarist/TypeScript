@@ -1886,11 +1886,11 @@ class Form<T> {
 >Form : Symbol(Form, Decl(keyofAndIndexedAccess.ts, 522, 1))
 >T : Symbol(T, Decl(keyofAndIndexedAccess.ts, 526, 11))
 
-    private childFormFactories: {[K in keyof T]: (v: T[K]) => Form<T[K]>}
+    private childFormFactories: {[K in keyof T]-?: (v: T[K]) => Form<T[K]>}
 >childFormFactories : Symbol(Form.childFormFactories, Decl(keyofAndIndexedAccess.ts, 526, 15))
 >K : Symbol(K, Decl(keyofAndIndexedAccess.ts, 527, 34))
 >T : Symbol(T, Decl(keyofAndIndexedAccess.ts, 526, 11))
->v : Symbol(v, Decl(keyofAndIndexedAccess.ts, 527, 50))
+>v : Symbol(v, Decl(keyofAndIndexedAccess.ts, 527, 52))
 >T : Symbol(T, Decl(keyofAndIndexedAccess.ts, 526, 11))
 >K : Symbol(K, Decl(keyofAndIndexedAccess.ts, 527, 34))
 >Form : Symbol(Form, Decl(keyofAndIndexedAccess.ts, 522, 1))
@@ -1898,7 +1898,7 @@ class Form<T> {
 >K : Symbol(K, Decl(keyofAndIndexedAccess.ts, 527, 34))
 
     public set<K extends keyof T>(prop: K, value: T[K]) {
->set : Symbol(Form.set, Decl(keyofAndIndexedAccess.ts, 527, 73))
+>set : Symbol(Form.set, Decl(keyofAndIndexedAccess.ts, 527, 75))
 >K : Symbol(K, Decl(keyofAndIndexedAccess.ts, 529, 15))
 >T : Symbol(T, Decl(keyofAndIndexedAccess.ts, 526, 11))
 >prop : Symbol(prop, Decl(keyofAndIndexedAccess.ts, 529, 34))
