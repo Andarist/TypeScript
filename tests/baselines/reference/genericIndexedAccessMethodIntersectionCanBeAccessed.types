@@ -51,10 +51,10 @@ export const createService = <T>(
 >key : string
 
         const {__$daemonMode, __$action, id} = method;
->__$daemonMode : string | undefined
->__$action : string | undefined
->id : string | undefined
->method : (ExtendedService<T> & Service<T>)[keyof T]
+>__$daemonMode : any
+>__$action : any
+>id : any
+>method : ({ __$daemonMode?: string | undefined; __$action?: string | undefined; } & { id?: string | undefined; }) | undefined
 
     })
 }

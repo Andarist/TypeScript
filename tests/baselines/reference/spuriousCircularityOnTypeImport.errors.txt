@@ -1,0 +1,65 @@
+index.ts(6,68): error TS2344: Type 'FuncMap' does not satisfy the constraint 'Record<string, (...params: unknown[]) => unknown>'.
+  Type 'SelectorMap<FuncMap>' is not assignable to type 'Record<string, (...params: unknown[]) => unknown>'.
+    Type 'FuncMap[key]' is not assignable to type '(...params: unknown[]) => unknown'.
+      Type 'FuncMap[keyof FuncMap]' is not assignable to type '(...params: unknown[]) => unknown'.
+        Type 'FuncMap[string] | FuncMap[number] | FuncMap[symbol]' is not assignable to type '(...params: unknown[]) => unknown'.
+          Type 'FuncMap[string]' is not assignable to type '(...params: unknown[]) => unknown'.
+index.ts(6,143): error TS2344: Type 'FuncMap[P]' does not satisfy the constraint '(...args: any) => any'.
+  Type 'FuncMap[keyof FuncMap]' is not assignable to type '(...args: any) => any'.
+    Type 'FuncMap[string] | FuncMap[number] | FuncMap[symbol]' is not assignable to type '(...args: any) => any'.
+      Type 'FuncMap[string]' is not assignable to type '(...args: any) => any'.
+index.ts(10,50): error TS2344: Type 'FuncMap' does not satisfy the constraint 'Record<string, (...params: unknown[]) => unknown>'.
+  Type 'SelectorMap<FuncMap>' is not assignable to type 'Record<string, (...params: unknown[]) => unknown>'.
+    Type 'FuncMap[key]' is not assignable to type '(...params: unknown[]) => unknown'.
+      Type 'FuncMap[keyof FuncMap]' is not assignable to type '(...params: unknown[]) => unknown'.
+        Type 'FuncMap[string] | FuncMap[number] | FuncMap[symbol]' is not assignable to type '(...params: unknown[]) => unknown'.
+          Type 'FuncMap[string]' is not assignable to type '(...params: unknown[]) => unknown'.
+index.ts(10,125): error TS2344: Type 'FuncMap[P]' does not satisfy the constraint '(...args: any) => any'.
+  Type 'FuncMap[keyof FuncMap]' is not assignable to type '(...args: any) => any'.
+    Type 'FuncMap[string] | FuncMap[number] | FuncMap[symbol]' is not assignable to type '(...args: any) => any'.
+      Type 'FuncMap[string]' is not assignable to type '(...args: any) => any'.
+
+
+==== types.ts (0 errors) ====
+    export type SelectorMap<T extends Record<string, (...params: unknown[]) => unknown>> = {
+        [key in keyof T]: T[key];
+    };
+    
+==== index.ts (4 errors) ====
+    export type SelectorMap<T extends Record<string, (...params: unknown[]) => unknown>> = {
+        [key in keyof T]: T[key];
+    };
+    
+    export declare const value2: {
+        sliceSelectors: <FuncMap extends import('./types').SelectorMap<FuncMap>>(selectorsBySlice: FuncMap) => { [P in keyof FuncMap]: Parameters<FuncMap[P]> };
+                                                                       ~~~~~~~
+!!! error TS2344: Type 'FuncMap' does not satisfy the constraint 'Record<string, (...params: unknown[]) => unknown>'.
+!!! error TS2344:   Type 'SelectorMap<FuncMap>' is not assignable to type 'Record<string, (...params: unknown[]) => unknown>'.
+!!! error TS2344:     Type 'FuncMap[key]' is not assignable to type '(...params: unknown[]) => unknown'.
+!!! error TS2344:       Type 'FuncMap[keyof FuncMap]' is not assignable to type '(...params: unknown[]) => unknown'.
+!!! error TS2344:         Type 'FuncMap[string] | FuncMap[number] | FuncMap[symbol]' is not assignable to type '(...params: unknown[]) => unknown'.
+!!! error TS2344:           Type 'FuncMap[string]' is not assignable to type '(...params: unknown[]) => unknown'.
+                                                                                                                                                  ~~~~~~~~~~
+!!! error TS2344: Type 'FuncMap[P]' does not satisfy the constraint '(...args: any) => any'.
+!!! error TS2344:   Type 'FuncMap[keyof FuncMap]' is not assignable to type '(...args: any) => any'.
+!!! error TS2344:     Type 'FuncMap[string] | FuncMap[number] | FuncMap[symbol]' is not assignable to type '(...args: any) => any'.
+!!! error TS2344:       Type 'FuncMap[string]' is not assignable to type '(...args: any) => any'.
+    };
+    
+    export declare const value3: {
+        sliceSelectors: <FuncMap extends SelectorMap<FuncMap>>(selectorsBySlice: FuncMap) => { [P in keyof FuncMap]: Parameters<FuncMap[P]> };
+                                                     ~~~~~~~
+!!! error TS2344: Type 'FuncMap' does not satisfy the constraint 'Record<string, (...params: unknown[]) => unknown>'.
+!!! error TS2344:   Type 'SelectorMap<FuncMap>' is not assignable to type 'Record<string, (...params: unknown[]) => unknown>'.
+!!! error TS2344:     Type 'FuncMap[key]' is not assignable to type '(...params: unknown[]) => unknown'.
+!!! error TS2344:       Type 'FuncMap[keyof FuncMap]' is not assignable to type '(...params: unknown[]) => unknown'.
+!!! error TS2344:         Type 'FuncMap[string] | FuncMap[number] | FuncMap[symbol]' is not assignable to type '(...params: unknown[]) => unknown'.
+!!! error TS2344:           Type 'FuncMap[string]' is not assignable to type '(...params: unknown[]) => unknown'.
+                                                                                                                                ~~~~~~~~~~
+!!! error TS2344: Type 'FuncMap[P]' does not satisfy the constraint '(...args: any) => any'.
+!!! error TS2344:   Type 'FuncMap[keyof FuncMap]' is not assignable to type '(...args: any) => any'.
+!!! error TS2344:     Type 'FuncMap[string] | FuncMap[number] | FuncMap[symbol]' is not assignable to type '(...args: any) => any'.
+!!! error TS2344:       Type 'FuncMap[string]' is not assignable to type '(...args: any) => any'.
+    };
+    
+    

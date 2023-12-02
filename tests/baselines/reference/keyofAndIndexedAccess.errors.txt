@@ -11,9 +11,10 @@ keyofAndIndexedAccess.ts(317,5): error TS2322: Type 'T[keyof T]' is not assignab
     Type 'T[string]' is not assignable to type '{}'.
 keyofAndIndexedAccess.ts(318,5): error TS2322: Type 'T[K]' is not assignable to type '{}'.
   Type 'T[keyof T]' is not assignable to type '{}'.
+keyofAndIndexedAccess.ts(531,9): error TS2722: Cannot invoke an object which is possibly 'undefined'.
 
 
-==== keyofAndIndexedAccess.ts (5 errors) ====
+==== keyofAndIndexedAccess.ts (6 errors) ====
     class Shape {
         name: string;
         width: number;
@@ -564,6 +565,8 @@ keyofAndIndexedAccess.ts(318,5): error TS2322: Type 'T[K]' is not assignable to 
     
         public set<K extends keyof T>(prop: K, value: T[K]) {
             this.childFormFactories[prop](value)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2722: Cannot invoke an object which is possibly 'undefined'.
         }
     }
     

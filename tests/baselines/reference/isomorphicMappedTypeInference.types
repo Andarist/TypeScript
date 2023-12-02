@@ -82,7 +82,7 @@ function unboxify<T extends object>(obj: Boxified<T>): T {
 >k : Extract<keyof T, string>
 >unbox(obj[k]) : T[Extract<keyof T, string>]
 >unbox : <T_1>(x: Box<T_1>) => T_1
->obj[k] : Boxified<T>[Extract<keyof T, string>]
+>obj[k] : Box<T[Extract<keyof T, string>]> | undefined
 >obj : Boxified<T>
 >k : Extract<keyof T, string>
     }
@@ -102,7 +102,7 @@ function assignBoxified<T>(obj: Boxified<T>, values: T) {
         obj[k].value = values[k];
 >obj[k].value = values[k] : T[Extract<keyof T, string>]
 >obj[k].value : T[Extract<keyof T, string>]
->obj[k] : Boxified<T>[Extract<keyof T, string>]
+>obj[k] : Box<T[Extract<keyof T, string>]> | undefined
 >obj : Boxified<T>
 >k : Extract<keyof T, string>
 >value : T[Extract<keyof T, string>]

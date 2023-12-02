@@ -113,7 +113,7 @@ function validate<T extends object>(obj: T, bounds: NumericBoundsOf<T>) {
             const { min, max } = boundsForKey;
 >min : number
 >max : number
->boundsForKey : NumericBoundsOf<T>[keyof NumericBoundsOf<T>]
+>boundsForKey : Bounds
 
             if (min > val || max < val) return false;
 >min > val || max < val : boolean
