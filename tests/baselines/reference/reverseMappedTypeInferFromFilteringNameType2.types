@@ -447,3 +447,101 @@ const config2 = createXMachine({
 
 });
 
+
+type Bombolo<T> = {
+>Bombolo : Bombolo<T>
+
+    [
+      K in keyof T as K extends 'enabled'
+      ? K
+      : 'enabled' extends keyof T
+        ? T["enabled"] extends true
+>true : true
+
+          ? K
+          : never
+        : never
+    ]: T[K]
+}
+
+
+declare function bombolo<T>(a: Bombolo<T>): T
+>bombolo : <T>(a: Bombolo<T>) => T
+>a : Bombolo<T>
+
+bombolo({ a: "a", b: "b", c: "c", enabled: false as const})
+>bombolo({ a: "a", b: "b", c: "c", enabled: false as const}) : { enabled: false; }
+>bombolo : <T>(a: Bombolo<T>) => T
+>{ a: "a", b: "b", c: "c", enabled: false as const} : { a: string; b: string; c: string; enabled: false; }
+>a : string
+>"a" : "a"
+>b : string
+>"b" : "b"
+>c : string
+>"c" : "c"
+>enabled : false
+>false as const : false
+>false : false
+
+bombolo({ a: "a", b: "b", c: "c", enabled: true as const})
+>bombolo({ a: "a", b: "b", c: "c", enabled: true as const}) : { a: string; b: string; c: string; enabled: true; }
+>bombolo : <T>(a: Bombolo<T>) => T
+>{ a: "a", b: "b", c: "c", enabled: true as const} : { a: string; b: string; c: string; enabled: true; }
+>a : string
+>"a" : "a"
+>b : string
+>"b" : "b"
+>c : string
+>"c" : "c"
+>enabled : true
+>true as const : true
+>true : true
+
+// no excess property check because the parameter type turns out to be the empty object type {}
+bombolo({ a: "a", b: "b", c: "c"})
+>bombolo({ a: "a", b: "b", c: "c"}) : {}
+>bombolo : <T>(a: Bombolo<T>) => T
+>{ a: "a", b: "b", c: "c"} : { a: string; b: string; c: string; }
+>a : string
+>"a" : "a"
+>b : string
+>"b" : "b"
+>c : string
+>"c" : "c"
+
+type TestRecursiveReferenceToT<T> = {
+>TestRecursiveReferenceToT : TestRecursiveReferenceToT<T>
+
+    [K in keyof T as T[K] extends string ? K : never ]: { a: T[K] }
+>a : T[K]
+}
+
+declare function tstrcv<T>(a: TestRecursiveReferenceToT<T>): T
+>tstrcv : <T>(a: TestRecursiveReferenceToT<T>) => T
+>a : TestRecursiveReferenceToT<T>
+
+const res = tstrcv({
+>res : { ok: "it's a string"; }
+>tstrcv({  ok: { a: "it's a string" } as const,  not_ok: { a: 123 },}) : { ok: "it's a string"; }
+>tstrcv : <T>(a: TestRecursiveReferenceToT<T>) => T
+>{  ok: { a: "it's a string" } as const,  not_ok: { a: 123 },} : { ok: { readonly a: "it's a string"; }; not_ok: { a: number; }; }
+
+  ok: { a: "it's a string" } as const,
+>ok : { readonly a: "it's a string"; }
+>{ a: "it's a string" } as const : { readonly a: "it's a string"; }
+>{ a: "it's a string" } : { readonly a: "it's a string"; }
+>a : "it's a string"
+>"it's a string" : "it's a string"
+
+  not_ok: { a: 123 },
+>not_ok : { a: number; }
+>{ a: 123 } : { a: number; }
+>a : number
+>123 : 123
+
+})
+
+   res
+>res : { ok: "it's a string"; }
+
+// ^?
