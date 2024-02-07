@@ -5410,6 +5410,7 @@ export function getPropertiesForObjectExpression(contextualType: Type, completio
 
 function getApparentProperties(type: Type, node: ObjectLiteralExpression | JsxAttributes, checker: TypeChecker) {
     if (!type.isUnion()) return type.getApparentProperties();
+    // andarist
     return checker.getAllPossiblePropertiesOfTypes(filter(type.types, memberType =>
         !(memberType.flags & TypeFlags.Primitive
             || checker.isArrayLikeType(memberType)

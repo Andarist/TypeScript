@@ -1873,32 +1873,43 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function runWithoutResolvedSignatureCaching<T>(node: Node | undefined, fn: () => T): T {
-        node = findAncestor(node, isCallLikeOrFunctionLikeExpression);
-        if (node) {
-            const cachedResolvedSignatures = [];
-            const cachedTypes = [];
-            while (node) {
-                const nodeLinks = getNodeLinks(node);
-                cachedResolvedSignatures.push([nodeLinks, nodeLinks.resolvedSignature] as const);
-                nodeLinks.resolvedSignature = undefined;
-                if (isFunctionExpressionOrArrowFunction(node)) {
-                    const symbolLinks = getSymbolLinks(getSymbolOfDeclaration(node));
-                    const type = symbolLinks.type;
-                    cachedTypes.push([symbolLinks, type] as const);
-                    symbolLinks.type = undefined;
-                }
-                node = findAncestor(node.parent, isCallLikeOrFunctionLikeExpression);
-            }
-            const result = fn();
-            for (const [nodeLinks, resolvedSignature] of cachedResolvedSignatures) {
-                nodeLinks.resolvedSignature = resolvedSignature;
-            }
-            for (const [symbolLinks, type] of cachedTypes) {
-                symbolLinks.type = type;
-            }
-            return result;
+        if (!findAncestor(node, isCallLikeOrFunctionLikeExpression)) {
+            return fn();
         }
-        return fn();
+        const currentSourceFile = getSourceFileOfNode(node);
+        
+        const localNodeLinks: NodeLinks[] = [];
+        const originalGetNodeLinks = getNodeLinks;
+        getNodeLinks = (n: Node) => {
+            if (getSourceFileOfNode(n) !== currentSourceFile) {
+                return originalGetNodeLinks(n);
+            }
+            const nodeId = getNodeId(n);
+            if (localNodeLinks[nodeId]) {
+                return localNodeLinks[nodeId];
+            }
+            const links: NodeLinks = new (NodeLinks as any)();
+            links.skipDirectInference = originalGetNodeLinks(n).skipDirectInference;
+            return localNodeLinks[nodeId] = links;
+        }
+
+        const localSymbolLinks: SymbolLinks[] = [];
+        const originalGetSymbolLinks = getSymbolLinks;
+        getSymbolLinks = (symbol: Symbol) => {
+            if (!symbol.valueDeclaration || getSourceFileOfNode(symbol.valueDeclaration) !== currentSourceFile) {
+                return originalGetSymbolLinks(symbol);
+            }
+            if (symbol.flags & SymbolFlags.Transient) return (symbol as TransientSymbol).links;
+            const id = getSymbolId(symbol);
+            return localSymbolLinks[id] ??= new SymbolLinks();
+        }
+        
+        const result = fn();
+        
+        getSymbolLinks = originalGetSymbolLinks;
+        getNodeLinks = originalGetNodeLinks;
+        
+        return result;
     }
 
     function runWithInferenceBlockedFromSourceNode<T>(node: Node | undefined, fn: () => T): T {
@@ -2282,6 +2293,17 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         [".jsx", ".jsx"],
         [".json", ".json"],
     ];
+
+    var getSymbolLinks = function getSymbolLinks(symbol: Symbol): SymbolLinks {
+        if (symbol.flags & SymbolFlags.Transient) return (symbol as TransientSymbol).links;
+        const id = getSymbolId(symbol);
+        return symbolLinks[id] ??= new SymbolLinks();
+    }
+
+    var getNodeLinks = function getNodeLinks(node: Node): NodeLinks {
+        const nodeId = getNodeId(node);
+        return nodeLinks[nodeId] || (nodeLinks[nodeId] = new (NodeLinks as any)());
+    }
     /* eslint-enable no-var */
 
     initializeTypeChecker();
@@ -2744,17 +2766,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         function addDeclarationDiagnostic(id: string, message: DiagnosticMessage) {
             return (declaration: Declaration) => diagnostics.add(createDiagnosticForNode(declaration, message, id));
         }
-    }
-
-    function getSymbolLinks(symbol: Symbol): SymbolLinks {
-        if (symbol.flags & SymbolFlags.Transient) return (symbol as TransientSymbol).links;
-        const id = getSymbolId(symbol);
-        return symbolLinks[id] ??= new SymbolLinks();
-    }
-
-    function getNodeLinks(node: Node): NodeLinks {
-        const nodeId = getNodeId(node);
-        return nodeLinks[nodeId] || (nodeLinks[nodeId] = new (NodeLinks as any)());
     }
 
     function isGlobalSourceFile(node: Node) {

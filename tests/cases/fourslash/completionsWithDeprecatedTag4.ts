@@ -1,7 +1,5 @@
 /// <reference path="fourslash.ts" />
 
-// @noLib: true
-
 ////f({
 ////    a/**/
 ////    xyz: ``,

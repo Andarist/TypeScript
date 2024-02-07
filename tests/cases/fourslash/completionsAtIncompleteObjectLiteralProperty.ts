@@ -1,7 +1,5 @@
 /// <reference path='fourslash.ts' />
 
-// @noLib: true
-
 ////f({
 ////    a/**/
 ////    xyz: ``,
@@ -10,5 +8,5 @@
 
 verify.completions({
     marker: "",
-    exact: [{ name: 'abc', kind: 'property', kindModifiers: 'declare,optional', sortText: completion.SortText.OptionalMember }],
+    exact: [{ name: 'abc', kind: 'property', kindModifiers: 'declare,optional', sortText: completion.SortText.OptionalMember }]
 });
