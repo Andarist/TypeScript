@@ -5799,7 +5799,8 @@ export interface SymbolLinks {
     isConstructorDeclaredProperty?: boolean;    // Property declared through 'this.x = ...' assignment in constructor
     tupleLabelDeclaration?: NamedTupleMember | ParameterDeclaration; // Declaration associated with the tuple's label
     accessibleChainCache?: Map<string, Symbol[] | undefined>;
-    filteredIndexSymbolCache?: Map<string, Symbol> //Symbol with applicable declarations
+    filteredIndexSymbolCache?: Map<string, Symbol>; //Symbol with applicable declarations
+    skipImmediateResolutionStart?: true;
 }
 
 /** @internal */

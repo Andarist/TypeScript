@@ -1599,7 +1599,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         },
         getTypeAtLocation: nodeIn => {
             const node = getParseTreeNode(nodeIn);
-            return node ? getTypeOfNode(node) : errorType;
+            return node ? getTypeOfNode(node, /*skipImmediateResolutionStart*/ true) : errorType;
         },
         getTypeOfAssignmentPattern: nodeIn => {
             const node = getParseTreeNode(nodeIn, isAssignmentPattern);
@@ -10607,7 +10607,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
      * @param propertyName The property name that should be used to query the target for its type
      */
     function pushTypeResolution(target: TypeSystemEntity, propertyName: TypeSystemPropertyName): boolean {
-        const resolutionCycleStartIndex = findResolutionCycleStartIndex(target, propertyName);
+        const resolutionCycleStartIndex = findResolutionCycleStartIndex(target, propertyName, /*forWrite*/ true);
         if (resolutionCycleStartIndex >= 0) {
             // A cycle was found
             const { length } = resolutionTargets;
@@ -10622,9 +10622,9 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         return true;
     }
 
-    function findResolutionCycleStartIndex(target: TypeSystemEntity, propertyName: TypeSystemPropertyName): number {
+    function findResolutionCycleStartIndex(target: TypeSystemEntity, propertyName: TypeSystemPropertyName, forWrite: boolean): number {
         for (let i = resolutionTargets.length - 1; i >= resolutionStart; i--) {
-            if (resolutionTargetHasProperty(resolutionTargets[i], resolutionPropertyNames[i])) {
+            if (resolutionTargetHasProperty(resolutionTargets[i], resolutionPropertyNames[i], forWrite)) {
                 return -1;
             }
             if (resolutionTargets[i] === target && resolutionPropertyNames[i] === propertyName) {
@@ -10634,10 +10634,17 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         return -1;
     }
 
-    function resolutionTargetHasProperty(target: TypeSystemEntity, propertyName: TypeSystemPropertyName): boolean {
+    function resolutionTargetHasProperty(target: TypeSystemEntity, propertyName: TypeSystemPropertyName, forWrite: boolean): boolean {
         switch (propertyName) {
-            case TypeSystemPropertyName.Type:
-                return !!getSymbolLinks(target as Symbol).type;
+            case TypeSystemPropertyName.Type: {
+                const links = getSymbolLinks(target as Symbol);
+                if (forWrite && links.skipImmediateResolutionStart) {
+                    links.skipImmediateResolutionStart = undefined;
+                    resolutionStart = 1;
+                    return true;
+                }
+                return !!links.type;
+            }
             case TypeSystemPropertyName.EnumTagType:
                 return !!(getNodeLinks(target as JSDocEnumTag).resolvedEnumType);
             case TypeSystemPropertyName.DeclaredType:
@@ -15542,7 +15549,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
     function isResolvingReturnTypeOfSignature(signature: Signature): boolean {
         return signature.compositeSignatures && some(signature.compositeSignatures, isResolvingReturnTypeOfSignature) ||
-            !signature.resolvedReturnType && findResolutionCycleStartIndex(signature, TypeSystemPropertyName.ResolvedReturnType) >= 0;
+            !signature.resolvedReturnType && findResolutionCycleStartIndex(signature, TypeSystemPropertyName.ResolvedReturnType, /*forWrite*/ false) >= 0;
     }
 
     function getRestTypeOfSignature(signature: Signature): Type {
@@ -19755,7 +19762,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                             if (!type.declaration.nameType) {
                                 let constraint;
                                 if (
-                                    isArrayType(t) || t.flags & TypeFlags.Any && findResolutionCycleStartIndex(typeVariable, TypeSystemPropertyName.ImmediateBaseConstraint) < 0 &&
+                                    isArrayType(t) || t.flags & TypeFlags.Any && findResolutionCycleStartIndex(typeVariable, TypeSystemPropertyName.ImmediateBaseConstraint, /*forWrite*/ false) < 0 &&
                                         (constraint = getConstraintOfTypeParameter(typeVariable)) && everyType(constraint, isArrayOrTupleType)
                                 ) {
                                     return instantiateMappedArrayType(t, type, prependTypeMapping(typeVariable, t, mapper));
@@ -23783,6 +23790,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         if (!links.variances) {
             tracing?.push(tracing.Phase.CheckTypes, "getVariancesWorker", { arity: typeParameters.length, id: getTypeId(getDeclaredTypeOfSymbol(symbol)) });
             const oldVarianceComputation = inVarianceComputation;
+            const oldResolutionStart = resolutionStart;
             if (!inVarianceComputation) {
                 inVarianceComputation = true;
                 resolutionStart = resolutionTargets.length;
@@ -23827,7 +23835,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             }
             if (!oldVarianceComputation) {
                 inVarianceComputation = false;
-                resolutionStart = 0;
+                resolutionStart = oldResolutionStart;
             }
             links.variances = variances;
             tracing?.pop({ variances: variances.map(Debug.formatVariance) });
@@ -30550,7 +30558,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function isCircularMappedProperty(symbol: Symbol) {
-        return !!(getCheckFlags(symbol) & CheckFlags.Mapped && !(symbol as MappedSymbol).links.type && findResolutionCycleStartIndex(symbol, TypeSystemPropertyName.Type) >= 0);
+        return !!(getCheckFlags(symbol) & CheckFlags.Mapped && !(symbol as MappedSymbol).links.type && findResolutionCycleStartIndex(symbol, TypeSystemPropertyName.Type, /*forWrite*/ false) >= 0);
     }
 
     function getTypeOfPropertyOfContextualType(type: Type, name: __String, nameType?: Type) {
@@ -34988,7 +34996,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function getTypeArgumentsFromNodes(typeArgumentNodes: readonly TypeNode[], typeParameters: readonly TypeParameter[], isJs: boolean): readonly Type[] {
-        const typeArguments = typeArgumentNodes.map(getTypeOfNode);
+        const typeArguments = typeArgumentNodes.map(t => getTypeOfNode(t));
         while (typeArguments.length > typeParameters.length) {
             typeArguments.pop();
         }
@@ -47640,7 +47648,19 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
     }
 
-    function getTypeOfNode(node: Node): Type {
+    function getTypeOfSymbolWithImmediateResolutionStartSkip(symbol: Symbol, skipImmediateResolutionStart: boolean) {
+        const links = getSymbolLinks(symbol);
+        if (!skipImmediateResolutionStart || !!links.type) {
+            return getTypeOfSymbol(symbol);
+        }
+        links.skipImmediateResolutionStart = true;
+        const type = getTypeOfSymbol(symbol);
+        links.skipImmediateResolutionStart = undefined;
+        resolutionStart = 0;
+        return type;
+    }
+
+    function getTypeOfNode(node: Node, skipImmediateResolutionStart = false): Type {
         if (isSourceFile(node) && !isExternalModule(node)) {
             return errorType;
         }
@@ -47686,13 +47706,13 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         if (isDeclaration(node)) {
             // In this case, we call getSymbolOfNode instead of getSymbolAtLocation because it is a declaration
             const symbol = getSymbolOfDeclaration(node);
-            return symbol ? getTypeOfSymbol(symbol) : errorType;
+            return symbol ? getTypeOfSymbolWithImmediateResolutionStartSkip(symbol, skipImmediateResolutionStart) : errorType;
         }
 
         if (isDeclarationNameOrImportPropertyName(node)) {
             const symbol = getSymbolAtLocation(node);
             if (symbol) {
-                return getTypeOfSymbol(symbol);
+                return getTypeOfSymbolWithImmediateResolutionStartSkip(symbol, skipImmediateResolutionStart);
             }
             return errorType;
         }
