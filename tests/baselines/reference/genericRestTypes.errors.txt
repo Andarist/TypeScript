@@ -1,7 +1,8 @@
 genericRestTypes.ts(21,11): error TS2322: Type '(cb: (x: string, ...rest: T) => void) => void' is not assignable to type '(cb: (...args: never) => void) => void'.
   Types of parameters 'cb' and 'cb' are incompatible.
-    Types of parameters 'args' and 'x' are incompatible.
-      Type '[x: string, ...rest: T]' is not assignable to type 'never'.
+    Type '(...args: never) => void' is not assignable to type '(x: string, ...rest: T) => void'.
+      Types of parameters 'args' and 'x' are incompatible.
+        Type '[x: string, ...rest: T]' is not assignable to type 'never'.
 
 
 ==== genericRestTypes.ts (1 errors) ====
@@ -29,8 +30,9 @@ genericRestTypes.ts(21,11): error TS2322: Type '(cb: (x: string, ...rest: T) => 
               ~~~
 !!! error TS2322: Type '(cb: (x: string, ...rest: T) => void) => void' is not assignable to type '(cb: (...args: never) => void) => void'.
 !!! error TS2322:   Types of parameters 'cb' and 'cb' are incompatible.
-!!! error TS2322:     Types of parameters 'args' and 'x' are incompatible.
-!!! error TS2322:       Type '[x: string, ...rest: T]' is not assignable to type 'never'.
+!!! error TS2322:     Type '(...args: never) => void' is not assignable to type '(x: string, ...rest: T) => void'.
+!!! error TS2322:       Types of parameters 'args' and 'x' are incompatible.
+!!! error TS2322:         Type '[x: string, ...rest: T]' is not assignable to type 'never'.
     }
     
     function assignmentWithComplexRest3<T extends any[]>() {

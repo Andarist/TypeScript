@@ -20777,8 +20777,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 // similar to return values, callback parameters are output positions. This means that a Promise<T>,
                 // where T is used only in callback parameter positions, will be co-variant (as opposed to bi-variant)
                 // with respect to T.
-                const sourceSig = checkMode & SignatureCheckMode.Callback || isInstantiatedGenericParameter(source, i) ? undefined : getSingleCallSignature(getNonNullableType(sourceType));
-                const targetSig = checkMode & SignatureCheckMode.Callback || isInstantiatedGenericParameter(target, i) ? undefined : getSingleCallSignature(getNonNullableType(targetType));
+                const sourceSig = checkMode & SignatureCheckMode.Callback || strictVariance || isInstantiatedGenericParameter(source, i) ? undefined : getSingleCallSignature(getNonNullableType(sourceType));
+                const targetSig = checkMode & SignatureCheckMode.Callback || strictVariance || isInstantiatedGenericParameter(target, i) ? undefined : getSingleCallSignature(getNonNullableType(targetType));
                 const callbacks = sourceSig && targetSig && !getTypePredicateOfSignature(sourceSig) && !getTypePredicateOfSignature(targetSig) &&
                     getTypeFacts(sourceType, TypeFacts.IsUndefinedOrNull) === getTypeFacts(targetType, TypeFacts.IsUndefinedOrNull);
                 let related = callbacks ?
