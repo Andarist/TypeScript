@@ -776,6 +776,25 @@ export function insertSorted<T>(
         return true;
     }
 
+    const last = array[array.length - 1];
+    const lastComparison = compare(last, insert);
+
+    if (lastComparison === Comparison.LessThan) {
+        if (!allowDuplicates && equalityComparer?.(insert, last)) {
+            return false;
+        }
+        array.push(insert);
+        return true;
+    }
+
+    if (lastComparison === Comparison.EqualTo) {
+        if (allowDuplicates) {
+            array.push(insert);
+            return true;
+        }
+        return false;
+    }
+
     const insertIndex = binarySearch(array, insert, identity, compare);
     if (insertIndex < 0) {
         if (equalityComparer && !allowDuplicates) {
