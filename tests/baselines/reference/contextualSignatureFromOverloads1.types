@@ -1,0 +1,47 @@
+//// [tests/cases/compiler/contextualSignatureFromOverloads1.ts] ////
+
+=== contextualSignatureFromOverloads1.ts ===
+export type Fn = {
+>Fn : Fn
+>   : ^^
+
+  <t>(s: string): void;
+>s : string
+>  : ^^^^^^
+
+  <t>(t: t): void;
+>t : t
+>  : ^
+
+};
+
+export const fn: Fn = (first) => {};
+>fn : Fn
+>   : ^^
+>(first) => {} : <t>(first: string | t) => void
+>              : ^ ^^     ^^^^^^^^^^^^^^^^^^^^^
+>first : string | t
+>      : ^^^^^^^^^^
+
+export type Fn2 = {
+>Fn2 : Fn2
+>    : ^^^
+
+  (s: string): void;
+>s : string
+>  : ^^^^^^
+
+  <t>(t: t): void;
+>t : t
+>  : ^
+
+};
+
+export const fn2: Fn2 = (first) => {};
+>fn2 : Fn2
+>    : ^^^
+>(first) => {} : <t>(first: string | t) => void
+>              : ^ ^^     ^^^^^^^^^^^^^^^^^^^^^
+>first : string | t
+>      : ^^^^^^^^^^
+

@@ -1,0 +1,40 @@
+//// [tests/cases/compiler/contextualSignatureFromOverloads1.ts] ////
+
+=== contextualSignatureFromOverloads1.ts ===
+export type Fn = {
+>Fn : Symbol(Fn, Decl(contextualSignatureFromOverloads1.ts, 0, 0))
+
+  <t>(s: string): void;
+>t : Symbol(t, Decl(contextualSignatureFromOverloads1.ts, 1, 3))
+>s : Symbol(s, Decl(contextualSignatureFromOverloads1.ts, 1, 6))
+
+  <t>(t: t): void;
+>t : Symbol(t, Decl(contextualSignatureFromOverloads1.ts, 2, 3), Decl(contextualSignatureFromOverloads1.ts, 2, 6))
+>t : Symbol(t, Decl(contextualSignatureFromOverloads1.ts, 2, 3), Decl(contextualSignatureFromOverloads1.ts, 2, 6))
+>t : Symbol(t, Decl(contextualSignatureFromOverloads1.ts, 2, 3), Decl(contextualSignatureFromOverloads1.ts, 2, 6))
+
+};
+
+export const fn: Fn = (first) => {};
+>fn : Symbol(fn, Decl(contextualSignatureFromOverloads1.ts, 5, 12))
+>Fn : Symbol(Fn, Decl(contextualSignatureFromOverloads1.ts, 0, 0))
+>first : Symbol(first, Decl(contextualSignatureFromOverloads1.ts, 5, 23))
+
+export type Fn2 = {
+>Fn2 : Symbol(Fn2, Decl(contextualSignatureFromOverloads1.ts, 5, 36))
+
+  (s: string): void;
+>s : Symbol(s, Decl(contextualSignatureFromOverloads1.ts, 8, 3))
+
+  <t>(t: t): void;
+>t : Symbol(t, Decl(contextualSignatureFromOverloads1.ts, 9, 3), Decl(contextualSignatureFromOverloads1.ts, 9, 6))
+>t : Symbol(t, Decl(contextualSignatureFromOverloads1.ts, 9, 3), Decl(contextualSignatureFromOverloads1.ts, 9, 6))
+>t : Symbol(t, Decl(contextualSignatureFromOverloads1.ts, 9, 3), Decl(contextualSignatureFromOverloads1.ts, 9, 6))
+
+};
+
+export const fn2: Fn2 = (first) => {};
+>fn2 : Symbol(fn2, Decl(contextualSignatureFromOverloads1.ts, 12, 12))
+>Fn2 : Symbol(Fn2, Decl(contextualSignatureFromOverloads1.ts, 5, 36))
+>first : Symbol(first, Decl(contextualSignatureFromOverloads1.ts, 12, 25))
+

@@ -13781,13 +13781,12 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function compareTypeParametersIdentical(sourceParams: readonly TypeParameter[] | undefined, targetParams: readonly TypeParameter[] | undefined): boolean {
-        if (length(sourceParams) !== length(targetParams)) {
-            return false;
-        }
         if (!sourceParams || !targetParams) {
             return true;
         }
-
+        if (length(sourceParams) !== length(targetParams)) {
+            return false;
+        }
         const mapper = createTypeMapper(targetParams, sourceParams);
         for (let i = 0; i < sourceParams.length; i++) {
             const source = sourceParams[i];
