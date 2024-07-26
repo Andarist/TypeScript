@@ -4064,7 +4064,7 @@ export function moduleSpecifierToValidIdentifier(moduleSpecifier: string, target
     }
     for (let i = 1; i < baseName.length; i++) {
         const ch = baseName.charCodeAt(i);
-        const isValid = isIdentifierPart(ch, target);
+        const isValid = !!isIdentifierPart(ch, target);
         if (isValid) {
             let char = String.fromCharCode(ch);
             if (!lastCharWasValid) {

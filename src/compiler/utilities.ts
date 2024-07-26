@@ -10751,8 +10751,8 @@ export function canUsePropertyAccess(name: string, languageVersion: ScriptTarget
     }
     const firstChar = name.charCodeAt(0);
     return firstChar === CharacterCodes.hash ?
-        name.length > 1 && isIdentifierStart(name.charCodeAt(1), languageVersion) :
-        isIdentifierStart(firstChar, languageVersion);
+        name.length > 1 && !!isIdentifierStart(name.charCodeAt(1), languageVersion) :
+        !!isIdentifierStart(firstChar, languageVersion);
 }
 
 /** @internal */

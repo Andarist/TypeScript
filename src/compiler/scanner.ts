@@ -383,17 +383,26 @@ function lookupInUnicodeMap(code: number, map: readonly number[]): boolean {
     return false;
 }
 
+const enum IdentifierCharacterEncoding {
+    None = 0,
+    ASCII = 1,
+    UnicodeES5 = 2,
+    UnicodeESNext = 3,
+}
+
 /** @internal */
 export function isUnicodeIdentifierStart(code: number, languageVersion: ScriptTarget | undefined) {
-    return languageVersion! >= ScriptTarget.ES2015 ?
-        lookupInUnicodeMap(code, unicodeESNextIdentifierStart) :
-        lookupInUnicodeMap(code, unicodeES5IdentifierStart);
+    if (languageVersion! >= ScriptTarget.ES2015) {
+        return lookupInUnicodeMap(code, unicodeESNextIdentifierStart) ? IdentifierCharacterEncoding.UnicodeESNext : IdentifierCharacterEncoding.None;
+    }
+    return lookupInUnicodeMap(code, unicodeES5IdentifierStart) ? IdentifierCharacterEncoding.UnicodeES5 : IdentifierCharacterEncoding.None;
 }
 
 function isUnicodeIdentifierPart(code: number, languageVersion: ScriptTarget | undefined) {
-    return languageVersion! >= ScriptTarget.ES2015 ?
-        lookupInUnicodeMap(code, unicodeESNextIdentifierPart) :
-        lookupInUnicodeMap(code, unicodeES5IdentifierPart);
+    if (languageVersion! >= ScriptTarget.ES2015) {
+        return lookupInUnicodeMap(code, unicodeESNextIdentifierPart) ? IdentifierCharacterEncoding.UnicodeESNext : IdentifierCharacterEncoding.None;
+    }
+    return lookupInUnicodeMap(code, unicodeES5IdentifierPart) ? IdentifierCharacterEncoding.UnicodeES5 : IdentifierCharacterEncoding.None;
 }
 
 function makeReverseMap<T>(source: Map<T, number>): T[] {
@@ -968,16 +977,28 @@ export function getShebang(text: string): string | undefined {
     }
 }
 
-export function isIdentifierStart(ch: number, languageVersion: ScriptTarget | undefined): boolean {
-    return isASCIILetter(ch) || ch === CharacterCodes.$ || ch === CharacterCodes._ ||
-        ch > CharacterCodes.maxAsciiCharacter && isUnicodeIdentifierStart(ch, languageVersion);
+export function isIdentifierStart(ch: number, languageVersion: ScriptTarget | undefined): IdentifierCharacterEncoding {
+    if (isASCIILetter(ch) || ch === CharacterCodes.$ || ch === CharacterCodes._) {
+        return IdentifierCharacterEncoding.ASCII;
+    }
+    if (ch > CharacterCodes.maxAsciiCharacter) {
+        return isUnicodeIdentifierStart(ch, languageVersion);
+    }
+    return IdentifierCharacterEncoding.None;
 }
 
-export function isIdentifierPart(ch: number, languageVersion: ScriptTarget | undefined, identifierVariant?: LanguageVariant): boolean {
-    return isWordCharacter(ch) || ch === CharacterCodes.$ ||
+export function isIdentifierPart(ch: number, languageVersion: ScriptTarget | undefined, identifierVariant?: LanguageVariant) {
+    if (
+        isWordCharacter(ch) || ch === CharacterCodes.$ ||
         // "-" and ":" are valid in JSX Identifiers
-        (identifierVariant === LanguageVariant.JSX ? (ch === CharacterCodes.minus || ch === CharacterCodes.colon) : false) ||
-        ch > CharacterCodes.maxAsciiCharacter && isUnicodeIdentifierPart(ch, languageVersion);
+        identifierVariant === LanguageVariant.JSX && (ch === CharacterCodes.minus || ch === CharacterCodes.colon)
+    ) {
+        return IdentifierCharacterEncoding.ASCII;
+    }
+    if (ch > CharacterCodes.maxAsciiCharacter) {
+        return isUnicodeIdentifierPart(ch, languageVersion);
+    }
+    return IdentifierCharacterEncoding.None;
 }
 
 /** @internal */
@@ -2337,14 +2358,14 @@ export function createScanner(languageVersion: ScriptTarget, skipTrivia: boolean
                         pos--;
                     }
 
-                    if (isIdentifierStart(charAfterHash, languageVersion)) {
+                    if (isIdentifierStart(charAfterHash, ScriptTarget.Latest)) {
                         pos++;
                         // We're relying on scanIdentifier's behavior and adjusting the token kind after the fact.
                         // Notably absent from this block is the fact that calling a function named "scanIdentifier",
                         // but identifiers don't include '#', and that function doesn't deal with it at all.
                         // This works because 'scanIdentifier' tries to reuse source characters and builds up substrings;
                         // however, it starts at the 'tokenPos' which includes the '#', and will "accidentally" prepend the '#' for us.
-                        scanIdentifier(charAfterHash, languageVersion);
+                        scanIdentifier(charAfterHash);
                     }
                     else {
                         tokenValue = "#";
@@ -2404,7 +2425,7 @@ export function createScanner(languageVersion: ScriptTarget, skipTrivia: boolean
         pos = tokenStart = fullStartPos;
         tokenFlags = 0;
         const ch = codePointUnchecked(pos);
-        const identifierKind = scanIdentifier(ch, ScriptTarget.ESNext);
+        const identifierKind = scanIdentifier(ch);
         if (identifierKind) {
             return token = identifierKind;
         }
@@ -2412,14 +2433,22 @@ export function createScanner(languageVersion: ScriptTarget, skipTrivia: boolean
         return token; // Still `SyntaxKind.Unknown`
     }
 
-    function scanIdentifier(startCharacter: number, languageVersion: ScriptTarget) {
+    function scanIdentifier(startCharacter: number, languageVersion = ScriptTarget.Latest) {
         let ch = startCharacter;
-        if (isIdentifierStart(ch, languageVersion)) {
+        let identifierCharacter = isIdentifierStart(ch, ScriptTarget.Latest);
+        let hasUnicodeESNext = identifierCharacter === IdentifierCharacterEncoding.UnicodeESNext;
+        if (identifierCharacter) {
             pos += charSize(ch);
-            while (pos < end && isIdentifierPart(ch = codePointUnchecked(pos), languageVersion)) pos += charSize(ch);
+            while (pos < end && (identifierCharacter = isIdentifierPart(ch = codePointUnchecked(pos), ScriptTarget.Latest))) {
+                hasUnicodeESNext ||= identifierCharacter === IdentifierCharacterEncoding.UnicodeESNext;
+                pos += charSize(ch);
+            }
             tokenValue = text.substring(tokenStart, pos);
             if (ch === CharacterCodes.backslash) {
                 tokenValue += scanIdentifierParts();
+            }
+            if (hasUnicodeESNext && languageVersion < ScriptTarget.ES2015) {
+                error(Diagnostics.Invalid_character, tokenStart, tokenValue.length);
             }
             return getIdentifierToken();
         }
@@ -2987,7 +3016,7 @@ export function createScanner(languageVersion: ScriptTarget, skipTrivia: boolean
         function scanGroupName(isReference: boolean) {
             Debug.assertEqual(charCodeUnchecked(pos - 1), CharacterCodes.lessThan);
             tokenStart = pos;
-            scanIdentifier(codePointChecked(pos), languageVersion);
+            scanIdentifier(codePointChecked(pos));
             if (pos === tokenStart) {
                 error(Diagnostics.Expected_a_capturing_group_name);
             }
