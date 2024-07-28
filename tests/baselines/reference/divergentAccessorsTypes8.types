@@ -516,8 +516,8 @@ declare const i2: Three & Four & Five;
 i2['prop1'] = 42;
 >i2['prop1'] = 42 : 42
 >                 : ^^
->i2['prop1'] : "hello"
->            : ^^^^^^^
+>i2['prop1'] : string | number
+>            : ^^^^^^^^^^^^^^^
 >i2 : Three & Four & Five
 >   : ^^^^^^^^^^^^^^^^^^^
 >'prop1' : "prop1"
@@ -528,8 +528,8 @@ i2['prop1'] = 42;
 i2['prop1'] = "hello";
 >i2['prop1'] = "hello" : "hello"
 >                      : ^^^^^^^
->i2['prop1'] : "hello"
->            : ^^^^^^^
+>i2['prop1'] : string | number
+>            : ^^^^^^^^^^^^^^^
 >i2 : Three & Four & Five
 >   : ^^^^^^^^^^^^^^^^^^^
 >'prop1' : "prop1"

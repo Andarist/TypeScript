@@ -44,8 +44,5 @@ declare class C2 {
     static accessor b: any;
 }
 declare function f(): {
-    new (): {
-        a: any;
-    };
-    b: any;
+    new (): {};
 };

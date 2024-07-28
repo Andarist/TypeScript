@@ -14,8 +14,8 @@ const o1: { foo: number, bar: undefined } = { foo: 1, ... { set bar(_v: number) 
 >    : ^^^^^^
 >1 : 1
 >  : ^
->{ set bar(_v: number) { } } : { bar: number; }
->                            : ^^^^^^^^^^^^^^^^
+>{ set bar(_v: number) { } } : { set bar(_v: number); }
+>                            : ^^^^^^^^^^  ^^      ^^^^
 >bar : number
 >    : ^^^^^^
 >_v : number
@@ -32,8 +32,8 @@ const o2: { foo: undefined } = { foo: 1, ... { set foo(_v: number) { } } }
 >    : ^^^^^^
 >1 : 1
 >  : ^
->{ set foo(_v: number) { } } : { foo: number; }
->                            : ^^^^^^^^^^^^^^^^
+>{ set foo(_v: number) { } } : { set foo(_v: number); }
+>                            : ^^^^^^^^^^  ^^      ^^^^
 >foo : number
 >    : ^^^^^^
 >_v : number

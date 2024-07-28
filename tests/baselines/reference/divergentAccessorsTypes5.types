@@ -92,24 +92,24 @@ declare const i: One & Two & Three;
 i.prop1 = 42; // error
 >i.prop1 = 42 : 42
 >             : ^^
->i.prop1 : "hello"
->        : ^^^^^^^
+>i.prop1 : string | number
+>        : ^^^^^^^^^^^^^^^
 >i : One & Two & Three
 >  : ^^^^^^^^^^^^^^^^^
->prop1 : "hello"
->      : ^^^^^^^
+>prop1 : string | number
+>      : ^^^^^^^^^^^^^^^
 >42 : 42
 >   : ^^
 
 i.prop1 = "hello";
 >i.prop1 = "hello" : "hello"
 >                  : ^^^^^^^
->i.prop1 : "hello"
->        : ^^^^^^^
+>i.prop1 : string | number
+>        : ^^^^^^^^^^^^^^^
 >i : One & Two & Three
 >  : ^^^^^^^^^^^^^^^^^
->prop1 : "hello"
->      : ^^^^^^^
+>prop1 : string | number
+>      : ^^^^^^^^^^^^^^^
 >"hello" : "hello"
 >        : ^^^^^^^
 

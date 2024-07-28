@@ -6,10 +6,10 @@ function bar() {
 >    : ^^^^^^^^^^
 
     var x = {
->x : { readonly _extraOccluded: number; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->{        get _extraOccluded() {            var occluded = 0;            return occluded;        },    } : { readonly _extraOccluded: number; }
->                                                                                                        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>x : { get _extraOccluded(): number; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{        get _extraOccluded() {            var occluded = 0;            return occluded;        },    } : { get _extraOccluded(): number; }
+>                                                                                                        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
         get _extraOccluded() {
 >_extraOccluded : number

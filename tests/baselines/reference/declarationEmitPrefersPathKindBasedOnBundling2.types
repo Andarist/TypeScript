@@ -23,8 +23,8 @@ import { scalar } from '../lib/operators/scalar';
 >       : ^     ^^      ^^^^^       ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^
 
 export default {
->{	get xs() {		return scalar("14px");	}} : { readonly xs: import("src/lib/operators/scalar").Scalar; }
->                                        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{	get xs() {		return scalar("14px");	}} : { get xs(): import("src/lib/operators/scalar").Scalar; }
+>                                        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 	get xs() {
 >xs : import("src/lib/operators/scalar").Scalar

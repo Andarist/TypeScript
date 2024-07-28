@@ -2,10 +2,10 @@
 
 === YieldExpression17_es6.ts ===
 var v = { get foo() { yield foo; } }
->v : { readonly foo: void; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^
->{ get foo() { yield foo; } } : { readonly foo: void; }
->                             : ^^^^^^^^^^^^^^^^^^^^^^^
+>v : { get foo(): void; }
+>  : ^^^^^^^^^^^^^^^^^^^^
+>{ get foo() { yield foo; } } : { get foo(): void; }
+>                             : ^^^^^^^^^^^^^^^^^^^^
 >foo : void
 >    : ^^^^
 >yield foo : any

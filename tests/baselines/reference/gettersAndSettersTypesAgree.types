@@ -31,10 +31,10 @@ class C {
 }
 
 var o1 = {get Foo(){return 0;}, set Foo(val){}}; // ok - types agree (inference)
->o1 : { Foo: number; }
->   : ^^^^^^^^^^^^^^^^
->{get Foo(){return 0;}, set Foo(val){}} : { Foo: number; }
->                                       : ^^^^^^^^^^^^^^^^
+>o1 : { get Foo(): number; set Foo(val: number); }
+>   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^
+>{get Foo(){return 0;}, set Foo(val){}} : { get Foo(): number; set Foo(val: number); }
+>                                       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^
 >Foo : number
 >    : ^^^^^^
 >0 : 0
@@ -45,10 +45,10 @@ var o1 = {get Foo(){return 0;}, set Foo(val){}}; // ok - types agree (inference)
 >    : ^^^^^^
 
 var o2 = {get Foo(){return 0;}, set Foo(val:number){}}; // ok - types agree
->o2 : { Foo: number; }
->   : ^^^^^^^^^^^^^^^^
->{get Foo(){return 0;}, set Foo(val:number){}} : { Foo: number; }
->                                              : ^^^^^^^^^^^^^^^^
+>o2 : { get Foo(): number; set Foo(val: number); }
+>   : ^^^^^^^^^^^^^      ^^^^^^^^^^   ^^      ^^^^
+>{get Foo(){return 0;}, set Foo(val:number){}} : { get Foo(): number; set Foo(val: number); }
+>                                              : ^^^^^^^^^^^^^      ^^^^^^^^^^   ^^      ^^^^
 >Foo : number
 >    : ^^^^^^
 >0 : 0

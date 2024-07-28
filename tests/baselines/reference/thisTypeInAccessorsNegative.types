@@ -16,10 +16,10 @@ interface Bar {
 >      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 }
 const mismatch = {
->mismatch : { n: number; x: number; }
->         : ^^^^^^^^^^^^^^^^^^^^^^^^^
->{    n: 13,    get x(this: Foo) { return this.n; },    set x(this: Bar, n) { this.wrong = "method"; }} : { n: number; x: number; }
->                                                                                                       : ^^^^^^^^^^^^^^^^^^^^^^^^^
+>mismatch : { n: number; get x(this: Foo): number; set x(this: Bar, n: number); }
+>         : ^^^^^^^^^^^^^^^^^^^    ^^   ^^^^^^^^^^^^^^^^^    ^^   ^^ ^^^^^^^^^^^^
+>{    n: 13,    get x(this: Foo) { return this.n; },    set x(this: Bar, n) { this.wrong = "method"; }} : { n: number; get x(this: Foo): number; set x(this: Bar, n: number); }
+>                                                                                                       : ^^^^^^^^^^^^^^^^^^^    ^^   ^^^^^^^^^^^^^^^^^    ^^   ^^ ^^^^^^^^^^^^
 
     n: 13,
 >n : number
@@ -60,8 +60,8 @@ const mismatch = {
 const contextual: Foo = {
 >contextual : Foo
 >           : ^^^
->{    n: 16,    get x() { return this.n; }} : { n: number; readonly x: number; }
->                                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{    n: 16,    get x() { return this.n; }} : { n: number; get x(): number; }
+>                                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     n: 16,
 >n : number

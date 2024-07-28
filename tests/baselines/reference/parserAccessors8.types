@@ -2,10 +2,10 @@
 
 === parserAccessors8.ts ===
 var v = { set foo() { } }
->v : { foo: any; }
->  : ^^^^^^^^^^^^^
->{ set foo() { } } : { foo: any; }
->                  : ^^^^^^^^^^^^^
+>v : { set foo(); }
+>  : ^^^^^^^^^^^^^^
+>{ set foo() { } } : { set foo(); }
+>                  : ^^^^^^^^^^^^^^
 >foo : any
 >    : ^^^
 

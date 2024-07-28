@@ -2,10 +2,10 @@
 
 === emitCompoundExponentiationAssignmentWithIndexingOnLHS3.ts ===
 var object = {
->object : { _0: number; 0: number; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^
->{    _0: 2,    get 0() {        return this._0;    },    set 0(x: number) {        this._0 = x;    },} : { _0: number; 0: number; }
->                                                                                                       : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : { _0: number; get 0(): number; set 0(x: number); }
+>       : ^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^ ^^      ^^^^
+>{    _0: 2,    get 0() {        return this._0;    },    set 0(x: number) {        this._0 = x;    },} : { _0: number; get 0(): number; set 0(x: number); }
+>                                                                                                       : ^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^ ^^      ^^^^
 
     _0: 2,
 >_0 : number
@@ -49,14 +49,14 @@ object[0] **= object[0];
 >                        : ^^^^^^
 >object[0] : number
 >          : ^^^^^^
->object : { _0: number; 0: number; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : { _0: number; get 0(): number; set 0(x: number); }
+>       : ^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^ ^^      ^^^^
 >0 : 0
 >  : ^
 >object[0] : number
 >          : ^^^^^^
->object : { _0: number; 0: number; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : { _0: number; get 0(): number; set 0(x: number); }
+>       : ^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^ ^^      ^^^^
 >0 : 0
 >  : ^
 
@@ -65,16 +65,16 @@ object[0] **= object[0] **= 2;
 >                              : ^^^^^^
 >object[0] : number
 >          : ^^^^^^
->object : { _0: number; 0: number; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : { _0: number; get 0(): number; set 0(x: number); }
+>       : ^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^ ^^      ^^^^
 >0 : 0
 >  : ^
 >object[0] **= 2 : number
 >                : ^^^^^^
 >object[0] : number
 >          : ^^^^^^
->object : { _0: number; 0: number; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : { _0: number; get 0(): number; set 0(x: number); }
+>       : ^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^ ^^      ^^^^
 >0 : 0
 >  : ^
 >2 : 2
@@ -85,16 +85,16 @@ object[0] **= object[0] ** 2;
 >                             : ^^^^^^
 >object[0] : number
 >          : ^^^^^^
->object : { _0: number; 0: number; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : { _0: number; get 0(): number; set 0(x: number); }
+>       : ^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^ ^^      ^^^^
 >0 : 0
 >  : ^
 >object[0] ** 2 : number
 >               : ^^^^^^
 >object[0] : number
 >          : ^^^^^^
->object : { _0: number; 0: number; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : { _0: number; get 0(): number; set 0(x: number); }
+>       : ^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^ ^^      ^^^^
 >0 : 0
 >  : ^
 >2 : 2

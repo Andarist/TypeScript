@@ -278,10 +278,10 @@ function foo13() {
 >      : ^^^^^^^^^^
 
     let a = {
->a : { readonly a: any; }
->  : ^^^^^^^^^^^^^^^^^^^^
->{        get a() { return x }     } : { readonly a: any; }
->                                    : ^^^^^^^^^^^^^^^^^^^^
+>a : { get a(): any; }
+>  : ^^^^^^^^^^^^^^^^^
+>{        get a() { return x }     } : { get a(): any; }
+>                                    : ^^^^^^^^^^^^^^^^^
 
         get a() { return x } 
 >a : any

@@ -26,10 +26,10 @@ class D {
 }
 
 var x = {
->x : { readonly a: number; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^
->{    get a() { return 1 }} : { readonly a: number; }
->                           : ^^^^^^^^^^^^^^^^^^^^^^^
+>x : { get a(): number; }
+>  : ^^^^^^^^^^^^^^^^^^^^
+>{    get a() { return 1 }} : { get a(): number; }
+>                           : ^^^^^^^^^^^^^^^^^^^^
 
     get a() { return 1 }
 >a : number
@@ -39,10 +39,10 @@ var x = {
 }
 
 var y = {
->y : { b: any; }
->  : ^^^^^^^^^^^
->{    set b(v) { }} : { b: any; }
->                   : ^^^^^^^^^^^
+>y : { set b(v: any); }
+>  : ^^^^^^^^ ^^^^^^^^^
+>{    set b(v) { }} : { set b(v: any); }
+>                   : ^^^^^^^^ ^^^^^^^^^
 
     set b(v) { }
 >b : any

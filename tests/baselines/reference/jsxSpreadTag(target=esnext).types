@@ -143,8 +143,8 @@ const t6 = <Comp
 >    : ^^^
 
     {...{ set wrong(s) { let a = <div>x</div>; }}}
->{ set wrong(s) { let a = <div>x</div>; }} : { wrong: any; }
->                                          : ^^^^^^^^^^^^^^^
+>{ set wrong(s) { let a = <div>x</div>; }} : { set wrong(s: any); }
+>                                          : ^^^^^^^^^^^^ ^^^^^^^^^
 >wrong : any
 >      : ^^^
 >s : any

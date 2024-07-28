@@ -7122,25 +7122,29 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
             if (propertySymbol.flags & SymbolFlags.Accessor) {
                 const writeType = getWriteTypeOfSymbol(propertySymbol);
-                if (propertyType !== writeType && !isErrorType(propertyType) && !isErrorType(writeType)) {
-                    const getterDeclaration = getDeclarationOfKind<GetAccessorDeclaration>(propertySymbol, SyntaxKind.GetAccessor)!;
-                    const getterSignature = getSignatureFromDeclaration(getterDeclaration);
-                    typeElements.push(
-                        setCommentRange(
-                            context,
-                            signatureToSignatureDeclarationHelper(getterSignature, SyntaxKind.GetAccessor, context, { name: propertyName }) as GetAccessorDeclaration,
-                            getterDeclaration,
-                        ),
-                    );
-                    const setterDeclaration = getDeclarationOfKind<SetAccessorDeclaration>(propertySymbol, SyntaxKind.SetAccessor)!;
-                    const setterSignature = getSignatureFromDeclaration(setterDeclaration);
-                    typeElements.push(
-                        setCommentRange(
-                            context,
-                            signatureToSignatureDeclarationHelper(setterSignature, SyntaxKind.SetAccessor, context, { name: propertyName }) as SetAccessorDeclaration,
-                            setterDeclaration,
-                        ),
-                    );
+                if (!isErrorType(propertyType) && !isErrorType(writeType)) {
+                    const getterDeclaration = getDeclarationOfKind<GetAccessorDeclaration>(propertySymbol, SyntaxKind.GetAccessor);
+                    if (getterDeclaration) {
+                        const getterSignature = getSignatureFromDeclaration(getterDeclaration);
+                        typeElements.push(
+                            setCommentRange(
+                                context,
+                                signatureToSignatureDeclarationHelper(getterSignature, SyntaxKind.GetAccessor, context, { name: propertyName }) as GetAccessorDeclaration,
+                                getterDeclaration,
+                            ),
+                        );
+                    }
+                    const setterDeclaration = getDeclarationOfKind<SetAccessorDeclaration>(propertySymbol, SyntaxKind.SetAccessor);
+                    if (setterDeclaration) {
+                        const setterSignature = getSignatureFromDeclaration(setterDeclaration);
+                        typeElements.push(
+                            setCommentRange(
+                                context,
+                                signatureToSignatureDeclarationHelper(setterSignature, SyntaxKind.SetAccessor, context, { name: propertyName }) as SetAccessorDeclaration,
+                                setterDeclaration,
+                            ),
+                        );
+                    }
                     return;
                 }
             }
@@ -14988,6 +14992,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function createUnionOrIntersectionProperty(containingType: UnionOrIntersectionType, name: __String, skipObjectFunctionPropertyAugment?: boolean): Symbol | undefined {
+        let propFlags = SymbolFlags.None; 
         let singleProp: Symbol | undefined;
         let propSet: Map<SymbolId, Symbol> | undefined;
         let indexTypes: Type[] | undefined;
@@ -15014,6 +15019,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     }
                     if (!singleProp) {
                         singleProp = prop;
+                        propFlags = (prop.flags & SymbolFlags.Accessor) || SymbolFlags.Property; 
                     }
                     else if (prop !== singleProp) {
                         const isInstantiation = (getTargetSymbol(prop) || prop) === (getTargetSymbol(singleProp) || singleProp);
@@ -15036,6 +15042,12 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                                 propSet.set(id, prop);
                             }
                         }
+                        if (prop.flags & SymbolFlags.Accessor & propFlags) {
+                            propFlags |= prop.flags & SymbolFlags.Accessor;
+                        } else {
+                            propFlags &= ~SymbolFlags.Accessor;
+                            propFlags |= SymbolFlags.Property;
+                        }
                     }
                     if (isUnion && isReadonlySymbol(prop)) {
                         checkFlags |= CheckFlags.Readonly;
@@ -15054,6 +15066,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 else if (isUnion) {
                     const indexInfo = !isLateBoundName(name) && getApplicableIndexInfoForName(type, name);
                     if (indexInfo) {
+                        propFlags &= ~SymbolFlags.Accessor;
+                        propFlags |= SymbolFlags.Property;
                         checkFlags |= CheckFlags.WritePartial | (indexInfo.isReadonly ? CheckFlags.Readonly : 0);
                         indexTypes = append(indexTypes, isTupleType(type) ? getRestTypeOfTupleType(type) || undefinedType : indexInfo.type);
                     }
@@ -15132,7 +15146,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             propTypes.push(type);
         }
         addRange(propTypes, indexTypes);
-        const result = createSymbol(SymbolFlags.Property | (optionalFlag ?? 0), name, syntheticFlag | checkFlags);
+        const result = createSymbol(propFlags | (optionalFlag ?? 0), name, syntheticFlag | checkFlags);
         result.links.containingType = containingType;
         if (!hasNonUniformValueDeclaration && firstValueDeclaration) {
             result.valueDeclaration = firstValueDeclaration;

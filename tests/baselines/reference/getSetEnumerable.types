@@ -41,10 +41,10 @@ class GetSetEnumerableClassGetSet {
 }
 
 const GetSetEnumerableObjectGet = {
->GetSetEnumerableObjectGet : { readonly prop: boolean; }
->                          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
->{    get prop() { return true; }} : { readonly prop: boolean; }
->                                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>GetSetEnumerableObjectGet : { get prop(): boolean; }
+>                          : ^^^^^^^^^^^^^^^^^^^^^^^^
+>{    get prop() { return true; }} : { get prop(): boolean; }
+>                                  : ^^^^^^^^^^^^^^^^^^^^^^^^
 
     get prop() { return true; }
 >prop : boolean
@@ -55,10 +55,10 @@ const GetSetEnumerableObjectGet = {
 };
 
 const GetSetEnumerableObjectSet = {
->GetSetEnumerableObjectSet : { prop: boolean; }
->                          : ^^^^^^^^^^^^^^^^^^
->{    set prop(value: boolean) { }} : { prop: boolean; }
->                                   : ^^^^^^^^^^^^^^^^^^
+>GetSetEnumerableObjectSet : { set prop(value: boolean); }
+>                          : ^^^^^^^^^^^     ^^       ^^^^
+>{    set prop(value: boolean) { }} : { set prop(value: boolean); }
+>                                   : ^^^^^^^^^^^     ^^       ^^^^
 
     set prop(value: boolean) { }
 >prop : boolean
@@ -69,10 +69,10 @@ const GetSetEnumerableObjectSet = {
 };
 
 const GetSetEnumerableObjectGetSet = {
->GetSetEnumerableObjectGetSet : { prop: boolean; }
->                             : ^^^^^^^^^^^^^^^^^^
->{    get prop() { return true; },    set prop(value: boolean) { }} : { prop: boolean; }
->                                                                   : ^^^^^^^^^^^^^^^^^^
+>GetSetEnumerableObjectGetSet : { get prop(): boolean; set prop(value: boolean); }
+>                             : ^^^^^^^^^^^^^^       ^^^^^^^^^^^     ^^       ^^^^
+>{    get prop() { return true; },    set prop(value: boolean) { }} : { get prop(): boolean; set prop(value: boolean); }
+>                                                                   : ^^^^^^^^^^^^^^       ^^^^^^^^^^^     ^^       ^^^^
 
     get prop() { return true; },
 >prop : boolean

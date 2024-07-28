@@ -2,10 +2,10 @@
 
 === parserAccessors7.ts ===
 var v = { get foo(v: number) { } };
->v : { readonly foo: void; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^
->{ get foo(v: number) { } } : { readonly foo: void; }
->                           : ^^^^^^^^^^^^^^^^^^^^^^^
+>v : { get foo(v: number): void; }
+>  : ^^^^^^^^^^ ^^      ^^^^^^^^^^
+>{ get foo(v: number) { } } : { get foo(v: number): void; }
+>                           : ^^^^^^^^^^ ^^      ^^^^^^^^^^
 >foo : void
 >    : ^^^^
 >v : number
