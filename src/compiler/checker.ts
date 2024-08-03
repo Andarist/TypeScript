@@ -36151,6 +36151,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         }
                     }
                     else {
+                        // andarist
                         inferenceContext = createInferenceContext(candidate.typeParameters!, candidate, /*flags*/ isInJSFile(node) ? InferenceFlags.AnyDefault : InferenceFlags.None);
                         // The resulting type arguments are instantiated with the inference context mapper, as the inferred types may still contain references to the inference context's
                         //  type variables via contextual projection. These are kept generic until all inferences are locked in, so the dependencies expressed can pass constraint checks.
@@ -38938,16 +38939,19 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         return getTypeOfSymbol(getSymbolOfDeclaration(node));
     }
 
-    function contextuallyCheckFunctionExpressionOrObjectLiteralMethod(node: FunctionExpression | ArrowFunction | MethodDeclaration, checkMode?: CheckMode) {
+    function contextuallyCheckFunctionExpressionOrObjectLiteralMethod(node: FunctionExpression | ArrowFunction | MethodDeclaration, checkMode = CheckMode.Normal) {
         const links = getNodeLinks(node);
         // Check if function expression is contextually typed and assign parameter types if so.
         if (!(links.flags & NodeCheckFlags.ContextChecked)) {
             const contextualSignature = getContextualSignature(node);
+            // if (links.flags & NodeCheckFlags.ContextChecked) {
+            //     throw new Error('hehe')
+            // }
             // If a type check is started at a function expression that is an argument of a function call, obtaining the
             // contextual type may recursively get back to here during overload resolution of the call. If so, we will have
             // already assigned contextual types.
             if (!(links.flags & NodeCheckFlags.ContextChecked)) {
-                links.flags |= NodeCheckFlags.ContextChecked;
+                // links.flags |= NodeCheckFlags.ContextChecked; // andarist this might be annoying for recursive inference
                 const signature = firstOrUndefined(getSignaturesOfType(getTypeOfSymbol(getSymbolOfDeclaration(node)), SignatureKind.Call));
                 if (!signature) {
                     return;
@@ -38956,7 +38960,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     if (contextualSignature) {
                         const inferenceContext = getInferenceContext(node);
                         let instantiatedContextualSignature: Signature | undefined;
-                        if (checkMode && checkMode & CheckMode.Inferential) {
+                        if (checkMode & CheckMode.Inferential) {
                             inferFromAnnotatedParameters(signature, contextualSignature, inferenceContext!);
                             const restType = getEffectiveRestType(contextualSignature);
                             if (restType && restType.flags & TypeFlags.TypeParameter) {
@@ -38974,12 +38978,32 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 }
                 else if (contextualSignature && !node.typeParameters && contextualSignature.parameters.length > node.parameters.length) {
                     const inferenceContext = getInferenceContext(node);
-                    if (checkMode && checkMode & CheckMode.Inferential) {
+                    if (checkMode & CheckMode.Inferential) {
                         inferFromAnnotatedParameters(signature, contextualSignature, inferenceContext!);
                     }
                 }
+                debugger
                 if (contextualSignature && !getReturnTypeFromAnnotation(node) && !signature.resolvedReturnType) {
-                    const returnType = getReturnTypeFromBody(node, checkMode);
+                    let contextualReturnType: Type;
+                    let returnType: Type;
+                    
+                    if (checkMode & CheckMode.Inferential && couldContainTypeVariables(contextualReturnType = getReturnTypeOfSignature(contextualSignature))) {
+                        // let argCheckMode = !isDecorator && !isSingleNonGenericCandidate && some(args, isContextSensitive) ? CheckMode.SkipContextSensitive : CheckMode.Normal;
+                        const inferenceContext = getInferenceContext(node);
+                        const isReturnContextSensitive = !!node.body && (node.body.kind === SyntaxKind.Block ? forEachReturnStatement(node.body as Block, statement => !!statement.expression && isContextSensitive(statement.expression)) : isContextSensitive(node.body));
+                        returnType = getReturnTypeFromBody(node, checkMode | (isReturnContextSensitive ? CheckMode.SkipContextSensitive : 0));
+                        inferTypes(inferenceContext!.inferences, returnType, contextualReturnType);
+                        if (isReturnContextSensitive) {
+                            returnType = getReturnTypeFromBody(node, checkMode);
+                            // inferTypes(inferenceContext!.inferences, returnType, contextualReturnType);
+                        }
+                    } else {
+                        returnType = getReturnTypeFromBody(node, checkMode);
+                    }
+                    
+                    
+                    debugger
+                    
                     if (!signature.resolvedReturnType) {
                         signature.resolvedReturnType = returnType;
                     }
