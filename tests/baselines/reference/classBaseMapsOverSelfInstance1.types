@@ -1,0 +1,84 @@
+//// [tests/cases/compiler/classBaseMapsOverSelfInstance1.ts] ////
+
+=== classBaseMapsOverSelfInstance1.ts ===
+declare const MakeClass: <Self, T>() => {
+>MakeClass : <Self, T>() => { [K in keyof Self]: () => Self[K]; } & { new (args: T): T; }
+>          : ^    ^^ ^^^^^^^                                                             
+
+  [K in keyof Self]: () => Self[K];
+} & {
+  new (args: T): T;
+>args : T
+>     : ^
+
+};
+
+class Demo extends MakeClass<
+>Demo : Demo
+>     : ^^^^
+>MakeClass<  Demo,  {    a: number;  }>() : { a: number; }
+>                                         : ^^^^^      ^^^
+>MakeClass : <Self, T>() => { [K in keyof Self]: () => Self[K]; } & { new (args: T): T; }
+>          : ^    ^^ ^^^^^^^                                                             
+
+  Demo,
+  {
+    a: number;
+>a : number
+>  : ^^^^^^
+  }
+>() {}
+
+const result1 = Demo.a();
+>result1 : number
+>        : ^^^^^^
+>Demo.a() : number
+>         : ^^^^^^
+>Demo.a : () => number
+>       : ^^^^^^^^^^^^
+>Demo : typeof Demo
+>     : ^^^^^^^^^^^
+>a : () => number
+>  : ^^^^^^^^^^^^
+
+declare const MakeClass2: <Self>() => {
+>MakeClass2 : <Self>() => { [K in keyof Self]: () => Self[K]; } & { new (): {}; }
+>           : ^    ^^^^^^^                                                       
+
+  [K in keyof Self]: () => Self[K];
+} & {
+  new (): {};
+};
+
+class Demo2 extends MakeClass2<Demo2>() {
+>Demo2 : Demo2
+>      : ^^^^^
+>MakeClass2<Demo2>() : {}
+>                    : ^^
+>MakeClass2 : <Self>() => { [K in keyof Self]: () => Self[K]; } & { new (): {}; }
+>           : ^    ^^^^^^^                                                       
+
+  constructor(readonly foo: string) {
+>foo : string
+>    : ^^^^^^
+
+    super();
+>super() : void
+>        : ^^^^
+>super : { readonly foo: () => string; } & (new () => {})
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^
+  }
+}
+
+const result2 = Demo2.foo();
+>result2 : string
+>        : ^^^^^^
+>Demo2.foo() : string
+>            : ^^^^^^
+>Demo2.foo : () => string
+>          : ^^^^^^^^^^^^
+>Demo2 : typeof Demo2
+>      : ^^^^^^^^^^^^
+>foo : () => string
+>    : ^^^^^^^^^^^^
+

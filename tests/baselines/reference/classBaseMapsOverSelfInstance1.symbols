@@ -1,0 +1,72 @@
+//// [tests/cases/compiler/classBaseMapsOverSelfInstance1.ts] ////
+
+=== classBaseMapsOverSelfInstance1.ts ===
+declare const MakeClass: <Self, T>() => {
+>MakeClass : Symbol(MakeClass, Decl(classBaseMapsOverSelfInstance1.ts, 0, 13))
+>Self : Symbol(Self, Decl(classBaseMapsOverSelfInstance1.ts, 0, 26))
+>T : Symbol(T, Decl(classBaseMapsOverSelfInstance1.ts, 0, 31))
+
+  [K in keyof Self]: () => Self[K];
+>K : Symbol(K, Decl(classBaseMapsOverSelfInstance1.ts, 1, 3))
+>Self : Symbol(Self, Decl(classBaseMapsOverSelfInstance1.ts, 0, 26))
+>Self : Symbol(Self, Decl(classBaseMapsOverSelfInstance1.ts, 0, 26))
+>K : Symbol(K, Decl(classBaseMapsOverSelfInstance1.ts, 1, 3))
+
+} & {
+  new (args: T): T;
+>args : Symbol(args, Decl(classBaseMapsOverSelfInstance1.ts, 3, 7))
+>T : Symbol(T, Decl(classBaseMapsOverSelfInstance1.ts, 0, 31))
+>T : Symbol(T, Decl(classBaseMapsOverSelfInstance1.ts, 0, 31))
+
+};
+
+class Demo extends MakeClass<
+>Demo : Symbol(Demo, Decl(classBaseMapsOverSelfInstance1.ts, 4, 2))
+>MakeClass : Symbol(MakeClass, Decl(classBaseMapsOverSelfInstance1.ts, 0, 13))
+
+  Demo,
+>Demo : Symbol(Demo, Decl(classBaseMapsOverSelfInstance1.ts, 4, 2))
+  {
+    a: number;
+>a : Symbol(a, Decl(classBaseMapsOverSelfInstance1.ts, 8, 3))
+  }
+>() {}
+
+const result1 = Demo.a();
+>result1 : Symbol(result1, Decl(classBaseMapsOverSelfInstance1.ts, 13, 5))
+>Demo.a : Symbol(a, Decl(classBaseMapsOverSelfInstance1.ts, 8, 3))
+>Demo : Symbol(Demo, Decl(classBaseMapsOverSelfInstance1.ts, 4, 2))
+>a : Symbol(a, Decl(classBaseMapsOverSelfInstance1.ts, 8, 3))
+
+declare const MakeClass2: <Self>() => {
+>MakeClass2 : Symbol(MakeClass2, Decl(classBaseMapsOverSelfInstance1.ts, 15, 13))
+>Self : Symbol(Self, Decl(classBaseMapsOverSelfInstance1.ts, 15, 27))
+
+  [K in keyof Self]: () => Self[K];
+>K : Symbol(K, Decl(classBaseMapsOverSelfInstance1.ts, 16, 3))
+>Self : Symbol(Self, Decl(classBaseMapsOverSelfInstance1.ts, 15, 27))
+>Self : Symbol(Self, Decl(classBaseMapsOverSelfInstance1.ts, 15, 27))
+>K : Symbol(K, Decl(classBaseMapsOverSelfInstance1.ts, 16, 3))
+
+} & {
+  new (): {};
+};
+
+class Demo2 extends MakeClass2<Demo2>() {
+>Demo2 : Symbol(Demo2, Decl(classBaseMapsOverSelfInstance1.ts, 19, 2))
+>MakeClass2 : Symbol(MakeClass2, Decl(classBaseMapsOverSelfInstance1.ts, 15, 13))
+>Demo2 : Symbol(Demo2, Decl(classBaseMapsOverSelfInstance1.ts, 19, 2))
+
+  constructor(readonly foo: string) {
+>foo : Symbol(Demo2.foo, Decl(classBaseMapsOverSelfInstance1.ts, 22, 14))
+
+    super();
+  }
+}
+
+const result2 = Demo2.foo();
+>result2 : Symbol(result2, Decl(classBaseMapsOverSelfInstance1.ts, 27, 5))
+>Demo2.foo : Symbol(foo, Decl(classBaseMapsOverSelfInstance1.ts, 22, 14))
+>Demo2 : Symbol(Demo2, Decl(classBaseMapsOverSelfInstance1.ts, 19, 2))
+>foo : Symbol(foo, Decl(classBaseMapsOverSelfInstance1.ts, 22, 14))
+

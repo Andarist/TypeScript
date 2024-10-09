@@ -15207,6 +15207,9 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
      * maps primitive types and type parameters are to their apparent types.
      */
     function getSignaturesOfType(type: Type, kind: SignatureKind): readonly Signature[] {
+        if (getObjectFlags(type) & ObjectFlags.Mapped) {
+            return emptyArray;
+        }
         const result = getSignaturesOfStructuredType(getReducedApparentType(type), kind);
         if (kind === SignatureKind.Call && !length(result) && type.flags & TypeFlags.Union) {
             if ((type as UnionType).arrayFallbackSignatures) {
@@ -15280,6 +15283,12 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
     function getIndexInfosOfStructuredType(type: Type): readonly IndexInfo[] {
         if (type.flags & TypeFlags.StructuredType) {
+            if (getObjectFlags(type) & ObjectFlags.Mapped) {
+                const objectFlags = getObjectFlags(getModifiersTypeFromMappedType(type as MappedType));
+                if (objectFlags & ObjectFlags.Class && !(objectFlags & ObjectFlags.Interface)) {
+                    return emptyArray;
+                }
+            }
             const resolved = resolveStructuredTypeMembers(type as ObjectType);
             return resolved.indexInfos;
         }
