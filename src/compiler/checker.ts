@@ -14302,6 +14302,18 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         return isTypeAssignableTo(nameType, getTypeParameterFromMappedType(type)) ? MappedTypeNameTypeKind.Filtering : MappedTypeNameTypeKind.Remapping;
     }
 
+    function getApparentMappedTypeKeys(nameType: Type, targetType: MappedType) {
+        const modifiersType = getApparentType(getModifiersTypeFromMappedType(targetType));
+        const mappedKeys: Type[] = [];
+        forEachMappedTypePropertyKeyTypeAndIndexSignatureKeyType(
+            modifiersType,
+            TypeFlags.StringOrNumberLiteralOrUnique,
+            /*stringsOnly*/ false,
+            t => void mappedKeys.push(instantiateType(nameType, appendTypeMapping(targetType.mapper, getTypeParameterFromMappedType(targetType), t))),
+        );
+        return getUnionType(mappedKeys);
+    }
+
     function resolveStructuredTypeMembers(type: StructuredType): ResolvedType {
         if (!(type as ResolvedType).members) {
             if (type.flags & TypeFlags.Object) {
@@ -14680,6 +14692,19 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     undefined;
             }
             if (t.flags & TypeFlags.Index) {
+                if (isGenericMappedType((t as IndexType).type)) {
+                    const mappedType = (t as IndexType).type as MappedType;
+                    const nameType = getNameTypeFromMappedType(mappedType);
+                    if (nameType) {
+                        const typeParameter = getTypeParameterFromMappedType(mappedType);
+                        const keyTypes: Type[] = [];
+                        forEachType(getConstraintTypeFromMappedType(mappedType), (keyType) => {
+                            const propNameType = instantiateType(nameType, appendTypeMapping(mappedType.mapper, typeParameter, keyType));
+                            keyTypes.push(propNameType === stringType ? stringOrNumberType : propNameType);
+                        })
+                        return getBaseConstraint(getUnionType(keyTypes));
+                    }
+                }
                 return stringNumberSymbolType;
             }
             if (t.flags & TypeFlags.TemplateLiteral) {
@@ -18173,7 +18198,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // trigger a circularity. For example, `T extends { [P in keyof T & string as Captitalize<P>]: any }` is
         // a circular definition. For this reason, we only eagerly manifest the keys if the constraint is non-generic.
         if (isGenericIndexType(constraintType)) {
-            if (isMappedTypeWithKeyofConstraintDeclaration(type)) {
+            if (isMappedTypeWithKeyofConstraintDeclaration(type) || nameType) {
                 // We have a generic index and a homomorphic mapping (but a distributive key remapping) - we need to defer
                 // the whole `keyof whatever` for later since it's not safe to resolve the shape of modifier type.
                 return getIndexTypeForGenericType(type, indexFlags);
@@ -18274,7 +18299,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     function shouldDeferIndexType(type: Type, indexFlags = IndexFlags.None) {
         return !!(type.flags & TypeFlags.InstantiableNonPrimitive ||
             isGenericTupleType(type) ||
-            isGenericMappedType(type) && (!hasDistributiveNameType(type) || getMappedTypeNameTypeKind(type) === MappedTypeNameTypeKind.Remapping) ||
+            isGenericMappedType(type) && !hasDistributiveNameType(type) ||
             type.flags & TypeFlags.Union && !(indexFlags & IndexFlags.NoReducibleCheck) && isGenericReducibleType(type) ||
             type.flags & TypeFlags.Intersection && maybeTypeOfKind(type, TypeFlags.Instantiable) && some((type as IntersectionType).types, isEmptyAnonymousObjectType));
     }
@@ -22774,18 +22799,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 resetErrorInfo(saveErrorInfo);
             }
             return result;
-        }
-
-        function getApparentMappedTypeKeys(nameType: Type, targetType: MappedType) {
-            const modifiersType = getApparentType(getModifiersTypeFromMappedType(targetType));
-            const mappedKeys: Type[] = [];
-            forEachMappedTypePropertyKeyTypeAndIndexSignatureKeyType(
-                modifiersType,
-                TypeFlags.StringOrNumberLiteralOrUnique,
-                /*stringsOnly*/ false,
-                t => void mappedKeys.push(instantiateType(nameType, appendTypeMapping(targetType.mapper, getTypeParameterFromMappedType(targetType), t))),
-            );
-            return getUnionType(mappedKeys);
         }
 
         function structuredTypeRelatedToWorker(source: Type, target: Type, reportErrors: boolean, intersectionState: IntersectionState, saveErrorInfo: ReturnType<typeof captureErrorCalculationState>): Ternary {
@@ -41928,10 +41941,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // Check if the index type is assignable to 'keyof T' for the object type.
         const objectType = (type as IndexedAccessType).objectType;
         const indexType = (type as IndexedAccessType).indexType;
-        // skip index type deferral on remapping mapped types
-        const objectIndexType = isGenericMappedType(objectType) && getMappedTypeNameTypeKind(objectType) === MappedTypeNameTypeKind.Remapping
-            ? getIndexTypeForMappedType(objectType, IndexFlags.None)
-            : getIndexType(objectType, IndexFlags.None);
+        const objectIndexType = getIndexType(objectType, IndexFlags.None);
         const hasNumberIndexInfo = !!getIndexInfoOfType(objectType, numberType);
         if (everyType(indexType, t => isTypeAssignableTo(t, objectIndexType) || hasNumberIndexInfo && isApplicableIndexType(t, numberType))) {
             if (
