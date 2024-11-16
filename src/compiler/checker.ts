@@ -23159,7 +23159,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 }
             }
             else if (sourceFlags & TypeFlags.Index) {
-                const isDeferredMappedIndex = shouldDeferIndexType((source as IndexType).type, (source as IndexType).indexFlags) && getObjectFlags((source as IndexType).type) & ObjectFlags.Mapped;
+                const isDeferredMappedIndex = getObjectFlags((source as IndexType).type) & ObjectFlags.Mapped &&
+                    (shouldDeferIndexType((source as IndexType).type, (source as IndexType).indexFlags) || getNameTypeFromMappedType((source as IndexType).type as MappedType));
                 if (result = isRelatedTo(stringNumberSymbolType, target, RecursionFlags.Source, reportErrors && !isDeferredMappedIndex)) {
                     return result;
                 }
