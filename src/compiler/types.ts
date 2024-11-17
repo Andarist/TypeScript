@@ -6848,6 +6848,7 @@ export const enum IndexFlags {
     StringsOnly = 1 << 0,
     NoIndexSignatures = 1 << 1,
     NoReducibleCheck = 1 << 2,
+    NoNameTypeDeferral = 1 << 3,
 }
 
 // keyof T types (TypeFlags.Index)

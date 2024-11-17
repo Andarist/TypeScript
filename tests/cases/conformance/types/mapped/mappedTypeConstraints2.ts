@@ -46,6 +46,22 @@ function f6<K extends string>(obj: Mapped6<K>, key: keyof Mapped6<K>) {
   let s: `_${string}` = obj[key]; // Error
 }
 
+type Mapped7<K extends string> = {
+  [P in K as [P] extends [`_${string}`] ? P : never]: P;
+};
+
+function f7<K extends string>(obj: Mapped7<K>, key: keyof Mapped7<K>) {
+  let s: `_${string}` = obj[key];
+}
+
+type Mapped8<K extends string> = {
+  [P in K as P extends `_${string}` ? P | `${P}_` : never]: P;
+};
+
+function f8<K extends string>(obj: Mapped8<K>, key: keyof Mapped8<K>) {
+  let s: `_${string}` | `_${string}_` = obj[key];
+}
+
 // Repro from #47794
 
 type Foo<T extends string> = {

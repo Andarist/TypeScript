@@ -6,13 +6,16 @@ mappedTypeConstraints2.ts(16,11): error TS2322: Type 'Mapped3<K>[Uppercase<K>]' 
 mappedTypeConstraints2.ts(42,7): error TS2322: Type 'Mapped6<K>[keyof Mapped6<K>]' is not assignable to type '`_${string}`'.
   Type 'Mapped6<K>[string] | Mapped6<K>[number] | Mapped6<K>[symbol]' is not assignable to type '`_${string}`'.
     Type 'Mapped6<K>[string]' is not assignable to type '`_${string}`'.
-mappedTypeConstraints2.ts(51,57): error TS2322: Type 'Foo<T>[`get${T}`]' is not assignable to type 'T'.
+mappedTypeConstraints2.ts(58,7): error TS2322: Type 'Mapped8<K>[keyof Mapped8<K>]' is not assignable to type '`_${string}` | `_${string}_`'.
+  Type 'Mapped8<K>[string] | Mapped8<K>[number] | Mapped8<K>[symbol]' is not assignable to type '`_${string}` | `_${string}_`'.
+    Type 'Mapped8<K>[string]' is not assignable to type '`_${string}` | `_${string}_`'.
+mappedTypeConstraints2.ts(67,57): error TS2322: Type 'Foo<T>[`get${T}`]' is not assignable to type 'T'.
   'T' could be instantiated with an arbitrary type which could be unrelated to 'Foo<T>[`get${T}`]'.
-mappedTypeConstraints2.ts(82,9): error TS2322: Type 'ObjectWithUnderscoredKeys<K>[`_${K}`]' is not assignable to type 'true'.
+mappedTypeConstraints2.ts(98,9): error TS2322: Type 'ObjectWithUnderscoredKeys<K>[`_${K}`]' is not assignable to type 'true'.
   Type 'ObjectWithUnderscoredKeys<K>[`_${string}`]' is not assignable to type 'true'.
 
 
-==== mappedTypeConstraints2.ts (5 errors) ====
+==== mappedTypeConstraints2.ts (6 errors) ====
     type Mapped1<K extends string> = { [P in K]: { a: P } };
     
     function f1<K extends string>(obj: Mapped1<K>, key: K) {
@@ -66,6 +69,26 @@ mappedTypeConstraints2.ts(82,9): error TS2322: Type 'ObjectWithUnderscoredKeys<K
 !!! error TS2322: Type 'Mapped6<K>[keyof Mapped6<K>]' is not assignable to type '`_${string}`'.
 !!! error TS2322:   Type 'Mapped6<K>[string] | Mapped6<K>[number] | Mapped6<K>[symbol]' is not assignable to type '`_${string}`'.
 !!! error TS2322:     Type 'Mapped6<K>[string]' is not assignable to type '`_${string}`'.
+    }
+    
+    type Mapped7<K extends string> = {
+      [P in K as [P] extends [`_${string}`] ? P : never]: P;
+    };
+    
+    function f7<K extends string>(obj: Mapped7<K>, key: keyof Mapped7<K>) {
+      let s: `_${string}` = obj[key];
+    }
+    
+    type Mapped8<K extends string> = {
+      [P in K as P extends `_${string}` ? P | `${P}_` : never]: P;
+    };
+    
+    function f8<K extends string>(obj: Mapped8<K>, key: keyof Mapped8<K>) {
+      let s: `_${string}` | `_${string}_` = obj[key];
+          ~
+!!! error TS2322: Type 'Mapped8<K>[keyof Mapped8<K>]' is not assignable to type '`_${string}` | `_${string}_`'.
+!!! error TS2322:   Type 'Mapped8<K>[string] | Mapped8<K>[number] | Mapped8<K>[symbol]' is not assignable to type '`_${string}` | `_${string}_`'.
+!!! error TS2322:     Type 'Mapped8<K>[string]' is not assignable to type '`_${string}` | `_${string}_`'.
     }
     
     // Repro from #47794

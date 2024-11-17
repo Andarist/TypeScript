@@ -1,7 +1,7 @@
 //// [tests/cases/compiler/intersectionsOfLargeUnions2.ts] ////
 
 === Performance Stats ===
-Assignability cache: 1,000
+Assignability cache: 2,500
 Type Count: 2,500
 
 === intersectionsOfLargeUnions2.ts ===

@@ -14692,18 +14692,9 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     undefined;
             }
             if (t.flags & TypeFlags.Index) {
-                if (isGenericMappedType((t as IndexType).type)) {
-                    const mappedType = (t as IndexType).type as MappedType;
-                    const nameType = getNameTypeFromMappedType(mappedType);
-                    if (nameType) {
-                        const typeParameter = getTypeParameterFromMappedType(mappedType);
-                        const keyTypes: Type[] = [];
-                        forEachType(getConstraintTypeFromMappedType(mappedType), (keyType) => {
-                            const propNameType = instantiateType(nameType, appendTypeMapping(mappedType.mapper, typeParameter, keyType));
-                            keyTypes.push(propNameType === stringType ? stringOrNumberType : propNameType);
-                        })
-                        return getBaseConstraint(getUnionType(keyTypes));
-                    }
+                debugger
+                if (isGenericMappedType((t as IndexType).type) && getNameTypeFromMappedType((t as IndexType).type as MappedType)) {
+                    return getBaseConstraint(getIndexType((t as IndexType).type, IndexFlags.NoNameTypeDeferral));
                 }
                 return stringNumberSymbolType;
             }
@@ -18198,7 +18189,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // trigger a circularity. For example, `T extends { [P in keyof T & string as Captitalize<P>]: any }` is
         // a circular definition. For this reason, we only eagerly manifest the keys if the constraint is non-generic.
         if (isGenericIndexType(constraintType)) {
-            if (isMappedTypeWithKeyofConstraintDeclaration(type) || nameType) {
+            if (isMappedTypeWithKeyofConstraintDeclaration(type) || nameType && !(indexFlags & IndexFlags.NoNameTypeDeferral)) {
                 // We have a generic index and a homomorphic mapping (but a distributive key remapping) - we need to defer
                 // the whole `keyof whatever` for later since it's not safe to resolve the shape of modifier type.
                 return getIndexTypeForGenericType(type, indexFlags);
@@ -23137,6 +23128,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             if (sourceFlags & TypeFlags.TypeVariable) {
                 // IndexedAccess comparisons are handled above in the `targetFlags & TypeFlage.IndexedAccess` branch
                 if (!(sourceFlags & TypeFlags.IndexedAccess && targetFlags & TypeFlags.IndexedAccess)) {
+                    // andarist
                     const constraint = getConstraintOfType(source as TypeVariable) || unknownType;
                     // hi-speed no-this-instantiation check (less accurate, but avoids costly `this`-instantiation when the constraint will suffice), see #28231 for report on why this is needed
                     if (result = isRelatedTo(constraint, target, RecursionFlags.Source, /*reportErrors*/ false, /*headMessage*/ undefined, intersectionState)) {
@@ -41942,9 +41934,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // Check if the index type is assignable to 'keyof T' for the object type.
         const objectType = (type as IndexedAccessType).objectType;
         const indexType = (type as IndexedAccessType).indexType;
-        const objectIndexType = getIndexType(objectType, IndexFlags.None);
         const hasNumberIndexInfo = !!getIndexInfoOfType(objectType, numberType);
-        if (everyType(indexType, t => isTypeAssignableTo(t, objectIndexType) || hasNumberIndexInfo && isApplicableIndexType(t, numberType))) {
+        if (everyType(indexType, t => isTypeAssignableTo(t, getIndexType(objectType, IndexFlags.NoNameTypeDeferral)) || hasNumberIndexInfo && isApplicableIndexType(t, numberType))) {
             if (
                 accessNode.kind === SyntaxKind.ElementAccessExpression && isAssignmentTarget(accessNode) &&
                 getObjectFlags(objectType) & ObjectFlags.Mapped && getMappedTypeModifiers(objectType as MappedType) & MappedTypeModifiers.IncludeReadonly
