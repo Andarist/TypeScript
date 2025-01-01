@@ -3,9 +3,9 @@
 === emitThisInObjectLiteralGetter.ts ===
 const example = {
 >example : { get foo(): (item: any) => any; }
->        : ^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^
+>        : ^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^
 >{    get foo() {        return item => this.bar(item);    }} : { get foo(): (item: any) => any; }
->                                                             : ^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^
+>                                                             : ^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^
 
     get foo() {
 >foo : (item: any) => any
