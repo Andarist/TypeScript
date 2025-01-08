@@ -1,0 +1,101 @@
+flattenExcludeExtract1.ts(23,3): error TS2322: Type 'Exclude<T, A | B | C>' is not assignable to type 'Exclude<T, A | B>'.
+  Type 'T' is not assignable to type 'Exclude<T, A | B>'.
+flattenExcludeExtract1.ts(24,3): error TS2322: Type 'Exclude<T, A | B>' is not assignable to type 'Exclude<T, A | B | C>'.
+  Type 'T' is not assignable to type 'Exclude<T, A | B | C>'.
+flattenExcludeExtract1.ts(31,3): error TS2322: Type 'Exclude<T, A | B>' is not assignable to type 'Exclude<T, A | B | C>'.
+  Type 'T' is not assignable to type 'Exclude<T, A | B | C>'.
+flattenExcludeExtract1.ts(32,3): error TS2322: Type 'Exclude<T, A | B | C>' is not assignable to type 'Exclude<T, A | B>'.
+  Type 'T' is not assignable to type 'Exclude<T, A | B>'.
+flattenExcludeExtract1.ts(47,3): error TS2322: Type 'Extract<T, A & B & C>' is not assignable to type 'Extract<T, B & A>'.
+  Type 'A & B & C & T' is not assignable to type 'Extract<T, B & A>'.
+flattenExcludeExtract1.ts(48,3): error TS2322: Type 'Extract<T, B & A>' is not assignable to type 'Extract<T, A & B & C>'.
+  Type 'B & A & T' is not assignable to type 'Extract<T, A & B & C>'.
+flattenExcludeExtract1.ts(55,3): error TS2322: Type 'Extract<T, A & B>' is not assignable to type 'Extract<T, C & B & A>'.
+  Type 'A & B & T' is not assignable to type 'Extract<T, C & B & A>'.
+flattenExcludeExtract1.ts(56,3): error TS2322: Type 'Extract<T, C & B & A>' is not assignable to type 'Extract<T, A & B>'.
+  Type 'C & B & A & T' is not assignable to type 'Extract<T, A & B>'.
+
+
+==== flattenExcludeExtract1.ts (8 errors) ====
+    interface A {
+      a: string;
+    }
+    interface B {
+      b: number;
+    }
+    interface C {
+      c: boolean;
+    }
+    
+    function test1<T>(
+      arg1: Exclude<Exclude<Exclude<T, A>, B>, C>,
+      arg2: Exclude<T, A | B | C>,
+    ) {
+      arg1 = arg2;
+      arg2 = arg1;
+    }
+    
+    function test2<T>(
+      arg1: Exclude<Exclude<T, A>, B>,
+      arg2: Exclude<T, A | B | C>,
+    ) {
+      arg1 = arg2;
+      ~~~~
+!!! error TS2322: Type 'Exclude<T, A | B | C>' is not assignable to type 'Exclude<T, A | B>'.
+!!! error TS2322:   Type 'T' is not assignable to type 'Exclude<T, A | B>'.
+      arg2 = arg1;
+      ~~~~
+!!! error TS2322: Type 'Exclude<T, A | B>' is not assignable to type 'Exclude<T, A | B | C>'.
+!!! error TS2322:   Type 'T' is not assignable to type 'Exclude<T, A | B | C>'.
+    }
+    
+    function test3<T>(
+      arg1: Exclude<Exclude<Exclude<T, A>, B>, C>,
+      arg2: Exclude<T, A | B>,
+    ) {
+      arg1 = arg2;
+      ~~~~
+!!! error TS2322: Type 'Exclude<T, A | B>' is not assignable to type 'Exclude<T, A | B | C>'.
+!!! error TS2322:   Type 'T' is not assignable to type 'Exclude<T, A | B | C>'.
+      arg2 = arg1;
+      ~~~~
+!!! error TS2322: Type 'Exclude<T, A | B | C>' is not assignable to type 'Exclude<T, A | B>'.
+!!! error TS2322:   Type 'T' is not assignable to type 'Exclude<T, A | B>'.
+    }
+    
+    function test4<T>(
+      arg1: Extract<Extract<Extract<T, A>, B>, C>,
+      arg2: Extract<T, A & B & C>,
+    ) {
+      arg1 = arg2;
+      arg2 = arg1;
+    }
+    
+    function test5<T>(
+      arg1: Extract<Extract<T, A>, B>,
+      arg2: Extract<T, A & B & C>,
+    ) {
+      arg1 = arg2;
+      ~~~~
+!!! error TS2322: Type 'Extract<T, A & B & C>' is not assignable to type 'Extract<T, B & A>'.
+!!! error TS2322:   Type 'A & B & C & T' is not assignable to type 'Extract<T, B & A>'.
+      arg2 = arg1;
+      ~~~~
+!!! error TS2322: Type 'Extract<T, B & A>' is not assignable to type 'Extract<T, A & B & C>'.
+!!! error TS2322:   Type 'B & A & T' is not assignable to type 'Extract<T, A & B & C>'.
+    }
+    
+    function test6<T>(
+      arg1: Extract<Extract<Extract<T, A>, B>, C>,
+      arg2: Extract<T, A & B>,
+    ) {
+      arg1 = arg2;
+      ~~~~
+!!! error TS2322: Type 'Extract<T, A & B>' is not assignable to type 'Extract<T, C & B & A>'.
+!!! error TS2322:   Type 'A & B & T' is not assignable to type 'Extract<T, C & B & A>'.
+      arg2 = arg1;
+      ~~~~
+!!! error TS2322: Type 'Extract<T, C & B & A>' is not assignable to type 'Extract<T, A & B>'.
+!!! error TS2322:   Type 'C & B & A & T' is not assignable to type 'Extract<T, A & B>'.
+    }
+    

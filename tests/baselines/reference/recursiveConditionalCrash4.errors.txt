@@ -1,8 +1,8 @@
 recursiveConditionalCrash4.ts(7,16): error TS2503: Cannot find namespace 'StrIter'.
 recursiveConditionalCrash4.ts(8,5): error TS2503: Cannot find namespace 'StrIter'.
+recursiveConditionalCrash4.ts(9,7): error TS2589: Type instantiation is excessively deep and possibly infinite.
 recursiveConditionalCrash4.ts(9,25): error TS2304: Cannot find name 'Add'.
 recursiveConditionalCrash4.ts(9,37): error TS2503: Cannot find namespace 'StrIter'.
-recursiveConditionalCrash4.ts(10,7): error TS2589: Type instantiation is excessively deep and possibly infinite.
 recursiveConditionalCrash4.ts(10,31): error TS2503: Cannot find namespace 'StrIter'.
 recursiveConditionalCrash4.ts(16,7): error TS2589: Type instantiation is excessively deep and possibly infinite.
 
@@ -21,13 +21,13 @@ recursiveConditionalCrash4.ts(16,7): error TS2589: Type instantiation is excessi
         ~~~~~~~
 !!! error TS2503: Cannot find namespace 'StrIter'.
         ? LengthDown<$Rest, Add<Length, StrIter.Value<It>>, It>
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2589: Type instantiation is excessively deep and possibly infinite.
                             ~~~
 !!! error TS2304: Cannot find name 'Add'.
                                         ~~~~~~~
 !!! error TS2503: Cannot find namespace 'StrIter'.
         : LengthDown<Str, Length, StrIter.Prev<It>>
-          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS2589: Type instantiation is excessively deep and possibly infinite.
                                   ~~~~~~~
 !!! error TS2503: Cannot find namespace 'StrIter'.
       : Length;

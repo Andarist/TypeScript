@@ -406,8 +406,8 @@ type TN2<T> = keyof { [P in keyof T as 'a' extends P ? 'x' : 'y']: string };
 >    : ^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 type TN3<T> = keyof { [P in keyof T as Exclude<Exclude<Exclude<P, 'c'>, 'b'>, 'a'>]: string };
->TN3 : keyof { [P in keyof T as Exclude<Exclude<Exclude<P, "c">, "b">, "a">]: string; }
->    : ^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>TN3 : keyof { [P in keyof T as Exclude<P, "a" | "b" | "c">]: string; }
+>    : ^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 type TN4<T, U> = keyof { [K in keyof T as (K extends U ? T[K] : never) extends T[K] ? K : never]: string };
 >TN4 : keyof { [K in keyof T as (K extends U ? T[K] : never) extends T[K] ? K : never]: string; }

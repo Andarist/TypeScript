@@ -1,0 +1,208 @@
+//// [tests/cases/compiler/flattenExcludeExtract1.ts] ////
+
+=== flattenExcludeExtract1.ts ===
+interface A {
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+
+  a: string;
+>a : Symbol(A.a, Decl(flattenExcludeExtract1.ts, 0, 13))
+}
+interface B {
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+
+  b: number;
+>b : Symbol(B.b, Decl(flattenExcludeExtract1.ts, 3, 13))
+}
+interface C {
+>C : Symbol(C, Decl(flattenExcludeExtract1.ts, 5, 1))
+
+  c: boolean;
+>c : Symbol(C.c, Decl(flattenExcludeExtract1.ts, 6, 13))
+}
+
+function test1<T>(
+>test1 : Symbol(test1, Decl(flattenExcludeExtract1.ts, 8, 1))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 10, 15))
+
+  arg1: Exclude<Exclude<Exclude<T, A>, B>, C>,
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 10, 18))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 10, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+>C : Symbol(C, Decl(flattenExcludeExtract1.ts, 5, 1))
+
+  arg2: Exclude<T, A | B | C>,
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 11, 46))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 10, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+>C : Symbol(C, Decl(flattenExcludeExtract1.ts, 5, 1))
+
+) {
+  arg1 = arg2;
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 10, 18))
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 11, 46))
+
+  arg2 = arg1;
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 11, 46))
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 10, 18))
+}
+
+function test2<T>(
+>test2 : Symbol(test2, Decl(flattenExcludeExtract1.ts, 16, 1))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 18, 15))
+
+  arg1: Exclude<Exclude<T, A>, B>,
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 18, 18))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 18, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+
+  arg2: Exclude<T, A | B | C>,
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 19, 34))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 18, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+>C : Symbol(C, Decl(flattenExcludeExtract1.ts, 5, 1))
+
+) {
+  arg1 = arg2;
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 18, 18))
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 19, 34))
+
+  arg2 = arg1;
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 19, 34))
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 18, 18))
+}
+
+function test3<T>(
+>test3 : Symbol(test3, Decl(flattenExcludeExtract1.ts, 24, 1))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 26, 15))
+
+  arg1: Exclude<Exclude<Exclude<T, A>, B>, C>,
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 26, 18))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 26, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+>C : Symbol(C, Decl(flattenExcludeExtract1.ts, 5, 1))
+
+  arg2: Exclude<T, A | B>,
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 27, 46))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 26, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+
+) {
+  arg1 = arg2;
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 26, 18))
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 27, 46))
+
+  arg2 = arg1;
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 27, 46))
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 26, 18))
+}
+
+function test4<T>(
+>test4 : Symbol(test4, Decl(flattenExcludeExtract1.ts, 32, 1))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 34, 15))
+
+  arg1: Extract<Extract<Extract<T, A>, B>, C>,
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 34, 18))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 34, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+>C : Symbol(C, Decl(flattenExcludeExtract1.ts, 5, 1))
+
+  arg2: Extract<T, A & B & C>,
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 35, 46))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 34, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+>C : Symbol(C, Decl(flattenExcludeExtract1.ts, 5, 1))
+
+) {
+  arg1 = arg2;
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 34, 18))
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 35, 46))
+
+  arg2 = arg1;
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 35, 46))
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 34, 18))
+}
+
+function test5<T>(
+>test5 : Symbol(test5, Decl(flattenExcludeExtract1.ts, 40, 1))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 42, 15))
+
+  arg1: Extract<Extract<T, A>, B>,
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 42, 18))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 42, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+
+  arg2: Extract<T, A & B & C>,
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 43, 34))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 42, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+>C : Symbol(C, Decl(flattenExcludeExtract1.ts, 5, 1))
+
+) {
+  arg1 = arg2;
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 42, 18))
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 43, 34))
+
+  arg2 = arg1;
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 43, 34))
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 42, 18))
+}
+
+function test6<T>(
+>test6 : Symbol(test6, Decl(flattenExcludeExtract1.ts, 48, 1))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 50, 15))
+
+  arg1: Extract<Extract<Extract<T, A>, B>, C>,
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 50, 18))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 50, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+>C : Symbol(C, Decl(flattenExcludeExtract1.ts, 5, 1))
+
+  arg2: Extract<T, A & B>,
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 51, 46))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(flattenExcludeExtract1.ts, 50, 15))
+>A : Symbol(A, Decl(flattenExcludeExtract1.ts, 0, 0))
+>B : Symbol(B, Decl(flattenExcludeExtract1.ts, 2, 1))
+
+) {
+  arg1 = arg2;
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 50, 18))
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 51, 46))
+
+  arg2 = arg1;
+>arg2 : Symbol(arg2, Decl(flattenExcludeExtract1.ts, 51, 46))
+>arg1 : Symbol(arg1, Decl(flattenExcludeExtract1.ts, 50, 18))
+}
+

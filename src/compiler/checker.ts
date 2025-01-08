@@ -20405,6 +20405,66 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     result = getConditionalType(root, newMapper, forConstraint, aliasSymbol, aliasTypeArguments, forNarrowing);
                 }
                 root.instantiations!.set(id, result);
+                const flattened = mapType(result, t => {
+                    if (!(t.flags & TypeFlags.Conditional)) {
+                        return t;
+                    }
+                    const result = t as ConditionalType;
+                    if (result.mapper && root.isDistributive && !root.inferTypeParameters) {
+                        const trueType = getActualTypeVariable(getTypeFromTypeNode(root.node.trueType));
+                        const falseType = getActualTypeVariable(getTypeFromTypeNode(root.node.falseType));
+                        if (falseType.flags & TypeFlags.Never && root.checkType.flags & TypeFlags.TypeVariable && trueType === root.checkType && result.checkType.flags & TypeFlags.Conditional) {
+                            const innerType = result.checkType as ConditionalType;
+                            const innerTrueType = getActualTypeVariable(getTypeFromTypeNode(innerType.root.node.trueType));
+                            if (
+                                innerType.root.isDistributive &&
+                                !innerType.root.inferTypeParameters &&
+                                getFalseTypeFromConditionalType(innerType).flags & TypeFlags.Never &&
+                                innerType.root.checkType.flags & TypeFlags.TypeVariable &&
+                                innerTrueType === innerType.root.checkType
+                            ) {
+                                result.checkType = instantiateType(innerType.root.checkType, innerType.mapper);
+                                result.extendsType = getIntersectionType([result.extendsType, innerType.extendsType]);
+                                const rewiredMapper = makeArrayTypeMapper(
+                                    [root.checkType, root.extendsType],
+                                    [result.checkType, result.extendsType],
+                                );
+                                result.mapper = mergeTypeMappers(rewiredMapper, result.mapper);
+
+                                if (!aliasSymbol && result.aliasSymbol === innerType.aliasSymbol) {
+                                    result.aliasTypeArguments = instantiateTypes(root.aliasTypeArguments, result.mapper);
+                                }
+                            }
+                        }
+                        else if (trueType.flags & TypeFlags.Never && root.checkType.flags & TypeFlags.TypeVariable && falseType === root.checkType && result.checkType.flags & TypeFlags.Conditional) {
+                            const innerType = result.checkType as ConditionalType;
+                            const innerFalseType = getActualTypeVariable(getTypeFromTypeNode(innerType.root.node.falseType));
+                            if (
+                                innerType.root.isDistributive &&
+                                !innerType.root.inferTypeParameters &&
+                                getTrueTypeFromConditionalType(innerType).flags & TypeFlags.Never &&
+                                innerType.root.checkType.flags & TypeFlags.TypeVariable &&
+                                innerFalseType === innerType.root.checkType
+                            ) {
+                                result.checkType = instantiateType(innerType.root.checkType, innerType.mapper);
+                                result.extendsType = getUnionType([result.extendsType, innerType.extendsType]);
+                                const rewiredMapper = makeArrayTypeMapper(
+                                    [root.checkType, root.extendsType],
+                                    [result.checkType, result.extendsType],
+                                );
+                                result.mapper = mergeTypeMappers(rewiredMapper, result.mapper);
+
+                                if (!aliasSymbol && result.aliasSymbol === innerType.aliasSymbol) {
+                                    result.aliasTypeArguments = instantiateTypes(root.aliasTypeArguments, result.mapper);
+                                }
+                            }
+                        }
+                    }
+                    return result;
+                });
+                if (flattened !== result) {
+                    root.instantiations!.set(id, flattened);
+                }
             }
             return result;
         }

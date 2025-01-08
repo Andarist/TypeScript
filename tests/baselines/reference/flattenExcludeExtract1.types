@@ -1,0 +1,199 @@
+//// [tests/cases/compiler/flattenExcludeExtract1.ts] ////
+
+=== flattenExcludeExtract1.ts ===
+interface A {
+  a: string;
+>a : string
+>  : ^^^^^^
+}
+interface B {
+  b: number;
+>b : number
+>  : ^^^^^^
+}
+interface C {
+  c: boolean;
+>c : boolean
+>  : ^^^^^^^
+}
+
+function test1<T>(
+>test1 : <T>(arg1: Exclude<Exclude<Exclude<T, A>, B>, C>, arg2: Exclude<T, A | B | C>) => void
+>      : ^ ^^    ^^                                     ^^    ^^                     ^^^^^^^^^
+
+  arg1: Exclude<Exclude<Exclude<T, A>, B>, C>,
+>arg1 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+  arg2: Exclude<T, A | B | C>,
+>arg2 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+) {
+  arg1 = arg2;
+>arg1 = arg2 : Exclude<T, A | B | C>
+>            : ^^^^^^^^^^^^^^^^^^^^^
+>arg1 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+>arg2 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+  arg2 = arg1;
+>arg2 = arg1 : Exclude<T, A | B | C>
+>            : ^^^^^^^^^^^^^^^^^^^^^
+>arg2 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+>arg1 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+}
+
+function test2<T>(
+>test2 : <T>(arg1: Exclude<Exclude<T, A>, B>, arg2: Exclude<T, A | B | C>) => void
+>      : ^ ^^    ^^                         ^^    ^^                     ^^^^^^^^^
+
+  arg1: Exclude<Exclude<T, A>, B>,
+>arg1 : Exclude<T, A | B>
+>     : ^^^^^^^^^^^^^^^^^
+
+  arg2: Exclude<T, A | B | C>,
+>arg2 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+) {
+  arg1 = arg2;
+>arg1 = arg2 : Exclude<T, A | B | C>
+>            : ^^^^^^^^^^^^^^^^^^^^^
+>arg1 : Exclude<T, A | B>
+>     : ^^^^^^^^^^^^^^^^^
+>arg2 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+  arg2 = arg1;
+>arg2 = arg1 : Exclude<T, A | B>
+>            : ^^^^^^^^^^^^^^^^^
+>arg2 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+>arg1 : Exclude<T, A | B>
+>     : ^^^^^^^^^^^^^^^^^
+}
+
+function test3<T>(
+>test3 : <T>(arg1: Exclude<Exclude<Exclude<T, A>, B>, C>, arg2: Exclude<T, A | B>) => void
+>      : ^ ^^    ^^                                     ^^    ^^                 ^^^^^^^^^
+
+  arg1: Exclude<Exclude<Exclude<T, A>, B>, C>,
+>arg1 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+  arg2: Exclude<T, A | B>,
+>arg2 : Exclude<T, A | B>
+>     : ^^^^^^^^^^^^^^^^^
+
+) {
+  arg1 = arg2;
+>arg1 = arg2 : Exclude<T, A | B>
+>            : ^^^^^^^^^^^^^^^^^
+>arg1 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+>arg2 : Exclude<T, A | B>
+>     : ^^^^^^^^^^^^^^^^^
+
+  arg2 = arg1;
+>arg2 = arg1 : Exclude<T, A | B | C>
+>            : ^^^^^^^^^^^^^^^^^^^^^
+>arg2 : Exclude<T, A | B>
+>     : ^^^^^^^^^^^^^^^^^
+>arg1 : Exclude<T, A | B | C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+}
+
+function test4<T>(
+>test4 : <T>(arg1: Extract<Extract<Extract<T, A>, B>, C>, arg2: Extract<T, A & B & C>) => void
+>      : ^ ^^    ^^                                     ^^    ^^                     ^^^^^^^^^
+
+  arg1: Extract<Extract<Extract<T, A>, B>, C>,
+>arg1 : Extract<T, C & B & A>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+  arg2: Extract<T, A & B & C>,
+>arg2 : Extract<T, A & B & C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+) {
+  arg1 = arg2;
+>arg1 = arg2 : Extract<T, A & B & C>
+>            : ^^^^^^^^^^^^^^^^^^^^^
+>arg1 : Extract<T, C & B & A>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+>arg2 : Extract<T, A & B & C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+  arg2 = arg1;
+>arg2 = arg1 : Extract<T, C & B & A>
+>            : ^^^^^^^^^^^^^^^^^^^^^
+>arg2 : Extract<T, A & B & C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+>arg1 : Extract<T, C & B & A>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+}
+
+function test5<T>(
+>test5 : <T>(arg1: Extract<Extract<T, A>, B>, arg2: Extract<T, A & B & C>) => void
+>      : ^ ^^    ^^                         ^^    ^^                     ^^^^^^^^^
+
+  arg1: Extract<Extract<T, A>, B>,
+>arg1 : Extract<T, B & A>
+>     : ^^^^^^^^^^^^^^^^^
+
+  arg2: Extract<T, A & B & C>,
+>arg2 : Extract<T, A & B & C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+) {
+  arg1 = arg2;
+>arg1 = arg2 : Extract<T, A & B & C>
+>            : ^^^^^^^^^^^^^^^^^^^^^
+>arg1 : Extract<T, B & A>
+>     : ^^^^^^^^^^^^^^^^^
+>arg2 : Extract<T, A & B & C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+  arg2 = arg1;
+>arg2 = arg1 : Extract<T, B & A>
+>            : ^^^^^^^^^^^^^^^^^
+>arg2 : Extract<T, A & B & C>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+>arg1 : Extract<T, B & A>
+>     : ^^^^^^^^^^^^^^^^^
+}
+
+function test6<T>(
+>test6 : <T>(arg1: Extract<Extract<Extract<T, A>, B>, C>, arg2: Extract<T, A & B>) => void
+>      : ^ ^^    ^^                                     ^^    ^^                 ^^^^^^^^^
+
+  arg1: Extract<Extract<Extract<T, A>, B>, C>,
+>arg1 : Extract<T, C & B & A>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+
+  arg2: Extract<T, A & B>,
+>arg2 : Extract<T, A & B>
+>     : ^^^^^^^^^^^^^^^^^
+
+) {
+  arg1 = arg2;
+>arg1 = arg2 : Extract<T, A & B>
+>            : ^^^^^^^^^^^^^^^^^
+>arg1 : Extract<T, C & B & A>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+>arg2 : Extract<T, A & B>
+>     : ^^^^^^^^^^^^^^^^^
+
+  arg2 = arg1;
+>arg2 = arg1 : Extract<T, C & B & A>
+>            : ^^^^^^^^^^^^^^^^^^^^^
+>arg2 : Extract<T, A & B>
+>     : ^^^^^^^^^^^^^^^^^
+>arg1 : Extract<T, C & B & A>
+>     : ^^^^^^^^^^^^^^^^^^^^^
+}
+
