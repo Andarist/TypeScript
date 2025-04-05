@@ -2348,6 +2348,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     var reverseMappedSourceStack: Type[] = [];
     var reverseMappedTargetStack: Type[] = [];
     var reverseExpandingFlags = ExpandingFlags.None;
+    var isInTypeWithAlias = false;
 
     var diagnostics = createDiagnosticCollection();
     var suggestionDiagnostics = createDiagnosticCollection();
@@ -20103,9 +20104,12 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             // mapper to the type parameters to produce the effective list of type arguments, and compute the
             // instantiation cache key from the type IDs of the type arguments.
             const combinedMapper = combineTypeMappers(type.mapper, mapper);
+            const newAliasSymbol = !isInTypeWithAlias ? aliasSymbol || type.aliasSymbol : undefined;
+            const saveIsInTypeWithAlias = isInTypeWithAlias;
+            isInTypeWithAlias = saveIsInTypeWithAlias || !!newAliasSymbol;
             const typeArguments = map(typeParameters, t => getMappedType(t, combinedMapper));
-            const newAliasSymbol = aliasSymbol || type.aliasSymbol;
-            const newAliasTypeArguments = aliasSymbol ? aliasTypeArguments : instantiateTypes(type.aliasTypeArguments, mapper);
+            isInTypeWithAlias = saveIsInTypeWithAlias;
+            const newAliasTypeArguments = !isInTypeWithAlias ? (aliasSymbol ? aliasTypeArguments : instantiateTypes(type.aliasTypeArguments, mapper)) : undefined;
             const id = (type.objectFlags & ObjectFlags.SingleSignatureType ? "S" : "") + getTypeListId(typeArguments) + getAliasId(newAliasSymbol, newAliasTypeArguments);
             if (!target.instantiations) {
                 target.instantiations = new Map<string, Type>();
