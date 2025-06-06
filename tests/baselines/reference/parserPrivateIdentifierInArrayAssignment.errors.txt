@@ -1,11 +1,14 @@
 parserPrivateIdentifierInArrayAssignment.ts(1,2): error TS2364: The left-hand side of an assignment expression must be a variable or a property access.
+parserPrivateIdentifierInArrayAssignment.ts(1,2): error TS18016: Private identifiers are not allowed outside class bodies.
 parserPrivateIdentifierInArrayAssignment.ts(1,8): error TS1109: Expression expected.
 
 
-==== parserPrivateIdentifierInArrayAssignment.ts (2 errors) ====
+==== parserPrivateIdentifierInArrayAssignment.ts (3 errors) ====
     [#abc]=
      ~~~~
 !!! error TS2364: The left-hand side of an assignment expression must be a variable or a property access.
+     ~~~~
+!!! error TS18016: Private identifiers are not allowed outside class bodies.
            
 !!! error TS1109: Expression expected.
     

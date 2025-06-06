@@ -1,10 +1,13 @@
+MemberFunctionDeclaration6_es6.ts(2,4): error TS1222: An overload signature cannot be declared as a generator.
 MemberFunctionDeclaration6_es6.ts(2,5): error TS2391: Function implementation is missing or not immediately following the declaration.
 MemberFunctionDeclaration6_es6.ts(3,1): error TS1005: '(' expected.
 
 
-==== MemberFunctionDeclaration6_es6.ts (2 errors) ====
+==== MemberFunctionDeclaration6_es6.ts (3 errors) ====
     class C {
        *foo
+       ~
+!!! error TS1222: An overload signature cannot be declared as a generator.
         ~~~
 !!! error TS2391: Function implementation is missing or not immediately following the declaration.
     }

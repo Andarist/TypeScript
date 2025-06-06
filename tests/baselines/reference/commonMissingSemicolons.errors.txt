@@ -20,6 +20,7 @@ commonMissingSemicolons.ts(16,1): error TS2304: Cannot find name 'constd'.
 commonMissingSemicolons.ts(16,8): error TS2304: Cannot find name 'myConst3'.
 commonMissingSemicolons.ts(19,1): error TS1435: Unknown keyword or identifier. Did you mean 'declare'?
 commonMissingSemicolons.ts(19,1): error TS2304: Cannot find name 'declared'.
+commonMissingSemicolons.ts(19,16): error TS1155: 'const' declarations must be initialized.
 commonMissingSemicolons.ts(20,1): error TS2304: Cannot find name 'declare'.
 commonMissingSemicolons.ts(20,9): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
 commonMissingSemicolons.ts(20,9): error TS2304: Cannot find name 'constd'.
@@ -47,6 +48,7 @@ commonMissingSemicolons.ts(33,1): error TS2693: 'interface' only refers to a typ
 commonMissingSemicolons.ts(33,11): error TS2427: Interface name cannot be 'void'.
 commonMissingSemicolons.ts(34,1): error TS1435: Unknown keyword or identifier. Did you mean 'interface MyInterface'?
 commonMissingSemicolons.ts(34,1): error TS2304: Cannot find name 'interfaceMyInterface'.
+commonMissingSemicolons.ts(36,5): error TS2480: 'let' is not allowed to be used as a name in 'let' or 'const' declarations.
 commonMissingSemicolons.ts(38,1): error TS1435: Unknown keyword or identifier. Did you mean 'let'?
 commonMissingSemicolons.ts(38,1): error TS2304: Cannot find name 'letd'.
 commonMissingSemicolons.ts(38,6): error TS2304: Cannot find name 'let2'.
@@ -76,7 +78,7 @@ commonMissingSemicolons.ts(75,11): error TS1005: ';' expected.
 commonMissingSemicolons.ts(78,1): error TS1128: Declaration or statement expected.
 
 
-==== commonMissingSemicolons.ts (76 errors) ====
+==== commonMissingSemicolons.ts (78 errors) ====
     async function myAsyncFunction1() {}
     asynd function myAsyncFunction2() {}
     ~~~~~
@@ -143,6 +145,8 @@ commonMissingSemicolons.ts(78,1): error TS1128: Declaration or statement expecte
 !!! error TS1435: Unknown keyword or identifier. Did you mean 'declare'?
     ~~~~~~~~
 !!! error TS2304: Cannot find name 'declared'.
+                   ~~~~~~~~~~~~~~~
+!!! error TS1155: 'const' declarations must be initialized.
     declare constd myDeclareConst3: 1;
     ~~~~~~~
 !!! error TS2304: Cannot find name 'declare'.
@@ -214,6 +218,8 @@ commonMissingSemicolons.ts(78,1): error TS1128: Declaration or statement expecte
 !!! error TS2304: Cannot find name 'interfaceMyInterface'.
     
     let let = 1;
+        ~~~
+!!! error TS2480: 'let' is not allowed to be used as a name in 'let' or 'const' declarations.
     let let1 = 1;
     letd let2 = 1;
     ~~~~

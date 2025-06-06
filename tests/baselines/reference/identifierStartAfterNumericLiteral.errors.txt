@@ -27,17 +27,24 @@ identifierStartAfterNumericLiteral.ts(18,3): error TS1124: Digit expected.
 identifierStartAfterNumericLiteral.ts(18,3): error TS2304: Cannot find name 'e'.
 identifierStartAfterNumericLiteral.ts(19,5): error TS1124: Digit expected.
 identifierStartAfterNumericLiteral.ts(19,5): error TS2304: Cannot find name 'e'.
+identifierStartAfterNumericLiteral.ts(20,1): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+identifierStartAfterNumericLiteral.ts(21,1): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+identifierStartAfterNumericLiteral.ts(22,1): error TS2737: BigInt literals are not available when targeting lower than ES2020.
 identifierStartAfterNumericLiteral.ts(22,3): error TS1005: ';' expected.
+identifierStartAfterNumericLiteral.ts(23,1): error TS2737: BigInt literals are not available when targeting lower than ES2020.
 identifierStartAfterNumericLiteral.ts(23,5): error TS1005: ';' expected.
+identifierStartAfterNumericLiteral.ts(24,1): error TS2737: BigInt literals are not available when targeting lower than ES2020.
 identifierStartAfterNumericLiteral.ts(24,3): error TS1351: An identifier or keyword cannot immediately follow a numeric literal.
 identifierStartAfterNumericLiteral.ts(24,3): error TS2304: Cannot find name 'a'.
+identifierStartAfterNumericLiteral.ts(25,1): error TS2737: BigInt literals are not available when targeting lower than ES2020.
 identifierStartAfterNumericLiteral.ts(25,5): error TS1351: An identifier or keyword cannot immediately follow a numeric literal.
 identifierStartAfterNumericLiteral.ts(25,5): error TS2304: Cannot find name 'a'.
+identifierStartAfterNumericLiteral.ts(26,1): error TS2737: BigInt literals are not available when targeting lower than ES2020.
 identifierStartAfterNumericLiteral.ts(26,5): error TS1351: An identifier or keyword cannot immediately follow a numeric literal.
 identifierStartAfterNumericLiteral.ts(26,5): error TS2304: Cannot find name 'abc'.
 
 
-==== identifierStartAfterNumericLiteral.ts (37 errors) ====
+==== identifierStartAfterNumericLiteral.ts (44 errors) ====
     let valueIn = 3in[null];
                    ~~
 !!! error TS1351: An identifier or keyword cannot immediately follow a numeric literal.
@@ -116,24 +123,38 @@ identifierStartAfterNumericLiteral.ts(26,5): error TS2304: Cannot find name 'abc
         ~
 !!! error TS2304: Cannot find name 'e'.
     1n
+    ~~
+!!! error TS2737: BigInt literals are not available when targeting lower than ES2020.
     123n
+    ~~~~
+!!! error TS2737: BigInt literals are not available when targeting lower than ES2020.
     2n2
+    ~~
+!!! error TS2737: BigInt literals are not available when targeting lower than ES2020.
       ~
 !!! error TS1005: ';' expected.
     123n2
+    ~~~~
+!!! error TS2737: BigInt literals are not available when targeting lower than ES2020.
         ~
 !!! error TS1005: ';' expected.
     2na
+    ~~
+!!! error TS2737: BigInt literals are not available when targeting lower than ES2020.
       ~
 !!! error TS1351: An identifier or keyword cannot immediately follow a numeric literal.
       ~
 !!! error TS2304: Cannot find name 'a'.
     123na
+    ~~~~
+!!! error TS2737: BigInt literals are not available when targeting lower than ES2020.
         ~
 !!! error TS1351: An identifier or keyword cannot immediately follow a numeric literal.
         ~
 !!! error TS2304: Cannot find name 'a'.
     123nabc
+    ~~~~
+!!! error TS2737: BigInt literals are not available when targeting lower than ES2020.
         ~~~
 !!! error TS1351: An identifier or keyword cannot immediately follow a numeric literal.
         ~~~

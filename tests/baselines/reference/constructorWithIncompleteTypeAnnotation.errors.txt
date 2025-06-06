@@ -64,6 +64,7 @@ constructorWithIncompleteTypeAnnotation.ts(246,25): error TS2551: Property 'meth
 constructorWithIncompleteTypeAnnotation.ts(254,9): error TS2390: Constructor implementation is missing.
 constructorWithIncompleteTypeAnnotation.ts(254,21): error TS2369: A parameter property is only allowed in a constructor implementation.
 constructorWithIncompleteTypeAnnotation.ts(254,44): error TS2369: A parameter property is only allowed in a constructor implementation.
+constructorWithIncompleteTypeAnnotation.ts(254,67): error TS1093: Type annotation cannot appear on a constructor declaration.
 constructorWithIncompleteTypeAnnotation.ts(254,69): error TS1110: Type expected.
 constructorWithIncompleteTypeAnnotation.ts(256,9): error TS1128: Declaration or statement expected.
 constructorWithIncompleteTypeAnnotation.ts(256,16): error TS2304: Cannot find name 'Overloads'.
@@ -90,7 +91,7 @@ constructorWithIncompleteTypeAnnotation.ts(259,55): error TS1005: ';' expected.
 constructorWithIncompleteTypeAnnotation.ts(261,1): error TS1128: Declaration or statement expected.
 
 
-==== constructorWithIncompleteTypeAnnotation.ts (90 errors) ====
+==== constructorWithIncompleteTypeAnnotation.ts (91 errors) ====
     declare module "fs" {
         export class File {
             constructor(filename: string);
@@ -482,6 +483,8 @@ constructorWithIncompleteTypeAnnotation.ts(261,1): error TS1128: Declaration or 
 !!! error TS2369: A parameter property is only allowed in a constructor implementation.
                                                ~~~~~~~~~~~~~~~~~~~
 !!! error TS2369: A parameter property is only allowed in a constructor implementation.
+                                                                      
+!!! error TS1093: Type annotation cannot appear on a constructor declaration.
                                                                         ~
 !!! error TS1110: Type expected.
            

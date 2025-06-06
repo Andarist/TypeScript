@@ -29,9 +29,10 @@ jsxNamespacePrefixInNameReact.tsx(26,42): error TS1109: Expression expected.
 jsxNamespacePrefixInNameReact.tsx(27,29): error TS1003: Identifier expected.
 jsxNamespacePrefixInNameReact.tsx(27,31): error TS1005: '...' expected.
 jsxNamespacePrefixInNameReact.tsx(27,31): error TS2698: Spread types may only be created from object types.
+jsxNamespacePrefixInNameReact.tsx(30,25): error TS2639: React components cannot include JSX namespace names
 
 
-==== jsxNamespacePrefixInNameReact.tsx (31 errors) ====
+==== jsxNamespacePrefixInNameReact.tsx (32 errors) ====
     declare var React: any;
     
     var justElement1 = <a:element />;
@@ -124,4 +125,6 @@ jsxNamespacePrefixInNameReact.tsx(27,31): error TS2698: Spread types may only be
     
     var upcaseComponent1 = <ns:Upcase />;  // Parsed as intrinsic
     var upcaseComponent2 = <Upcase:element />;  // Parsed as instrinsic
+                            ~~~~~~~~~~~~~~
+!!! error TS2639: React components cannot include JSX namespace names
     

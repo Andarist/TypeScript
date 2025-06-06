@@ -76,6 +76,7 @@ thisTypeInFunctionsNegative.ts(162,9): error TS2681: A constructor cannot have a
 thisTypeInFunctionsNegative.ts(164,31): error TS2681: A constructor cannot have a 'this' parameter.
 thisTypeInFunctionsNegative.ts(165,30): error TS2680: A 'this' parameter must be the first parameter.
 thisTypeInFunctionsNegative.ts(168,20): error TS1433: Neither decorators nor modifiers may be applied to 'this' parameters.
+thisTypeInFunctionsNegative.ts(169,20): error TS1014: A rest parameter must be last in a parameter list.
 thisTypeInFunctionsNegative.ts(169,23): error TS1359: Identifier expected. 'this' is a reserved word that cannot be used here.
 thisTypeInFunctionsNegative.ts(169,23): error TS2680: A 'this' parameter must be the first parameter.
 thisTypeInFunctionsNegative.ts(170,23): error TS1005: ',' expected.
@@ -94,7 +95,7 @@ thisTypeInFunctionsNegative.ts(177,19): error TS2730: An arrow function cannot h
 thisTypeInFunctionsNegative.ts(178,22): error TS2730: An arrow function cannot have a 'this' parameter.
 
 
-==== thisTypeInFunctionsNegative.ts (63 errors) ====
+==== thisTypeInFunctionsNegative.ts (64 errors) ====
     class C {
         n: number;
         explicitThis(this: this, m: number): number {
@@ -399,6 +400,8 @@ thisTypeInFunctionsNegative.ts(178,22): error TS2730: An arrow function cannot h
                        ~~~~~
 !!! error TS1433: Neither decorators nor modifiers may be applied to 'this' parameters.
     function restParam(...this: C): number { return this.n; }
+                       ~~~
+!!! error TS1014: A rest parameter must be last in a parameter list.
                           ~~~~
 !!! error TS1359: Identifier expected. 'this' is a reserved word that cannot be used here.
                           ~~~~~~~

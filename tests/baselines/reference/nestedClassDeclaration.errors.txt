@@ -3,10 +3,11 @@ nestedClassDeclaration.ts(7,1): error TS1128: Declaration or statement expected.
 nestedClassDeclaration.ts(15,11): error TS1005: ':' expected.
 nestedClassDeclaration.ts(15,11): error TS2304: Cannot find name 'C4'.
 nestedClassDeclaration.ts(15,14): error TS1005: ',' expected.
+nestedClassDeclaration.ts(15,14): error TS1182: A destructuring declaration must have an initializer.
 nestedClassDeclaration.ts(17,1): error TS1128: Declaration or statement expected.
 
 
-==== nestedClassDeclaration.ts (6 errors) ====
+==== nestedClassDeclaration.ts (7 errors) ====
     // nested classes are not allowed
     
     class C {
@@ -32,7 +33,10 @@ nestedClassDeclaration.ts(17,1): error TS1128: Declaration or statement expected
 !!! error TS2304: Cannot find name 'C4'.
                  ~
 !!! error TS1005: ',' expected.
+                 ~
         }
+    ~~~~~
+!!! error TS1182: A destructuring declaration must have an initializer.
     }
     ~
 !!! error TS1128: Declaration or statement expected.

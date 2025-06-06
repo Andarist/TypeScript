@@ -108,9 +108,10 @@ parserharness.ts(1785,25): error TS2503: Cannot find namespace 'Services'.
 parserharness.ts(1787,38): error TS2503: Cannot find namespace 'Services'.
 parserharness.ts(1787,68): error TS2503: Cannot find namespace 'Services'.
 parserharness.ts(2030,32): error TS2304: Cannot find name 'Diff'.
+parserharness.ts(2047,13): error TS1015: Parameter cannot have question mark and initializer.
 
 
-==== parserharness.ts (110 errors) ====
+==== parserharness.ts (111 errors) ====
     //﻿
     // Copyright (c) Microsoft Corporation.  All rights reserved.
     // 
@@ -2378,6 +2379,8 @@ parserharness.ts(2030,32): error TS2304: Cannot find name 'Diff'.
                 relativeFilename: string,
                 generateContent: () => string,
                 runImmediately? = false,
+                ~~~~~~~~~~~~~~
+!!! error TS1015: Parameter cannot have question mark and initializer.
                 opts?: BaselineOptions) {
     
                 var actual = <string>undefined;

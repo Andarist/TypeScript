@@ -1,9 +1,12 @@
+restParamModifier.ts(2,17): error TS1014: A rest parameter must be last in a parameter list.
 restParamModifier.ts(2,27): error TS1005: ',' expected.
 
 
-==== restParamModifier.ts (1 errors) ====
+==== restParamModifier.ts (2 errors) ====
     class C {
         constructor(...public rest: string[]) {}
+                    ~~~
+!!! error TS1014: A rest parameter must be last in a parameter list.
                               ~~~~
 !!! error TS1005: ',' expected.
     }

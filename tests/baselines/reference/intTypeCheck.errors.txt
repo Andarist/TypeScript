@@ -1,5 +1,9 @@
 intTypeCheck.ts(35,6): error TS2304: Cannot find name 'p'.
+intTypeCheck.ts(37,5): error TS1021: An index signature must have a type annotation.
+intTypeCheck.ts(38,6): error TS1096: An index signature must have exactly one parameter.
 intTypeCheck.ts(71,6): error TS2304: Cannot find name 'p'.
+intTypeCheck.ts(73,5): error TS1021: An index signature must have a type annotation.
+intTypeCheck.ts(74,6): error TS1096: An index signature must have exactly one parameter.
 intTypeCheck.ts(85,5): error TS2386: Overload signatures must all be optional or required.
 intTypeCheck.ts(99,5): error TS2696: The 'Object' type is assignable to very few other types. Did you mean to use the 'any' type instead?
   Type 'Object' is missing the following properties from type 'i1': p, p3, p6
@@ -96,7 +100,7 @@ intTypeCheck.ts(205,21): error TS2351: This expression is not constructable.
   Type '{}' has no construct signatures.
 
 
-==== intTypeCheck.ts (63 errors) ====
+==== intTypeCheck.ts (67 errors) ====
     interface i1 {
         //Property Signatures
         p;
@@ -136,7 +140,11 @@ intTypeCheck.ts(205,21): error TS2351: This expression is not constructable.
 !!! error TS2304: Cannot find name 'p'.
         //Index Signatures
         [p1: string];
+        ~~~~~~~~~~~~~
+!!! error TS1021: An index signature must have a type annotation.
         [p2: string, p3: number];
+         ~~
+!!! error TS1096: An index signature must have exactly one parameter.
     }
     interface i5 extends i1 { }
     interface i6 extends i2 { }
@@ -174,7 +182,11 @@ intTypeCheck.ts(205,21): error TS2351: This expression is not constructable.
 !!! error TS2304: Cannot find name 'p'.
         //Index Signatures
         [p1: string];
+        ~~~~~~~~~~~~~
+!!! error TS1021: An index signature must have a type annotation.
         [p2: string, p3: number];
+         ~~
+!!! error TS1096: An index signature must have exactly one parameter.
     
         //Property Signatures
         p;

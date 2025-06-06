@@ -24,6 +24,7 @@ reservedWords2.ts(8,10): error TS2300: Duplicate identifier '(Missing)'.
 reservedWords2.ts(8,10): error TS1005: ':' expected.
 reservedWords2.ts(8,30): error TS2300: Duplicate identifier '(Missing)'.
 reservedWords2.ts(8,30): error TS1005: ':' expected.
+reservedWords2.ts(9,5): error TS1182: A destructuring declaration must have an initializer.
 reservedWords2.ts(9,6): error TS1181: Array element destructuring pattern expected.
 reservedWords2.ts(9,14): error TS1005: ';' expected.
 reservedWords2.ts(9,18): error TS1005: '(' expected.
@@ -35,7 +36,7 @@ reservedWords2.ts(12,13): error TS1359: Identifier expected. 'null' is a reserve
 reservedWords2.ts(12,17): error TS1138: Parameter declaration expected.
 
 
-==== reservedWords2.ts (35 errors) ====
+==== reservedWords2.ts (36 errors) ====
     import while = require("dfdf");
            ~~~~~
 !!! error TS1109: Expression expected.
@@ -97,6 +98,8 @@ reservedWords2.ts(12,17): error TS1138: Parameter declaration expected.
                                  ~
 !!! error TS1005: ':' expected.
     var [debugger, if] = [1, 2];
+        ~
+!!! error TS1182: A destructuring declaration must have an initializer.
          ~~~~~~~~
 !!! error TS1181: Array element destructuring pattern expected.
                  ~

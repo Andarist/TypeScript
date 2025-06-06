@@ -213,6 +213,7 @@ parserRealSource11.ts(838,24): error TS2304: Cannot find name 'ModuleType'.
 parserRealSource11.ts(841,61): error TS2304: Cannot find name 'TypeSymbol'.
 parserRealSource11.ts(850,52): error TS2304: Cannot find name 'TokenID'.
 parserRealSource11.ts(863,36): error TS2304: Cannot find name 'TypeFlow'.
+parserRealSource11.ts(867,29): error TS1015: Parameter cannot have question mark and initializer.
 parserRealSource11.ts(868,38): error TS2304: Cannot find name 'NodeType'.
 parserRealSource11.ts(877,40): error TS2304: Cannot find name 'NodeType'.
 parserRealSource11.ts(891,27): error TS2304: Cannot find name 'VarFlags'.
@@ -511,7 +512,7 @@ parserRealSource11.ts(2356,30): error TS2304: Cannot find name 'Emitter'.
 parserRealSource11.ts(2356,48): error TS2304: Cannot find name 'TokenID'.
 
 
-==== parserRealSource11.ts (511 errors) ====
+==== parserRealSource11.ts (512 errors) ====
     // Copyright (c) Microsoft. All rights reserved. Licensed under the Apache License, Version 2.0. 
     // See LICENSE.txt in the project root for complete license information.
     
@@ -1809,6 +1810,8 @@ parserRealSource11.ts(2356,48): error TS2304: Cannot find name 'TokenID'.
             }
     
             public getAliasName(aliasAST?: AST = this.alias) : string {
+                                ~~~~~~~~
+!!! error TS1015: Parameter cannot have question mark and initializer.
                 if (aliasAST.nodeType == NodeType.Name) {
                                          ~~~~~~~~
 !!! error TS2304: Cannot find name 'NodeType'.

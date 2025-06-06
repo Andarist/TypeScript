@@ -9,15 +9,17 @@ optionalPropertiesSyntax.ts(24,5): error TS2687: All declarations of 'prop' must
 optionalPropertiesSyntax.ts(25,5): error TS2300: Duplicate identifier 'prop'.
 optionalPropertiesSyntax.ts(25,5): error TS2687: All declarations of 'prop' must have identical modifiers.
 optionalPropertiesSyntax.ts(31,5): error TS2374: Duplicate index signature for type 'number'.
+optionalPropertiesSyntax.ts(32,5): error TS1021: An index signature must have a type annotation.
 optionalPropertiesSyntax.ts(32,5): error TS2374: Duplicate index signature for type 'number'.
 optionalPropertiesSyntax.ts(32,18): error TS1005: ';' expected.
 optionalPropertiesSyntax.ts(32,19): error TS1131: Property or signature expected.
 optionalPropertiesSyntax.ts(33,5): error TS1131: Property or signature expected.
 optionalPropertiesSyntax.ts(33,7): error TS2374: Duplicate index signature for type 'number'.
 optionalPropertiesSyntax.ts(34,5): error TS2374: Duplicate index signature for type 'number'.
+optionalPropertiesSyntax.ts(34,9): error TS1019: An index signature parameter cannot have a question mark.
 
 
-==== optionalPropertiesSyntax.ts (17 errors) ====
+==== optionalPropertiesSyntax.ts (19 errors) ====
     interface fnSigs {
         //functions signatures can be optional
         fn(): void;
@@ -73,6 +75,8 @@ optionalPropertiesSyntax.ts(34,5): error TS2374: Duplicate index signature for t
 !!! error TS2374: Duplicate index signature for type 'number'.
         [idx: number]?: any; //err
         ~~~~~~~~~~~~~
+!!! error TS1021: An index signature must have a type annotation.
+        ~~~~~~~~~~~~~
 !!! error TS2374: Duplicate index signature for type 'number'.
                      ~
 !!! error TS1005: ';' expected.
@@ -86,4 +90,6 @@ optionalPropertiesSyntax.ts(34,5): error TS2374: Duplicate index signature for t
         [idx?: number]: any; //err
         ~~~~~~~~~~~~~~~~~~~~
 !!! error TS2374: Duplicate index signature for type 'number'.
+            ~
+!!! error TS1019: An index signature parameter cannot have a question mark.
     }

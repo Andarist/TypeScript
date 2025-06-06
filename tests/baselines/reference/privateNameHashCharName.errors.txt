@@ -1,12 +1,15 @@
 privateNameHashCharName.ts(1,1): error TS1127: Invalid character.
+privateNameHashCharName.ts(1,1): error TS18016: Private identifiers are not allowed outside class bodies.
 privateNameHashCharName.ts(4,5): error TS1127: Invalid character.
 privateNameHashCharName.ts(7,14): error TS1127: Invalid character.
 
 
-==== privateNameHashCharName.ts (3 errors) ====
+==== privateNameHashCharName.ts (4 errors) ====
     #
     ~
 !!! error TS1127: Invalid character.
+    ~
+!!! error TS18016: Private identifiers are not allowed outside class bodies.
     
     class C {
         #

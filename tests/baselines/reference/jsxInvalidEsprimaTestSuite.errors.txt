@@ -32,6 +32,7 @@
 16.tsx(1,2): error TS17008: JSX element 'a' has no corresponding closing tag.
 16.tsx(1,10): error TS1005: '</' expected.
 17.tsx(1,2): error TS17008: JSX element 'a' has no corresponding closing tag.
+17.tsx(1,6): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
 17.tsx(1,10): error TS1005: '</' expected.
 18.tsx(1,30): error TS2657: JSX expressions must have one parent element.
 19.tsx(1,9): error TS2657: JSX expressions must have one parent element.
@@ -212,10 +213,12 @@
 !!! error TS17008: JSX element 'a' has no corresponding closing tag.
              
 !!! error TS1005: '</' expected.
-==== 17.tsx (2 errors) ====
+==== 17.tsx (3 errors) ====
     <a b={}>;
      ~
 !!! error TS17008: JSX element 'a' has no corresponding closing tag.
+         ~~
+!!! error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
              
 !!! error TS1005: '</' expected.
 ==== 18.tsx (1 errors) ====

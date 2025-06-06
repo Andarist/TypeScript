@@ -52886,12 +52886,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function grammarErrorOnNode(node: Node, message: DiagnosticMessage, ...args: DiagnosticArguments): boolean {
-        const sourceFile = getSourceFileOfNode(node);
-        if (!hasParseDiagnostics(sourceFile)) {
-            diagnostics.add(createDiagnosticForNode(node, message, ...args));
-            return true;
-        }
-        return false;
+        diagnostics.add(createDiagnosticForNode(node, message, ...args));
+        return true;
     }
 
     function checkGrammarConstructorTypeParameters(node: ConstructorDeclaration) {

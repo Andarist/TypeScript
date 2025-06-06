@@ -1,4 +1,5 @@
 invalidTypeOfTarget.ts(1,16): error TS1003: Identifier expected.
+invalidTypeOfTarget.ts(1,16): error TS1182: A destructuring declaration must have an initializer.
 invalidTypeOfTarget.ts(2,16): error TS1003: Identifier expected.
 invalidTypeOfTarget.ts(2,24): error TS1005: '=>' expected.
 invalidTypeOfTarget.ts(3,16): error TS1003: Identifier expected.
@@ -12,10 +13,12 @@ invalidTypeOfTarget.ts(7,29): error TS1005: '=>' expected.
 invalidTypeOfTarget.ts(8,16): error TS1003: Identifier expected.
 
 
-==== invalidTypeOfTarget.ts (12 errors) ====
+==== invalidTypeOfTarget.ts (13 errors) ====
     var x1: typeof {};
                    ~
 !!! error TS1003: Identifier expected.
+                   ~~
+!!! error TS1182: A destructuring declaration must have an initializer.
     var x2: typeof (): void;
                    ~
 !!! error TS1003: Identifier expected.

@@ -1,8 +1,10 @@
 octalIntegerLiteralError.ts(2,19): error TS1005: ',' expected.
 octalIntegerLiteralError.ts(3,18): error TS1005: ',' expected.
+octalIntegerLiteralError.ts(7,5): error TS1117: An object literal cannot have multiple properties with the same name.
+octalIntegerLiteralError.ts(8,5): error TS1117: An object literal cannot have multiple properties with the same name.
 
 
-==== octalIntegerLiteralError.ts (2 errors) ====
+==== octalIntegerLiteralError.ts (4 errors) ====
     // error
     var oct1 = 0O13334823;
                       ~~~
@@ -14,6 +16,10 @@ octalIntegerLiteralError.ts(3,18): error TS1005: ',' expected.
     var obj1 = {
         0O45436: "hi",
         19230: "Hello",
+        ~~~~~
+!!! error TS1117: An object literal cannot have multiple properties with the same name.
         "19230": "world",
+        ~~~~~~~
+!!! error TS1117: An object literal cannot have multiple properties with the same name.
     };
     

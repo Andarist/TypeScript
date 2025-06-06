@@ -1,9 +1,12 @@
+privateNameJsx.tsx(2,5): error TS18028: Private identifiers are only available when targeting ECMAScript 2015 and higher.
 privateNameJsx.tsx(4,27): error TS1003: Identifier expected.
 
 
-==== privateNameJsx.tsx (1 errors) ====
+==== privateNameJsx.tsx (2 errors) ====
     class Test {
         #prop = () => <div />;
+        ~~~~~
+!!! error TS18028: Private identifiers are only available when targeting ECMAScript 2015 and higher.
         render() {
             return <this.#prop />;
                               

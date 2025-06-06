@@ -5,9 +5,10 @@ stringNamedPropertyDuplicates.ts(10,5): error TS2300: Duplicate identifier 'a b'
 stringNamedPropertyDuplicates.ts(14,5): error TS2300: Duplicate identifier 'a b'.
 stringNamedPropertyDuplicates.ts(15,5): error TS2300: Duplicate identifier 'a b'.
 stringNamedPropertyDuplicates.ts(20,5): error TS1005: ',' expected.
+stringNamedPropertyDuplicates.ts(20,5): error TS1117: An object literal cannot have multiple properties with the same name.
 
 
-==== stringNamedPropertyDuplicates.ts (7 errors) ====
+==== stringNamedPropertyDuplicates.ts (8 errors) ====
     class C {
         "a b": number;
         "a b": number;
@@ -42,4 +43,6 @@ stringNamedPropertyDuplicates.ts(20,5): error TS1005: ',' expected.
         "a b": 1
         ~~~~~
 !!! error TS1005: ',' expected.
+        ~~~~~
+!!! error TS1117: An object literal cannot have multiple properties with the same name.
     }

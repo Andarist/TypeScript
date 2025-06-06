@@ -3,11 +3,13 @@ classStaticBlock26.ts(3,14): error TS1109: Expression expected.
 classStaticBlock26.ts(6,9): error TS18037: 'await' expression cannot be used inside a class static block.
 classStaticBlock26.ts(9,13): error TS18037: 'await' expression cannot be used inside a class static block.
 classStaticBlock26.ts(9,18): error TS1109: Expression expected.
+classStaticBlock26.ts(13,13): error TS1166: A computed property name in a class property declaration must have a simple literal type or a 'unique symbol' type.
 classStaticBlock26.ts(13,14): error TS18037: 'await' expression cannot be used inside a class static block.
 classStaticBlock26.ts(13,19): error TS1109: Expression expected.
 classStaticBlock26.ts(17,18): error TS1005: ':' expected.
 classStaticBlock26.ts(20,9): error TS18037: 'await' expression cannot be used inside a class static block.
 classStaticBlock26.ts(20,14): error TS1109: Expression expected.
+classStaticBlock26.ts(21,9): error TS1107: Jump target cannot cross function boundary.
 classStaticBlock26.ts(21,15): error TS1003: Identifier expected.
 classStaticBlock26.ts(21,15): error TS18037: 'await' expression cannot be used inside a class static block.
 classStaticBlock26.ts(21,20): error TS1109: Expression expected.
@@ -18,7 +20,7 @@ classStaticBlock26.ts(26,21): error TS18037: 'await' expression cannot be used i
 classStaticBlock26.ts(26,27): error TS1109: Expression expected.
 
 
-==== classStaticBlock26.ts (18 errors) ====
+==== classStaticBlock26.ts (20 errors) ====
     class C {
         static {
             await; // illegal
@@ -42,6 +44,8 @@ classStaticBlock26.ts(26,27): error TS1109: Expression expected.
         static {
             class D {
                 [await] = 1; // illegal (computed property names are evaluated outside of a class body
+                ~~~~~~~
+!!! error TS1166: A computed property name in a class property declaration must have a simple literal type or a 'unique symbol' type.
                  ~~~~~
 !!! error TS18037: 'await' expression cannot be used inside a class static block.
                       ~
@@ -60,6 +64,8 @@ classStaticBlock26.ts(26,27): error TS1109: Expression expected.
                  ~
 !!! error TS1109: Expression expected.
             break await; // illegal, 'await' cannot be used as a label
+            ~~~~~
+!!! error TS1107: Jump target cannot cross function boundary.
                   ~~~~~
 !!! error TS1003: Identifier expected.
                   ~~~~~

@@ -1,4 +1,5 @@
 invalidLetInForOfAndForIn_ES6.ts(5,13): error TS1005: ',' expected.
+invalidLetInForOfAndForIn_ES6.ts(5,13): error TS1182: A destructuring declaration must have an initializer.
 invalidLetInForOfAndForIn_ES6.ts(5,14): error TS1181: Array element destructuring pattern expected.
 invalidLetInForOfAndForIn_ES6.ts(5,14): error TS2695: Left side of comma operator is unused and has no side effects.
 invalidLetInForOfAndForIn_ES6.ts(5,14): error TS2695: Left side of comma operator is unused and has no side effects.
@@ -6,7 +7,7 @@ invalidLetInForOfAndForIn_ES6.ts(5,19): error TS1005: ';' expected.
 invalidLetInForOfAndForIn_ES6.ts(5,20): error TS1128: Declaration or statement expected.
 
 
-==== invalidLetInForOfAndForIn_ES6.ts (6 errors) ====
+==== invalidLetInForOfAndForIn_ES6.ts (7 errors) ====
     // This should be an error
     // More details: http://www.ecma-international.org/ecma-262/6.0/#sec-iteration-statements
     
@@ -14,6 +15,8 @@ invalidLetInForOfAndForIn_ES6.ts(5,20): error TS1128: Declaration or statement e
     for (let of [1,2,3]) {}
                 ~
 !!! error TS1005: ',' expected.
+                ~
+!!! error TS1182: A destructuring declaration must have an initializer.
                  ~
 !!! error TS1181: Array element destructuring pattern expected.
                  ~

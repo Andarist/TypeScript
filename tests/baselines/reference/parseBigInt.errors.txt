@@ -2,6 +2,7 @@ parseBigInt.ts(51,20): error TS2736: Operator '+' cannot be applied to type 'big
 parseBigInt.ts(52,23): error TS2736: Operator '+' cannot be applied to type 'bigint'.
 parseBigInt.ts(56,21): error TS1121: Octal literals are not allowed. Use the syntax '0o123'.
 parseBigInt.ts(56,25): error TS1005: ',' expected.
+parseBigInt.ts(56,25): error TS1155: 'const' declarations must be initialized.
 parseBigInt.ts(57,22): error TS1352: A bigint literal cannot use exponential notation.
 parseBigInt.ts(58,19): error TS1353: A bigint literal must be an integer.
 parseBigInt.ts(59,26): error TS1353: A bigint literal must be an integer.
@@ -18,7 +19,7 @@ parseBigInt.ts(70,53): error TS2345: Argument of type '2' is not assignable to p
 parseBigInt.ts(70,72): error TS2345: Argument of type '3' is not assignable to parameter of type '1n | 3n | 2n'.
 
 
-==== parseBigInt.ts (18 errors) ====
+==== parseBigInt.ts (19 errors) ====
     // All bases should allow "n" suffix
     const bin = 0b101, binBig = 0b101n; // 5, 5n
     const oct = 0o567, octBig = 0o567n; // 375, 375n
@@ -83,6 +84,8 @@ parseBigInt.ts(70,72): error TS2345: Argument of type '3' is not assignable to p
 !!! error TS1121: Octal literals are not allowed. Use the syntax '0o123'.
                             ~
 !!! error TS1005: ',' expected.
+                            ~
+!!! error TS1155: 'const' declarations must be initialized.
     { const scientific = 1e2n; }
                          ~~~~
 !!! error TS1352: A bigint literal cannot use exponential notation.
