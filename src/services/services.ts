@@ -361,11 +361,24 @@ import * as classifier2020 from "./classifier2020.js";
 /** The version of the language service API */
 export const servicesVersion = "0.8";
 
-function createNode<TKind extends SyntaxKind>(kind: TKind, pos: number, end: number, parent: Node): NodeObject<TKind> | TokenObject<TKind> | IdentifierObject | PrivateIdentifierObject {
-    const node = isNodeKind(kind) ? new NodeObject(kind, pos, end) :
-        kind === SyntaxKind.Identifier ? new IdentifierObject(SyntaxKind.Identifier, pos, end) :
-        kind === SyntaxKind.PrivateIdentifier ? new PrivateIdentifierObject(SyntaxKind.PrivateIdentifier, pos, end) :
-        new TokenObject(kind, pos, end);
+function createNode<TKind extends SyntaxKind>(kind: TKind, pos: number, end: number, parent: Node): NodeObject<TKind> | TokenObject<TKind> | IdentifierObject | PrivateIdentifierObject | StringLiteralObject {
+    let node;
+    if (isNodeKind(kind)) {
+        node = new NodeObject(kind, pos, end);
+    }
+    else if (kind === SyntaxKind.Identifier) {
+        node = new IdentifierObject(SyntaxKind.Identifier, pos, end);
+    }
+    else if (kind === SyntaxKind.PrivateIdentifier) {
+        node = new PrivateIdentifierObject(SyntaxKind.PrivateIdentifier, pos, end);
+    }
+    else if (kind === SyntaxKind.StringLiteral) {
+        node = new StringLiteralObject(SyntaxKind.StringLiteral, pos, end);
+        node.text = scanner.getTokenValue();
+    }
+    else {
+        node = new TokenObject(kind, pos, end);
+    }
     node.parent = parent;
     node.flags = parent.flags & NodeFlags.ContextFlags;
     return node;
@@ -797,6 +810,22 @@ class SymbolObject implements Symbol {
 
 class TokenObject<TKind extends SyntaxKind> extends TokenOrIdentifierObject<TKind> implements Token<TKind> {
     constructor(kind: TKind, pos: number, end: number) {
+        super(kind, pos, end);
+    }
+}
+
+class StringLiteralObject extends TokenObject<SyntaxKind.StringLiteral> implements StringLiteral {
+    public text!: string;
+    declare _literalExpressionBrand: any;
+    declare _primaryExpressionBrand: any;
+    declare _memberExpressionBrand: any;
+    declare _leftHandSideExpressionBrand: any;
+    declare _updateExpressionBrand: any;
+    declare _unaryExpressionBrand: any;
+    declare _expressionBrand: any;
+    declare _declarationBrand: any;
+
+    constructor(kind: SyntaxKind.StringLiteral, pos: number, end: number) {
         super(kind, pos, end);
     }
 }
