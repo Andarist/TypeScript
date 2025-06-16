@@ -1,0 +1,206 @@
+expandoFunctionNestedAssigmentsDeclared.ts(5,9): error TS2300: Duplicate identifier 'bla'.
+expandoFunctionNestedAssigmentsDeclared.ts(8,9): error TS2300: Duplicate identifier 'baz'.
+expandoFunctionNestedAssigmentsDeclared.ts(9,9): error TS2300: Duplicate identifier 'bar'.
+expandoFunctionNestedAssigmentsDeclared.ts(10,9): error TS2300: Duplicate identifier 'fromIf'.
+expandoFunctionNestedAssigmentsDeclared.ts(11,9): error TS2300: Duplicate identifier 'inIf'.
+expandoFunctionNestedAssigmentsDeclared.ts(12,9): error TS2300: Duplicate identifier 'fromWhileCondition'.
+expandoFunctionNestedAssigmentsDeclared.ts(13,9): error TS2300: Duplicate identifier 'fromWhileBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(14,9): error TS2300: Duplicate identifier 'fromWhileBodyNested'.
+expandoFunctionNestedAssigmentsDeclared.ts(15,9): error TS2300: Duplicate identifier 'fromDoBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(16,9): error TS2300: Duplicate identifier 'fromDoBodyNested'.
+expandoFunctionNestedAssigmentsDeclared.ts(17,9): error TS2300: Duplicate identifier 'fromDoCondition'.
+expandoFunctionNestedAssigmentsDeclared.ts(18,9): error TS2300: Duplicate identifier 'forInit'.
+expandoFunctionNestedAssigmentsDeclared.ts(19,9): error TS2300: Duplicate identifier 'forCond'.
+expandoFunctionNestedAssigmentsDeclared.ts(20,9): error TS2300: Duplicate identifier 'fromForBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(21,9): error TS2300: Duplicate identifier 'fromForBodyNested'.
+expandoFunctionNestedAssigmentsDeclared.ts(22,9): error TS2300: Duplicate identifier 'forIncr'.
+expandoFunctionNestedAssigmentsDeclared.ts(23,9): error TS2300: Duplicate identifier 'forOf'.
+expandoFunctionNestedAssigmentsDeclared.ts(24,9): error TS2300: Duplicate identifier 'fromForOfBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(25,9): error TS2300: Duplicate identifier 'fromForOfBodyNested'.
+expandoFunctionNestedAssigmentsDeclared.ts(26,9): error TS2300: Duplicate identifier 'forIn'.
+expandoFunctionNestedAssigmentsDeclared.ts(27,9): error TS2300: Duplicate identifier 'fromForInBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(28,9): error TS2300: Duplicate identifier 'fromForInBodyNested'.
+expandoFunctionNestedAssigmentsDeclared.ts(31,6): error TS2300: Duplicate identifier 'bla'.
+expandoFunctionNestedAssigmentsDeclared.ts(31,34): error TS2300: Duplicate identifier 'baz'.
+expandoFunctionNestedAssigmentsDeclared.ts(31,50): error TS2300: Duplicate identifier 'bar'.
+expandoFunctionNestedAssigmentsDeclared.ts(33,8): error TS2300: Duplicate identifier 'fromIf'.
+expandoFunctionNestedAssigmentsDeclared.ts(34,9): error TS2300: Duplicate identifier 'inIf'.
+expandoFunctionNestedAssigmentsDeclared.ts(37,11): error TS2300: Duplicate identifier 'fromWhileCondition'.
+expandoFunctionNestedAssigmentsDeclared.ts(38,9): error TS2300: Duplicate identifier 'fromWhileBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(40,13): error TS2300: Duplicate identifier 'fromWhileBodyNested'.
+expandoFunctionNestedAssigmentsDeclared.ts(45,9): error TS2300: Duplicate identifier 'fromDoBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(47,13): error TS2300: Duplicate identifier 'fromDoBodyNested'.
+expandoFunctionNestedAssigmentsDeclared.ts(49,13): error TS2300: Duplicate identifier 'fromDoCondition'.
+expandoFunctionNestedAssigmentsDeclared.ts(51,9): error TS2300: Duplicate identifier 'forInit'.
+expandoFunctionNestedAssigmentsDeclared.ts(51,27): error TS2300: Duplicate identifier 'forCond'.
+expandoFunctionNestedAssigmentsDeclared.ts(51,49): error TS2300: Duplicate identifier 'forIncr'.
+expandoFunctionNestedAssigmentsDeclared.ts(52,9): error TS2300: Duplicate identifier 'fromForBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(54,13): error TS2300: Duplicate identifier 'fromForBodyNested'.
+expandoFunctionNestedAssigmentsDeclared.ts(58,19): error TS2300: Duplicate identifier 'forOf'.
+expandoFunctionNestedAssigmentsDeclared.ts(59,9): error TS2300: Duplicate identifier 'fromForOfBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(61,13): error TS2300: Duplicate identifier 'fromForOfBodyNested'.
+expandoFunctionNestedAssigmentsDeclared.ts(66,19): error TS2300: Duplicate identifier 'forIn'.
+expandoFunctionNestedAssigmentsDeclared.ts(67,9): error TS2300: Duplicate identifier 'fromForInBody'.
+expandoFunctionNestedAssigmentsDeclared.ts(69,13): error TS2300: Duplicate identifier 'fromForInBodyNested'.
+
+
+==== expandoFunctionNestedAssigmentsDeclared.ts (44 errors) ====
+    function Foo(): void {
+    
+    }
+    declare namespace Foo {
+        var bla: {
+            ~~~
+!!! error TS2300: Duplicate identifier 'bla'.
+            foo: number;
+        };
+        var baz: number;
+            ~~~
+!!! error TS2300: Duplicate identifier 'baz'.
+        var bar: number;
+            ~~~
+!!! error TS2300: Duplicate identifier 'bar'.
+        var fromIf: number;
+            ~~~~~~
+!!! error TS2300: Duplicate identifier 'fromIf'.
+        var inIf: number;
+            ~~~~
+!!! error TS2300: Duplicate identifier 'inIf'.
+        var fromWhileCondition: number;
+            ~~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromWhileCondition'.
+        var fromWhileBody: number;
+            ~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromWhileBody'.
+        var fromWhileBodyNested: number;
+            ~~~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromWhileBodyNested'.
+        var fromDoBody: number;
+            ~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromDoBody'.
+        var fromDoBodyNested: number;
+            ~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromDoBodyNested'.
+        var fromDoCondition: number;
+            ~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromDoCondition'.
+        var forInit: number;
+            ~~~~~~~
+!!! error TS2300: Duplicate identifier 'forInit'.
+        var forCond: number;
+            ~~~~~~~
+!!! error TS2300: Duplicate identifier 'forCond'.
+        var fromForBody: number;
+            ~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForBody'.
+        var fromForBodyNested: number;
+            ~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForBodyNested'.
+        var forIncr: number;
+            ~~~~~~~
+!!! error TS2300: Duplicate identifier 'forIncr'.
+        var forOf: any[];
+            ~~~~~
+!!! error TS2300: Duplicate identifier 'forOf'.
+        var fromForOfBody: number;
+            ~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForOfBody'.
+        var fromForOfBodyNested: number;
+            ~~~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForOfBodyNested'.
+        var forIn: any[];
+            ~~~~~
+!!! error TS2300: Duplicate identifier 'forIn'.
+        var fromForInBody: number;
+            ~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForInBody'.
+        var fromForInBodyNested: number;
+            ~~~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForInBodyNested'.
+    }
+    
+    (Foo.bla = { foo: 1}).foo = (Foo.baz = 1) + (Foo.bar  = 0);
+         ~~~
+!!! error TS2300: Duplicate identifier 'bla'.
+                                     ~~~
+!!! error TS2300: Duplicate identifier 'baz'.
+                                                     ~~~
+!!! error TS2300: Duplicate identifier 'bar'.
+    
+    if(Foo.fromIf = 1) {
+           ~~~~~~
+!!! error TS2300: Duplicate identifier 'fromIf'.
+        Foo.inIf = 1;
+            ~~~~
+!!! error TS2300: Duplicate identifier 'inIf'.
+    }
+    
+    while(Foo.fromWhileCondition = 1) {
+              ~~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromWhileCondition'.
+        Foo.fromWhileBody = 1;
+            ~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromWhileBody'.
+        {
+            Foo.fromWhileBodyNested = 1;
+                ~~~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromWhileBodyNested'.
+        }
+    }
+    
+    do {
+        Foo.fromDoBody = 1;
+            ~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromDoBody'.
+        {
+            Foo.fromDoBodyNested = 1;
+                ~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromDoBodyNested'.
+        }
+    } while(Foo.fromDoCondition = 1);
+                ~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromDoCondition'.
+    
+    for(Foo.forInit = 1; (Foo.forCond = 1) > 1; Foo.forIncr = 1){
+            ~~~~~~~
+!!! error TS2300: Duplicate identifier 'forInit'.
+                              ~~~~~~~
+!!! error TS2300: Duplicate identifier 'forCond'.
+                                                    ~~~~~~~
+!!! error TS2300: Duplicate identifier 'forIncr'.
+        Foo.fromForBody = 1;
+            ~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForBody'.
+        {
+            Foo.fromForBodyNested = 1;
+                ~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForBodyNested'.
+        }
+    }
+    
+    for(let f of (Foo.forOf = []) ){
+                      ~~~~~
+!!! error TS2300: Duplicate identifier 'forOf'.
+        Foo.fromForOfBody = 1;
+            ~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForOfBody'.
+        {
+            Foo.fromForOfBodyNested = 1;
+                ~~~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForOfBodyNested'.
+        }
+    }
+    
+    
+    for(let f in (Foo.forIn = []) ){
+                      ~~~~~
+!!! error TS2300: Duplicate identifier 'forIn'.
+        Foo.fromForInBody = 1;
+            ~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForInBody'.
+        {
+            Foo.fromForInBodyNested = 1;
+                ~~~~~~~~~~~~~~~~~~~
+!!! error TS2300: Duplicate identifier 'fromForInBodyNested'.
+        }
+    }

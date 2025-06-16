@@ -5996,7 +5996,7 @@ export const enum SymbolFlags {
     BlockScopedVariableExcludes = Value,
 
     ParameterExcludes = Value,
-    PropertyExcludes = None,
+    PropertyExcludes = Value & ~Property,
     EnumMemberExcludes = Value | Type,
     FunctionExcludes = Value & ~(Function | ValueModule | Class),
     ClassExcludes = (Value | Type) & ~(ValueModule | Interface | Function), // class-interface mergability done in checker.ts

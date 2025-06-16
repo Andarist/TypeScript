@@ -18,7 +18,7 @@ class C {
 >    : ^^^^^^
 
     public Foo = 0; // error - duplicate identifier Foo - confirmed
->Foo : string
+>Foo : number
 >    : ^^^^^^
 >0 : 0
 >  : ^

@@ -1,8 +1,14 @@
 typeFromPropertyAssignment31.ts(13,1): error TS2322: Type 'boolean' is not assignable to type 'number'.
+typeFromPropertyAssignment31.ts(17,16): error TS2300: Duplicate identifier 'p5'.
+typeFromPropertyAssignment31.ts(19,16): error TS2451: Cannot redeclare block-scoped variable 'p7'.
+typeFromPropertyAssignment31.ts(21,16): error TS2451: Cannot redeclare block-scoped variable 'p9'.
+typeFromPropertyAssignment31.ts(23,14): error TS2300: Duplicate identifier 'p5'.
+typeFromPropertyAssignment31.ts(24,14): error TS2451: Cannot redeclare block-scoped variable 'p7'.
 typeFromPropertyAssignment31.ts(25,1): error TS2322: Type 'boolean' is not assignable to type 'number'.
+typeFromPropertyAssignment31.ts(25,14): error TS2451: Cannot redeclare block-scoped variable 'p9'.
 
 
-==== typeFromPropertyAssignment31.ts (2 errors) ====
+==== typeFromPropertyAssignment31.ts (8 errors) ====
     function ExpandoMerge(n: number) {
         return n;
     }
@@ -22,15 +28,27 @@ typeFromPropertyAssignment31.ts(25,1): error TS2322: Type 'boolean' is not assig
         export var p3 = 333;
         export var p4 = 4;
         export var p5 = 5;
+                   ~~
+!!! error TS2300: Duplicate identifier 'p5'.
         export let p6 = 6;
         export let p7 = 7;
+                   ~~
+!!! error TS2451: Cannot redeclare block-scoped variable 'p7'.
         export var p8 = 6;
         export let p9 = 7;
+                   ~~
+!!! error TS2451: Cannot redeclare block-scoped variable 'p9'.
     }
     ExpandoMerge.p5 = 555555; // ok
+                 ~~
+!!! error TS2300: Duplicate identifier 'p5'.
     ExpandoMerge.p7 = 777777; // ok
+                 ~~
+!!! error TS2451: Cannot redeclare block-scoped variable 'p7'.
     ExpandoMerge.p9 = false; // type error
     ~~~~~~~~~~~~~~~
 !!! error TS2322: Type 'boolean' is not assignable to type 'number'.
+                 ~~
+!!! error TS2451: Cannot redeclare block-scoped variable 'p9'.
     var n = ExpandoMerge.p1 + ExpandoMerge.p2 + ExpandoMerge.p3 + ExpandoMerge.p4 + ExpandoMerge.p5 + ExpandoMerge.p6 + ExpandoMerge.p7 + ExpandoMerge.p8 + ExpandoMerge.p9 + ExpandoMerge.m(12) + ExpandoMerge(1001);
     

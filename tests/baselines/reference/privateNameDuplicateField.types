@@ -160,8 +160,8 @@ function Method() {
 >     : ^^^^^^^^^^
 
         #foo = "foo";
->#foo : () => void
->     : ^^^^^^^^^^
+>#foo : string
+>     : ^^^^^^
 >"foo" : "foo"
 >      : ^^^^^
     }
@@ -785,8 +785,8 @@ function StaticMethod() {
 >     : ^^^^^^^^^^
 
         static #foo = "foo";
->#foo : () => void
->     : ^^^^^^^^^^
+>#foo : string
+>     : ^^^^^^
 >"foo" : "foo"
 >      : ^^^^^
     }

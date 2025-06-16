@@ -103,10 +103,10 @@ function Method() {
 >A_Method_Field : Symbol(A_Method_Field, Decl(privateNameDuplicateField.ts, 51, 19))
 
         #foo() { }
->#foo : Symbol(A_Method_Field.#foo, Decl(privateNameDuplicateField.ts, 53, 26), Decl(privateNameDuplicateField.ts, 54, 18))
+>#foo : Symbol(A_Method_Field.#foo, Decl(privateNameDuplicateField.ts, 53, 26))
 
         #foo = "foo";
->#foo : Symbol(A_Method_Field.#foo, Decl(privateNameDuplicateField.ts, 53, 26), Decl(privateNameDuplicateField.ts, 54, 18))
+>#foo : Symbol(A_Method_Field.#foo, Decl(privateNameDuplicateField.ts, 54, 18))
     }
 
     // Error
@@ -198,10 +198,10 @@ function Getter() {
 >A_Getter_Field : Symbol(A_Getter_Field, Decl(privateNameDuplicateField.ts, 102, 19))
 
         get #foo() { return ""}
->#foo : Symbol(A_Getter_Field.#foo, Decl(privateNameDuplicateField.ts, 104, 26), Decl(privateNameDuplicateField.ts, 105, 31))
+>#foo : Symbol(A_Getter_Field.#foo, Decl(privateNameDuplicateField.ts, 104, 26))
 
         #foo = "foo";
->#foo : Symbol(A_Getter_Field.#foo, Decl(privateNameDuplicateField.ts, 104, 26), Decl(privateNameDuplicateField.ts, 105, 31))
+>#foo : Symbol(A_Getter_Field.#foo, Decl(privateNameDuplicateField.ts, 105, 31))
     }
 
     // Error
@@ -292,11 +292,11 @@ function Setter() {
 >A_Setter_Field : Symbol(A_Setter_Field, Decl(privateNameDuplicateField.ts, 152, 19))
 
         set #foo(value: string) { }
->#foo : Symbol(A_Setter_Field.#foo, Decl(privateNameDuplicateField.ts, 154, 26), Decl(privateNameDuplicateField.ts, 155, 35))
+>#foo : Symbol(A_Setter_Field.#foo, Decl(privateNameDuplicateField.ts, 154, 26))
 >value : Symbol(value, Decl(privateNameDuplicateField.ts, 155, 17))
 
         #foo = "foo";
->#foo : Symbol(A_Setter_Field.#foo, Decl(privateNameDuplicateField.ts, 154, 26), Decl(privateNameDuplicateField.ts, 155, 35))
+>#foo : Symbol(A_Setter_Field.#foo, Decl(privateNameDuplicateField.ts, 155, 35))
     }
 
     // Error
@@ -533,10 +533,10 @@ function StaticMethod() {
 >A_StaticMethod_StaticField : Symbol(A_StaticMethod_StaticField, Decl(privateNameDuplicateField.ts, 275, 5))
 
         static #foo() { }
->#foo : Symbol(A_StaticMethod_StaticField.#foo, Decl(privateNameDuplicateField.ts, 278, 38), Decl(privateNameDuplicateField.ts, 279, 25))
+>#foo : Symbol(A_StaticMethod_StaticField.#foo, Decl(privateNameDuplicateField.ts, 278, 38))
 
         static #foo = "foo";
->#foo : Symbol(A_StaticMethod_StaticField.#foo, Decl(privateNameDuplicateField.ts, 278, 38), Decl(privateNameDuplicateField.ts, 279, 25))
+>#foo : Symbol(A_StaticMethod_StaticField.#foo, Decl(privateNameDuplicateField.ts, 279, 25))
     }
 
     // Error
@@ -725,11 +725,11 @@ function StaticSetter() {
 >A_StaticSetter_StaticField : Symbol(A_StaticSetter_StaticField, Decl(privateNameDuplicateField.ts, 376, 5))
 
         static set #foo(value: string) { }
->#foo : Symbol(A_StaticSetter_StaticField.#foo, Decl(privateNameDuplicateField.ts, 379, 38), Decl(privateNameDuplicateField.ts, 380, 42))
+>#foo : Symbol(A_StaticSetter_StaticField.#foo, Decl(privateNameDuplicateField.ts, 379, 38))
 >value : Symbol(value, Decl(privateNameDuplicateField.ts, 380, 24))
 
         static #foo = "foo";
->#foo : Symbol(A_StaticSetter_StaticField.#foo, Decl(privateNameDuplicateField.ts, 379, 38), Decl(privateNameDuplicateField.ts, 380, 42))
+>#foo : Symbol(A_StaticSetter_StaticField.#foo, Decl(privateNameDuplicateField.ts, 380, 42))
     }
 
     // Error

@@ -6511,7 +6511,7 @@ declare namespace ts {
         FunctionScopedVariableExcludes = 111550,
         BlockScopedVariableExcludes = 111551,
         ParameterExcludes = 111551,
-        PropertyExcludes = 0,
+        PropertyExcludes = 111547,
         EnumMemberExcludes = 900095,
         FunctionExcludes = 110991,
         ClassExcludes = 899503,
