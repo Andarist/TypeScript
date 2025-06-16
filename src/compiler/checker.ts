@@ -23719,6 +23719,18 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         }
                     }
                 }
+                if (
+                    isExcludingConditionalType(c) &&
+                    !isRelatedTo(source, c.extendsType, RecursionFlags.Target, /*reportErrors*/ false, /*headMessage*/ undefined, intersectionState) &&
+                    (result = isRelatedTo(source, c.checkType, RecursionFlags.Target, /*reportErrors*/ false, /*headMessage*/ undefined, intersectionState))) {
+                    return result;
+                }
+                if (
+                    isExtractingConditionalType(c) &&
+                    isRelatedTo(source, c.extendsType, RecursionFlags.Target, /*reportErrors*/ false, /*headMessage*/ undefined, intersectionState) &&
+                    (result = isRelatedTo(source, c.checkType, RecursionFlags.Target, /*reportErrors*/ false, /*headMessage*/ undefined, intersectionState))) {
+                    return result;
+                }
             }
             else if (targetFlags & TypeFlags.TemplateLiteral) {
                 if (sourceFlags & TypeFlags.TemplateLiteral) {
@@ -32180,12 +32192,18 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         return !!(getCheckFlags(symbol) & CheckFlags.Mapped && !(symbol as MappedSymbol).links.type && findResolutionCycleStartIndex(symbol, TypeSystemPropertyName.Type) >= 0);
     }
 
+    function isExcludingConditionalType(type: ConditionalType) {
+        return !!(getReducedType(getTrueTypeFromConditionalType(type)).flags & TypeFlags.Never) && getActualTypeVariable(getTypeFromTypeNode(type.root.node.falseType)) === getActualTypeVariable(type.root.checkType);
+    }
+
+    function isExtractingConditionalType(type: ConditionalType) {
+        return !!(getReducedType(getFalseTypeFromConditionalType(type)).flags & TypeFlags.Never) && getActualTypeVariable(getTypeFromTypeNode(type.root.node.trueType)) === getActualTypeVariable(type.root.checkType);
+    }
+
     function isExcludedMappedPropertyName(constraint: Type, propertyNameType: Type): boolean {
         if (constraint.flags & TypeFlags.Conditional) {
             const type = constraint as ConditionalType;
-            return !!(getReducedType(getTrueTypeFromConditionalType(type)).flags & TypeFlags.Never) &&
-                getActualTypeVariable(getFalseTypeFromConditionalType(type)) === getActualTypeVariable(type.checkType) &&
-                isTypeAssignableTo(propertyNameType, type.extendsType);
+            return isExcludingConditionalType(type) && isTypeAssignableTo(propertyNameType, type.extendsType);
         }
         if (constraint.flags & TypeFlags.Intersection) {
             return some((constraint as IntersectionType).types, t => isExcludedMappedPropertyName(t, propertyNameType));

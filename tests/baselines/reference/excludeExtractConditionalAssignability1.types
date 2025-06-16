@@ -1,0 +1,58 @@
+//// [tests/cases/compiler/excludeExtractConditionalAssignability1.ts] ////
+
+=== excludeExtractConditionalAssignability1.ts ===
+// https://github.com/microsoft/TypeScript/issues/61870
+
+type Test1 = { a: number, b: number };
+>Test1 : Test1
+>      : ^^^^^
+>a : number
+>  : ^^^^^^
+>b : number
+>  : ^^^^^^
+
+type Problem<Base, Key extends keyof Base> = Omit<Base, Key>;
+>Problem : Problem<Base, Key>
+>        : ^^^^^^^^^^^^^^^^^^
+
+type Ex1                      = Problem<Problem<Test1, "a">, "b"> // ok
+>Ex1 : Ex1
+>    : ^^^
+
+type Ex2<Test2 extends Test1> = Problem<Problem<Test2, "a">, "b"> // ok
+>Ex2 : Ex2<Test2>
+>    : ^^^^^^^^^^
+
+type Ex3<Test2 extends Test1> = Problem<Problem<Test2, "a">, "c"> // error
+>Ex3 : Ex3<Test2>
+>    : ^^^^^^^^^^
+
+type Ex4<Test2 extends Test1> = Problem<Problem<Test2, "a">, "a"> // error
+>Ex4 : Ex4<Test2>
+>    : ^^^^^^^^^^
+
+type ExtractPick<T, K extends keyof T> = Pick<T, Extract<keyof T, K>>;
+>ExtractPick : ExtractPick<T, K>
+>            : ^^^^^^^^^^^^^^^^^
+
+type Problem2<Base, Key extends keyof Base> = ExtractPick<Base, Key>;
+>Problem2 : Problem2<Base, Key>
+>         : ^^^^^^^^^^^^^^^^^^^
+
+type Ex5                      = Problem2<Problem2<Test1, "a" | "b">, "b"> // ok
+>Ex5 : Ex5
+>    : ^^^
+
+type Ex6<Test2 extends Test1> = Problem2<Problem2<Test2, "a" | "b">, "b"> // ok
+>Ex6 : Ex6<Test2>
+>    : ^^^^^^^^^^
+
+type Ex7<Test2 extends Test1> = Problem2<Problem2<Test2, "a" | "b">, "c"> // error
+>Ex7 : Ex7<Test2>
+>    : ^^^^^^^^^^
+
+type Ex8<Test2 extends Test1> = Problem2<Problem2<Test2, "a">, "b"> // error
+>Ex8 : Ex8<Test2>
+>    : ^^^^^^^^^^
+
+

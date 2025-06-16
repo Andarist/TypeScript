@@ -1,0 +1,100 @@
+//// [tests/cases/compiler/excludeExtractConditionalAssignability1.ts] ////
+
+=== excludeExtractConditionalAssignability1.ts ===
+// https://github.com/microsoft/TypeScript/issues/61870
+
+type Test1 = { a: number, b: number };
+>Test1 : Symbol(Test1, Decl(excludeExtractConditionalAssignability1.ts, 0, 0))
+>a : Symbol(a, Decl(excludeExtractConditionalAssignability1.ts, 2, 14))
+>b : Symbol(b, Decl(excludeExtractConditionalAssignability1.ts, 2, 25))
+
+type Problem<Base, Key extends keyof Base> = Omit<Base, Key>;
+>Problem : Symbol(Problem, Decl(excludeExtractConditionalAssignability1.ts, 2, 38))
+>Base : Symbol(Base, Decl(excludeExtractConditionalAssignability1.ts, 4, 13))
+>Key : Symbol(Key, Decl(excludeExtractConditionalAssignability1.ts, 4, 18))
+>Base : Symbol(Base, Decl(excludeExtractConditionalAssignability1.ts, 4, 13))
+>Omit : Symbol(Omit, Decl(lib.es5.d.ts, --, --))
+>Base : Symbol(Base, Decl(excludeExtractConditionalAssignability1.ts, 4, 13))
+>Key : Symbol(Key, Decl(excludeExtractConditionalAssignability1.ts, 4, 18))
+
+type Ex1                      = Problem<Problem<Test1, "a">, "b"> // ok
+>Ex1 : Symbol(Ex1, Decl(excludeExtractConditionalAssignability1.ts, 4, 61))
+>Problem : Symbol(Problem, Decl(excludeExtractConditionalAssignability1.ts, 2, 38))
+>Problem : Symbol(Problem, Decl(excludeExtractConditionalAssignability1.ts, 2, 38))
+>Test1 : Symbol(Test1, Decl(excludeExtractConditionalAssignability1.ts, 0, 0))
+
+type Ex2<Test2 extends Test1> = Problem<Problem<Test2, "a">, "b"> // ok
+>Ex2 : Symbol(Ex2, Decl(excludeExtractConditionalAssignability1.ts, 6, 65))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 7, 9))
+>Test1 : Symbol(Test1, Decl(excludeExtractConditionalAssignability1.ts, 0, 0))
+>Problem : Symbol(Problem, Decl(excludeExtractConditionalAssignability1.ts, 2, 38))
+>Problem : Symbol(Problem, Decl(excludeExtractConditionalAssignability1.ts, 2, 38))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 7, 9))
+
+type Ex3<Test2 extends Test1> = Problem<Problem<Test2, "a">, "c"> // error
+>Ex3 : Symbol(Ex3, Decl(excludeExtractConditionalAssignability1.ts, 7, 65))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 8, 9))
+>Test1 : Symbol(Test1, Decl(excludeExtractConditionalAssignability1.ts, 0, 0))
+>Problem : Symbol(Problem, Decl(excludeExtractConditionalAssignability1.ts, 2, 38))
+>Problem : Symbol(Problem, Decl(excludeExtractConditionalAssignability1.ts, 2, 38))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 8, 9))
+
+type Ex4<Test2 extends Test1> = Problem<Problem<Test2, "a">, "a"> // error
+>Ex4 : Symbol(Ex4, Decl(excludeExtractConditionalAssignability1.ts, 8, 65))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 9, 9))
+>Test1 : Symbol(Test1, Decl(excludeExtractConditionalAssignability1.ts, 0, 0))
+>Problem : Symbol(Problem, Decl(excludeExtractConditionalAssignability1.ts, 2, 38))
+>Problem : Symbol(Problem, Decl(excludeExtractConditionalAssignability1.ts, 2, 38))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 9, 9))
+
+type ExtractPick<T, K extends keyof T> = Pick<T, Extract<keyof T, K>>;
+>ExtractPick : Symbol(ExtractPick, Decl(excludeExtractConditionalAssignability1.ts, 9, 65))
+>T : Symbol(T, Decl(excludeExtractConditionalAssignability1.ts, 11, 17))
+>K : Symbol(K, Decl(excludeExtractConditionalAssignability1.ts, 11, 19))
+>T : Symbol(T, Decl(excludeExtractConditionalAssignability1.ts, 11, 17))
+>Pick : Symbol(Pick, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(excludeExtractConditionalAssignability1.ts, 11, 17))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(excludeExtractConditionalAssignability1.ts, 11, 17))
+>K : Symbol(K, Decl(excludeExtractConditionalAssignability1.ts, 11, 19))
+
+type Problem2<Base, Key extends keyof Base> = ExtractPick<Base, Key>;
+>Problem2 : Symbol(Problem2, Decl(excludeExtractConditionalAssignability1.ts, 11, 70))
+>Base : Symbol(Base, Decl(excludeExtractConditionalAssignability1.ts, 13, 14))
+>Key : Symbol(Key, Decl(excludeExtractConditionalAssignability1.ts, 13, 19))
+>Base : Symbol(Base, Decl(excludeExtractConditionalAssignability1.ts, 13, 14))
+>ExtractPick : Symbol(ExtractPick, Decl(excludeExtractConditionalAssignability1.ts, 9, 65))
+>Base : Symbol(Base, Decl(excludeExtractConditionalAssignability1.ts, 13, 14))
+>Key : Symbol(Key, Decl(excludeExtractConditionalAssignability1.ts, 13, 19))
+
+type Ex5                      = Problem2<Problem2<Test1, "a" | "b">, "b"> // ok
+>Ex5 : Symbol(Ex5, Decl(excludeExtractConditionalAssignability1.ts, 13, 69))
+>Problem2 : Symbol(Problem2, Decl(excludeExtractConditionalAssignability1.ts, 11, 70))
+>Problem2 : Symbol(Problem2, Decl(excludeExtractConditionalAssignability1.ts, 11, 70))
+>Test1 : Symbol(Test1, Decl(excludeExtractConditionalAssignability1.ts, 0, 0))
+
+type Ex6<Test2 extends Test1> = Problem2<Problem2<Test2, "a" | "b">, "b"> // ok
+>Ex6 : Symbol(Ex6, Decl(excludeExtractConditionalAssignability1.ts, 15, 73))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 16, 9))
+>Test1 : Symbol(Test1, Decl(excludeExtractConditionalAssignability1.ts, 0, 0))
+>Problem2 : Symbol(Problem2, Decl(excludeExtractConditionalAssignability1.ts, 11, 70))
+>Problem2 : Symbol(Problem2, Decl(excludeExtractConditionalAssignability1.ts, 11, 70))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 16, 9))
+
+type Ex7<Test2 extends Test1> = Problem2<Problem2<Test2, "a" | "b">, "c"> // error
+>Ex7 : Symbol(Ex7, Decl(excludeExtractConditionalAssignability1.ts, 16, 73))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 17, 9))
+>Test1 : Symbol(Test1, Decl(excludeExtractConditionalAssignability1.ts, 0, 0))
+>Problem2 : Symbol(Problem2, Decl(excludeExtractConditionalAssignability1.ts, 11, 70))
+>Problem2 : Symbol(Problem2, Decl(excludeExtractConditionalAssignability1.ts, 11, 70))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 17, 9))
+
+type Ex8<Test2 extends Test1> = Problem2<Problem2<Test2, "a">, "b"> // error
+>Ex8 : Symbol(Ex8, Decl(excludeExtractConditionalAssignability1.ts, 17, 73))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 18, 9))
+>Test1 : Symbol(Test1, Decl(excludeExtractConditionalAssignability1.ts, 0, 0))
+>Problem2 : Symbol(Problem2, Decl(excludeExtractConditionalAssignability1.ts, 11, 70))
+>Problem2 : Symbol(Problem2, Decl(excludeExtractConditionalAssignability1.ts, 11, 70))
+>Test2 : Symbol(Test2, Decl(excludeExtractConditionalAssignability1.ts, 18, 9))
+
+
