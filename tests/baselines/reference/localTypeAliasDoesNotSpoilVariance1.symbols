@@ -1,0 +1,100 @@
+//// [tests/cases/compiler/localTypeAliasDoesNotSpoilVariance1.ts] ////
+
+=== localTypeAliasDoesNotSpoilVariance1.ts ===
+class A1<T = number> {
+>A1 : Symbol(A1, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 0))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 9))
+
+  value!: T;
+>value : Symbol(A1.value, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 22))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 9))
+
+  child!: InstanceType<typeof A1.B<A1<T>>>;
+>child : Symbol(A1.child, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 1, 12))
+>InstanceType : Symbol(InstanceType, Decl(lib.es5.d.ts, --, --))
+>A1.B : Symbol(A1.B, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 2, 43))
+>A1 : Symbol(A1, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 0))
+>B : Symbol(A1.B, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 2, 43))
+>A1 : Symbol(A1, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 0))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 9))
+
+  static B = class B<T extends A1 = A1> {
+>B : Symbol(A1.B, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 2, 43))
+>B : Symbol(B, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 4, 12))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 4, 21))
+>A1 : Symbol(A1, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 0))
+>A1 : Symbol(A1, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 0))
+
+    parent!: T;
+>parent : Symbol(B.parent, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 4, 41))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 4, 21))
+
+  };
+}
+
+export var a1 = new A1();
+>a1 : Symbol(a1, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 9, 10))
+>A1 : Symbol(A1, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 0))
+
+a1.child.parent.value;
+>a1.child.parent.value : Symbol(A1.value, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 22))
+>a1.child.parent : Symbol(B.parent, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 4, 41))
+>a1.child : Symbol(A1.child, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 1, 12))
+>a1 : Symbol(a1, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 9, 10))
+>child : Symbol(A1.child, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 1, 12))
+>parent : Symbol(B.parent, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 4, 41))
+>value : Symbol(A1.value, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 0, 22))
+
+class A2<T = number> {
+>A2 : Symbol(A2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 10, 22))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 12, 9))
+
+  foo() {
+>foo : Symbol(A2.foo, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 12, 22))
+
+    type _<T extends A2 = A2> = 0;
+>_ : Symbol(_, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 13, 9))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 14, 11))
+>A2 : Symbol(A2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 10, 22))
+>A2 : Symbol(A2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 10, 22))
+  }
+  value!: T;
+>value : Symbol(A2.value, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 15, 3))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 12, 9))
+
+  child!: InstanceType<typeof A2.B<A2<T>>>;
+>child : Symbol(A2.child, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 16, 12))
+>InstanceType : Symbol(InstanceType, Decl(lib.es5.d.ts, --, --))
+>A2.B : Symbol(A2.B, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 17, 43))
+>A2 : Symbol(A2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 10, 22))
+>B : Symbol(A2.B, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 17, 43))
+>A2 : Symbol(A2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 10, 22))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 12, 9))
+
+  static B = class B<T extends A2 = A2> {
+>B : Symbol(A2.B, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 17, 43))
+>B : Symbol(B, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 19, 12))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 19, 21))
+>A2 : Symbol(A2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 10, 22))
+>A2 : Symbol(A2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 10, 22))
+
+    parent!: T;
+>parent : Symbol(B.parent, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 19, 41))
+>T : Symbol(T, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 19, 21))
+
+  };
+}
+
+export var a2 = new A2();
+>a2 : Symbol(a2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 24, 10))
+>A2 : Symbol(A2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 10, 22))
+
+a2.child.parent.value;
+>a2.child.parent.value : Symbol(A2.value, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 15, 3))
+>a2.child.parent : Symbol(B.parent, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 19, 41))
+>a2.child : Symbol(A2.child, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 16, 12))
+>a2 : Symbol(a2, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 24, 10))
+>child : Symbol(A2.child, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 16, 12))
+>parent : Symbol(B.parent, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 19, 41))
+>value : Symbol(A2.value, Decl(localTypeAliasDoesNotSpoilVariance1.ts, 15, 3))
+

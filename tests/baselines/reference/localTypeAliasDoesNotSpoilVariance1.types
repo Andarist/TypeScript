@@ -1,0 +1,125 @@
+//// [tests/cases/compiler/localTypeAliasDoesNotSpoilVariance1.ts] ////
+
+=== localTypeAliasDoesNotSpoilVariance1.ts ===
+class A1<T = number> {
+>A1 : A1<T>
+>   : ^^^^^
+
+  value!: T;
+>value : T
+>      : ^
+
+  child!: InstanceType<typeof A1.B<A1<T>>>;
+>child : B<A1<T>>
+>      : ^^^^^^^^
+>A1.B : typeof B
+>     : ^^^^^^^^
+>A1 : typeof A1
+>   : ^^^^^^^^^
+>B : typeof B
+>  : ^^^^^^^^
+
+  static B = class B<T extends A1 = A1> {
+>B : typeof B
+>  : ^^^^^^^^
+>class B<T extends A1 = A1> {    parent!: T;  } : typeof B
+>                                               : ^^^^^^^^
+>B : typeof B
+>  : ^^^^^^^^
+
+    parent!: T;
+>parent : T
+>       : ^
+
+  };
+}
+
+export var a1 = new A1();
+>a1 : A1<number>
+>   : ^^^^^^^^^^
+>new A1() : A1<number>
+>         : ^^^^^^^^^^
+>A1 : typeof A1
+>   : ^^^^^^^^^
+
+a1.child.parent.value;
+>a1.child.parent.value : number
+>                      : ^^^^^^
+>a1.child.parent : A1<number>
+>                : ^^^^^^^^^^
+>a1.child : A1<number>.B<A1<number>>
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^
+>a1 : A1<number>
+>   : ^^^^^^^^^^
+>child : A1<number>.B<A1<number>>
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^
+>parent : A1<number>
+>       : ^^^^^^^^^^
+>value : number
+>      : ^^^^^^
+
+class A2<T = number> {
+>A2 : A2<T>
+>   : ^^^^^
+
+  foo() {
+>foo : () => void
+>    : ^^^^^^^^^^
+
+    type _<T extends A2 = A2> = 0;
+>_ : 0
+>  : ^
+  }
+  value!: T;
+>value : T
+>      : ^
+
+  child!: InstanceType<typeof A2.B<A2<T>>>;
+>child : B<A2<T>>
+>      : ^^^^^^^^
+>A2.B : typeof B
+>     : ^^^^^^^^
+>A2 : typeof A2
+>   : ^^^^^^^^^
+>B : typeof B
+>  : ^^^^^^^^
+
+  static B = class B<T extends A2 = A2> {
+>B : typeof B
+>  : ^^^^^^^^
+>class B<T extends A2 = A2> {    parent!: T;  } : typeof B
+>                                               : ^^^^^^^^
+>B : typeof B
+>  : ^^^^^^^^
+
+    parent!: T;
+>parent : T
+>       : ^
+
+  };
+}
+
+export var a2 = new A2();
+>a2 : A2<number>
+>   : ^^^^^^^^^^
+>new A2() : A2<number>
+>         : ^^^^^^^^^^
+>A2 : typeof A2
+>   : ^^^^^^^^^
+
+a2.child.parent.value;
+>a2.child.parent.value : number
+>                      : ^^^^^^
+>a2.child.parent : A2<number>
+>                : ^^^^^^^^^^
+>a2.child : A2<number>.B<A2<number>>
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^
+>a2 : A2<number>
+>   : ^^^^^^^^^^
+>child : A2<number>.B<A2<number>>
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^
+>parent : A2<number>
+>       : ^^^^^^^^^^
+>value : number
+>      : ^^^^^^
+
