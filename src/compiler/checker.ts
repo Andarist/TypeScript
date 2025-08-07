@@ -24846,15 +24846,18 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function getBestMatchingType(source: Type, target: UnionOrIntersectionType, isRelatedTo = compareTypesAssignable) {
-        const reducedTarget = reduceByMatchingDiscriminantType(source, target, isRelatedTo);
+        const reducedTarget = reduceTargetTypeForObjectLiteral(source, target);
         if (!(reducedTarget.flags & TypeFlags.Union)) {
             return reducedTarget;
         }
-        const reducedTargetUnion = reducedTarget as UnionType;
-        return findMatchingTypeReferenceOrTypeAliasReference(source, reducedTargetUnion) ||
-            findBestTypeForObjectLiteral(source, reducedTargetUnion) ||
-            findBestTypeForInvokable(source, reducedTargetUnion) ||
-            findMostOverlappyType(source, reducedTargetUnion);
+        const discriminated = reduceByMatchingDiscriminantType(source, reducedTarget, isRelatedTo);
+        if (discriminated !== reducedTarget) {
+            return discriminated;
+        }
+        return findMatchingTypeReferenceOrTypeAliasReference(source, reducedTarget as UnionType) ||
+            findBestTypeForObjectLiteral(source, reducedTarget as UnionType) ||
+            findBestTypeForInvokable(source, reducedTarget as UnionType) ||
+            findMostOverlappyType(source, reducedTarget as UnionType);
     }
 
     function discriminateTypeByDiscriminableItems(target: UnionType, discriminators: (readonly [() => Type, __String])[], related: (source: Type, target: Type) => boolean | Ternary) {
@@ -53412,6 +53415,16 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 return false;
             });
         }
+    }
+
+    function reduceTargetTypeForObjectLiteral(source: Type, unionTarget: UnionOrIntersectionType) {
+        if (source.flags & (TypeFlags.Intersection | TypeFlags.Object)) {
+            const filtered = filterType(unionTarget, t => !(t.flags & TypeFlags.Primitive));
+            if (!(filtered.flags & TypeFlags.Never)) {
+                return filtered;
+            }
+        }
+        return unionTarget;
     }
 
     function findBestTypeForObjectLiteral(source: Type, unionTarget: UnionOrIntersectionType) {
