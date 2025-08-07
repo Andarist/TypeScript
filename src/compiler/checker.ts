@@ -22908,7 +22908,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             let reducedTarget = target;
             let checkTypes: Type[] | undefined;
             if (target.flags & TypeFlags.Union) {
-                reducedTarget = findMatchingDiscriminantType(source, target as UnionType, isRelatedTo) || filterPrimitivesIfContainsNonPrimitive(target as UnionType);
+                reducedTarget = reduceByMatchingDiscriminantType(source, target as UnionType, isRelatedTo);
                 checkTypes = reducedTarget.flags & TypeFlags.Union ? (reducedTarget as UnionType).types : [reducedTarget];
             }
             for (const prop of getPropertiesOfType(source)) {
@@ -24846,11 +24846,15 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function getBestMatchingType(source: Type, target: UnionOrIntersectionType, isRelatedTo = compareTypesAssignable) {
-        return findMatchingDiscriminantType(source, target, isRelatedTo) ||
-            findMatchingTypeReferenceOrTypeAliasReference(source, target) ||
-            findBestTypeForObjectLiteral(source, target) ||
-            findBestTypeForInvokable(source, target) ||
-            findMostOverlappyType(source, target);
+        const reducedTarget = reduceByMatchingDiscriminantType(source, target, isRelatedTo);
+        if (!(reducedTarget.flags & TypeFlags.Union)) {
+            return reducedTarget;
+        }
+        const reducedTargetUnion = reducedTarget as UnionType;
+        return findMatchingTypeReferenceOrTypeAliasReference(source, reducedTargetUnion) ||
+            findBestTypeForObjectLiteral(source, reducedTargetUnion) ||
+            findBestTypeForInvokable(source, reducedTargetUnion) ||
+            findMostOverlappyType(source, reducedTargetUnion);
     }
 
     function discriminateTypeByDiscriminableItems(target: UnionType, discriminators: (readonly [() => Type, __String])[], related: (source: Type, target: Type) => boolean | Ternary) {
@@ -53412,7 +53416,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
     function findBestTypeForObjectLiteral(source: Type, unionTarget: UnionOrIntersectionType) {
         if (getObjectFlags(source) & ObjectFlags.ObjectLiteral && someType(unionTarget, isArrayLikeType)) {
-            return find(unionTarget.types, t => !isArrayLikeType(t));
+            return find(unionTarget.types, t => !(t.flags & TypeFlags.Primitive) && !isArrayLikeType(t));
         }
     }
 
@@ -53463,7 +53467,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     // Keep this up-to-date with the same logic within `getApparentTypeOfContextualType`, since they should behave similarly
-    function findMatchingDiscriminantType(source: Type, target: Type, isRelatedTo: (source: Type, target: Type) => Ternary) {
+    function reduceByMatchingDiscriminantType(source: Type, target: Type, isRelatedTo: (source: Type, target: Type) => Ternary) {
         if (target.flags & TypeFlags.Union && source.flags & (TypeFlags.Intersection | TypeFlags.Object)) {
             const match = getMatchingUnionConstituentForType(target as UnionType, source);
             if (match) {
@@ -53473,14 +53477,11 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             if (sourceProperties) {
                 const sourcePropertiesFiltered = findDiscriminantProperties(sourceProperties, target);
                 if (sourcePropertiesFiltered) {
-                    const discriminated = discriminateTypeByDiscriminableItems(target as UnionType, map(sourcePropertiesFiltered, p => ([() => getTypeOfSymbol(p), p.escapedName] as [() => Type, __String])), isRelatedTo);
-                    if (discriminated !== target) {
-                        return discriminated;
-                    }
+                    return discriminateTypeByDiscriminableItems(target as UnionType, map(sourcePropertiesFiltered, p => ([() => getTypeOfSymbol(p), p.escapedName] as [() => Type, __String])), isRelatedTo);
                 }
             }
         }
-        return undefined;
+        return target;
     }
 
     function getEffectivePropertyNameForPropertyNameNode(node: PropertyName) {

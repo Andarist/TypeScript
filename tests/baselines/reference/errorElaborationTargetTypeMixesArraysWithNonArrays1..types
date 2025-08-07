@@ -1,0 +1,343 @@
+//// [tests/cases/compiler/errorElaborationTargetTypeMixesArraysWithNonArrays1..ts] ////
+
+=== errorElaborationTargetTypeMixesArraysWithNonArrays1..ts ===
+type SingleOrArray<T> = T | T[];
+>SingleOrArray : SingleOrArray<T>
+>              : ^^^^^^^^^^^^^^^^
+
+type Item =
+>Item : Item
+>     : ^^^^
+
+  | {
+      src: "foo";
+>src : "foo"
+>    : ^^^^^
+    }
+  | {
+      src: "bar";
+>src : "bar"
+>    : ^^^^^
+
+    };
+
+const obj1: SingleOrArray<Item> = {
+>obj1 : SingleOrArray<Item>
+>     : ^^^^^^^^^^^^^^^^^^^
+>{  src: "baz",} : { src: "baz"; }
+>                : ^^^^^^^^^^^^^^^
+
+  src: "baz",
+>src : "baz"
+>    : ^^^^^
+>"baz" : "baz"
+>      : ^^^^^
+
+};
+
+const obj2: SingleOrArray<Item> | undefined = {
+>obj2 : SingleOrArray<Item> | undefined
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: "baz",} : { src: "baz"; }
+>                : ^^^^^^^^^^^^^^^
+
+  src: "baz",
+>src : "baz"
+>    : ^^^^^
+>"baz" : "baz"
+>      : ^^^^^
+
+};
+
+const obj3: SingleOrArray<Item | undefined> = {
+>obj3 : SingleOrArray<Item | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: "baz",} : { src: "baz"; }
+>                : ^^^^^^^^^^^^^^^
+
+  src: "baz",
+>src : "baz"
+>    : ^^^^^
+>"baz" : "baz"
+>      : ^^^^^
+
+};
+
+const obj4: SingleOrArray<Item | undefined> | undefined = {
+>obj4 : SingleOrArray<Item | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: "baz",} : { src: "baz"; }
+>                : ^^^^^^^^^^^^^^^
+
+  src: "baz",
+>src : "baz"
+>    : ^^^^^
+>"baz" : "baz"
+>      : ^^^^^
+
+};
+
+const arr1: SingleOrArray<Item> = {
+>arr1 : SingleOrArray<Item>
+>     : ^^^^^^^^^^^^^^^^^^^
+>{  src: "baz",} : { src: "baz"; }
+>                : ^^^^^^^^^^^^^^^
+
+  src: "baz",
+>src : "baz"
+>    : ^^^^^
+>"baz" : "baz"
+>      : ^^^^^
+
+};
+
+const arr2: SingleOrArray<Item> | undefined = [{
+>arr2 : SingleOrArray<Item> | undefined
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[{  src: "baz",}] : { src: "baz"; }[]
+>                  : ^^^^^^^^^^^^^^^^^
+>{  src: "baz",} : { src: "baz"; }
+>                : ^^^^^^^^^^^^^^^
+
+  src: "baz",
+>src : "baz"
+>    : ^^^^^
+>"baz" : "baz"
+>      : ^^^^^
+
+}];
+
+const arr3: SingleOrArray<Item | undefined> = [{
+>arr3 : SingleOrArray<Item | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[{  src: "baz",}] : { src: "baz"; }[]
+>                  : ^^^^^^^^^^^^^^^^^
+>{  src: "baz",} : { src: "baz"; }
+>                : ^^^^^^^^^^^^^^^
+
+  src: "baz",
+>src : "baz"
+>    : ^^^^^
+>"baz" : "baz"
+>      : ^^^^^
+
+}];
+
+const arr4: SingleOrArray<Item | undefined> | undefined = [{
+>arr4 : SingleOrArray<Item | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[{  src: "baz",}] : { src: "baz"; }[]
+>                  : ^^^^^^^^^^^^^^^^^
+>{  src: "baz",} : { src: "baz"; }
+>                : ^^^^^^^^^^^^^^^
+
+  src: "baz",
+>src : "baz"
+>    : ^^^^^
+>"baz" : "baz"
+>      : ^^^^^
+
+}];
+
+type Logic<I, O> = (input: I) => O;
+>Logic : Logic<I, O>
+>      : ^^^^^^^^^^^
+>input : I
+>      : ^
+
+type Item2 =
+>Item2 : Item2
+>      : ^^^^^
+
+  | {
+      src: "foo";
+>src : "foo"
+>    : ^^^^^
+
+      id: string;
+>id : string
+>   : ^^^^^^
+    }
+  | {
+      src: Logic<never, unknown>;
+>src : Logic<never, unknown>
+>    : ^^^^^^^^^^^^^^^^^^^^^
+
+      id?: never;
+>id : undefined
+>   : ^^^^^^^^^
+
+    };
+
+declare const logic: Logic<string, number>;
+>logic : Logic<string, number>
+>      : ^^^^^^^^^^^^^^^^^^^^^
+
+const obj5: SingleOrArray<Item> = {
+>obj5 : SingleOrArray<Item>
+>     : ^^^^^^^^^^^^^^^^^^^
+>{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  src: logic,
+>src : Logic<string, number>
+>    : ^^^^^^^^^^^^^^^^^^^^^
+>logic : Logic<string, number>
+>      : ^^^^^^^^^^^^^^^^^^^^^
+
+  id: "someId",
+>id : string
+>   : ^^^^^^
+>"someId" : "someId"
+>         : ^^^^^^^^
+
+};
+
+const obj6: SingleOrArray<Item> | undefined = {
+>obj6 : SingleOrArray<Item> | undefined
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  src: logic,
+>src : Logic<string, number>
+>    : ^^^^^^^^^^^^^^^^^^^^^
+>logic : Logic<string, number>
+>      : ^^^^^^^^^^^^^^^^^^^^^
+
+  id: "someId",
+>id : string
+>   : ^^^^^^
+>"someId" : "someId"
+>         : ^^^^^^^^
+
+};
+
+const obj7: SingleOrArray<Item | undefined> = {
+>obj7 : SingleOrArray<Item | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  src: logic,
+>src : Logic<string, number>
+>    : ^^^^^^^^^^^^^^^^^^^^^
+>logic : Logic<string, number>
+>      : ^^^^^^^^^^^^^^^^^^^^^
+
+  id: "someId",
+>id : string
+>   : ^^^^^^
+>"someId" : "someId"
+>         : ^^^^^^^^
+
+};
+
+const obj8: SingleOrArray<Item | undefined> | undefined = {
+>obj8 : SingleOrArray<Item | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  src: logic,
+>src : Logic<string, number>
+>    : ^^^^^^^^^^^^^^^^^^^^^
+>logic : Logic<string, number>
+>      : ^^^^^^^^^^^^^^^^^^^^^
+
+  id: "someId",
+>id : string
+>   : ^^^^^^
+>"someId" : "someId"
+>         : ^^^^^^^^
+
+};
+
+const arr5: SingleOrArray<Item> = [{
+>arr5 : SingleOrArray<Item>
+>     : ^^^^^^^^^^^^^^^^^^^
+>[{  src: logic,  id: "someId",}] : { src: Logic<string, number>; id: string; }[]
+>                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  src: logic,
+>src : Logic<string, number>
+>    : ^^^^^^^^^^^^^^^^^^^^^
+>logic : Logic<string, number>
+>      : ^^^^^^^^^^^^^^^^^^^^^
+
+  id: "someId",
+>id : string
+>   : ^^^^^^
+>"someId" : "someId"
+>         : ^^^^^^^^
+
+}];
+
+const arr6: SingleOrArray<Item> | undefined = [{
+>arr6 : SingleOrArray<Item> | undefined
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[{  src: logic,  id: "someId",}] : { src: Logic<string, number>; id: string; }[]
+>                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  src: logic,
+>src : Logic<string, number>
+>    : ^^^^^^^^^^^^^^^^^^^^^
+>logic : Logic<string, number>
+>      : ^^^^^^^^^^^^^^^^^^^^^
+
+  id: "someId",
+>id : string
+>   : ^^^^^^
+>"someId" : "someId"
+>         : ^^^^^^^^
+
+}];
+
+const arr7: SingleOrArray<Item | undefined> = [{
+>arr7 : SingleOrArray<Item | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[{  src: logic,  id: "someId",}] : { src: Logic<string, number>; id: string; }[]
+>                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  src: logic,
+>src : Logic<string, number>
+>    : ^^^^^^^^^^^^^^^^^^^^^
+>logic : Logic<string, number>
+>      : ^^^^^^^^^^^^^^^^^^^^^
+
+  id: "someId",
+>id : string
+>   : ^^^^^^
+>"someId" : "someId"
+>         : ^^^^^^^^
+
+}];
+
+const arr8: SingleOrArray<Item | undefined> | undefined = [{
+>arr8 : SingleOrArray<Item | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[{  src: logic,  id: "someId",}] : { src: Logic<string, number>; id: string; }[]
+>                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  src: logic,
+>src : Logic<string, number>
+>    : ^^^^^^^^^^^^^^^^^^^^^
+>logic : Logic<string, number>
+>      : ^^^^^^^^^^^^^^^^^^^^^
+
+  id: "someId",
+>id : string
+>   : ^^^^^^
+>"someId" : "someId"
+>         : ^^^^^^^^
+
+}];
+
