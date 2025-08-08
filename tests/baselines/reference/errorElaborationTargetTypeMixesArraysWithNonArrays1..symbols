@@ -132,13 +132,13 @@ declare const logic: Logic<string, number>;
 >logic : Symbol(logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 54, 13))
 >Logic : Symbol(Logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 40, 3))
 
-const obj5: SingleOrArray<Item> = {
+const obj5: SingleOrArray<Item2> = {
 >obj5 : Symbol(obj5, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 56, 5))
 >SingleOrArray : Symbol(SingleOrArray, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 0))
->Item : Symbol(Item, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 32))
+>Item2 : Symbol(Item2, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 42, 35))
 
   src: logic,
->src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 56, 35))
+>src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 56, 36))
 >logic : Symbol(logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 54, 13))
 
   id: "someId",
@@ -146,13 +146,13 @@ const obj5: SingleOrArray<Item> = {
 
 };
 
-const obj6: SingleOrArray<Item> | undefined = {
+const obj6: SingleOrArray<Item2> | undefined = {
 >obj6 : Symbol(obj6, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 61, 5))
 >SingleOrArray : Symbol(SingleOrArray, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 0))
->Item : Symbol(Item, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 32))
+>Item2 : Symbol(Item2, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 42, 35))
 
   src: logic,
->src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 61, 47))
+>src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 61, 48))
 >logic : Symbol(logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 54, 13))
 
   id: "someId",
@@ -160,13 +160,13 @@ const obj6: SingleOrArray<Item> | undefined = {
 
 };
 
-const obj7: SingleOrArray<Item | undefined> = {
+const obj7: SingleOrArray<Item2 | undefined> = {
 >obj7 : Symbol(obj7, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 66, 5))
 >SingleOrArray : Symbol(SingleOrArray, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 0))
->Item : Symbol(Item, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 32))
+>Item2 : Symbol(Item2, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 42, 35))
 
   src: logic,
->src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 66, 47))
+>src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 66, 48))
 >logic : Symbol(logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 54, 13))
 
   id: "someId",
@@ -174,13 +174,13 @@ const obj7: SingleOrArray<Item | undefined> = {
 
 };
 
-const obj8: SingleOrArray<Item | undefined> | undefined = {
+const obj8: SingleOrArray<Item2 | undefined> | undefined = {
 >obj8 : Symbol(obj8, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 71, 5))
 >SingleOrArray : Symbol(SingleOrArray, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 0))
->Item : Symbol(Item, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 32))
+>Item2 : Symbol(Item2, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 42, 35))
 
   src: logic,
->src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 71, 59))
+>src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 71, 60))
 >logic : Symbol(logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 54, 13))
 
   id: "someId",
@@ -188,13 +188,13 @@ const obj8: SingleOrArray<Item | undefined> | undefined = {
 
 };
 
-const arr5: SingleOrArray<Item> = [{
+const arr5: SingleOrArray<Item2> = [{
 >arr5 : Symbol(arr5, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 76, 5))
 >SingleOrArray : Symbol(SingleOrArray, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 0))
->Item : Symbol(Item, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 32))
+>Item2 : Symbol(Item2, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 42, 35))
 
   src: logic,
->src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 76, 36))
+>src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 76, 37))
 >logic : Symbol(logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 54, 13))
 
   id: "someId",
@@ -202,13 +202,13 @@ const arr5: SingleOrArray<Item> = [{
 
 }];
 
-const arr6: SingleOrArray<Item> | undefined = [{
+const arr6: SingleOrArray<Item2> | undefined = [{
 >arr6 : Symbol(arr6, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 81, 5))
 >SingleOrArray : Symbol(SingleOrArray, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 0))
->Item : Symbol(Item, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 32))
+>Item2 : Symbol(Item2, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 42, 35))
 
   src: logic,
->src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 81, 48))
+>src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 81, 49))
 >logic : Symbol(logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 54, 13))
 
   id: "someId",
@@ -216,13 +216,13 @@ const arr6: SingleOrArray<Item> | undefined = [{
 
 }];
 
-const arr7: SingleOrArray<Item | undefined> = [{
+const arr7: SingleOrArray<Item2 | undefined> = [{
 >arr7 : Symbol(arr7, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 86, 5))
 >SingleOrArray : Symbol(SingleOrArray, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 0))
->Item : Symbol(Item, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 32))
+>Item2 : Symbol(Item2, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 42, 35))
 
   src: logic,
->src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 86, 48))
+>src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 86, 49))
 >logic : Symbol(logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 54, 13))
 
   id: "someId",
@@ -230,13 +230,13 @@ const arr7: SingleOrArray<Item | undefined> = [{
 
 }];
 
-const arr8: SingleOrArray<Item | undefined> | undefined = [{
+const arr8: SingleOrArray<Item2 | undefined> | undefined = [{
 >arr8 : Symbol(arr8, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 91, 5))
 >SingleOrArray : Symbol(SingleOrArray, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 0))
->Item : Symbol(Item, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 0, 32))
+>Item2 : Symbol(Item2, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 42, 35))
 
   src: logic,
->src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 91, 60))
+>src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 91, 61))
 >logic : Symbol(logic, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1..ts, 54, 13))
 
   id: "someId",

@@ -57,42 +57,42 @@ type Item2 =
 
 declare const logic: Logic<string, number>;
 
-const obj5: SingleOrArray<Item> = {
+const obj5: SingleOrArray<Item2> = {
   src: logic,
   id: "someId",
 };
 
-const obj6: SingleOrArray<Item> | undefined = {
+const obj6: SingleOrArray<Item2> | undefined = {
   src: logic,
   id: "someId",
 };
 
-const obj7: SingleOrArray<Item | undefined> = {
+const obj7: SingleOrArray<Item2 | undefined> = {
   src: logic,
   id: "someId",
 };
 
-const obj8: SingleOrArray<Item | undefined> | undefined = {
+const obj8: SingleOrArray<Item2 | undefined> | undefined = {
   src: logic,
   id: "someId",
 };
 
-const arr5: SingleOrArray<Item> = [{
+const arr5: SingleOrArray<Item2> = [{
   src: logic,
   id: "someId",
 }];
 
-const arr6: SingleOrArray<Item> | undefined = [{
+const arr6: SingleOrArray<Item2> | undefined = [{
   src: logic,
   id: "someId",
 }];
 
-const arr7: SingleOrArray<Item | undefined> = [{
+const arr7: SingleOrArray<Item2 | undefined> = [{
   src: logic,
   id: "someId",
 }];
 
-const arr8: SingleOrArray<Item | undefined> | undefined = [{
+const arr8: SingleOrArray<Item2 | undefined> | undefined = [{
   src: logic,
   id: "someId",
 }];

@@ -173,9 +173,9 @@ declare const logic: Logic<string, number>;
 >logic : Logic<string, number>
 >      : ^^^^^^^^^^^^^^^^^^^^^
 
-const obj5: SingleOrArray<Item> = {
->obj5 : SingleOrArray<Item>
->     : ^^^^^^^^^^^^^^^^^^^
+const obj5: SingleOrArray<Item2> = {
+>obj5 : SingleOrArray<Item2>
+>     : ^^^^^^^^^^^^^^^^^^^^
 >{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
 >                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -193,9 +193,9 @@ const obj5: SingleOrArray<Item> = {
 
 };
 
-const obj6: SingleOrArray<Item> | undefined = {
->obj6 : SingleOrArray<Item> | undefined
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+const obj6: SingleOrArray<Item2> | undefined = {
+>obj6 : SingleOrArray<Item2> | undefined
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
 >                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -213,9 +213,9 @@ const obj6: SingleOrArray<Item> | undefined = {
 
 };
 
-const obj7: SingleOrArray<Item | undefined> = {
->obj7 : SingleOrArray<Item | undefined>
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+const obj7: SingleOrArray<Item2 | undefined> = {
+>obj7 : SingleOrArray<Item2 | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
 >                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -233,9 +233,9 @@ const obj7: SingleOrArray<Item | undefined> = {
 
 };
 
-const obj8: SingleOrArray<Item | undefined> | undefined = {
->obj8 : SingleOrArray<Item | undefined>
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+const obj8: SingleOrArray<Item2 | undefined> | undefined = {
+>obj8 : SingleOrArray<Item2 | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
 >                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -253,9 +253,9 @@ const obj8: SingleOrArray<Item | undefined> | undefined = {
 
 };
 
-const arr5: SingleOrArray<Item> = [{
->arr5 : SingleOrArray<Item>
->     : ^^^^^^^^^^^^^^^^^^^
+const arr5: SingleOrArray<Item2> = [{
+>arr5 : SingleOrArray<Item2>
+>     : ^^^^^^^^^^^^^^^^^^^^
 >[{  src: logic,  id: "someId",}] : { src: Logic<string, number>; id: string; }[]
 >                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
@@ -275,9 +275,9 @@ const arr5: SingleOrArray<Item> = [{
 
 }];
 
-const arr6: SingleOrArray<Item> | undefined = [{
->arr6 : SingleOrArray<Item> | undefined
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+const arr6: SingleOrArray<Item2> | undefined = [{
+>arr6 : SingleOrArray<Item2> | undefined
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >[{  src: logic,  id: "someId",}] : { src: Logic<string, number>; id: string; }[]
 >                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
@@ -297,9 +297,9 @@ const arr6: SingleOrArray<Item> | undefined = [{
 
 }];
 
-const arr7: SingleOrArray<Item | undefined> = [{
->arr7 : SingleOrArray<Item | undefined>
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+const arr7: SingleOrArray<Item2 | undefined> = [{
+>arr7 : SingleOrArray<Item2 | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >[{  src: logic,  id: "someId",}] : { src: Logic<string, number>; id: string; }[]
 >                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
@@ -319,9 +319,9 @@ const arr7: SingleOrArray<Item | undefined> = [{
 
 }];
 
-const arr8: SingleOrArray<Item | undefined> | undefined = [{
->arr8 : SingleOrArray<Item | undefined>
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+const arr8: SingleOrArray<Item2 | undefined> | undefined = [{
+>arr8 : SingleOrArray<Item2 | undefined>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >[{  src: logic,  id: "someId",}] : { src: Logic<string, number>; id: string; }[]
 >                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{  src: logic,  id: "someId",} : { src: Logic<string, number>; id: string; }
