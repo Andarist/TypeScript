@@ -24846,7 +24846,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function getBestMatchingType(source: Type, target: UnionOrIntersectionType, isRelatedTo = compareTypesAssignable) {
-        const reducedTarget = reduceTargetTypeForObjectLiteral(source, target);
+        const reducedTarget = reduceTargetTypeForObjectSource(source, target);
         if (!(reducedTarget.flags & TypeFlags.Union)) {
             return reducedTarget;
         }
@@ -53417,7 +53417,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
     }
 
-    function reduceTargetTypeForObjectLiteral(source: Type, unionTarget: UnionOrIntersectionType) {
+    function reduceTargetTypeForObjectSource(source: Type, unionTarget: UnionOrIntersectionType) {
         if (source.flags & (TypeFlags.Intersection | TypeFlags.Object)) {
             const filtered = filterType(unionTarget, t => !(t.flags & TypeFlags.Primitive));
             if (!(filtered.flags & TypeFlags.Never)) {
@@ -53467,16 +53467,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             }
         }
         return bestMatch;
-    }
-
-    function filterPrimitivesIfContainsNonPrimitive(type: UnionType) {
-        if (maybeTypeOfKind(type, TypeFlags.NonPrimitive)) {
-            const result = filterType(type, t => !(t.flags & TypeFlags.Primitive));
-            if (!(result.flags & TypeFlags.Never)) {
-                return result;
-            }
-        }
-        return type;
     }
 
     // Keep this up-to-date with the same logic within `getApparentTypeOfContextualType`, since they should behave similarly
