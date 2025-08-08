@@ -60,15 +60,15 @@ const obj4: SingleOrArray<Item | undefined> | undefined = {
 
 };
 
-const arr1: SingleOrArray<Item> = {
+const arr1: SingleOrArray<Item> = [{
 >arr1 : Symbol(arr1, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1.ts, 26, 5))
 >SingleOrArray : Symbol(SingleOrArray, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1.ts, 0, 0))
 >Item : Symbol(Item, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1.ts, 0, 32))
 
   src: "baz",
->src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1.ts, 26, 35))
+>src : Symbol(src, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1.ts, 26, 36))
 
-};
+}];
 
 const arr2: SingleOrArray<Item> | undefined = [{
 >arr2 : Symbol(arr2, Decl(errorElaborationTargetTypeMixesArraysWithNonArrays1.ts, 30, 5))

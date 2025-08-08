@@ -2,7 +2,7 @@ errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(12,3): error TS2322: Type
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(16,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(20,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(24,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(28,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(28,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(32,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(36,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(40,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
@@ -55,11 +55,12 @@ errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(94,3): error TS2322: Type
 !!! error TS2322: Type '"baz"' is not assignable to type '"bar"'.
     };
     
-    const arr1: SingleOrArray<Item> = {
+    const arr1: SingleOrArray<Item> = [{
       src: "baz",
       ~~~
-!!! error TS2322: Type '"baz"' is not assignable to type '"bar"'.
-    };
+!!! error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
+!!! related TS6500 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts:5:7: The expected type comes from property 'src' which is declared here on type 'Item'
+    }];
     
     const arr2: SingleOrArray<Item> | undefined = [{
       src: "baz",

@@ -77,9 +77,11 @@ const obj4: SingleOrArray<Item | undefined> | undefined = {
 
 };
 
-const arr1: SingleOrArray<Item> = {
+const arr1: SingleOrArray<Item> = [{
 >arr1 : SingleOrArray<Item>
 >     : ^^^^^^^^^^^^^^^^^^^
+>[{  src: "baz",}] : { src: "baz"; }[]
+>                  : ^^^^^^^^^^^^^^^^^
 >{  src: "baz",} : { src: "baz"; }
 >                : ^^^^^^^^^^^^^^^
 
@@ -89,7 +91,7 @@ const arr1: SingleOrArray<Item> = {
 >"baz" : "baz"
 >      : ^^^^^
 
-};
+}];
 
 const arr2: SingleOrArray<Item> | undefined = [{
 >arr2 : SingleOrArray<Item> | undefined
