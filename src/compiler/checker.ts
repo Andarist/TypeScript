@@ -24855,7 +24855,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             return discriminated;
         }
         return findMatchingTypeReferenceOrTypeAliasReference(source, reducedTarget as UnionType) ||
-            findBestTypeForObjectLiteral(source, reducedTarget as UnionType) ||
             findBestTypeForInvokable(source, reducedTarget as UnionType) ||
             findMostOverlappyType(source, reducedTarget as UnionType);
     }
@@ -53419,18 +53418,24 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
     function reduceTargetTypeForObjectSource(source: Type, unionTarget: UnionOrIntersectionType) {
         if (source.flags & (TypeFlags.Intersection | TypeFlags.Object)) {
-            const filtered = filterType(unionTarget, t => !(t.flags & TypeFlags.Primitive));
+            const sourceObjectFlags = getObjectFlags(source);
+            const filtered = filterType(unionTarget, t => {
+                if (t.flags & TypeFlags.Primitive) {
+                    return false;
+                }
+                if (sourceObjectFlags & ObjectFlags.ObjectLiteral) {
+                    return !isArrayLikeType(t);
+                }
+                if (sourceObjectFlags & ObjectFlags.ArrayLiteral) {
+                    return isArrayLikeType(t);
+                }
+                return true;
+            });
             if (!(filtered.flags & TypeFlags.Never)) {
                 return filtered;
             }
         }
         return unionTarget;
-    }
-
-    function findBestTypeForObjectLiteral(source: Type, unionTarget: UnionOrIntersectionType) {
-        if (getObjectFlags(source) & ObjectFlags.ObjectLiteral && someType(unionTarget, isArrayLikeType)) {
-            return find(unionTarget.types, t => !isArrayLikeType(t));
-        }
     }
 
     function findBestTypeForInvokable(source: Type, unionTarget: UnionOrIntersectionType) {
