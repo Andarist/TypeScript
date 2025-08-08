@@ -53429,7 +53429,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
     function findBestTypeForObjectLiteral(source: Type, unionTarget: UnionOrIntersectionType) {
         if (getObjectFlags(source) & ObjectFlags.ObjectLiteral && someType(unionTarget, isArrayLikeType)) {
-            return find(unionTarget.types, t => !(t.flags & TypeFlags.Primitive) && !isArrayLikeType(t));
+            return find(unionTarget.types, t => !isArrayLikeType(t));
         }
     }
 
