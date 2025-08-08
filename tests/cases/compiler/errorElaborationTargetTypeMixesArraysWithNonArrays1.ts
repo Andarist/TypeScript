@@ -96,3 +96,5 @@ const arr8: SingleOrArray<Item2 | undefined> | undefined = [{
   src: logic,
   id: "someId",
 }];
+
+export {}

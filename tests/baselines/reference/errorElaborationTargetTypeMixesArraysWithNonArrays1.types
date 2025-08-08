@@ -1,6 +1,6 @@
-//// [tests/cases/compiler/errorElaborationTargetTypeMixesArraysWithNonArrays1..ts] ////
+//// [tests/cases/compiler/errorElaborationTargetTypeMixesArraysWithNonArrays1.ts] ////
 
-=== errorElaborationTargetTypeMixesArraysWithNonArrays1..ts ===
+=== errorElaborationTargetTypeMixesArraysWithNonArrays1.ts ===
 type SingleOrArray<T> = T | T[];
 >SingleOrArray : SingleOrArray<T>
 >              : ^^^^^^^^^^^^^^^^
@@ -341,3 +341,4 @@ const arr8: SingleOrArray<Item2 | undefined> | undefined = [{
 
 }];
 
+export {}

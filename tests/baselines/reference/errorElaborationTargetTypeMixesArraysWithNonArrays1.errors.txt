@@ -1,34 +1,34 @@
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(12,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(16,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(20,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(24,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(28,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(32,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(36,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(40,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(57,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2>'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(12,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(16,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(20,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(24,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(28,3): error TS2322: Type '"baz"' is not assignable to type '"foo"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(32,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(36,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(40,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(57,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2>'.
   Types of property 'id' are incompatible.
     Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(62,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2> | undefined'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(62,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2> | undefined'.
   Types of property 'id' are incompatible.
     Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(67,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2 | undefined>'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(67,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2 | undefined>'.
   Types of property 'id' are incompatible.
     Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(72,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2 | undefined>'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(72,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2 | undefined>'.
   Types of property 'id' are incompatible.
     Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(77,37): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(77,37): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2'.
   Types of property 'id' are incompatible.
     Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(82,49): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(82,49): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2'.
   Types of property 'id' are incompatible.
     Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(89,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(94,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(89,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(94,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
 
 
-==== errorElaborationTargetTypeMixesArraysWithNonArrays1..ts (16 errors) ====
+==== errorElaborationTargetTypeMixesArraysWithNonArrays1.ts (16 errors) ====
     type SingleOrArray<T> = T | T[];
     
     type Item =
@@ -73,7 +73,7 @@ errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(94,3): error TS2322: Typ
       src: "baz",
       ~~~
 !!! error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
-!!! related TS6500 errorElaborationTargetTypeMixesArraysWithNonArrays1..ts:5:7: The expected type comes from property 'src' which is declared here on type 'Item'
+!!! related TS6500 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts:5:7: The expected type comes from property 'src' which is declared here on type 'Item'
     }];
     
     const arr3: SingleOrArray<Item | undefined> = [{
@@ -176,3 +176,4 @@ errorElaborationTargetTypeMixesArraysWithNonArrays1..ts(94,3): error TS2322: Typ
 !!! error TS2322: Type 'string' is not assignable to type 'undefined'.
     }];
     
+    export {}
