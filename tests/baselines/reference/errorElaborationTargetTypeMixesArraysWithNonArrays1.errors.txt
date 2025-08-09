@@ -1,23 +1,35 @@
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(12,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(16,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(20,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(24,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(12,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(16,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(20,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(24,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(28,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(32,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(36,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(40,3): error TS2322: Type '"baz"' is not assignable to type '"bar"'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(59,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(64,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(69,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(74,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(36,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(40,3): error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(57,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2>'.
+  Types of property 'id' are incompatible.
+    Type 'string' is not assignable to type 'undefined'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(62,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2> | undefined'.
+  Types of property 'id' are incompatible.
+    Type 'string' is not assignable to type 'undefined'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(67,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2 | undefined>'.
+  Types of property 'id' are incompatible.
+    Type 'string' is not assignable to type 'undefined'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(72,7): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2 | undefined>'.
+  Types of property 'id' are incompatible.
+    Type 'string' is not assignable to type 'undefined'.
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(77,37): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2'.
   Types of property 'id' are incompatible.
     Type 'string' is not assignable to type 'undefined'.
 errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(82,49): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2'.
   Types of property 'id' are incompatible.
     Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(89,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
-errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(94,3): error TS2322: Type 'string' is not assignable to type 'undefined'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(87,49): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2 | undefined'.
+  Types of property 'id' are incompatible.
+    Type 'string' is not assignable to type 'undefined'.
+errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(92,61): error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2 | undefined'.
+  Types of property 'id' are incompatible.
+    Type 'string' is not assignable to type 'undefined'.
 
 
 ==== errorElaborationTargetTypeMixesArraysWithNonArrays1.ts (16 errors) ====
@@ -34,25 +46,25 @@ errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(94,3): error TS2322: Type
     const obj1: SingleOrArray<Item> = {
       src: "baz",
       ~~~
-!!! error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+!!! error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
     };
     
     const obj2: SingleOrArray<Item> | undefined = {
       src: "baz",
       ~~~
-!!! error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+!!! error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
     };
     
     const obj3: SingleOrArray<Item | undefined> = {
       src: "baz",
       ~~~
-!!! error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+!!! error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
     };
     
     const obj4: SingleOrArray<Item | undefined> | undefined = {
       src: "baz",
       ~~~
-!!! error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+!!! error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
     };
     
     const arr1: SingleOrArray<Item> = [{
@@ -72,13 +84,13 @@ errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(94,3): error TS2322: Type
     const arr3: SingleOrArray<Item | undefined> = [{
       src: "baz",
       ~~~
-!!! error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+!!! error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
     }];
     
     const arr4: SingleOrArray<Item | undefined> | undefined = [{
       src: "baz",
       ~~~
-!!! error TS2322: Type '"baz"' is not assignable to type '"bar"'.
+!!! error TS2322: Type '"baz"' is not assignable to type '"foo" | "bar"'.
     }];
     
     type Logic<I, O> = (input: I) => O;
@@ -96,31 +108,39 @@ errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(94,3): error TS2322: Type
     declare const logic: Logic<string, number>;
     
     const obj5: SingleOrArray<Item2> = {
+          ~~~~
+!!! error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2>'.
+!!! error TS2322:   Types of property 'id' are incompatible.
+!!! error TS2322:     Type 'string' is not assignable to type 'undefined'.
       src: logic,
       id: "someId",
-      ~~
-!!! error TS2322: Type 'string' is not assignable to type 'undefined'.
     };
     
     const obj6: SingleOrArray<Item2> | undefined = {
+          ~~~~
+!!! error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2> | undefined'.
+!!! error TS2322:   Types of property 'id' are incompatible.
+!!! error TS2322:     Type 'string' is not assignable to type 'undefined'.
       src: logic,
       id: "someId",
-      ~~
-!!! error TS2322: Type 'string' is not assignable to type 'undefined'.
     };
     
     const obj7: SingleOrArray<Item2 | undefined> = {
+          ~~~~
+!!! error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2 | undefined>'.
+!!! error TS2322:   Types of property 'id' are incompatible.
+!!! error TS2322:     Type 'string' is not assignable to type 'undefined'.
       src: logic,
       id: "someId",
-      ~~
-!!! error TS2322: Type 'string' is not assignable to type 'undefined'.
     };
     
     const obj8: SingleOrArray<Item2 | undefined> | undefined = {
+          ~~~~
+!!! error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'SingleOrArray<Item2 | undefined>'.
+!!! error TS2322:   Types of property 'id' are incompatible.
+!!! error TS2322:     Type 'string' is not assignable to type 'undefined'.
       src: logic,
       id: "someId",
-      ~~
-!!! error TS2322: Type 'string' is not assignable to type 'undefined'.
     };
     
     const arr5: SingleOrArray<Item2> = [{
@@ -148,17 +168,27 @@ errorElaborationTargetTypeMixesArraysWithNonArrays1.ts(94,3): error TS2322: Type
 !!! error TS2322:     Type 'string' is not assignable to type 'undefined'.
     
     const arr7: SingleOrArray<Item2 | undefined> = [{
+                                                    ~
       src: logic,
+    ~~~~~~~~~~~~~
       id: "someId",
-      ~~
-!!! error TS2322: Type 'string' is not assignable to type 'undefined'.
+    ~~~~~~~~~~~~~~~
     }];
+    ~
+!!! error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2 | undefined'.
+!!! error TS2322:   Types of property 'id' are incompatible.
+!!! error TS2322:     Type 'string' is not assignable to type 'undefined'.
     
     const arr8: SingleOrArray<Item2 | undefined> | undefined = [{
+                                                                ~
       src: logic,
+    ~~~~~~~~~~~~~
       id: "someId",
-      ~~
-!!! error TS2322: Type 'string' is not assignable to type 'undefined'.
+    ~~~~~~~~~~~~~~~
     }];
+    ~
+!!! error TS2322: Type '{ src: Logic<string, number>; id: string; }' is not assignable to type 'Item2 | undefined'.
+!!! error TS2322:   Types of property 'id' are incompatible.
+!!! error TS2322:     Type 'string' is not assignable to type 'undefined'.
     
     export {}

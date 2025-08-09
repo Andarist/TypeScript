@@ -21429,12 +21429,13 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function getBestMatchIndexedAccessTypeOrUndefined(source: Type, target: Type, nameType: Type) {
-        const idx = getIndexedAccessTypeOrUndefined(target, nameType);
+        const reducedTarget = reduceTargetTypeForObjectSource(source, target as UnionType);
+        const idx = getIndexedAccessTypeOrUndefined(reducedTarget, nameType);
         if (idx) {
             return idx;
         }
-        if (target.flags & TypeFlags.Union) {
-            const best = getBestMatchingType(source, target as UnionType);
+        if (reducedTarget.flags & TypeFlags.Union) {
+            const best = getBestMatchingType(source, reducedTarget as UnionType);
             if (best) {
                 return getIndexedAccessTypeOrUndefined(best, nameType);
             }
