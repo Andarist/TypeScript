@@ -2360,6 +2360,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     var reverseMappedSourceStack: Type[] = [];
     var reverseMappedTargetStack: Type[] = [];
     var reverseExpandingFlags = ExpandingFlags.None;
+    var normalizeReduceStack: Type[] = [];
 
     var diagnostics = createDiagnosticCollection();
     var suggestionDiagnostics = createDiagnosticCollection();
@@ -22247,9 +22248,13 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function getNormalizedUnionOrIntersectionType(type: UnionOrIntersectionType, writing: boolean) {
-        const reduced = getReducedType(type);
-        if (reduced !== type) {
-            return reduced;
+        if (!contains(normalizeReduceStack, type)) {
+            normalizeReduceStack.push(type);
+            const reduced = getReducedType(type);
+            normalizeReduceStack.pop();
+            if (reduced !== type) {
+                return reduced;
+            }
         }
         if (type.flags & TypeFlags.Intersection && shouldNormalizeIntersection(type as IntersectionType)) {
             // Normalization handles cases like
