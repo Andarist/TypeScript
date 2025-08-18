@@ -1,0 +1,400 @@
+//// [tests/cases/compiler/inferenceSelfReferenceInGetter1.ts] ////
+
+=== inferenceSelfReferenceInGetter1.ts ===
+type $InferObjectOutput<T extends Record<string, { output: unknown }>> = {
+>$InferObjectOutput : $InferObjectOutput<T>
+>                   : ^^^^^^^^^^^^^^^^^^^^^
+>output : unknown
+>       : ^^^^^^^
+
+  [k in keyof T as T[k] extends unknown ? never : k]: T[k]["output"];
+} & {
+  [k in keyof T as T[k] extends unknown ? k : never]?: T[k]["output"];
+};
+
+declare function object<T extends Record<string, any>>(
+>object : <T extends Record<string, any>>(shape: T) => { output: $InferObjectOutput<T>; }
+>       : ^ ^^^^^^^^^                   ^^     ^^ ^^^^^                                  
+
+  shape: T,
+>shape : T
+>      : ^
+
+): {
+  output: $InferObjectOutput<T>;
+>output : $InferObjectOutput<T>
+>       : ^^^^^^^^^^^^^^^^^^^^^
+
+};
+
+declare function array<T extends { output: unknown }>(
+>array : <T extends { output: unknown; }>(element: T) => { output: Array<T["output"]>; default: (def: Array<T["output"]>) => "def"; }
+>      : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                            
+>output : unknown
+>       : ^^^^^^^
+
+  element: T,
+>element : T
+>        : ^
+
+): {
+  output: Array<T["output"]>;
+>output : T["output"][]
+>       : ^^^^^^^^^^^^^
+
+  default: (def: Array<T["output"]>) => "def";
+>default : (def: Array<T["output"]>) => "def"
+>        : ^   ^^                  ^^^^^     
+>def : T["output"][]
+>    : ^^^^^^^^^^^^^
+
+};
+
+const fooSchema1 = object({
+>fooSchema1 : { output: $InferObjectOutput<{ readonly children: "def"; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object({  get children() {    return array(fooSchema1).default([]);  },}) : { output: $InferObjectOutput<{ readonly children: "def"; }>; }
+>                                                                          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : <T extends Record<string, any>>(shape: T) => { output: $InferObjectOutput<T>; }
+>       : ^ ^^^^^^^^^                   ^^     ^^ ^^^^^                                  
+>{  get children() {    return array(fooSchema1).default([]);  },} : { readonly children: "def"; }
+>                                                                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  get children() {
+>children : "def"
+>         : ^^^^^
+
+    return array(fooSchema1).default([]);
+>array(fooSchema1).default([]) : "def"
+>                              : ^^^^^
+>array(fooSchema1).default : (def: $InferObjectOutput<{ readonly children: "def"; }>[]) => "def"
+>                          : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     
+>array(fooSchema1) : { output: $InferObjectOutput<{ readonly children: "def"; }>[]; default: (def: $InferObjectOutput<{ readonly children: "def"; }>[]) => "def"; }
+>                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^
+>array : <T extends { output: unknown; }>(element: T) => { output: Array<T["output"]>; default: (def: Array<T["output"]>) => "def"; }
+>      : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                            
+>fooSchema1 : { output: $InferObjectOutput<{ readonly children: "def"; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>default : (def: $InferObjectOutput<{ readonly children: "def"; }>[]) => "def"
+>        : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     
+>[] : never[]
+>   : ^^^^^^^
+
+  },
+});
+
+declare function array2<T extends { output: unknown }>(
+>array2 : <T extends { output: unknown; }>(element: T) => { output: Array<T["output"]>; default: (def: Array<T["output"]>) => ReturnType<typeof array2<T>>; }
+>       : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                                                   
+>output : unknown
+>       : ^^^^^^^
+
+  element: T,
+>element : T
+>        : ^
+
+): {
+  output: Array<T["output"]>;
+>output : T["output"][]
+>       : ^^^^^^^^^^^^^
+
+  default: (def: Array<T["output"]>) => ReturnType<typeof array2<T>>;
+>default : (def: Array<T["output"]>) => ReturnType<typeof array2<T>>
+>        : ^   ^^                  ^^^^^                            
+>def : T["output"][]
+>    : ^^^^^^^^^^^^^
+>array2 : <T extends { output: unknown; }>(element: T) => { output: Array<T["output"]>; default: (def: Array<T["output"]>) => ReturnType<typeof array2<T>>; }
+>       : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                                                   
+
+};
+
+const fooSchema2 = object({
+>fooSchema2 : { output: $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object({  get children() {    return array2(fooSchema2).default([]);  },}) : { output: $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>; }
+>                                                                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : <T extends Record<string, any>>(shape: T) => { output: $InferObjectOutput<T>; }
+>       : ^ ^^^^^^^^^                   ^^     ^^ ^^^^^                                  
+>{  get children() {    return array2(fooSchema2).default([]);  },} : { readonly children: { output: $InferObjectOutput<{ readonly children: any; }>[]; default: (def: $InferObjectOutput<{ readonly children: any; }>[]) => any; }; }
+>                                                                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  get children() {
+>children : { output: $InferObjectOutput<{ readonly children: any; }>[]; default: (def: $InferObjectOutput<{ readonly children: any; }>[]) => any; }
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    return array2(fooSchema2).default([]);
+>array2(fooSchema2).default([]) : { output: $InferObjectOutput<{ readonly children: any; }>[]; default: (def: $InferObjectOutput<{ readonly children: any; }>[]) => any; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>array2(fooSchema2).default : (def: $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: any; }; }>[]) => { output: $InferObjectOutput<{ readonly children: any; }>[]; default: any; }
+>                           : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>array2(fooSchema2) : { output: $InferObjectOutput<{ readonly children: any; }>[]; default: (def: $InferObjectOutput<{ readonly children: any; }>[]) => any; }
+>                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>array2 : <T extends { output: unknown; }>(element: T) => { output: Array<T["output"]>; default: (def: Array<T["output"]>) => ReturnType<typeof array2<T>>; }
+>       : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                                                   
+>fooSchema2 : { output: $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>default : (def: $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: any; }; }>[]) => { output: $InferObjectOutput<{ readonly children: any; }>[]; default: any; }
+>        : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[] : never[]
+>   : ^^^^^^^
+
+  },
+});
+
+fooSchema2.output.children?.[0].children?.[0].children?.[0].children;
+>fooSchema2.output.children?.[0].children?.[0].children?.[0].children : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>                                                                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema2.output.children?.[0].children?.[0].children?.[0] : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }> | undefined
+>                                                            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema2.output.children?.[0].children?.[0].children : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>                                                       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema2.output.children?.[0].children?.[0] : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }> | undefined
+>                                              : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema2.output.children?.[0].children : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>                                         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema2.output.children?.[0] : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }> | undefined
+>                                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema2.output.children : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema2.output : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>
+>                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema2 : { output: $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>output : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>children : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>0 : 0
+>  : ^
+>children : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>0 : 0
+>  : ^
+>children : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>0 : 0
+>  : ^
+>children : $InferObjectOutput<{ readonly children: { output: $InferObjectOutput<any>[]; default: (def: $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+declare function array3<T extends { output: unknown }>(
+>array3 : <T extends { output: unknown; }>(element: T) => { output: ReadonlyArray<T["output"]>; default: (def: ReadonlyArray<T["output"]>) => "def"; }
+>       : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                                            
+>output : unknown
+>       : ^^^^^^^
+
+  element: T,
+>element : T
+>        : ^
+
+): {
+  output: ReadonlyArray<T["output"]>;
+>output : readonly T["output"][]
+>       : ^^^^^^^^^^^^^^^^^^^^^^
+
+  default: (def: ReadonlyArray<T["output"]>) => "def";
+>default : (def: ReadonlyArray<T["output"]>) => "def"
+>        : ^   ^^                          ^^^^^     
+>def : readonly T["output"][]
+>    : ^^^^^^^^^^^^^^^^^^^^^^
+
+};
+
+const fooSchema3 = object({
+>fooSchema3 : { output: $InferObjectOutput<{ readonly children: "def"; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object({  get children() {    return array3(fooSchema3).default([]);  },}) : { output: $InferObjectOutput<{ readonly children: "def"; }>; }
+>                                                                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : <T extends Record<string, any>>(shape: T) => { output: $InferObjectOutput<T>; }
+>       : ^ ^^^^^^^^^                   ^^     ^^ ^^^^^                                  
+>{  get children() {    return array3(fooSchema3).default([]);  },} : { readonly children: "def"; }
+>                                                                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  get children() {
+>children : "def"
+>         : ^^^^^
+
+    return array3(fooSchema3).default([]);
+>array3(fooSchema3).default([]) : "def"
+>                               : ^^^^^
+>array3(fooSchema3).default : (def: readonly $InferObjectOutput<{ readonly children: "def"; }>[]) => "def"
+>                           : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     
+>array3(fooSchema3) : { output: readonly $InferObjectOutput<{ readonly children: "def"; }>[]; default: (def: readonly $InferObjectOutput<{ readonly children: "def"; }>[]) => "def"; }
+>                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^
+>array3 : <T extends { output: unknown; }>(element: T) => { output: ReadonlyArray<T["output"]>; default: (def: ReadonlyArray<T["output"]>) => "def"; }
+>       : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                                            
+>fooSchema3 : { output: $InferObjectOutput<{ readonly children: "def"; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>default : (def: readonly $InferObjectOutput<{ readonly children: "def"; }>[]) => "def"
+>        : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     
+>[] : never[]
+>   : ^^^^^^^
+
+  },
+});
+
+declare function array4<T extends { output: unknown }>(
+>array4 : <T extends { output: unknown; }>(element: T) => { output: ReadonlyArray<T["output"]>; default: (def: ReadonlyArray<T["output"]>) => ReturnType<typeof array4<T>>; }
+>       : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                                                                   
+>output : unknown
+>       : ^^^^^^^
+
+  element: T,
+>element : T
+>        : ^
+
+): {
+  output: ReadonlyArray<T["output"]>;
+>output : readonly T["output"][]
+>       : ^^^^^^^^^^^^^^^^^^^^^^
+
+  default: (def: ReadonlyArray<T["output"]>) => ReturnType<typeof array4<T>>;
+>default : (def: ReadonlyArray<T["output"]>) => ReturnType<typeof array4<T>>
+>        : ^   ^^                          ^^^^^                            
+>def : readonly T["output"][]
+>    : ^^^^^^^^^^^^^^^^^^^^^^
+>array4 : <T extends { output: unknown; }>(element: T) => { output: ReadonlyArray<T["output"]>; default: (def: ReadonlyArray<T["output"]>) => ReturnType<typeof array4<T>>; }
+>       : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                                                                   
+
+};
+
+const fooSchema4 = object({
+>fooSchema4 : { output: $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object({  get children() {    return array4(fooSchema4).default([]);  },}) : { output: $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>; }
+>                                                                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object : <T extends Record<string, any>>(shape: T) => { output: $InferObjectOutput<T>; }
+>       : ^ ^^^^^^^^^                   ^^     ^^ ^^^^^                                  
+>{  get children() {    return array4(fooSchema4).default([]);  },} : { readonly children: { output: readonly $InferObjectOutput<{ readonly children: any; }>[]; default: (def: readonly $InferObjectOutput<{ readonly children: any; }>[]) => any; }; }
+>                                                                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  get children() {
+>children : { output: readonly $InferObjectOutput<{ readonly children: any; }>[]; default: (def: readonly $InferObjectOutput<{ readonly children: any; }>[]) => any; }
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    return array4(fooSchema4).default([]);
+>array4(fooSchema4).default([]) : { output: readonly $InferObjectOutput<{ readonly children: any; }>[]; default: (def: readonly $InferObjectOutput<{ readonly children: any; }>[]) => any; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>array4(fooSchema4).default : (def: readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: any; }; }>[]) => { output: readonly $InferObjectOutput<{ readonly children: any; }>[]; default: any; }
+>                           : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>array4(fooSchema4) : { output: readonly $InferObjectOutput<{ readonly children: any; }>[]; default: (def: readonly $InferObjectOutput<{ readonly children: any; }>[]) => any; }
+>                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>array4 : <T extends { output: unknown; }>(element: T) => { output: ReadonlyArray<T["output"]>; default: (def: ReadonlyArray<T["output"]>) => ReturnType<typeof array4<T>>; }
+>       : ^ ^^^^^^^^^                    ^^       ^^ ^^^^^                                                                                                                   
+>fooSchema4 : { output: $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>default : (def: readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: any; }; }>[]) => { output: readonly $InferObjectOutput<{ readonly children: any; }>[]; default: any; }
+>        : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[] : never[]
+>   : ^^^^^^^
+
+  },
+});
+
+fooSchema4.output.children?.[0].children?.[0].children?.[0].children;
+>fooSchema4.output.children?.[0].children?.[0].children?.[0].children : readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>                                                                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema4.output.children?.[0].children?.[0].children?.[0] : $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }> | undefined
+>                                                            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema4.output.children?.[0].children?.[0].children : readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>                                                       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema4.output.children?.[0].children?.[0] : $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }> | undefined
+>                                              : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema4.output.children?.[0].children : readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>                                         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema4.output.children?.[0] : $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }> | undefined
+>                                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema4.output.children : readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema4.output : $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>
+>                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema4 : { output: $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>output : $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>children : readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>0 : 0
+>  : ^
+>children : readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>0 : 0
+>  : ^
+>children : readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>0 : 0
+>  : ^
+>children : readonly $InferObjectOutput<{ readonly children: { output: readonly $InferObjectOutput<any>[]; default: (def: readonly $InferObjectOutput<any>[]) => any; }; }>[] | undefined
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+declare function object2<T extends Record<string, any>>(
+>object2 : <T extends Record<string, any>>(shape: T) => { shape: T; output: $InferObjectOutput<T>; partialDefault: (def: Partial<$InferObjectOutput<T>>) => ReturnType<typeof object2<T>>; }
+>        : ^ ^^^^^^^^^                   ^^     ^^ ^^^^^                                                                                                                                    
+
+  shape: T,
+>shape : T
+>      : ^
+
+): {
+  shape: T;
+>shape : T
+>      : ^
+
+  output: $InferObjectOutput<T>;
+>output : $InferObjectOutput<T>
+>       : ^^^^^^^^^^^^^^^^^^^^^
+
+  partialDefault: (
+>partialDefault : (def: Partial<$InferObjectOutput<T>>) => ReturnType<typeof object2<T>>
+>               : ^   ^^                              ^^^^^                             
+
+    def: Partial<$InferObjectOutput<T>>,
+>def : Partial<$InferObjectOutput<T>>
+>    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  ) => ReturnType<typeof object2<T>>;
+>object2 : <T extends Record<string, any>>(shape: T) => { shape: T; output: $InferObjectOutput<T>; partialDefault: (def: Partial<$InferObjectOutput<T>>) => ReturnType<typeof object2<T>>; }
+>        : ^ ^^^^^^^^^                   ^^     ^^ ^^^^^                                                                                                                                    
+
+};
+
+const fooSchema5 = object2({
+>fooSchema5 : { shape: { readonly child: any; }; output: $InferObjectOutput<{ readonly child: any; }>; partialDefault: (def: Partial<$InferObjectOutput<{ readonly child: any; }>>) => any; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object2({  get child() {    return object2(fooSchema5.shape).partialDefault({});  },}) : { shape: { readonly child: any; }; output: $InferObjectOutput<{ readonly child: any; }>; partialDefault: (def: Partial<$InferObjectOutput<{ readonly child: any; }>>) => any; }
+>                                                                                       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object2 : <T extends Record<string, any>>(shape: T) => { shape: T; output: $InferObjectOutput<T>; partialDefault: (def: Partial<$InferObjectOutput<T>>) => ReturnType<typeof object2<T>>; }
+>        : ^ ^^^^^^^^^                   ^^     ^^ ^^^^^                                                                                                                                    
+>{  get child() {    return object2(fooSchema5.shape).partialDefault({});  },} : { readonly child: any; }
+>                                                                              : ^^^^^^^^^^^^^^^^^^^^^^^^
+
+  get child() {
+>child : any
+>      : ^^^
+
+    return object2(fooSchema5.shape).partialDefault({});
+>object2(fooSchema5.shape).partialDefault({}) : { shape: { readonly child: any; }; output: $InferObjectOutput<{ readonly child: any; }>; partialDefault: (def: Partial<$InferObjectOutput<{ readonly child: any; }>>) => any; }
+>                                             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object2(fooSchema5.shape).partialDefault : (def: Partial<$InferObjectOutput<{ readonly child: any; }>>) => { shape: { readonly child: any; }; output: $InferObjectOutput<{ readonly child: any; }>; partialDefault: any; }
+>                                         : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object2(fooSchema5.shape) : { shape: { readonly child: any; }; output: $InferObjectOutput<{ readonly child: any; }>; partialDefault: (def: Partial<$InferObjectOutput<{ readonly child: any; }>>) => any; }
+>                          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>object2 : <T extends Record<string, any>>(shape: T) => { shape: T; output: $InferObjectOutput<T>; partialDefault: (def: Partial<$InferObjectOutput<T>>) => ReturnType<typeof object2<T>>; }
+>        : ^ ^^^^^^^^^                   ^^     ^^ ^^^^^                                                                                                                                    
+>fooSchema5.shape : { readonly child: any; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^
+>fooSchema5 : { shape: { readonly child: any; }; output: $InferObjectOutput<{ readonly child: any; }>; partialDefault: (def: Partial<$InferObjectOutput<{ readonly child: any; }>>) => any; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>shape : { readonly child: any; }
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^
+>partialDefault : (def: Partial<$InferObjectOutput<{ readonly child: any; }>>) => { shape: { readonly child: any; }; output: $InferObjectOutput<{ readonly child: any; }>; partialDefault: any; }
+>               : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{} : {}
+>   : ^^
+
+  },
+});
+
+// fooSchema5.output.child
+
+export {}

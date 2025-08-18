@@ -1,0 +1,200 @@
+//// [tests/cases/compiler/inferenceSelfReferenceInGetter2.ts] ////
+
+=== inferenceSelfReferenceInGetter2.ts ===
+declare function array<T extends { output: unknown }>(
+>array : Symbol(array, Decl(inferenceSelfReferenceInGetter2.ts, 0, 0))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 0, 23))
+>output : Symbol(output, Decl(inferenceSelfReferenceInGetter2.ts, 0, 34))
+
+  element: T,
+>element : Symbol(element, Decl(inferenceSelfReferenceInGetter2.ts, 0, 54))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 0, 23))
+
+): {
+  output: ReadonlyArray<T["output"]>;
+>output : Symbol(output, Decl(inferenceSelfReferenceInGetter2.ts, 2, 4))
+>ReadonlyArray : Symbol(ReadonlyArray, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 0, 23))
+
+  default: (def: ReadonlyArray<T["output"]>) => "def";
+>default : Symbol(default, Decl(inferenceSelfReferenceInGetter2.ts, 3, 37))
+>def : Symbol(def, Decl(inferenceSelfReferenceInGetter2.ts, 4, 12))
+>ReadonlyArray : Symbol(ReadonlyArray, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 0, 23))
+
+};
+
+type $InferObjectOutput1<T extends Record<string, { output: unknown }>> = {
+>$InferObjectOutput1 : Symbol($InferObjectOutput1, Decl(inferenceSelfReferenceInGetter2.ts, 5, 2))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 7, 25))
+>Record : Symbol(Record, Decl(lib.es5.d.ts, --, --))
+>output : Symbol(output, Decl(inferenceSelfReferenceInGetter2.ts, 7, 51))
+
+  [k in keyof T as T[k] extends unknown ? never : k]: T[k]["output"];
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 8, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 7, 25))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 7, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 8, 3))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 8, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 7, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 8, 3))
+
+} & {
+  [k in keyof T]?: T[k]["output"];
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 10, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 7, 25))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 7, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 10, 3))
+
+};
+
+declare function object1<T extends Record<string, any>>(
+>object1 : Symbol(object1, Decl(inferenceSelfReferenceInGetter2.ts, 11, 2))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 13, 25))
+>Record : Symbol(Record, Decl(lib.es5.d.ts, --, --))
+
+  shape: T,
+>shape : Symbol(shape, Decl(inferenceSelfReferenceInGetter2.ts, 13, 56))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 13, 25))
+
+): {
+  output: $InferObjectOutput1<T>;
+>output : Symbol(output, Decl(inferenceSelfReferenceInGetter2.ts, 15, 4))
+>$InferObjectOutput1 : Symbol($InferObjectOutput1, Decl(inferenceSelfReferenceInGetter2.ts, 5, 2))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 13, 25))
+
+};
+
+const fooSchema1 = object1({
+>fooSchema1 : Symbol(fooSchema1, Decl(inferenceSelfReferenceInGetter2.ts, 19, 5))
+>object1 : Symbol(object1, Decl(inferenceSelfReferenceInGetter2.ts, 11, 2))
+
+  get children() {
+>children : Symbol(children, Decl(inferenceSelfReferenceInGetter2.ts, 19, 28))
+
+    return array(fooSchema1).default([]);
+>array(fooSchema1).default : Symbol(default, Decl(inferenceSelfReferenceInGetter2.ts, 3, 37))
+>array : Symbol(array, Decl(inferenceSelfReferenceInGetter2.ts, 0, 0))
+>fooSchema1 : Symbol(fooSchema1, Decl(inferenceSelfReferenceInGetter2.ts, 19, 5))
+>default : Symbol(default, Decl(inferenceSelfReferenceInGetter2.ts, 3, 37))
+
+  },
+});
+
+type $InferObjectOutput2<T extends Record<string, { output: unknown }>> = {
+>$InferObjectOutput2 : Symbol($InferObjectOutput2, Decl(inferenceSelfReferenceInGetter2.ts, 23, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 25, 25))
+>Record : Symbol(Record, Decl(lib.es5.d.ts, --, --))
+>output : Symbol(output, Decl(inferenceSelfReferenceInGetter2.ts, 25, 51))
+
+  [k in keyof T]: T[k]["output"];
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 26, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 25, 25))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 25, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 26, 3))
+
+} & {
+  [k in keyof T as T[k] extends unknown ? k : never]?: T[k]["output"];
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 28, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 25, 25))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 25, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 28, 3))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 28, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 25, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 28, 3))
+
+};
+
+declare function object2<T extends Record<string, any>>(
+>object2 : Symbol(object2, Decl(inferenceSelfReferenceInGetter2.ts, 29, 2))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 31, 25))
+>Record : Symbol(Record, Decl(lib.es5.d.ts, --, --))
+
+  shape: T,
+>shape : Symbol(shape, Decl(inferenceSelfReferenceInGetter2.ts, 31, 56))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 31, 25))
+
+): {
+  output: $InferObjectOutput2<T>;
+>output : Symbol(output, Decl(inferenceSelfReferenceInGetter2.ts, 33, 4))
+>$InferObjectOutput2 : Symbol($InferObjectOutput2, Decl(inferenceSelfReferenceInGetter2.ts, 23, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 31, 25))
+
+};
+
+const fooSchema2 = object2({
+>fooSchema2 : Symbol(fooSchema2, Decl(inferenceSelfReferenceInGetter2.ts, 37, 5))
+>object2 : Symbol(object2, Decl(inferenceSelfReferenceInGetter2.ts, 29, 2))
+
+  get children() {
+>children : Symbol(children, Decl(inferenceSelfReferenceInGetter2.ts, 37, 28))
+
+    return array(fooSchema2).default([]);
+>array(fooSchema2).default : Symbol(default, Decl(inferenceSelfReferenceInGetter2.ts, 3, 37))
+>array : Symbol(array, Decl(inferenceSelfReferenceInGetter2.ts, 0, 0))
+>fooSchema2 : Symbol(fooSchema2, Decl(inferenceSelfReferenceInGetter2.ts, 37, 5))
+>default : Symbol(default, Decl(inferenceSelfReferenceInGetter2.ts, 3, 37))
+
+  },
+});
+
+type $InferObjectOutput3<T extends Record<string, { output: unknown }>> = {
+>$InferObjectOutput3 : Symbol($InferObjectOutput3, Decl(inferenceSelfReferenceInGetter2.ts, 41, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 43, 25))
+>Record : Symbol(Record, Decl(lib.es5.d.ts, --, --))
+>output : Symbol(output, Decl(inferenceSelfReferenceInGetter2.ts, 43, 51))
+
+  [k in keyof T as T[k] extends unknown ? never : k]: T[k]["output"];
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 44, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 43, 25))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 43, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 44, 3))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 44, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 43, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 44, 3))
+
+} & {
+  [k in keyof T as T[k] extends unknown ? k : never]?: T[k]["output"];
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 46, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 43, 25))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 43, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 46, 3))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 46, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 43, 25))
+>k : Symbol(k, Decl(inferenceSelfReferenceInGetter2.ts, 46, 3))
+
+};
+
+declare function object3<T extends Record<string, any>>(
+>object3 : Symbol(object3, Decl(inferenceSelfReferenceInGetter2.ts, 47, 2))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 49, 25))
+>Record : Symbol(Record, Decl(lib.es5.d.ts, --, --))
+
+  shape: T,
+>shape : Symbol(shape, Decl(inferenceSelfReferenceInGetter2.ts, 49, 56))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 49, 25))
+
+): {
+  output: $InferObjectOutput3<T>;
+>output : Symbol(output, Decl(inferenceSelfReferenceInGetter2.ts, 51, 4))
+>$InferObjectOutput3 : Symbol($InferObjectOutput3, Decl(inferenceSelfReferenceInGetter2.ts, 41, 3))
+>T : Symbol(T, Decl(inferenceSelfReferenceInGetter2.ts, 49, 25))
+
+};
+
+const fooSchema3 = object3({
+>fooSchema3 : Symbol(fooSchema3, Decl(inferenceSelfReferenceInGetter2.ts, 55, 5))
+>object3 : Symbol(object3, Decl(inferenceSelfReferenceInGetter2.ts, 47, 2))
+
+  get children() {
+>children : Symbol(children, Decl(inferenceSelfReferenceInGetter2.ts, 55, 28))
+
+    return array(fooSchema3).default([]);
+>array(fooSchema3).default : Symbol(default, Decl(inferenceSelfReferenceInGetter2.ts, 3, 37))
+>array : Symbol(array, Decl(inferenceSelfReferenceInGetter2.ts, 0, 0))
+>fooSchema3 : Symbol(fooSchema3, Decl(inferenceSelfReferenceInGetter2.ts, 55, 5))
+>default : Symbol(default, Decl(inferenceSelfReferenceInGetter2.ts, 3, 37))
+
+  },
+});
+

@@ -15002,6 +15002,20 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     function getPropertiesOfUnionOrIntersectionType(type: UnionOrIntersectionType): Symbol[] {
         if (!type.resolvedProperties) {
             const members = createSymbolTable();
+            const preresolved = new Set<MappedType>();
+            for (const current of type.types) {
+                forEachType(getReducedApparentType(current), t => {
+                    forEachContainedType(t, t => {
+                        if (!(t.flags & TypeFlags.Object) || !(getObjectFlags(t) & ObjectFlags.Mapped) || (t as ResolvedType).members) {
+                            return;
+                        }
+                        // Resolve upfront such that recursive references see an empty object type.
+                        setStructuredTypeMembers(t as MappedType, emptySymbols, emptyArray, emptyArray, emptyArray);
+                        preresolved.add(t as MappedType);
+                    });
+                });
+            }
+            preresolved.forEach(resolveMappedTypeMembers);
             for (const current of type.types) {
                 for (const prop of getPropertiesOfType(current)) {
                     if (!members.has(prop.escapedName)) {
@@ -28395,6 +28409,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
     function forEachType<T>(type: Type, f: (t: Type) => T | undefined): T | undefined {
         return type.flags & TypeFlags.Union ? forEach((type as UnionType).types, f) : f(type);
+    }
+
+    function forEachContainedType<T>(type: Type, f: (t: Type) => T | undefined): T | undefined {
+        return type.flags & TypeFlags.UnionOrIntersection ? forEach((type as UnionOrIntersectionType).types, f) : f(type);
     }
 
     function someType(type: Type, f: (t: Type) => boolean): boolean {
