@@ -1,0 +1,177 @@
+controlFlowElementAccess3.ts(11,3): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(24,3): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(29,3): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(34,3): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(44,5): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(51,7): error TS2538: Type 'undefined' cannot be used as an index type.
+controlFlowElementAccess3.ts(64,5): error TS7053: Element implicitly has an 'any' type because expression of type '"b"' can't be used to index type '{ a: string | undefined; }'.
+  Property 'b' does not exist on type '{ a: string | undefined; }'.
+controlFlowElementAccess3.ts(74,5): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(93,3): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(98,3): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(102,3): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(105,5): error TS2532: Object is possibly 'undefined'.
+controlFlowElementAccess3.ts(114,5): error TS2532: Object is possibly 'undefined'.
+
+
+==== controlFlowElementAccess3.ts (13 errors) ====
+    // https://github.com/microsoft/TypeScript/issues/61176
+    
+    const EnumLike1 = { FOO: "foo", BAR: "bar" } as const;
+    const obj1 = { [EnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+    if (obj1[EnumLike1.FOO]) {
+      obj1[EnumLike1.FOO].toUpperCase(); // ok
+    }
+    
+    const alias1 = obj1[EnumLike1.FOO];
+    if (alias1) {
+      obj1[EnumLike1.FOO].toUpperCase(); // error
+      ~~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+    }
+    
+    const obj2 = { [EnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined } as const;
+    const alias2 = obj2[EnumLike1.FOO];
+    
+    if (alias2) {
+      obj2[EnumLike1.FOO].toUpperCase(); // ok
+    }
+    
+    const MutableEnumLike1 = { FOO: "foo", BAR: "bar" };
+    const obj3 = { [MutableEnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+    if (obj3[MutableEnumLike1.FOO]) {
+      obj3[MutableEnumLike1.FOO].toUpperCase(); // ok
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+    }
+    
+    if (obj3[MutableEnumLike1.FOO]) {
+      obj3[MutableEnumLike1.FOO] = undefined;
+      obj3[MutableEnumLike1.FOO].toUpperCase(); // error
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+    }
+    
+    const alias3 = obj3[MutableEnumLike1.FOO];
+    if (alias3) {
+      obj3[MutableEnumLike1.FOO].toUpperCase(); // error
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+    }
+    
+    declare const MutableEnumLike2: {
+      FOO: "foo" | undefined;
+      BAR: "bar" | undefined;
+    };
+    if (MutableEnumLike2.FOO) {
+      const o = { [MutableEnumLike2.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+      if (o[MutableEnumLike2.FOO]) {
+        o[MutableEnumLike2.FOO].toUpperCase(); // ok
+        ~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+      }
+    }
+    if (MutableEnumLike2.FOO) {
+      const o = { [MutableEnumLike2.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+      if (o[MutableEnumLike2.FOO]) {
+        MutableEnumLike2.FOO = undefined;
+        o[MutableEnumLike2.FOO].toUpperCase(); // error
+          ~~~~~~~~~~~~~~~~~~~~
+!!! error TS2538: Type 'undefined' cannot be used as an index type.
+      }
+    }
+    declare const MutableEnumLike3: {
+      FOO: "a" | "b";
+      BAR: "c" | "d";
+    };
+    if (MutableEnumLike3.FOO === "a") {
+      const o = {
+        [MutableEnumLike3.FOO]: Math.random() < 0.5 ? "abc" : undefined,
+      };
+      if (o[MutableEnumLike3.FOO]) {
+        MutableEnumLike3.FOO = 'b';
+        o[MutableEnumLike3.FOO].toUpperCase(); // error
+        ~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS7053: Element implicitly has an 'any' type because expression of type '"b"' can't be used to index type '{ a: string | undefined; }'.
+!!! error TS7053:   Property 'b' does not exist on type '{ a: string | undefined; }'.
+      }
+    }
+    if (MutableEnumLike3.FOO === "a") {
+      const o = {
+        [MutableEnumLike3.FOO]: Math.random() < 0.5 ? "abc" : undefined,
+        b: Math.random() < 0.5 ? "def" : undefined
+      };
+      if (o[MutableEnumLike3.FOO]) {
+        MutableEnumLike3.FOO = 'b';
+        o[MutableEnumLike3.FOO].toUpperCase(); // error
+        ~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+      }
+    }
+    
+    const sym1 = Symbol();
+    const sym2 = Symbol();
+    
+    const EnumLike2 = { [sym1]: "foo", [sym2]: "bar" } as const;
+    const obj4 = {
+      [EnumLike2[sym1]]: Math.random() < 0.5 ? "abc" : undefined,
+      [EnumLike2[sym2]]: Math.random() < 0.5 ? "def" : undefined,
+    };
+    if (obj4[EnumLike2[sym1]]) {
+      obj4[EnumLike2[sym1]].toUpperCase();
+    }
+    
+    const MutableEnumLike4 = { [sym1]: "foo", [sym2]: "bar" };
+    const obj5 = { [MutableEnumLike4[sym1]]: Math.random() < 0.5 ? "abc" : undefined };
+    if (obj5[MutableEnumLike4[sym1]]) {
+      obj5[MutableEnumLike4[sym1]].toUpperCase(); // ok
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+    }
+    
+    const alias4 = obj5[MutableEnumLike4[sym1]];
+    if (alias4) {
+      obj5[MutableEnumLike4[sym1]].toUpperCase(); // error
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+    }
+    
+    function test1(k: keyof typeof EnumLike2) {
+      obj4[EnumLike2[k]].toUpperCase(); // error
+      ~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+    
+      if (obj4[EnumLike2[k]]) {
+        obj4[EnumLike2[k]].toUpperCase(); // ok
+        ~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+      }
+    }
+    
+    function test2(k: keyof typeof EnumLike2) {
+      if (Math.random()) {
+        k = sym1; // mutate k
+      }
+      if (obj4[EnumLike2[k]]) {
+        obj4[EnumLike2[k]].toUpperCase(); // error
+        ~~~~~~~~~~~~~~~~~~
+!!! error TS2532: Object is possibly 'undefined'.
+      }
+    }
+    
+    // https://github.com/microsoft/TypeScript/issues/62332
+    
+    const LabelLookup = { INNER_LABEL: "INNER_LABEL" } as const;
+    
+    let response: Record<typeof LabelLookup.INNER_LABEL | number, string[] | null> =
+      {
+        [LabelLookup.INNER_LABEL]: null,
+      };
+    
+    declare let b1: boolean;
+    
+    if (b1) {
+      response[LabelLookup.INNER_LABEL] ??= [];
+      response[LabelLookup.INNER_LABEL].push("a");
+    }
+    

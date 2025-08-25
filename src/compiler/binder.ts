@@ -152,6 +152,7 @@ import {
     isDeclarationStatement,
     isDestructuringAssignment,
     isDottedName,
+    isElementAccessExpression,
     isEmptyObjectLiteral,
     isEntityNameExpression,
     isEnumConst,
@@ -1273,13 +1274,17 @@ function createBinder(): (file: SourceFile, options: CompilerOptions) => void {
             case SyntaxKind.NonNullExpression:
                 return isNarrowableReference((expr as PropertyAccessExpression | ParenthesizedExpression | NonNullExpression).expression);
             case SyntaxKind.ElementAccessExpression:
-                return (isStringOrNumericLiteralLike((expr as ElementAccessExpression).argumentExpression) || isEntityNameExpression((expr as ElementAccessExpression).argumentExpression)) &&
-                    isNarrowableReference((expr as ElementAccessExpression).expression);
+                return isNarrowableElementAccessExpression(expr as ElementAccessExpression);
             case SyntaxKind.BinaryExpression:
                 return (expr as BinaryExpression).operatorToken.kind === SyntaxKind.CommaToken && isNarrowableReference((expr as BinaryExpression).right) ||
                     isAssignmentOperator((expr as BinaryExpression).operatorToken.kind) && isLeftHandSideExpression((expr as BinaryExpression).left);
         }
         return false;
+    }
+
+    function isNarrowableElementAccessExpression(expr: ElementAccessExpression): boolean {
+        return (isStringOrNumericLiteralLike(expr.argumentExpression) || isEntityNameExpression(expr.argumentExpression) || isElementAccessExpression(expr.argumentExpression) && isNarrowableElementAccessExpression(expr.argumentExpression)) &&
+            isNarrowableReference(expr.expression);
     }
 
     function containsNarrowableReference(expr: Expression): boolean {

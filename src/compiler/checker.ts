@@ -27699,12 +27699,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     const key = getFlowCacheKey((node as AccessExpression).expression, declaredType, initialType, flowContainer);
                     return key && `${key}.${propName}`;
                 }
-                if (isElementAccessExpression(node) && isIdentifier(node.argumentExpression)) {
-                    const symbol = getResolvedSymbol(node.argumentExpression);
-                    if (isConstantVariable(symbol) || isParameterOrMutableLocalVariable(symbol) && !isSymbolAssigned(symbol)) {
-                        const key = getFlowCacheKey((node as AccessExpression).expression, declaredType, initialType, flowContainer);
-                        return key && `${key}.@${getSymbolId(symbol)}`;
-                    }
+                if (isElementAccessExpression(node) && isConstantReference(node.argumentExpression)) {
+                    const symbol = getNodeLinks(node.argumentExpression).resolvedSymbol;
+                    const key = getFlowCacheKey((node as AccessExpression).expression, declaredType, initialType, flowContainer);
+                    return key && symbol && `${key}.@${getSymbolId(symbol)}`;
                 }
                 break;
             case SyntaxKind.ObjectBindingPattern:
@@ -27757,11 +27755,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         return targetPropertyName === sourcePropertyName && isMatchingReference((source as AccessExpression).expression, (target as AccessExpression).expression);
                     }
                 }
-                if (isElementAccessExpression(source) && isElementAccessExpression(target) && isIdentifier(source.argumentExpression) && isIdentifier(target.argumentExpression)) {
-                    const symbol = getResolvedSymbol(source.argumentExpression);
-                    if (symbol === getResolvedSymbol(target.argumentExpression) && (isConstantVariable(symbol) || isParameterOrMutableLocalVariable(symbol) && !isSymbolAssigned(symbol))) {
-                        return isMatchingReference(source.expression, target.expression);
-                    }
+                if (isElementAccessExpression(source) && isElementAccessExpression(target) && isConstantReference(source.argumentExpression)) {
+                    return isMatchingReference(source.argumentExpression, target.argumentExpression) && isMatchingReference(source.expression, target.expression);
                 }
                 break;
             case SyntaxKind.QualifiedName:

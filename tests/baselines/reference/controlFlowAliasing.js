@@ -252,7 +252,7 @@ function f40(obj: { kind: 'foo', foo?: string } | { kind: 'bar', bar?: number })
     }
 }
 
-// Unsupported narrowing of destructured payload by destructured discriminant
+// Narrowing of destructured payload by destructured discriminant
 
 type Data = { kind: 'str', payload: string } | { kind: 'num', payload: number };
 
@@ -302,6 +302,7 @@ class A53267 {
     }
   }
 }
+
 
 //// [controlFlowAliasing.js]
 "use strict";

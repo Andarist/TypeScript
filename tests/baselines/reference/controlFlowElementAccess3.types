@@ -1,0 +1,1184 @@
+//// [tests/cases/conformance/controlFlow/controlFlowElementAccess3.ts] ////
+
+=== controlFlowElementAccess3.ts ===
+// https://github.com/microsoft/TypeScript/issues/61176
+
+const EnumLike1 = { FOO: "foo", BAR: "bar" } as const;
+>EnumLike1 : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ FOO: "foo", BAR: "bar" } as const : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>                                    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ FOO: "foo", BAR: "bar" } : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : "foo"
+>    : ^^^^^
+>"foo" : "foo"
+>      : ^^^^^
+>BAR : "bar"
+>    : ^^^^^
+>"bar" : "bar"
+>      : ^^^^^
+
+const obj1 = { [EnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+>obj1 : { foo: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ [EnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined } : { foo: string | undefined; }
+>                                                             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[EnumLike1.FOO] : string | undefined
+>                : ^^^^^^^^^^^^^^^^^^
+>EnumLike1.FOO : "foo"
+>              : ^^^^^
+>EnumLike1 : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : "foo"
+>    : ^^^^^
+>Math.random() < 0.5 ? "abc" : undefined : "abc" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"abc" : "abc"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+if (obj1[EnumLike1.FOO]) {
+>obj1[EnumLike1.FOO] : string | undefined
+>                    : ^^^^^^^^^^^^^^^^^^
+>obj1 : { foo: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike1.FOO : "foo"
+>              : ^^^^^
+>EnumLike1 : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : "foo"
+>    : ^^^^^
+
+  obj1[EnumLike1.FOO].toUpperCase(); // ok
+>obj1[EnumLike1.FOO].toUpperCase() : string
+>                                  : ^^^^^^
+>obj1[EnumLike1.FOO].toUpperCase : () => string
+>                                : ^^^^^^      
+>obj1[EnumLike1.FOO] : string
+>                    : ^^^^^^
+>obj1 : { foo: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike1.FOO : "foo"
+>              : ^^^^^
+>EnumLike1 : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : "foo"
+>    : ^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+}
+
+const alias1 = obj1[EnumLike1.FOO];
+>alias1 : string | undefined
+>       : ^^^^^^^^^^^^^^^^^^
+>obj1[EnumLike1.FOO] : string | undefined
+>                    : ^^^^^^^^^^^^^^^^^^
+>obj1 : { foo: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike1.FOO : "foo"
+>              : ^^^^^
+>EnumLike1 : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : "foo"
+>    : ^^^^^
+
+if (alias1) {
+>alias1 : string | undefined
+>       : ^^^^^^^^^^^^^^^^^^
+
+  obj1[EnumLike1.FOO].toUpperCase(); // error
+>obj1[EnumLike1.FOO].toUpperCase() : string
+>                                  : ^^^^^^
+>obj1[EnumLike1.FOO].toUpperCase : () => string
+>                                : ^^^^^^      
+>obj1[EnumLike1.FOO] : string | undefined
+>                    : ^^^^^^^^^^^^^^^^^^
+>obj1 : { foo: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike1.FOO : "foo"
+>              : ^^^^^
+>EnumLike1 : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : "foo"
+>    : ^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+}
+
+const obj2 = { [EnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined } as const;
+>obj2 : { readonly foo: "abc" | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ [EnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined } as const : { readonly foo: "abc" | undefined; }
+>                                                                      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ [EnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined } : { readonly foo: "abc" | undefined; }
+>                                                             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[EnumLike1.FOO] : "abc" | undefined
+>                : ^^^^^^^^^^^^^^^^^
+>EnumLike1.FOO : "foo"
+>              : ^^^^^
+>EnumLike1 : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : "foo"
+>    : ^^^^^
+>Math.random() < 0.5 ? "abc" : undefined : "abc" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"abc" : "abc"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+const alias2 = obj2[EnumLike1.FOO];
+>alias2 : "abc" | undefined
+>       : ^^^^^^^^^^^^^^^^^
+>obj2[EnumLike1.FOO] : "abc" | undefined
+>                    : ^^^^^^^^^^^^^^^^^
+>obj2 : { readonly foo: "abc" | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike1.FOO : "foo"
+>              : ^^^^^
+>EnumLike1 : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : "foo"
+>    : ^^^^^
+
+if (alias2) {
+>alias2 : "abc" | undefined
+>       : ^^^^^^^^^^^^^^^^^
+
+  obj2[EnumLike1.FOO].toUpperCase(); // ok
+>obj2[EnumLike1.FOO].toUpperCase() : string
+>                                  : ^^^^^^
+>obj2[EnumLike1.FOO].toUpperCase : () => string
+>                                : ^^^^^^      
+>obj2[EnumLike1.FOO] : "abc"
+>                    : ^^^^^
+>obj2 : { readonly foo: "abc" | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike1.FOO : "foo"
+>              : ^^^^^
+>EnumLike1 : { readonly FOO: "foo"; readonly BAR: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : "foo"
+>    : ^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+}
+
+const MutableEnumLike1 = { FOO: "foo", BAR: "bar" };
+>MutableEnumLike1 : { FOO: string; BAR: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ FOO: "foo", BAR: "bar" } : { FOO: string; BAR: string; }
+>                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : string
+>    : ^^^^^^
+>"foo" : "foo"
+>      : ^^^^^
+>BAR : string
+>    : ^^^^^^
+>"bar" : "bar"
+>      : ^^^^^
+
+const obj3 = { [MutableEnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+>obj3 : { [MutableEnumLike1.FOO]: string | undefined; }
+>     : ^^                        ^^^^^^^^^^^^^^^^^^ ^^
+>{ [MutableEnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined } : { [MutableEnumLike1.FOO]: string | undefined; }
+>                                                                    : ^^                        ^^^^^^^^^^^^^^^^^^ ^^
+>[MutableEnumLike1.FOO] : string | undefined
+>                       : ^^^^^^^^^^^^^^^^^^
+>MutableEnumLike1.FOO : string
+>                     : ^^^^^^
+>MutableEnumLike1 : { FOO: string; BAR: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : string
+>    : ^^^^^^
+>Math.random() < 0.5 ? "abc" : undefined : "abc" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"abc" : "abc"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+if (obj3[MutableEnumLike1.FOO]) {
+>obj3[MutableEnumLike1.FOO] : string | undefined
+>                           : ^^^^^^^^^^^^^^^^^^
+>obj3 : { [MutableEnumLike1.FOO]: string | undefined; }
+>     : ^^                        ^^^^^^^^^^^^^^^^^^ ^^
+>MutableEnumLike1.FOO : string
+>                     : ^^^^^^
+>MutableEnumLike1 : { FOO: string; BAR: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : string
+>    : ^^^^^^
+
+  obj3[MutableEnumLike1.FOO].toUpperCase(); // ok
+>obj3[MutableEnumLike1.FOO].toUpperCase() : string
+>                                         : ^^^^^^
+>obj3[MutableEnumLike1.FOO].toUpperCase : () => string
+>                                       : ^^^^^^      
+>obj3[MutableEnumLike1.FOO] : string | undefined
+>                           : ^^^^^^^^^^^^^^^^^^
+>obj3 : { [MutableEnumLike1.FOO]: string | undefined; }
+>     : ^^                        ^^^^^^^^^^^^^^^^^^ ^^
+>MutableEnumLike1.FOO : string
+>                     : ^^^^^^
+>MutableEnumLike1 : { FOO: string; BAR: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : string
+>    : ^^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+}
+
+if (obj3[MutableEnumLike1.FOO]) {
+>obj3[MutableEnumLike1.FOO] : string | undefined
+>                           : ^^^^^^^^^^^^^^^^^^
+>obj3 : { [MutableEnumLike1.FOO]: string | undefined; }
+>     : ^^                        ^^^^^^^^^^^^^^^^^^ ^^
+>MutableEnumLike1.FOO : string
+>                     : ^^^^^^
+>MutableEnumLike1 : { FOO: string; BAR: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : string
+>    : ^^^^^^
+
+  obj3[MutableEnumLike1.FOO] = undefined;
+>obj3[MutableEnumLike1.FOO] = undefined : undefined
+>                                       : ^^^^^^^^^
+>obj3[MutableEnumLike1.FOO] : string | undefined
+>                           : ^^^^^^^^^^^^^^^^^^
+>obj3 : { [MutableEnumLike1.FOO]: string | undefined; }
+>     : ^^                        ^^^^^^^^^^^^^^^^^^ ^^
+>MutableEnumLike1.FOO : string
+>                     : ^^^^^^
+>MutableEnumLike1 : { FOO: string; BAR: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : string
+>    : ^^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+  obj3[MutableEnumLike1.FOO].toUpperCase(); // error
+>obj3[MutableEnumLike1.FOO].toUpperCase() : string
+>                                         : ^^^^^^
+>obj3[MutableEnumLike1.FOO].toUpperCase : () => string
+>                                       : ^^^^^^      
+>obj3[MutableEnumLike1.FOO] : string | undefined
+>                           : ^^^^^^^^^^^^^^^^^^
+>obj3 : { [MutableEnumLike1.FOO]: string | undefined; }
+>     : ^^                        ^^^^^^^^^^^^^^^^^^ ^^
+>MutableEnumLike1.FOO : string
+>                     : ^^^^^^
+>MutableEnumLike1 : { FOO: string; BAR: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : string
+>    : ^^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+}
+
+const alias3 = obj3[MutableEnumLike1.FOO];
+>alias3 : string | undefined
+>       : ^^^^^^^^^^^^^^^^^^
+>obj3[MutableEnumLike1.FOO] : string | undefined
+>                           : ^^^^^^^^^^^^^^^^^^
+>obj3 : { [MutableEnumLike1.FOO]: string | undefined; }
+>     : ^^                        ^^^^^^^^^^^^^^^^^^ ^^
+>MutableEnumLike1.FOO : string
+>                     : ^^^^^^
+>MutableEnumLike1 : { FOO: string; BAR: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : string
+>    : ^^^^^^
+
+if (alias3) {
+>alias3 : string | undefined
+>       : ^^^^^^^^^^^^^^^^^^
+
+  obj3[MutableEnumLike1.FOO].toUpperCase(); // error
+>obj3[MutableEnumLike1.FOO].toUpperCase() : string
+>                                         : ^^^^^^
+>obj3[MutableEnumLike1.FOO].toUpperCase : () => string
+>                                       : ^^^^^^      
+>obj3[MutableEnumLike1.FOO] : string | undefined
+>                           : ^^^^^^^^^^^^^^^^^^
+>obj3 : { [MutableEnumLike1.FOO]: string | undefined; }
+>     : ^^                        ^^^^^^^^^^^^^^^^^^ ^^
+>MutableEnumLike1.FOO : string
+>                     : ^^^^^^
+>MutableEnumLike1 : { FOO: string; BAR: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>FOO : string
+>    : ^^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+}
+
+declare const MutableEnumLike2: {
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+
+  FOO: "foo" | undefined;
+>FOO : "foo" | undefined
+>    : ^^^^^^^^^^^^^^^^^
+
+  BAR: "bar" | undefined;
+>BAR : "bar" | undefined
+>    : ^^^^^^^^^^^^^^^^^
+
+};
+if (MutableEnumLike2.FOO) {
+>MutableEnumLike2.FOO : "foo" | undefined
+>                     : ^^^^^^^^^^^^^^^^^
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+>FOO : "foo" | undefined
+>    : ^^^^^^^^^^^^^^^^^
+
+  const o = { [MutableEnumLike2.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+>o : { foo: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ [MutableEnumLike2.FOO]: Math.random() < 0.5 ? "abc" : undefined } : { foo: string | undefined; }
+>                                                                    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[MutableEnumLike2.FOO] : string | undefined
+>                       : ^^^^^^^^^^^^^^^^^^
+>MutableEnumLike2.FOO : "foo"
+>                     : ^^^^^
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+>FOO : "foo"
+>    : ^^^^^
+>Math.random() < 0.5 ? "abc" : undefined : "abc" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"abc" : "abc"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+  if (o[MutableEnumLike2.FOO]) {
+>o[MutableEnumLike2.FOO] : string | undefined
+>                        : ^^^^^^^^^^^^^^^^^^
+>o : { foo: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike2.FOO : "foo"
+>                     : ^^^^^
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+>FOO : "foo"
+>    : ^^^^^
+
+    o[MutableEnumLike2.FOO].toUpperCase(); // ok
+>o[MutableEnumLike2.FOO].toUpperCase() : string
+>                                      : ^^^^^^
+>o[MutableEnumLike2.FOO].toUpperCase : () => string
+>                                    : ^^^^^^      
+>o[MutableEnumLike2.FOO] : string | undefined
+>                        : ^^^^^^^^^^^^^^^^^^
+>o : { foo: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike2.FOO : "foo"
+>                     : ^^^^^
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+>FOO : "foo"
+>    : ^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+  }
+}
+if (MutableEnumLike2.FOO) {
+>MutableEnumLike2.FOO : "foo" | undefined
+>                     : ^^^^^^^^^^^^^^^^^
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+>FOO : "foo" | undefined
+>    : ^^^^^^^^^^^^^^^^^
+
+  const o = { [MutableEnumLike2.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+>o : { foo: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ [MutableEnumLike2.FOO]: Math.random() < 0.5 ? "abc" : undefined } : { foo: string | undefined; }
+>                                                                    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[MutableEnumLike2.FOO] : string | undefined
+>                       : ^^^^^^^^^^^^^^^^^^
+>MutableEnumLike2.FOO : "foo"
+>                     : ^^^^^
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+>FOO : "foo"
+>    : ^^^^^
+>Math.random() < 0.5 ? "abc" : undefined : "abc" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"abc" : "abc"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+  if (o[MutableEnumLike2.FOO]) {
+>o[MutableEnumLike2.FOO] : string | undefined
+>                        : ^^^^^^^^^^^^^^^^^^
+>o : { foo: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike2.FOO : "foo"
+>                     : ^^^^^
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+>FOO : "foo"
+>    : ^^^^^
+
+    MutableEnumLike2.FOO = undefined;
+>MutableEnumLike2.FOO = undefined : undefined
+>                                 : ^^^^^^^^^
+>MutableEnumLike2.FOO : "foo" | undefined
+>                     : ^^^^^^^^^^^^^^^^^
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+>FOO : "foo" | undefined
+>    : ^^^^^^^^^^^^^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+    o[MutableEnumLike2.FOO].toUpperCase(); // error
+>o[MutableEnumLike2.FOO].toUpperCase() : any
+>                                      : ^^^
+>o[MutableEnumLike2.FOO].toUpperCase : any
+>                                    : ^^^
+>o[MutableEnumLike2.FOO] : any
+>                        : ^^^
+>o : { foo: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike2.FOO : undefined
+>                     : ^^^^^^^^^
+>MutableEnumLike2 : { FOO: "foo" | undefined; BAR: "bar" | undefined; }
+>                 : ^^^^^^^                 ^^^^^^^                 ^^^
+>FOO : undefined
+>    : ^^^^^^^^^
+>toUpperCase : any
+>            : ^^^
+  }
+}
+declare const MutableEnumLike3: {
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+
+  FOO: "a" | "b";
+>FOO : "a" | "b"
+>    : ^^^^^^^^^
+
+  BAR: "c" | "d";
+>BAR : "c" | "d"
+>    : ^^^^^^^^^
+
+};
+if (MutableEnumLike3.FOO === "a") {
+>MutableEnumLike3.FOO === "a" : boolean
+>                             : ^^^^^^^
+>MutableEnumLike3.FOO : "a" | "b"
+>                     : ^^^^^^^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "a" | "b"
+>    : ^^^^^^^^^
+>"a" : "a"
+>    : ^^^
+
+  const o = {
+>o : { a: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{    [MutableEnumLike3.FOO]: Math.random() < 0.5 ? "abc" : undefined,  } : { a: string | undefined; }
+>                                                                         : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    [MutableEnumLike3.FOO]: Math.random() < 0.5 ? "abc" : undefined,
+>[MutableEnumLike3.FOO] : string | undefined
+>                       : ^^^^^^^^^^^^^^^^^^
+>MutableEnumLike3.FOO : "a"
+>                     : ^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "a"
+>    : ^^^
+>Math.random() < 0.5 ? "abc" : undefined : "abc" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"abc" : "abc"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+  };
+  if (o[MutableEnumLike3.FOO]) {
+>o[MutableEnumLike3.FOO] : string | undefined
+>                        : ^^^^^^^^^^^^^^^^^^
+>o : { a: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike3.FOO : "a"
+>                     : ^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "a"
+>    : ^^^
+
+    MutableEnumLike3.FOO = 'b';
+>MutableEnumLike3.FOO = 'b' : "b"
+>                           : ^^^
+>MutableEnumLike3.FOO : "a" | "b"
+>                     : ^^^^^^^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "a" | "b"
+>    : ^^^^^^^^^
+>'b' : "b"
+>    : ^^^
+
+    o[MutableEnumLike3.FOO].toUpperCase(); // error
+>o[MutableEnumLike3.FOO].toUpperCase() : any
+>                                      : ^^^
+>o[MutableEnumLike3.FOO].toUpperCase : any
+>                                    : ^^^
+>o[MutableEnumLike3.FOO] : any
+>                        : ^^^
+>o : { a: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike3.FOO : "b"
+>                     : ^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "b"
+>    : ^^^
+>toUpperCase : any
+>            : ^^^
+  }
+}
+if (MutableEnumLike3.FOO === "a") {
+>MutableEnumLike3.FOO === "a" : boolean
+>                             : ^^^^^^^
+>MutableEnumLike3.FOO : "a" | "b"
+>                     : ^^^^^^^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "a" | "b"
+>    : ^^^^^^^^^
+>"a" : "a"
+>    : ^^^
+
+  const o = {
+>o : { a: string | undefined; b: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{    [MutableEnumLike3.FOO]: Math.random() < 0.5 ? "abc" : undefined,    b: Math.random() < 0.5 ? "def" : undefined  } : { a: string | undefined; b: string | undefined; }
+>                                                                                                                       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    [MutableEnumLike3.FOO]: Math.random() < 0.5 ? "abc" : undefined,
+>[MutableEnumLike3.FOO] : string | undefined
+>                       : ^^^^^^^^^^^^^^^^^^
+>MutableEnumLike3.FOO : "a"
+>                     : ^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "a"
+>    : ^^^
+>Math.random() < 0.5 ? "abc" : undefined : "abc" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"abc" : "abc"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+    b: Math.random() < 0.5 ? "def" : undefined
+>b : string | undefined
+>  : ^^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 ? "def" : undefined : "def" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"def" : "def"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+  };
+  if (o[MutableEnumLike3.FOO]) {
+>o[MutableEnumLike3.FOO] : string | undefined
+>                        : ^^^^^^^^^^^^^^^^^^
+>o : { a: string | undefined; b: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike3.FOO : "a"
+>                     : ^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "a"
+>    : ^^^
+
+    MutableEnumLike3.FOO = 'b';
+>MutableEnumLike3.FOO = 'b' : "b"
+>                           : ^^^
+>MutableEnumLike3.FOO : "a" | "b"
+>                     : ^^^^^^^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "a" | "b"
+>    : ^^^^^^^^^
+>'b' : "b"
+>    : ^^^
+
+    o[MutableEnumLike3.FOO].toUpperCase(); // error
+>o[MutableEnumLike3.FOO].toUpperCase() : string
+>                                      : ^^^^^^
+>o[MutableEnumLike3.FOO].toUpperCase : () => string
+>                                    : ^^^^^^      
+>o[MutableEnumLike3.FOO] : string | undefined
+>                        : ^^^^^^^^^^^^^^^^^^
+>o : { a: string | undefined; b: string | undefined; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike3.FOO : "b"
+>                     : ^^^
+>MutableEnumLike3 : { FOO: "a" | "b"; BAR: "c" | "d"; }
+>                 : ^^^^^^^         ^^^^^^^         ^^^
+>FOO : "b"
+>    : ^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+  }
+}
+
+const sym1 = Symbol();
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+>Symbol() : unique symbol
+>         : ^^^^^^^^^^^^^
+>Symbol : SymbolConstructor
+>       : ^^^^^^^^^^^^^^^^^
+
+const sym2 = Symbol();
+>sym2 : unique symbol
+>     : ^^^^^^^^^^^^^
+>Symbol() : unique symbol
+>         : ^^^^^^^^^^^^^
+>Symbol : SymbolConstructor
+>       : ^^^^^^^^^^^^^^^^^
+
+const EnumLike2 = { [sym1]: "foo", [sym2]: "bar" } as const;
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ [sym1]: "foo", [sym2]: "bar" } as const : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>                                          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ [sym1]: "foo", [sym2]: "bar" } : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[sym1] : "foo"
+>       : ^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+>"foo" : "foo"
+>      : ^^^^^
+>[sym2] : "bar"
+>       : ^^^^^
+>sym2 : unique symbol
+>     : ^^^^^^^^^^^^^
+>"bar" : "bar"
+>      : ^^^^^
+
+const obj4 = {
+>obj4 : { foo: string | undefined; bar: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{  [EnumLike2[sym1]]: Math.random() < 0.5 ? "abc" : undefined,  [EnumLike2[sym2]]: Math.random() < 0.5 ? "def" : undefined,} : { foo: string | undefined; bar: string | undefined; }
+>                                                                                                                             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  [EnumLike2[sym1]]: Math.random() < 0.5 ? "abc" : undefined,
+>[EnumLike2[sym1]] : string | undefined
+>                  : ^^^^^^^^^^^^^^^^^^
+>EnumLike2[sym1] : "foo"
+>                : ^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+>Math.random() < 0.5 ? "abc" : undefined : "abc" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"abc" : "abc"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+  [EnumLike2[sym2]]: Math.random() < 0.5 ? "def" : undefined,
+>[EnumLike2[sym2]] : string | undefined
+>                  : ^^^^^^^^^^^^^^^^^^
+>EnumLike2[sym2] : "bar"
+>                : ^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym2 : unique symbol
+>     : ^^^^^^^^^^^^^
+>Math.random() < 0.5 ? "def" : undefined : "def" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"def" : "def"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+};
+if (obj4[EnumLike2[sym1]]) {
+>obj4[EnumLike2[sym1]] : string | undefined
+>                      : ^^^^^^^^^^^^^^^^^^
+>obj4 : { foo: string | undefined; bar: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike2[sym1] : "foo"
+>                : ^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+
+  obj4[EnumLike2[sym1]].toUpperCase();
+>obj4[EnumLike2[sym1]].toUpperCase() : string
+>                                    : ^^^^^^
+>obj4[EnumLike2[sym1]].toUpperCase : () => string
+>                                  : ^^^^^^      
+>obj4[EnumLike2[sym1]] : string
+>                      : ^^^^^^
+>obj4 : { foo: string | undefined; bar: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike2[sym1] : "foo"
+>                : ^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+}
+
+const MutableEnumLike4 = { [sym1]: "foo", [sym2]: "bar" };
+>MutableEnumLike4 : { [sym1]: string; [sym2]: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ [sym1]: "foo", [sym2]: "bar" } : { [sym1]: string; [sym2]: string; }
+>                                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[sym1] : string
+>       : ^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+>"foo" : "foo"
+>      : ^^^^^
+>[sym2] : string
+>       : ^^^^^^
+>sym2 : unique symbol
+>     : ^^^^^^^^^^^^^
+>"bar" : "bar"
+>      : ^^^^^
+
+const obj5 = { [MutableEnumLike4[sym1]]: Math.random() < 0.5 ? "abc" : undefined };
+>obj5 : { [x: string]: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ [MutableEnumLike4[sym1]]: Math.random() < 0.5 ? "abc" : undefined } : { [x: string]: string | undefined; }
+>                                                                      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>[MutableEnumLike4[sym1]] : string | undefined
+>                         : ^^^^^^^^^^^^^^^^^^
+>MutableEnumLike4[sym1] : string
+>                       : ^^^^^^
+>MutableEnumLike4 : { [sym1]: string; [sym2]: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+>Math.random() < 0.5 ? "abc" : undefined : "abc" | undefined
+>                                        : ^^^^^^^^^^^^^^^^^
+>Math.random() < 0.5 : boolean
+>                    : ^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>0.5 : 0.5
+>    : ^^^
+>"abc" : "abc"
+>      : ^^^^^
+>undefined : undefined
+>          : ^^^^^^^^^
+
+if (obj5[MutableEnumLike4[sym1]]) {
+>obj5[MutableEnumLike4[sym1]] : string | undefined
+>                             : ^^^^^^^^^^^^^^^^^^
+>obj5 : { [x: string]: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike4[sym1] : string
+>                       : ^^^^^^
+>MutableEnumLike4 : { [sym1]: string; [sym2]: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+
+  obj5[MutableEnumLike4[sym1]].toUpperCase(); // ok
+>obj5[MutableEnumLike4[sym1]].toUpperCase() : string
+>                                           : ^^^^^^
+>obj5[MutableEnumLike4[sym1]].toUpperCase : () => string
+>                                         : ^^^^^^      
+>obj5[MutableEnumLike4[sym1]] : string | undefined
+>                             : ^^^^^^^^^^^^^^^^^^
+>obj5 : { [x: string]: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike4[sym1] : string
+>                       : ^^^^^^
+>MutableEnumLike4 : { [sym1]: string; [sym2]: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+}
+
+const alias4 = obj5[MutableEnumLike4[sym1]];
+>alias4 : string | undefined
+>       : ^^^^^^^^^^^^^^^^^^
+>obj5[MutableEnumLike4[sym1]] : string | undefined
+>                             : ^^^^^^^^^^^^^^^^^^
+>obj5 : { [x: string]: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike4[sym1] : string
+>                       : ^^^^^^
+>MutableEnumLike4 : { [sym1]: string; [sym2]: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+
+if (alias4) {
+>alias4 : string | undefined
+>       : ^^^^^^^^^^^^^^^^^^
+
+  obj5[MutableEnumLike4[sym1]].toUpperCase(); // error
+>obj5[MutableEnumLike4[sym1]].toUpperCase() : string
+>                                           : ^^^^^^
+>obj5[MutableEnumLike4[sym1]].toUpperCase : () => string
+>                                         : ^^^^^^      
+>obj5[MutableEnumLike4[sym1]] : string | undefined
+>                             : ^^^^^^^^^^^^^^^^^^
+>obj5 : { [x: string]: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>MutableEnumLike4[sym1] : string
+>                       : ^^^^^^
+>MutableEnumLike4 : { [sym1]: string; [sym2]: string; }
+>                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+}
+
+function test1(k: keyof typeof EnumLike2) {
+>test1 : (k: keyof typeof EnumLike2) => void
+>      : ^ ^^                      ^^^^^^^^^
+>k : unique symbol | unique symbol
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  obj4[EnumLike2[k]].toUpperCase(); // error
+>obj4[EnumLike2[k]].toUpperCase() : string
+>                                 : ^^^^^^
+>obj4[EnumLike2[k]].toUpperCase : () => string
+>                               : ^^^^^^      
+>obj4[EnumLike2[k]] : string | undefined
+>                   : ^^^^^^^^^^^^^^^^^^
+>obj4 : { foo: string | undefined; bar: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike2[k] : "foo" | "bar"
+>             : ^^^^^^^^^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>k : unique symbol | unique symbol
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+
+  if (obj4[EnumLike2[k]]) {
+>obj4[EnumLike2[k]] : string | undefined
+>                   : ^^^^^^^^^^^^^^^^^^
+>obj4 : { foo: string | undefined; bar: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike2[k] : "foo" | "bar"
+>             : ^^^^^^^^^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>k : unique symbol | unique symbol
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    obj4[EnumLike2[k]].toUpperCase(); // ok
+>obj4[EnumLike2[k]].toUpperCase() : string
+>                                 : ^^^^^^
+>obj4[EnumLike2[k]].toUpperCase : () => string
+>                               : ^^^^^^      
+>obj4[EnumLike2[k]] : string | undefined
+>                   : ^^^^^^^^^^^^^^^^^^
+>obj4 : { foo: string | undefined; bar: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike2[k] : "foo" | "bar"
+>             : ^^^^^^^^^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>k : unique symbol | unique symbol
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+  }
+}
+
+function test2(k: keyof typeof EnumLike2) {
+>test2 : (k: keyof typeof EnumLike2) => void
+>      : ^ ^^                      ^^^^^^^^^
+>k : unique symbol | unique symbol
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  if (Math.random()) {
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+
+    k = sym1; // mutate k
+>k = sym1 : unique symbol
+>         : ^^^^^^^^^^^^^
+>k : unique symbol | unique symbol
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>sym1 : unique symbol
+>     : ^^^^^^^^^^^^^
+  }
+  if (obj4[EnumLike2[k]]) {
+>obj4[EnumLike2[k]] : string | undefined
+>                   : ^^^^^^^^^^^^^^^^^^
+>obj4 : { foo: string | undefined; bar: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike2[k] : "foo" | "bar"
+>             : ^^^^^^^^^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>k : unique symbol | unique symbol
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    obj4[EnumLike2[k]].toUpperCase(); // error
+>obj4[EnumLike2[k]].toUpperCase() : string
+>                                 : ^^^^^^
+>obj4[EnumLike2[k]].toUpperCase : () => string
+>                               : ^^^^^^      
+>obj4[EnumLike2[k]] : string | undefined
+>                   : ^^^^^^^^^^^^^^^^^^
+>obj4 : { foo: string | undefined; bar: string | undefined; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>EnumLike2[k] : "foo" | "bar"
+>             : ^^^^^^^^^^^^^
+>EnumLike2 : { readonly [sym1]: "foo"; readonly [sym2]: "bar"; }
+>          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>k : unique symbol | unique symbol
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>toUpperCase : () => string
+>            : ^^^^^^      
+  }
+}
+
+// https://github.com/microsoft/TypeScript/issues/62332
+
+const LabelLookup = { INNER_LABEL: "INNER_LABEL" } as const;
+>LabelLookup : { readonly INNER_LABEL: "INNER_LABEL"; }
+>            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ INNER_LABEL: "INNER_LABEL" } as const : { readonly INNER_LABEL: "INNER_LABEL"; }
+>                                        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{ INNER_LABEL: "INNER_LABEL" } : { readonly INNER_LABEL: "INNER_LABEL"; }
+>                               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>INNER_LABEL : "INNER_LABEL"
+>            : ^^^^^^^^^^^^^
+>"INNER_LABEL" : "INNER_LABEL"
+>              : ^^^^^^^^^^^^^
+
+let response: Record<typeof LabelLookup.INNER_LABEL | number, string[] | null> =
+>response : Record<number | "INNER_LABEL", string[] | null>
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>LabelLookup.INNER_LABEL : "INNER_LABEL"
+>                        : ^^^^^^^^^^^^^
+>LabelLookup : { readonly INNER_LABEL: "INNER_LABEL"; }
+>            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>INNER_LABEL : "INNER_LABEL"
+>            : ^^^^^^^^^^^^^
+  {
+>{    [LabelLookup.INNER_LABEL]: null,  } : { INNER_LABEL: null; }
+>                                         : ^^^^^^^^^^^^^^^^^^^^^^
+
+    [LabelLookup.INNER_LABEL]: null,
+>[LabelLookup.INNER_LABEL] : null
+>                          : ^^^^
+>LabelLookup.INNER_LABEL : "INNER_LABEL"
+>                        : ^^^^^^^^^^^^^
+>LabelLookup : { readonly INNER_LABEL: "INNER_LABEL"; }
+>            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>INNER_LABEL : "INNER_LABEL"
+>            : ^^^^^^^^^^^^^
+
+  };
+
+declare let b1: boolean;
+>b1 : boolean
+>   : ^^^^^^^
+
+if (b1) {
+>b1 : boolean
+>   : ^^^^^^^
+
+  response[LabelLookup.INNER_LABEL] ??= [];
+>response[LabelLookup.INNER_LABEL] ??= [] : string[]
+>                                         : ^^^^^^^^
+>response[LabelLookup.INNER_LABEL] : string[] | null
+>                                  : ^^^^^^^^^^^^^^^
+>response : Record<number | "INNER_LABEL", string[] | null>
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>LabelLookup.INNER_LABEL : "INNER_LABEL"
+>                        : ^^^^^^^^^^^^^
+>LabelLookup : { readonly INNER_LABEL: "INNER_LABEL"; }
+>            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>INNER_LABEL : "INNER_LABEL"
+>            : ^^^^^^^^^^^^^
+>[] : never[]
+>   : ^^^^^^^
+
+  response[LabelLookup.INNER_LABEL].push("a");
+>response[LabelLookup.INNER_LABEL].push("a") : number
+>                                            : ^^^^^^
+>response[LabelLookup.INNER_LABEL].push : (...items: string[]) => number
+>                                       : ^^^^     ^^^^^^^^^^^^^^^      
+>response[LabelLookup.INNER_LABEL] : string[]
+>                                  : ^^^^^^^^
+>response : Record<number | "INNER_LABEL", string[] | null>
+>         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>LabelLookup.INNER_LABEL : "INNER_LABEL"
+>                        : ^^^^^^^^^^^^^
+>LabelLookup : { readonly INNER_LABEL: "INNER_LABEL"; }
+>            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>INNER_LABEL : "INNER_LABEL"
+>            : ^^^^^^^^^^^^^
+>push : (...items: string[]) => number
+>     : ^^^^     ^^^^^^^^^^^^^^^      
+>"a" : "a"
+>    : ^^^
+}
+

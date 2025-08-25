@@ -309,7 +309,7 @@ controlFlowAliasing.ts(280,5): error TS2454: Variable 'a' is used before being a
         }
     }
     
-    // Unsupported narrowing of destructured payload by destructured discriminant
+    // Narrowing of destructured payload by destructured discriminant
     
     type Data = { kind: 'str', payload: string } | { kind: 'num', payload: number };
     
@@ -364,3 +364,4 @@ controlFlowAliasing.ts(280,5): error TS2454: Variable 'a' is used before being a
         }
       }
     }
+    

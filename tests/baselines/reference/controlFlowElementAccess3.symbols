@@ -1,0 +1,524 @@
+//// [tests/cases/conformance/controlFlow/controlFlowElementAccess3.ts] ////
+
+=== controlFlowElementAccess3.ts ===
+// https://github.com/microsoft/TypeScript/issues/61176
+
+const EnumLike1 = { FOO: "foo", BAR: "bar" } as const;
+>EnumLike1 : Symbol(EnumLike1, Decl(controlFlowElementAccess3.ts, 2, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>BAR : Symbol(BAR, Decl(controlFlowElementAccess3.ts, 2, 31))
+>const : Symbol(const)
+
+const obj1 = { [EnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+>obj1 : Symbol(obj1, Decl(controlFlowElementAccess3.ts, 3, 5))
+>[EnumLike1.FOO] : Symbol([EnumLike1.FOO], Decl(controlFlowElementAccess3.ts, 3, 14))
+>EnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>EnumLike1 : Symbol(EnumLike1, Decl(controlFlowElementAccess3.ts, 2, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+if (obj1[EnumLike1.FOO]) {
+>obj1 : Symbol(obj1, Decl(controlFlowElementAccess3.ts, 3, 5))
+>EnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>EnumLike1 : Symbol(EnumLike1, Decl(controlFlowElementAccess3.ts, 2, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+
+  obj1[EnumLike1.FOO].toUpperCase(); // ok
+>obj1[EnumLike1.FOO].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj1 : Symbol(obj1, Decl(controlFlowElementAccess3.ts, 3, 5))
+>EnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>EnumLike1 : Symbol(EnumLike1, Decl(controlFlowElementAccess3.ts, 2, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+}
+
+const alias1 = obj1[EnumLike1.FOO];
+>alias1 : Symbol(alias1, Decl(controlFlowElementAccess3.ts, 8, 5))
+>obj1 : Symbol(obj1, Decl(controlFlowElementAccess3.ts, 3, 5))
+>EnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>EnumLike1 : Symbol(EnumLike1, Decl(controlFlowElementAccess3.ts, 2, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+
+if (alias1) {
+>alias1 : Symbol(alias1, Decl(controlFlowElementAccess3.ts, 8, 5))
+
+  obj1[EnumLike1.FOO].toUpperCase(); // error
+>obj1[EnumLike1.FOO].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj1 : Symbol(obj1, Decl(controlFlowElementAccess3.ts, 3, 5))
+>EnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>EnumLike1 : Symbol(EnumLike1, Decl(controlFlowElementAccess3.ts, 2, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+}
+
+const obj2 = { [EnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined } as const;
+>obj2 : Symbol(obj2, Decl(controlFlowElementAccess3.ts, 13, 5))
+>[EnumLike1.FOO] : Symbol([EnumLike1.FOO], Decl(controlFlowElementAccess3.ts, 13, 14))
+>EnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>EnumLike1 : Symbol(EnumLike1, Decl(controlFlowElementAccess3.ts, 2, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+>const : Symbol(const)
+
+const alias2 = obj2[EnumLike1.FOO];
+>alias2 : Symbol(alias2, Decl(controlFlowElementAccess3.ts, 14, 5))
+>obj2 : Symbol(obj2, Decl(controlFlowElementAccess3.ts, 13, 5))
+>EnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>EnumLike1 : Symbol(EnumLike1, Decl(controlFlowElementAccess3.ts, 2, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+
+if (alias2) {
+>alias2 : Symbol(alias2, Decl(controlFlowElementAccess3.ts, 14, 5))
+
+  obj2[EnumLike1.FOO].toUpperCase(); // ok
+>obj2[EnumLike1.FOO].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj2 : Symbol(obj2, Decl(controlFlowElementAccess3.ts, 13, 5))
+>EnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>EnumLike1 : Symbol(EnumLike1, Decl(controlFlowElementAccess3.ts, 2, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 2, 19))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+}
+
+const MutableEnumLike1 = { FOO: "foo", BAR: "bar" };
+>MutableEnumLike1 : Symbol(MutableEnumLike1, Decl(controlFlowElementAccess3.ts, 20, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>BAR : Symbol(BAR, Decl(controlFlowElementAccess3.ts, 20, 38))
+
+const obj3 = { [MutableEnumLike1.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+>obj3 : Symbol(obj3, Decl(controlFlowElementAccess3.ts, 21, 5))
+>[MutableEnumLike1.FOO] : Symbol([MutableEnumLike1.FOO], Decl(controlFlowElementAccess3.ts, 21, 14))
+>MutableEnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>MutableEnumLike1 : Symbol(MutableEnumLike1, Decl(controlFlowElementAccess3.ts, 20, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+if (obj3[MutableEnumLike1.FOO]) {
+>obj3 : Symbol(obj3, Decl(controlFlowElementAccess3.ts, 21, 5))
+>MutableEnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>MutableEnumLike1 : Symbol(MutableEnumLike1, Decl(controlFlowElementAccess3.ts, 20, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+
+  obj3[MutableEnumLike1.FOO].toUpperCase(); // ok
+>obj3[MutableEnumLike1.FOO].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj3 : Symbol(obj3, Decl(controlFlowElementAccess3.ts, 21, 5))
+>MutableEnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>MutableEnumLike1 : Symbol(MutableEnumLike1, Decl(controlFlowElementAccess3.ts, 20, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+}
+
+if (obj3[MutableEnumLike1.FOO]) {
+>obj3 : Symbol(obj3, Decl(controlFlowElementAccess3.ts, 21, 5))
+>MutableEnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>MutableEnumLike1 : Symbol(MutableEnumLike1, Decl(controlFlowElementAccess3.ts, 20, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+
+  obj3[MutableEnumLike1.FOO] = undefined;
+>obj3 : Symbol(obj3, Decl(controlFlowElementAccess3.ts, 21, 5))
+>MutableEnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>MutableEnumLike1 : Symbol(MutableEnumLike1, Decl(controlFlowElementAccess3.ts, 20, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>undefined : Symbol(undefined)
+
+  obj3[MutableEnumLike1.FOO].toUpperCase(); // error
+>obj3[MutableEnumLike1.FOO].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj3 : Symbol(obj3, Decl(controlFlowElementAccess3.ts, 21, 5))
+>MutableEnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>MutableEnumLike1 : Symbol(MutableEnumLike1, Decl(controlFlowElementAccess3.ts, 20, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+}
+
+const alias3 = obj3[MutableEnumLike1.FOO];
+>alias3 : Symbol(alias3, Decl(controlFlowElementAccess3.ts, 31, 5))
+>obj3 : Symbol(obj3, Decl(controlFlowElementAccess3.ts, 21, 5))
+>MutableEnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>MutableEnumLike1 : Symbol(MutableEnumLike1, Decl(controlFlowElementAccess3.ts, 20, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+
+if (alias3) {
+>alias3 : Symbol(alias3, Decl(controlFlowElementAccess3.ts, 31, 5))
+
+  obj3[MutableEnumLike1.FOO].toUpperCase(); // error
+>obj3[MutableEnumLike1.FOO].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj3 : Symbol(obj3, Decl(controlFlowElementAccess3.ts, 21, 5))
+>MutableEnumLike1.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>MutableEnumLike1 : Symbol(MutableEnumLike1, Decl(controlFlowElementAccess3.ts, 20, 5))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 20, 26))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+}
+
+declare const MutableEnumLike2: {
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+
+  FOO: "foo" | undefined;
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+
+  BAR: "bar" | undefined;
+>BAR : Symbol(BAR, Decl(controlFlowElementAccess3.ts, 37, 25))
+
+};
+if (MutableEnumLike2.FOO) {
+>MutableEnumLike2.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+
+  const o = { [MutableEnumLike2.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 41, 7))
+>[MutableEnumLike2.FOO] : Symbol([MutableEnumLike2.FOO], Decl(controlFlowElementAccess3.ts, 41, 13))
+>MutableEnumLike2.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+  if (o[MutableEnumLike2.FOO]) {
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 41, 7))
+>MutableEnumLike2.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+
+    o[MutableEnumLike2.FOO].toUpperCase(); // ok
+>o[MutableEnumLike2.FOO].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 41, 7))
+>MutableEnumLike2.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+  }
+}
+if (MutableEnumLike2.FOO) {
+>MutableEnumLike2.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+
+  const o = { [MutableEnumLike2.FOO]: Math.random() < 0.5 ? "abc" : undefined };
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 47, 7))
+>[MutableEnumLike2.FOO] : Symbol([MutableEnumLike2.FOO], Decl(controlFlowElementAccess3.ts, 47, 13))
+>MutableEnumLike2.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+  if (o[MutableEnumLike2.FOO]) {
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 47, 7))
+>MutableEnumLike2.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+
+    MutableEnumLike2.FOO = undefined;
+>MutableEnumLike2.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>undefined : Symbol(undefined)
+
+    o[MutableEnumLike2.FOO].toUpperCase(); // error
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 47, 7))
+>MutableEnumLike2.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+>MutableEnumLike2 : Symbol(MutableEnumLike2, Decl(controlFlowElementAccess3.ts, 36, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 36, 33))
+  }
+}
+declare const MutableEnumLike3: {
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+
+  FOO: "a" | "b";
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+
+  BAR: "c" | "d";
+>BAR : Symbol(BAR, Decl(controlFlowElementAccess3.ts, 54, 17))
+
+};
+if (MutableEnumLike3.FOO === "a") {
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+
+  const o = {
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 58, 7))
+
+    [MutableEnumLike3.FOO]: Math.random() < 0.5 ? "abc" : undefined,
+>[MutableEnumLike3.FOO] : Symbol([MutableEnumLike3.FOO], Decl(controlFlowElementAccess3.ts, 58, 13))
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+  };
+  if (o[MutableEnumLike3.FOO]) {
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 58, 7))
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+
+    MutableEnumLike3.FOO = 'b';
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+
+    o[MutableEnumLike3.FOO].toUpperCase(); // error
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 58, 7))
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+  }
+}
+if (MutableEnumLike3.FOO === "a") {
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+
+  const o = {
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 67, 7))
+
+    [MutableEnumLike3.FOO]: Math.random() < 0.5 ? "abc" : undefined,
+>[MutableEnumLike3.FOO] : Symbol([MutableEnumLike3.FOO], Decl(controlFlowElementAccess3.ts, 67, 13))
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+    b: Math.random() < 0.5 ? "def" : undefined
+>b : Symbol(b, Decl(controlFlowElementAccess3.ts, 68, 68))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+  };
+  if (o[MutableEnumLike3.FOO]) {
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 67, 7))
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+
+    MutableEnumLike3.FOO = 'b';
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+
+    o[MutableEnumLike3.FOO].toUpperCase(); // error
+>o[MutableEnumLike3.FOO].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>o : Symbol(o, Decl(controlFlowElementAccess3.ts, 67, 7))
+>MutableEnumLike3.FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>MutableEnumLike3 : Symbol(MutableEnumLike3, Decl(controlFlowElementAccess3.ts, 53, 13))
+>FOO : Symbol(FOO, Decl(controlFlowElementAccess3.ts, 53, 33))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+  }
+}
+
+const sym1 = Symbol();
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+>Symbol : Symbol(Symbol, Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.symbol.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.es2019.symbol.d.ts, --, --))
+
+const sym2 = Symbol();
+>sym2 : Symbol(sym2, Decl(controlFlowElementAccess3.ts, 78, 5))
+>Symbol : Symbol(Symbol, Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.symbol.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.es2019.symbol.d.ts, --, --))
+
+const EnumLike2 = { [sym1]: "foo", [sym2]: "bar" } as const;
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>[sym1] : Symbol([sym1], Decl(controlFlowElementAccess3.ts, 80, 19))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+>[sym2] : Symbol([sym2], Decl(controlFlowElementAccess3.ts, 80, 34))
+>sym2 : Symbol(sym2, Decl(controlFlowElementAccess3.ts, 78, 5))
+>const : Symbol(const)
+
+const obj4 = {
+>obj4 : Symbol(obj4, Decl(controlFlowElementAccess3.ts, 81, 5))
+
+  [EnumLike2[sym1]]: Math.random() < 0.5 ? "abc" : undefined,
+>[EnumLike2[sym1]] : Symbol([EnumLike2[sym1]], Decl(controlFlowElementAccess3.ts, 81, 14))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+  [EnumLike2[sym2]]: Math.random() < 0.5 ? "def" : undefined,
+>[EnumLike2[sym2]] : Symbol([EnumLike2[sym2]], Decl(controlFlowElementAccess3.ts, 82, 61))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>sym2 : Symbol(sym2, Decl(controlFlowElementAccess3.ts, 78, 5))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+};
+if (obj4[EnumLike2[sym1]]) {
+>obj4 : Symbol(obj4, Decl(controlFlowElementAccess3.ts, 81, 5))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+
+  obj4[EnumLike2[sym1]].toUpperCase();
+>obj4[EnumLike2[sym1]].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj4 : Symbol(obj4, Decl(controlFlowElementAccess3.ts, 81, 5))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+}
+
+const MutableEnumLike4 = { [sym1]: "foo", [sym2]: "bar" };
+>MutableEnumLike4 : Symbol(MutableEnumLike4, Decl(controlFlowElementAccess3.ts, 89, 5))
+>[sym1] : Symbol([sym1], Decl(controlFlowElementAccess3.ts, 89, 26))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+>[sym2] : Symbol([sym2], Decl(controlFlowElementAccess3.ts, 89, 41))
+>sym2 : Symbol(sym2, Decl(controlFlowElementAccess3.ts, 78, 5))
+
+const obj5 = { [MutableEnumLike4[sym1]]: Math.random() < 0.5 ? "abc" : undefined };
+>obj5 : Symbol(obj5, Decl(controlFlowElementAccess3.ts, 90, 5))
+>[MutableEnumLike4[sym1]] : Symbol([MutableEnumLike4[sym1]], Decl(controlFlowElementAccess3.ts, 90, 14))
+>MutableEnumLike4 : Symbol(MutableEnumLike4, Decl(controlFlowElementAccess3.ts, 89, 5))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>undefined : Symbol(undefined)
+
+if (obj5[MutableEnumLike4[sym1]]) {
+>obj5 : Symbol(obj5, Decl(controlFlowElementAccess3.ts, 90, 5))
+>MutableEnumLike4 : Symbol(MutableEnumLike4, Decl(controlFlowElementAccess3.ts, 89, 5))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+
+  obj5[MutableEnumLike4[sym1]].toUpperCase(); // ok
+>obj5[MutableEnumLike4[sym1]].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj5 : Symbol(obj5, Decl(controlFlowElementAccess3.ts, 90, 5))
+>MutableEnumLike4 : Symbol(MutableEnumLike4, Decl(controlFlowElementAccess3.ts, 89, 5))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+}
+
+const alias4 = obj5[MutableEnumLike4[sym1]];
+>alias4 : Symbol(alias4, Decl(controlFlowElementAccess3.ts, 95, 5))
+>obj5 : Symbol(obj5, Decl(controlFlowElementAccess3.ts, 90, 5))
+>MutableEnumLike4 : Symbol(MutableEnumLike4, Decl(controlFlowElementAccess3.ts, 89, 5))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+
+if (alias4) {
+>alias4 : Symbol(alias4, Decl(controlFlowElementAccess3.ts, 95, 5))
+
+  obj5[MutableEnumLike4[sym1]].toUpperCase(); // error
+>obj5[MutableEnumLike4[sym1]].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj5 : Symbol(obj5, Decl(controlFlowElementAccess3.ts, 90, 5))
+>MutableEnumLike4 : Symbol(MutableEnumLike4, Decl(controlFlowElementAccess3.ts, 89, 5))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+}
+
+function test1(k: keyof typeof EnumLike2) {
+>test1 : Symbol(test1, Decl(controlFlowElementAccess3.ts, 98, 1))
+>k : Symbol(k, Decl(controlFlowElementAccess3.ts, 100, 15))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+
+  obj4[EnumLike2[k]].toUpperCase(); // error
+>obj4[EnumLike2[k]].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj4 : Symbol(obj4, Decl(controlFlowElementAccess3.ts, 81, 5))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>k : Symbol(k, Decl(controlFlowElementAccess3.ts, 100, 15))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+
+  if (obj4[EnumLike2[k]]) {
+>obj4 : Symbol(obj4, Decl(controlFlowElementAccess3.ts, 81, 5))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>k : Symbol(k, Decl(controlFlowElementAccess3.ts, 100, 15))
+
+    obj4[EnumLike2[k]].toUpperCase(); // ok
+>obj4[EnumLike2[k]].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj4 : Symbol(obj4, Decl(controlFlowElementAccess3.ts, 81, 5))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>k : Symbol(k, Decl(controlFlowElementAccess3.ts, 100, 15))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+  }
+}
+
+function test2(k: keyof typeof EnumLike2) {
+>test2 : Symbol(test2, Decl(controlFlowElementAccess3.ts, 106, 1))
+>k : Symbol(k, Decl(controlFlowElementAccess3.ts, 108, 15))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+
+  if (Math.random()) {
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.esnext.float16.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+
+    k = sym1; // mutate k
+>k : Symbol(k, Decl(controlFlowElementAccess3.ts, 108, 15))
+>sym1 : Symbol(sym1, Decl(controlFlowElementAccess3.ts, 77, 5))
+  }
+  if (obj4[EnumLike2[k]]) {
+>obj4 : Symbol(obj4, Decl(controlFlowElementAccess3.ts, 81, 5))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>k : Symbol(k, Decl(controlFlowElementAccess3.ts, 108, 15))
+
+    obj4[EnumLike2[k]].toUpperCase(); // error
+>obj4[EnumLike2[k]].toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>obj4 : Symbol(obj4, Decl(controlFlowElementAccess3.ts, 81, 5))
+>EnumLike2 : Symbol(EnumLike2, Decl(controlFlowElementAccess3.ts, 80, 5))
+>k : Symbol(k, Decl(controlFlowElementAccess3.ts, 108, 15))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+  }
+}
+
+// https://github.com/microsoft/TypeScript/issues/62332
+
+const LabelLookup = { INNER_LABEL: "INNER_LABEL" } as const;
+>LabelLookup : Symbol(LabelLookup, Decl(controlFlowElementAccess3.ts, 119, 5))
+>INNER_LABEL : Symbol(INNER_LABEL, Decl(controlFlowElementAccess3.ts, 119, 21))
+>const : Symbol(const)
+
+let response: Record<typeof LabelLookup.INNER_LABEL | number, string[] | null> =
+>response : Symbol(response, Decl(controlFlowElementAccess3.ts, 121, 3))
+>Record : Symbol(Record, Decl(lib.es5.d.ts, --, --))
+>LabelLookup.INNER_LABEL : Symbol(INNER_LABEL, Decl(controlFlowElementAccess3.ts, 119, 21))
+>LabelLookup : Symbol(LabelLookup, Decl(controlFlowElementAccess3.ts, 119, 5))
+>INNER_LABEL : Symbol(INNER_LABEL, Decl(controlFlowElementAccess3.ts, 119, 21))
+  {
+    [LabelLookup.INNER_LABEL]: null,
+>[LabelLookup.INNER_LABEL] : Symbol([LabelLookup.INNER_LABEL], Decl(controlFlowElementAccess3.ts, 122, 3))
+>LabelLookup.INNER_LABEL : Symbol(INNER_LABEL, Decl(controlFlowElementAccess3.ts, 119, 21))
+>LabelLookup : Symbol(LabelLookup, Decl(controlFlowElementAccess3.ts, 119, 5))
+>INNER_LABEL : Symbol(INNER_LABEL, Decl(controlFlowElementAccess3.ts, 119, 21))
+
+  };
+
+declare let b1: boolean;
+>b1 : Symbol(b1, Decl(controlFlowElementAccess3.ts, 126, 11))
+
+if (b1) {
+>b1 : Symbol(b1, Decl(controlFlowElementAccess3.ts, 126, 11))
+
+  response[LabelLookup.INNER_LABEL] ??= [];
+>response : Symbol(response, Decl(controlFlowElementAccess3.ts, 121, 3))
+>LabelLookup.INNER_LABEL : Symbol(INNER_LABEL, Decl(controlFlowElementAccess3.ts, 119, 21))
+>LabelLookup : Symbol(LabelLookup, Decl(controlFlowElementAccess3.ts, 119, 5))
+>INNER_LABEL : Symbol(INNER_LABEL, Decl(controlFlowElementAccess3.ts, 119, 21))
+
+  response[LabelLookup.INNER_LABEL].push("a");
+>response[LabelLookup.INNER_LABEL].push : Symbol(Array.push, Decl(lib.es5.d.ts, --, --))
+>response : Symbol(response, Decl(controlFlowElementAccess3.ts, 121, 3))
+>LabelLookup.INNER_LABEL : Symbol(INNER_LABEL, Decl(controlFlowElementAccess3.ts, 119, 21))
+>LabelLookup : Symbol(LabelLookup, Decl(controlFlowElementAccess3.ts, 119, 5))
+>INNER_LABEL : Symbol(INNER_LABEL, Decl(controlFlowElementAccess3.ts, 119, 21))
+>push : Symbol(Array.push, Decl(lib.es5.d.ts, --, --))
+}
+
