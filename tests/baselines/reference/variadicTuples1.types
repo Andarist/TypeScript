@@ -1418,20 +1418,20 @@ type T22 = Last<[string]>;
 >    : ^^^^^^
 
 type T23 = Last<[number, symbol, ...string[]]>;
->T23 : unknown
->    : ^^^^^^^
+>T23 : string | number | symbol
+>    : ^^^^^^^^^^^^^^^^^^^^^^^^
 
 type T24 = Last<[symbol, ...string[]]>;
->T24 : unknown
->    : ^^^^^^^
+>T24 : string | symbol
+>    : ^^^^^^^^^^^^^^^
 
 type T25 = Last<[string?]>;
 >T25 : string | undefined
 >    : ^^^^^^^^^^^^^^^^^^
 
 type T26 = Last<string[]>;
->T26 : string
->    : ^^^^^^
+>T26 : string | undefined
+>    : ^^^^^^^^^^^^^^^^^^
 
 type T27 = Last<[]>;
 >T27 : undefined
@@ -1458,12 +1458,12 @@ type T32 = DropLast<[string]>;
 >    : ^^
 
 type T33 = DropLast<[number, symbol, ...string[]]>;
->T33 : unknown[]
->    : ^^^^^^^^^
+>T33 : [number, symbol, ...string[]]
+>    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 type T34 = DropLast<[symbol, ...string[]]>;
->T34 : unknown[]
->    : ^^^^^^^^^
+>T34 : [symbol, ...string[]]
+>    : ^^^^^^^^^^^^^^^^^^^^^
 
 type T35 = DropLast<[string?]>;
 >T35 : [(string | undefined)?]
@@ -1554,16 +1554,16 @@ type R22 = Last<readonly [string]>;
 >    : ^^^^^^
 
 type R23 = Last<readonly [number, symbol, ...string[]]>;
->R23 : unknown
->    : ^^^^^^^
+>R23 : string | number | symbol
+>    : ^^^^^^^^^^^^^^^^^^^^^^^^
 
 type R24 = Last<readonly [symbol, ...string[]]>;
->R24 : unknown
->    : ^^^^^^^
+>R24 : string | symbol
+>    : ^^^^^^^^^^^^^^^
 
 type R25 = Last<readonly string[]>;
->R25 : string
->    : ^^^^^^
+>R25 : string | undefined
+>    : ^^^^^^^^^^^^^^^^^^
 
 type R26 = Last<readonly []>;
 >R26 : undefined
@@ -1582,12 +1582,12 @@ type R32 = DropLast<readonly [string]>;
 >    : ^^
 
 type R33 = DropLast<readonly [number, symbol, ...string[]]>;
->R33 : unknown[]
->    : ^^^^^^^^^
+>R33 : [number, symbol, ...string[]]
+>    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 type R34 = DropLast<readonly [symbol, ...string[]]>;
->R34 : unknown[]
->    : ^^^^^^^^^
+>R34 : [symbol, ...string[]]
+>    : ^^^^^^^^^^^^^^^^^^^^^
 
 type R35 = DropLast<readonly string[]>;
 >R35 : string[]
