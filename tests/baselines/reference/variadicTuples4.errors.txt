@@ -10,8 +10,6 @@ variadicTuples4.ts(62,5): error TS2344: Type '[...A, boolean, boolean, ...B, boo
   Target allows only 4 element(s) but source may have more.
 variadicTuples4.ts(76,5): error TS2344: Type '[...A, boolean, ...B, boolean]' does not satisfy the constraint '[...A, boolean, boolean, ...B, boolean]'.
   Source has 4 element(s) but target requires 5.
-variadicTuples4.ts(87,46): error TS2344: Type '[...T]' does not satisfy the constraint '[...T, (boolean | undefined)?]'.
-  Variadic element at position 0 in source does not match element at position 1 in target.
 variadicTuples4.ts(98,46): error TS2344: Type '[...T]' does not satisfy the constraint '[boolean, ...T]'.
   Source has 1 element(s) but target requires 2.
 variadicTuples4.ts(112,49): error TS2344: Type '[...A]' does not satisfy the constraint '[...A, ...A]'.
@@ -36,15 +34,11 @@ variadicTuples4.ts(168,46): error TS2344: Type '[...T, boolean, boolean]' does n
   Source has 3 element(s) but target requires 4.
 variadicTuples4.ts(171,46): error TS2344: Type '[...T, boolean, boolean, boolean, boolean]' does not satisfy the constraint '[...T, boolean, boolean, boolean]'.
   Target allows only 4 element(s) but source may have more.
-variadicTuples4.ts(196,46): error TS2344: Type '[...T]' does not satisfy the constraint '[...T, (boolean | undefined)?]'.
-  Variadic element at position 0 in source does not match element at position 1 in target.
-variadicTuples4.ts(211,70): error TS2344: Type '[boolean, ...A, string, ...B]' does not satisfy the constraint '[boolean, ...A, string, ...B, (number | undefined)?]'.
-  Variadic element at position 3 in source does not match element at position 4 in target.
 variadicTuples4.ts(214,70): error TS2344: Type '[boolean, ...A, ...B, (number | undefined)?]' does not satisfy the constraint '[boolean, ...A, string, ...B, (number | undefined)?]'.
   Variadic element at position 2 in source does not match element at position 2 in target.
 
 
-==== variadicTuples4.ts (21 errors) ====
+==== variadicTuples4.ts (18 errors) ====
     {
       type Inner<A extends any[], A2 extends [...A, boolean]> = A2;
       type Wrapper<A extends any[]> = Inner<
@@ -150,9 +144,6 @@ variadicTuples4.ts(214,70): error TS2344: Type '[boolean, ...A, ...B, (number | 
     
       // Should be OK - variadic matches variadic, optional is not required
       type Test1<T extends unknown[]> = Inner<T, [...T]>;
-                                                 ~~~~~~
-!!! error TS2344: Type '[...T]' does not satisfy the constraint '[...T, (boolean | undefined)?]'.
-!!! error TS2344:   Variadic element at position 0 in source does not match element at position 1 in target.
     
       // Should be OK - variadic matches variadic, boolean matches optional
       type Test2<T extends unknown[]> = Inner<T, [...T, boolean]>;
@@ -297,9 +288,6 @@ variadicTuples4.ts(214,70): error TS2344: Type '[boolean, ...A, ...B, (number | 
     
       // Should be OK - optional can be omitted
       type Test3<T extends unknown[]> = Inner<T, [...T]>;
-                                                 ~~~~~~
-!!! error TS2344: Type '[...T]' does not satisfy the constraint '[...T, (boolean | undefined)?]'.
-!!! error TS2344:   Variadic element at position 0 in source does not match element at position 1 in target.
     }
     
     // Test: Complex mix
@@ -315,9 +303,6 @@ variadicTuples4.ts(214,70): error TS2344: Type '[boolean, ...A, ...B, (number | 
     
       // Should be OK - optional omitted
       type Test2<A extends unknown[], B extends unknown[]> = Inner<A, B, [boolean, ...A, string, ...B]>;
-                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS2344: Type '[boolean, ...A, string, ...B]' does not satisfy the constraint '[boolean, ...A, string, ...B, (number | undefined)?]'.
-!!! error TS2344:   Variadic element at position 3 in source does not match element at position 4 in target.
     
       // Should error - missing string between variadics
       type Test3<A extends unknown[], B extends unknown[]> = Inner<A, B, [boolean, ...A, ...B, number?]>;

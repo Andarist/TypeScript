@@ -52,8 +52,6 @@ variadicTuples2.ts(84,5): error TS2322: Type '[number, string, ...any[]]' is not
 variadicTuples2.ts(116,16): error TS2345: Argument of type '[1, 2, 3, number]' is not assignable to parameter of type '[...number[], (...values: number[]) => void]'.
   Type at position 3 in source is not compatible with type at position 1 in target.
     Type 'number' is not assignable to type '(...values: number[]) => void'.
-variadicTuples2.ts(117,6): error TS2345: Argument of type 'string[]' is not assignable to parameter of type '[...string[], (...values: string[]) => void]'.
-  Source provides no match for required element at position 1 in target.
 variadicTuples2.ts(120,5): error TS2345: Argument of type '[]' is not assignable to parameter of type '[...unknown[], unknown, unknown]'.
   Source has 0 element(s) but target requires 2.
 variadicTuples2.ts(121,5): error TS2345: Argument of type '[number]' is not assignable to parameter of type '[...unknown[], unknown, unknown]'.
@@ -69,7 +67,7 @@ variadicTuples2.ts(139,25): error TS2345: Argument of type '["blah2", 1, 2, 3]' 
     Type 'number' is not assignable to type 'string'.
 
 
-==== variadicTuples2.ts (33 errors) ====
+==== variadicTuples2.ts (32 errors) ====
     // Declarations
     
     type V00 = [number, ...string[]];
@@ -266,9 +264,6 @@ variadicTuples2.ts(139,25): error TS2345: Argument of type '["blah2", 1, 2, 3]' 
 !!! error TS2345:   Type at position 3 in source is not compatible with type at position 1 in target.
 !!! error TS2345:     Type 'number' is not assignable to type '(...values: number[]) => void'.
     pipe(...sa);  // Error
-         ~~~~~
-!!! error TS2345: Argument of type 'string[]' is not assignable to parameter of type '[...string[], (...values: string[]) => void]'.
-!!! error TS2345:   Source provides no match for required element at position 1 in target.
     
     declare function fn1<T, U>(t: [...unknown[], T, U]): [T, U];
     fn1([]);  // Error
