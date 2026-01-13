@@ -211,3 +211,378 @@
   >;
 }
 
+// === Additional edge case tests ===
+
+// Test: Source variadic should not map to target's optional end element
+{
+  type Inner<T extends unknown[], U extends [...T, boolean?]> = U;
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 82, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 83, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 83, 33))
+>T : Symbol(T, Decl(variadicTuples4.ts, 83, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 83, 33))
+
+  // Should be OK - variadic matches variadic, optional is not required
+  type Test1<T extends unknown[]> = Inner<T, [...T]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 83, 66))
+>T : Symbol(T, Decl(variadicTuples4.ts, 86, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 82, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 86, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 86, 13))
+
+  // Should be OK - variadic matches variadic, boolean matches optional
+  type Test2<T extends unknown[]> = Inner<T, [...T, boolean]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 86, 53))
+>T : Symbol(T, Decl(variadicTuples4.ts, 89, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 82, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 89, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 89, 13))
+}
+
+// Test: Fixed element at start of target
+{
+  type Inner<T extends unknown[], U extends [boolean, ...T]> = U;
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 93, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 94, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 94, 33))
+>T : Symbol(T, Decl(variadicTuples4.ts, 94, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 94, 33))
+
+  // Should error - missing boolean at start
+  type Test1<T extends unknown[]> = Inner<T, [...T]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 94, 65))
+>T : Symbol(T, Decl(variadicTuples4.ts, 97, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 93, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 97, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 97, 13))
+
+  // Should be OK
+  type Test2<T extends unknown[]> = Inner<T, [boolean, ...T]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 97, 53))
+>T : Symbol(T, Decl(variadicTuples4.ts, 100, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 93, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 100, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 100, 13))
+}
+
+// Test: Multiple variadics with no fixed elements
+{
+  type Inner<A extends unknown[], B extends unknown[], C extends [...A, ...B]> = C;
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 104, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 105, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 105, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 105, 54))
+>A : Symbol(A, Decl(variadicTuples4.ts, 105, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 105, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 105, 54))
+
+  // Should be OK - 1:1 mapping
+  type Test1<A extends unknown[], B extends unknown[]> = Inner<A, B, [...A, ...B]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 105, 83))
+>A : Symbol(A, Decl(variadicTuples4.ts, 108, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 108, 33))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 104, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 108, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 108, 33))
+>A : Symbol(A, Decl(variadicTuples4.ts, 108, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 108, 33))
+
+  // Should error - missing second variadic
+  type Test2<A extends unknown[]> = Inner<A, A, [...A]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 108, 83))
+>A : Symbol(A, Decl(variadicTuples4.ts, 111, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 104, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 111, 13))
+>A : Symbol(A, Decl(variadicTuples4.ts, 111, 13))
+>A : Symbol(A, Decl(variadicTuples4.ts, 111, 13))
+
+  // Should error - extra variadic
+  type Test3<A extends unknown[], B extends unknown[], C extends unknown[]> = Inner<A, B, [...A, ...B, ...C]>;
+>Test3 : Symbol(Test3, Decl(variadicTuples4.ts, 111, 56))
+>A : Symbol(A, Decl(variadicTuples4.ts, 114, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 114, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 114, 54))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 104, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 114, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 114, 33))
+>A : Symbol(A, Decl(variadicTuples4.ts, 114, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 114, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 114, 54))
+}
+
+// Test: Three variadics
+{
+  type Inner<A extends unknown[], B extends unknown[], C extends unknown[], D extends [...A, ...B, ...C]> = D;
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 118, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 119, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 119, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 119, 54))
+>D : Symbol(D, Decl(variadicTuples4.ts, 119, 75))
+>A : Symbol(A, Decl(variadicTuples4.ts, 119, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 119, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 119, 54))
+>D : Symbol(D, Decl(variadicTuples4.ts, 119, 75))
+
+  // Should be OK
+  type Test1<A extends unknown[], B extends unknown[], C extends unknown[]> = Inner<A, B, C, [...A, ...B, ...C]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 119, 110))
+>A : Symbol(A, Decl(variadicTuples4.ts, 122, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 122, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 122, 54))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 118, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 122, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 122, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 122, 54))
+>A : Symbol(A, Decl(variadicTuples4.ts, 122, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 122, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 122, 54))
+
+  // Should error - wrong order shouldn't matter for this test, but extra element does
+  type Test2<A extends unknown[], B extends unknown[], C extends unknown[]> = Inner<A, B, C, [...A, ...B, boolean, ...C]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 122, 113))
+>A : Symbol(A, Decl(variadicTuples4.ts, 125, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 125, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 125, 54))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 118, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 125, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 125, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 125, 54))
+>A : Symbol(A, Decl(variadicTuples4.ts, 125, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 125, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 125, 54))
+}
+
+// Test: Fixed elements between variadics
+{
+  type Inner<A extends unknown[], B extends unknown[], C extends [...A, boolean, ...B]> = C;
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 129, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 130, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 130, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 130, 54))
+>A : Symbol(A, Decl(variadicTuples4.ts, 130, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 130, 33))
+>C : Symbol(C, Decl(variadicTuples4.ts, 130, 54))
+
+  // Should be OK
+  type Test1<A extends unknown[], B extends unknown[]> = Inner<A, B, [...A, boolean, ...B]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 130, 92))
+>A : Symbol(A, Decl(variadicTuples4.ts, 133, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 133, 33))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 129, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 133, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 133, 33))
+>A : Symbol(A, Decl(variadicTuples4.ts, 133, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 133, 33))
+
+  // Should error - missing boolean between variadics
+  type Test2<A extends unknown[], B extends unknown[]> = Inner<A, B, [...A, ...B]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 133, 92))
+>A : Symbol(A, Decl(variadicTuples4.ts, 136, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 136, 33))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 129, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 136, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 136, 33))
+>A : Symbol(A, Decl(variadicTuples4.ts, 136, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 136, 33))
+
+  // Should error - extra boolean between variadics
+  type Test3<A extends unknown[], B extends unknown[]> = Inner<A, B, [...A, boolean, boolean, ...B]>;
+>Test3 : Symbol(Test3, Decl(variadicTuples4.ts, 136, 83))
+>A : Symbol(A, Decl(variadicTuples4.ts, 139, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 139, 33))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 129, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 139, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 139, 33))
+>A : Symbol(A, Decl(variadicTuples4.ts, 139, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 139, 33))
+}
+
+// Test: Fixed at both ends
+{
+  type Inner<T extends unknown[], U extends [boolean, ...T, boolean]> = U;
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 143, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 144, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 144, 33))
+>T : Symbol(T, Decl(variadicTuples4.ts, 144, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 144, 33))
+
+  // Should be OK
+  type Test1<T extends unknown[]> = Inner<T, [boolean, ...T, boolean]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 144, 74))
+>T : Symbol(T, Decl(variadicTuples4.ts, 147, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 143, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 147, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 147, 13))
+
+  // Should error - missing end boolean
+  type Test2<T extends unknown[]> = Inner<T, [boolean, ...T]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 147, 71))
+>T : Symbol(T, Decl(variadicTuples4.ts, 150, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 143, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 150, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 150, 13))
+
+  // Should error - missing start boolean
+  type Test3<T extends unknown[]> = Inner<T, [...T, boolean]>;
+>Test3 : Symbol(Test3, Decl(variadicTuples4.ts, 150, 62))
+>T : Symbol(T, Decl(variadicTuples4.ts, 153, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 143, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 153, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 153, 13))
+
+  // Should error - extra element in middle
+  type Test4<T extends unknown[]> = Inner<T, [boolean, ...T, boolean, boolean]>;
+>Test4 : Symbol(Test4, Decl(variadicTuples4.ts, 153, 62))
+>T : Symbol(T, Decl(variadicTuples4.ts, 156, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 143, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 156, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 156, 13))
+}
+
+// Test: Multiple fixed at end
+{
+  type Inner<T extends unknown[], U extends [...T, boolean, boolean, boolean]> = U;
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 160, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 161, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 161, 33))
+>T : Symbol(T, Decl(variadicTuples4.ts, 161, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 161, 33))
+
+  // Should be OK
+  type Test1<T extends unknown[]> = Inner<T, [...T, boolean, boolean, boolean]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 161, 83))
+>T : Symbol(T, Decl(variadicTuples4.ts, 164, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 160, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 164, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 164, 13))
+
+  // Should error - too few end elements
+  type Test2<T extends unknown[]> = Inner<T, [...T, boolean, boolean]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 164, 80))
+>T : Symbol(T, Decl(variadicTuples4.ts, 167, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 160, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 167, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 167, 13))
+
+  // Should error - too many end elements
+  type Test3<T extends unknown[]> = Inner<T, [...T, boolean, boolean, boolean, boolean]>;
+>Test3 : Symbol(Test3, Decl(variadicTuples4.ts, 167, 71))
+>T : Symbol(T, Decl(variadicTuples4.ts, 170, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 160, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 170, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 170, 13))
+}
+
+// Test: Rest element vs Variadic
+{
+  type Inner<T extends unknown[], U extends [...T, ...boolean[]]> = U;
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 174, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 175, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 175, 33))
+>T : Symbol(T, Decl(variadicTuples4.ts, 175, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 175, 33))
+
+  // Should be OK - variadic then rest
+  type Test1<T extends unknown[]> = Inner<T, [...T, ...boolean[]]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 175, 70))
+>T : Symbol(T, Decl(variadicTuples4.ts, 178, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 174, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 178, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 178, 13))
+
+  // Should be OK - variadic then fixed booleans (compatible with rest)
+  type Test2<T extends unknown[]> = Inner<T, [...T, boolean, boolean]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 178, 67))
+>T : Symbol(T, Decl(variadicTuples4.ts, 181, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 174, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 181, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 181, 13))
+}
+
+// Test: Optional elements
+{
+  type Inner<T extends unknown[], U extends [...T, boolean?]> = U;
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 185, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 186, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 186, 33))
+>T : Symbol(T, Decl(variadicTuples4.ts, 186, 13))
+>U : Symbol(U, Decl(variadicTuples4.ts, 186, 33))
+
+  // Should be OK - with optional
+  type Test1<T extends unknown[]> = Inner<T, [...T, boolean?]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 186, 66))
+>T : Symbol(T, Decl(variadicTuples4.ts, 189, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 185, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 189, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 189, 13))
+
+  // Should be OK - optional satisfied with required
+  type Test2<T extends unknown[]> = Inner<T, [...T, boolean]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 189, 63))
+>T : Symbol(T, Decl(variadicTuples4.ts, 192, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 185, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 192, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 192, 13))
+
+  // Should be OK - optional can be omitted
+  type Test3<T extends unknown[]> = Inner<T, [...T]>;
+>Test3 : Symbol(Test3, Decl(variadicTuples4.ts, 192, 62))
+>T : Symbol(T, Decl(variadicTuples4.ts, 195, 13))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 185, 1))
+>T : Symbol(T, Decl(variadicTuples4.ts, 195, 13))
+>T : Symbol(T, Decl(variadicTuples4.ts, 195, 13))
+}
+
+// Test: Complex mix
+{
+  type Inner<
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 199, 1))
+
+    A extends unknown[],
+>A : Symbol(A, Decl(variadicTuples4.ts, 200, 13))
+
+    B extends unknown[],
+>B : Symbol(B, Decl(variadicTuples4.ts, 201, 24))
+
+    C extends [boolean, ...A, string, ...B, number?]
+>C : Symbol(C, Decl(variadicTuples4.ts, 202, 24))
+>A : Symbol(A, Decl(variadicTuples4.ts, 200, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 201, 24))
+
+  > = C;
+>C : Symbol(C, Decl(variadicTuples4.ts, 202, 24))
+
+  // Should be OK
+  type Test1<A extends unknown[], B extends unknown[]> = Inner<A, B, [boolean, ...A, string, ...B, number?]>;
+>Test1 : Symbol(Test1, Decl(variadicTuples4.ts, 204, 8))
+>A : Symbol(A, Decl(variadicTuples4.ts, 207, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 207, 33))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 199, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 207, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 207, 33))
+>A : Symbol(A, Decl(variadicTuples4.ts, 207, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 207, 33))
+
+  // Should be OK - optional omitted
+  type Test2<A extends unknown[], B extends unknown[]> = Inner<A, B, [boolean, ...A, string, ...B]>;
+>Test2 : Symbol(Test2, Decl(variadicTuples4.ts, 207, 109))
+>A : Symbol(A, Decl(variadicTuples4.ts, 210, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 210, 33))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 199, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 210, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 210, 33))
+>A : Symbol(A, Decl(variadicTuples4.ts, 210, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 210, 33))
+
+  // Should error - missing string between variadics
+  type Test3<A extends unknown[], B extends unknown[]> = Inner<A, B, [boolean, ...A, ...B, number?]>;
+>Test3 : Symbol(Test3, Decl(variadicTuples4.ts, 210, 100))
+>A : Symbol(A, Decl(variadicTuples4.ts, 213, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 213, 33))
+>Inner : Symbol(Inner, Decl(variadicTuples4.ts, 199, 1))
+>A : Symbol(A, Decl(variadicTuples4.ts, 213, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 213, 33))
+>A : Symbol(A, Decl(variadicTuples4.ts, 213, 13))
+>B : Symbol(B, Decl(variadicTuples4.ts, 213, 33))
+}
+

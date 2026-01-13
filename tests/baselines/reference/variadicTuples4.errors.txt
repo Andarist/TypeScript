@@ -10,9 +10,41 @@ variadicTuples4.ts(62,5): error TS2344: Type '[...A, boolean, boolean, ...B, boo
   Target allows only 4 element(s) but source may have more.
 variadicTuples4.ts(76,5): error TS2344: Type '[...A, boolean, ...B, boolean]' does not satisfy the constraint '[...A, boolean, boolean, ...B, boolean]'.
   Source has 4 element(s) but target requires 5.
+variadicTuples4.ts(87,46): error TS2344: Type '[...T]' does not satisfy the constraint '[...T, (boolean | undefined)?]'.
+  Variadic element at position 0 in source does not match element at position 1 in target.
+variadicTuples4.ts(98,46): error TS2344: Type '[...T]' does not satisfy the constraint '[boolean, ...T]'.
+  Source has 1 element(s) but target requires 2.
+variadicTuples4.ts(112,49): error TS2344: Type '[...A]' does not satisfy the constraint '[...A, ...A]'.
+  Source has 1 element(s) but target requires 2.
+variadicTuples4.ts(115,91): error TS2344: Type '[...A, ...B, ...C]' does not satisfy the constraint '[...A, ...B]'.
+  Type at positions 0 through 2 in source is not compatible with type at position 1 in target.
+    Type 'C' is not assignable to type 'B'.
+      'C' is assignable to the constraint of type 'B', but 'B' could be instantiated with a different subtype of constraint 'unknown[]'.
+variadicTuples4.ts(126,94): error TS2344: Type '[...A, ...B, boolean, ...C]' does not satisfy the constraint '[...A, ...B, ...C]'.
+  Target allows only 3 element(s) but source may have more.
+variadicTuples4.ts(137,70): error TS2344: Type '[...A, ...B]' does not satisfy the constraint '[...A, boolean, ...B]'.
+  Source has 2 element(s) but target requires 3.
+variadicTuples4.ts(140,70): error TS2344: Type '[...A, boolean, boolean, ...B]' does not satisfy the constraint '[...A, boolean, ...B]'.
+  Target allows only 3 element(s) but source may have more.
+variadicTuples4.ts(151,46): error TS2344: Type '[boolean, ...T]' does not satisfy the constraint '[boolean, ...T, boolean]'.
+  Source has 2 element(s) but target requires 3.
+variadicTuples4.ts(154,46): error TS2344: Type '[...T, boolean]' does not satisfy the constraint '[boolean, ...T, boolean]'.
+  Source has 2 element(s) but target requires 3.
+variadicTuples4.ts(157,46): error TS2344: Type '[boolean, ...T, boolean, boolean]' does not satisfy the constraint '[boolean, ...T, boolean]'.
+  Target allows only 3 element(s) but source may have more.
+variadicTuples4.ts(168,46): error TS2344: Type '[...T, boolean, boolean]' does not satisfy the constraint '[...T, boolean, boolean, boolean]'.
+  Source has 3 element(s) but target requires 4.
+variadicTuples4.ts(171,46): error TS2344: Type '[...T, boolean, boolean, boolean, boolean]' does not satisfy the constraint '[...T, boolean, boolean, boolean]'.
+  Target allows only 4 element(s) but source may have more.
+variadicTuples4.ts(196,46): error TS2344: Type '[...T]' does not satisfy the constraint '[...T, (boolean | undefined)?]'.
+  Variadic element at position 0 in source does not match element at position 1 in target.
+variadicTuples4.ts(211,70): error TS2344: Type '[boolean, ...A, string, ...B]' does not satisfy the constraint '[boolean, ...A, string, ...B, (number | undefined)?]'.
+  Variadic element at position 3 in source does not match element at position 4 in target.
+variadicTuples4.ts(214,70): error TS2344: Type '[boolean, ...A, ...B, (number | undefined)?]' does not satisfy the constraint '[boolean, ...A, string, ...B, (number | undefined)?]'.
+  Variadic element at position 2 in source does not match element at position 2 in target.
 
 
-==== variadicTuples4.ts (6 errors) ====
+==== variadicTuples4.ts (21 errors) ====
     {
       type Inner<A extends any[], A2 extends [...A, boolean]> = A2;
       type Wrapper<A extends any[]> = Inner<
@@ -108,5 +140,189 @@ variadicTuples4.ts(76,5): error TS2344: Type '[...A, boolean, ...B, boolean]' do
 !!! error TS2344: Type '[...A, boolean, ...B, boolean]' does not satisfy the constraint '[...A, boolean, boolean, ...B, boolean]'.
 !!! error TS2344:   Source has 4 element(s) but target requires 5.
       >;
+    }
+    
+    // === Additional edge case tests ===
+    
+    // Test: Source variadic should not map to target's optional end element
+    {
+      type Inner<T extends unknown[], U extends [...T, boolean?]> = U;
+    
+      // Should be OK - variadic matches variadic, optional is not required
+      type Test1<T extends unknown[]> = Inner<T, [...T]>;
+                                                 ~~~~~~
+!!! error TS2344: Type '[...T]' does not satisfy the constraint '[...T, (boolean | undefined)?]'.
+!!! error TS2344:   Variadic element at position 0 in source does not match element at position 1 in target.
+    
+      // Should be OK - variadic matches variadic, boolean matches optional
+      type Test2<T extends unknown[]> = Inner<T, [...T, boolean]>;
+    }
+    
+    // Test: Fixed element at start of target
+    {
+      type Inner<T extends unknown[], U extends [boolean, ...T]> = U;
+    
+      // Should error - missing boolean at start
+      type Test1<T extends unknown[]> = Inner<T, [...T]>;
+                                                 ~~~~~~
+!!! error TS2344: Type '[...T]' does not satisfy the constraint '[boolean, ...T]'.
+!!! error TS2344:   Source has 1 element(s) but target requires 2.
+    
+      // Should be OK
+      type Test2<T extends unknown[]> = Inner<T, [boolean, ...T]>;
+    }
+    
+    // Test: Multiple variadics with no fixed elements
+    {
+      type Inner<A extends unknown[], B extends unknown[], C extends [...A, ...B]> = C;
+    
+      // Should be OK - 1:1 mapping
+      type Test1<A extends unknown[], B extends unknown[]> = Inner<A, B, [...A, ...B]>;
+    
+      // Should error - missing second variadic
+      type Test2<A extends unknown[]> = Inner<A, A, [...A]>;
+                                                    ~~~~~~
+!!! error TS2344: Type '[...A]' does not satisfy the constraint '[...A, ...A]'.
+!!! error TS2344:   Source has 1 element(s) but target requires 2.
+    
+      // Should error - extra variadic
+      type Test3<A extends unknown[], B extends unknown[], C extends unknown[]> = Inner<A, B, [...A, ...B, ...C]>;
+                                                                                              ~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[...A, ...B, ...C]' does not satisfy the constraint '[...A, ...B]'.
+!!! error TS2344:   Type at positions 0 through 2 in source is not compatible with type at position 1 in target.
+!!! error TS2344:     Type 'C' is not assignable to type 'B'.
+!!! error TS2344:       'C' is assignable to the constraint of type 'B', but 'B' could be instantiated with a different subtype of constraint 'unknown[]'.
+    }
+    
+    // Test: Three variadics
+    {
+      type Inner<A extends unknown[], B extends unknown[], C extends unknown[], D extends [...A, ...B, ...C]> = D;
+    
+      // Should be OK
+      type Test1<A extends unknown[], B extends unknown[], C extends unknown[]> = Inner<A, B, C, [...A, ...B, ...C]>;
+    
+      // Should error - wrong order shouldn't matter for this test, but extra element does
+      type Test2<A extends unknown[], B extends unknown[], C extends unknown[]> = Inner<A, B, C, [...A, ...B, boolean, ...C]>;
+                                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[...A, ...B, boolean, ...C]' does not satisfy the constraint '[...A, ...B, ...C]'.
+!!! error TS2344:   Target allows only 3 element(s) but source may have more.
+    }
+    
+    // Test: Fixed elements between variadics
+    {
+      type Inner<A extends unknown[], B extends unknown[], C extends [...A, boolean, ...B]> = C;
+    
+      // Should be OK
+      type Test1<A extends unknown[], B extends unknown[]> = Inner<A, B, [...A, boolean, ...B]>;
+    
+      // Should error - missing boolean between variadics
+      type Test2<A extends unknown[], B extends unknown[]> = Inner<A, B, [...A, ...B]>;
+                                                                         ~~~~~~~~~~~~
+!!! error TS2344: Type '[...A, ...B]' does not satisfy the constraint '[...A, boolean, ...B]'.
+!!! error TS2344:   Source has 2 element(s) but target requires 3.
+    
+      // Should error - extra boolean between variadics
+      type Test3<A extends unknown[], B extends unknown[]> = Inner<A, B, [...A, boolean, boolean, ...B]>;
+                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[...A, boolean, boolean, ...B]' does not satisfy the constraint '[...A, boolean, ...B]'.
+!!! error TS2344:   Target allows only 3 element(s) but source may have more.
+    }
+    
+    // Test: Fixed at both ends
+    {
+      type Inner<T extends unknown[], U extends [boolean, ...T, boolean]> = U;
+    
+      // Should be OK
+      type Test1<T extends unknown[]> = Inner<T, [boolean, ...T, boolean]>;
+    
+      // Should error - missing end boolean
+      type Test2<T extends unknown[]> = Inner<T, [boolean, ...T]>;
+                                                 ~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[boolean, ...T]' does not satisfy the constraint '[boolean, ...T, boolean]'.
+!!! error TS2344:   Source has 2 element(s) but target requires 3.
+    
+      // Should error - missing start boolean
+      type Test3<T extends unknown[]> = Inner<T, [...T, boolean]>;
+                                                 ~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[...T, boolean]' does not satisfy the constraint '[boolean, ...T, boolean]'.
+!!! error TS2344:   Source has 2 element(s) but target requires 3.
+    
+      // Should error - extra element in middle
+      type Test4<T extends unknown[]> = Inner<T, [boolean, ...T, boolean, boolean]>;
+                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[boolean, ...T, boolean, boolean]' does not satisfy the constraint '[boolean, ...T, boolean]'.
+!!! error TS2344:   Target allows only 3 element(s) but source may have more.
+    }
+    
+    // Test: Multiple fixed at end
+    {
+      type Inner<T extends unknown[], U extends [...T, boolean, boolean, boolean]> = U;
+    
+      // Should be OK
+      type Test1<T extends unknown[]> = Inner<T, [...T, boolean, boolean, boolean]>;
+    
+      // Should error - too few end elements
+      type Test2<T extends unknown[]> = Inner<T, [...T, boolean, boolean]>;
+                                                 ~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[...T, boolean, boolean]' does not satisfy the constraint '[...T, boolean, boolean, boolean]'.
+!!! error TS2344:   Source has 3 element(s) but target requires 4.
+    
+      // Should error - too many end elements
+      type Test3<T extends unknown[]> = Inner<T, [...T, boolean, boolean, boolean, boolean]>;
+                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[...T, boolean, boolean, boolean, boolean]' does not satisfy the constraint '[...T, boolean, boolean, boolean]'.
+!!! error TS2344:   Target allows only 4 element(s) but source may have more.
+    }
+    
+    // Test: Rest element vs Variadic
+    {
+      type Inner<T extends unknown[], U extends [...T, ...boolean[]]> = U;
+    
+      // Should be OK - variadic then rest
+      type Test1<T extends unknown[]> = Inner<T, [...T, ...boolean[]]>;
+    
+      // Should be OK - variadic then fixed booleans (compatible with rest)
+      type Test2<T extends unknown[]> = Inner<T, [...T, boolean, boolean]>;
+    }
+    
+    // Test: Optional elements
+    {
+      type Inner<T extends unknown[], U extends [...T, boolean?]> = U;
+    
+      // Should be OK - with optional
+      type Test1<T extends unknown[]> = Inner<T, [...T, boolean?]>;
+    
+      // Should be OK - optional satisfied with required
+      type Test2<T extends unknown[]> = Inner<T, [...T, boolean]>;
+    
+      // Should be OK - optional can be omitted
+      type Test3<T extends unknown[]> = Inner<T, [...T]>;
+                                                 ~~~~~~
+!!! error TS2344: Type '[...T]' does not satisfy the constraint '[...T, (boolean | undefined)?]'.
+!!! error TS2344:   Variadic element at position 0 in source does not match element at position 1 in target.
+    }
+    
+    // Test: Complex mix
+    {
+      type Inner<
+        A extends unknown[],
+        B extends unknown[],
+        C extends [boolean, ...A, string, ...B, number?]
+      > = C;
+    
+      // Should be OK
+      type Test1<A extends unknown[], B extends unknown[]> = Inner<A, B, [boolean, ...A, string, ...B, number?]>;
+    
+      // Should be OK - optional omitted
+      type Test2<A extends unknown[], B extends unknown[]> = Inner<A, B, [boolean, ...A, string, ...B]>;
+                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[boolean, ...A, string, ...B]' does not satisfy the constraint '[boolean, ...A, string, ...B, (number | undefined)?]'.
+!!! error TS2344:   Variadic element at position 3 in source does not match element at position 4 in target.
+    
+      // Should error - missing string between variadics
+      type Test3<A extends unknown[], B extends unknown[]> = Inner<A, B, [boolean, ...A, ...B, number?]>;
+                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '[boolean, ...A, ...B, (number | undefined)?]' does not satisfy the constraint '[boolean, ...A, string, ...B, (number | undefined)?]'.
+!!! error TS2344:   Variadic element at position 2 in source does not match element at position 2 in target.
     }
     

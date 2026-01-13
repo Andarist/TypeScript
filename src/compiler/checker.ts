@@ -24419,6 +24419,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         const sourcePositionFromEnd = sourceArity - 1 - sourcePosition;
 
                         const targetPosition = targetHasVariableElement && sourcePosition >= targetStartCount
+                            // ? sourcePositionFromEnd < targetEndCount && !(sourceFlags & ElementFlags.Variable)
                             ? sourcePositionFromEnd < targetEndCount
                                 ? targetArity - 1 - sourcePositionFromEnd
                                 : Math.min(sourcePosition, targetArity - 1 - targetEndCount)
