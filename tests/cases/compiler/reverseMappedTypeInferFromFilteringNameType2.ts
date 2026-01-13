@@ -148,3 +148,39 @@ const config2 = createXMachine({
   },
   extra: 10,
 });
+
+
+type Bombolo<T> = {
+    [
+      K in keyof T as K extends 'enabled'
+      ? K
+      : 'enabled' extends keyof T
+        ? T["enabled"] extends true
+          ? K
+          : never
+        : never
+    ]: T[K]
+}
+
+
+declare function bombolo<T>(a: Bombolo<T>): T
+
+bombolo({ a: "a", b: "b", c: "c", enabled: false as const})
+bombolo({ a: "a", b: "b", c: "c", enabled: true as const})
+
+// no excess property check because the parameter type turns out to be the empty object type {}
+bombolo({ a: "a", b: "b", c: "c"})
+
+type TestRecursiveReferenceToT<T> = {
+    [K in keyof T as T[K] extends string ? K : never ]: { a: T[K] }
+}
+
+declare function tstrcv<T>(a: TestRecursiveReferenceToT<T>): T
+
+const res = tstrcv({
+  ok: { a: "it's a string" } as const,
+  not_ok: { a: 123 },
+})
+
+   res
+// ^?

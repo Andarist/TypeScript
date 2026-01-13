@@ -489,3 +489,107 @@ const config2 = createXMachine({
 
 });
 
+
+type Bombolo<T> = {
+>Bombolo : Symbol(Bombolo, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 145, 3))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 148, 13))
+
+    [
+      K in keyof T as K extends 'enabled'
+>K : Symbol(K, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 149, 5))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 148, 13))
+>K : Symbol(K, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 149, 5))
+
+      ? K
+>K : Symbol(K, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 149, 5))
+
+      : 'enabled' extends keyof T
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 148, 13))
+
+        ? T["enabled"] extends true
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 148, 13))
+
+          ? K
+>K : Symbol(K, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 149, 5))
+
+          : never
+        : never
+    ]: T[K]
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 148, 13))
+>K : Symbol(K, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 149, 5))
+}
+
+
+declare function bombolo<T>(a: Bombolo<T>): T
+>bombolo : Symbol(bombolo, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 158, 1))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 161, 25))
+>a : Symbol(a, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 161, 28))
+>Bombolo : Symbol(Bombolo, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 145, 3))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 161, 25))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 161, 25))
+
+bombolo({ a: "a", b: "b", c: "c", enabled: false as const})
+>bombolo : Symbol(bombolo, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 158, 1))
+>a : Symbol(a, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 163, 9))
+>b : Symbol(b, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 163, 17))
+>c : Symbol(c, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 163, 25))
+>enabled : Symbol(enabled, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 163, 33))
+>const : Symbol(const)
+
+bombolo({ a: "a", b: "b", c: "c", enabled: true as const})
+>bombolo : Symbol(bombolo, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 158, 1))
+>a : Symbol(a, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 164, 9))
+>b : Symbol(b, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 164, 17))
+>c : Symbol(c, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 164, 25))
+>enabled : Symbol(enabled, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 164, 33))
+>const : Symbol(const)
+
+// no excess property check because the parameter type turns out to be the empty object type {}
+bombolo({ a: "a", b: "b", c: "c"})
+>bombolo : Symbol(bombolo, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 158, 1))
+>a : Symbol(a, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 167, 9))
+>b : Symbol(b, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 167, 17))
+>c : Symbol(c, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 167, 25))
+
+type TestRecursiveReferenceToT<T> = {
+>TestRecursiveReferenceToT : Symbol(TestRecursiveReferenceToT, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 167, 34))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 169, 31))
+
+    [K in keyof T as T[K] extends string ? K : never ]: { a: T[K] }
+>K : Symbol(K, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 170, 5))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 169, 31))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 169, 31))
+>K : Symbol(K, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 170, 5))
+>K : Symbol(K, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 170, 5))
+>a : Symbol(a, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 170, 57))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 169, 31))
+>K : Symbol(K, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 170, 5))
+}
+
+declare function tstrcv<T>(a: TestRecursiveReferenceToT<T>): T
+>tstrcv : Symbol(tstrcv, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 171, 1))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 173, 24))
+>a : Symbol(a, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 173, 27))
+>TestRecursiveReferenceToT : Symbol(TestRecursiveReferenceToT, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 167, 34))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 173, 24))
+>T : Symbol(T, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 173, 24))
+
+const res = tstrcv({
+>res : Symbol(res, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 175, 5))
+>tstrcv : Symbol(tstrcv, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 171, 1))
+
+  ok: { a: "it's a string" } as const,
+>ok : Symbol(ok, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 175, 20))
+>a : Symbol(a, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 176, 7))
+>const : Symbol(const)
+
+  not_ok: { a: 123 },
+>not_ok : Symbol(not_ok, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 176, 38))
+>a : Symbol(a, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 177, 11))
+
+})
+
+   res
+>res : Symbol(res, Decl(reverseMappedTypeInferFromFilteringNameType2.ts, 175, 5))
+
+// ^?
