@@ -2388,6 +2388,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     var comparableRelation = new Map<string, RelationComparisonResult>();
     var identityRelation = new Map<string, RelationComparisonResult>();
     var enumRelation = new Map<string, RelationComparisonResult>();
+    var relationOverflowed = false;
 
     // Extensions suggested for path imports when module resolution is node16 or higher.
     // The first element of each tuple is the extension a file has.
@@ -22416,6 +22417,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             reportIncompatibleStack();
         }
         if (overflow) {
+            relationOverflowed = true;
             // Record this relation as having failed such that we don't attempt the overflowing operation again.
             const id = getRelationKey(source, target, /*intersectionState*/ IntersectionState.None, relation, /*ignoreConstraints*/ false);
             relation.set(id, RelationComparisonResult.Failed | (relationCount <= 0 ? RelationComparisonResult.ComplexityOverflow : RelationComparisonResult.StackDepthOverflow));
@@ -36543,7 +36545,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         const isJsxOpeningOrSelfClosingElement = isJsxOpeningLikeElement(node);
         const isJsxOpenFragment = isJsxOpeningFragment(node);
         const isInstanceof = node.kind === SyntaxKind.BinaryExpression;
-        const reportErrors = !isInferencePartiallyBlocked && !candidatesOutArray;
+        let reportErrors = !isInferencePartiallyBlocked && !candidatesOutArray;
 
         // The following variables are captured and modified by calls to chooseOverload.
         // If overload resolution or type argument inference fails, we want to report the
@@ -36616,6 +36618,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // If we are in signature help, a trailing comma indicates that we intend to provide another argument,
         // so we will only accept overloads with arity at least 1 higher than the current number of provided arguments.
         const signatureHelpTrailingComma = !!(checkMode & CheckMode.IsForSignatureHelp) && node.kind === SyntaxKind.CallExpression && node.arguments.hasTrailingComma;
+        let saveRelationOverflowed = relationOverflowed;
+        relationOverflowed = false;
 
         // Section 4.12.1:
         // if the candidate list contains one or more signatures for which the type of each argument
@@ -36633,6 +36637,9 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         if (!result) {
             result = chooseOverload(candidates, assignableRelation, isSingleNonGenericCandidate, signatureHelpTrailingComma);
         }
+        reportErrors &&= !relationOverflowed;
+        relationOverflowed = saveRelationOverflowed;
+
         const links = getNodeLinks(node);
         if (links.resolvedSignature !== resolvingSignature && !candidatesOutArray) {
             // There are 2 situations in which it's good to preemptively return the cached result here:
