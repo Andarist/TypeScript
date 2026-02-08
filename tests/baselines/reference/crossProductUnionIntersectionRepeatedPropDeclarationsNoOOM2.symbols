@@ -1,0 +1,1146 @@
+//// [tests/cases/compiler/crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts] ////
+
+=== crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts ===
+type JsonPrimitive = boolean | null | number | string;
+>JsonPrimitive : Symbol(JsonPrimitive, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 0, 0))
+
+type JsonArray = JsonValue[];
+>JsonArray : Symbol(JsonArray, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 0, 54))
+>JsonValue : Symbol(JsonValue, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 1, 29))
+
+type JsonValue = JsonArray | JsonObject | JsonPrimitive;
+>JsonValue : Symbol(JsonValue, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 1, 29))
+>JsonArray : Symbol(JsonArray, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 0, 54))
+>JsonObject : Symbol(JsonObject, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 2, 56))
+>JsonPrimitive : Symbol(JsonPrimitive, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 0, 0))
+
+interface JsonObject {
+>JsonObject : Symbol(JsonObject, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 2, 56))
+
+  [key: string]: JsonValue | undefined;
+>key : Symbol(key, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 4, 3))
+>JsonValue : Symbol(JsonValue, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 1, 29))
+}
+type IndexKey = string & {
+>IndexKey : Symbol(IndexKey, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 5, 1))
+
+  __brand: "indexKey";
+>__brand : Symbol(__brand, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 6, 26))
+
+};
+
+interface TLBaseAsset<Type extends string, Props> extends BaseRecord<
+>TLBaseAsset : Symbol(TLBaseAsset, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 8, 2))
+>Type : Symbol(Type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 10, 22))
+>Props : Symbol(Props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 10, 42))
+>BaseRecord : Symbol(BaseRecord, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 362, 21))
+
+  "asset",
+  TLAssetId
+>TLAssetId : Symbol(TLAssetId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 17, 1))
+
+> {
+  type: Type;
+>type : Symbol(TLBaseAsset.type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 13, 3))
+>Type : Symbol(Type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 10, 22))
+
+  props: Props;
+>props : Symbol(TLBaseAsset.props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 14, 13))
+>Props : Symbol(Props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 10, 42))
+
+  meta: JsonObject;
+>meta : Symbol(TLBaseAsset.meta, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 15, 15))
+>JsonObject : Symbol(JsonObject, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 2, 56))
+}
+type TLAssetId = RecordId<TLBaseAsset<any, any>>;
+>TLAssetId : Symbol(TLAssetId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 17, 1))
+>RecordId : Symbol(RecordId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 372, 65))
+>TLBaseAsset : Symbol(TLBaseAsset, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 8, 2))
+
+interface VecModel {
+>VecModel : Symbol(VecModel, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 18, 49))
+
+  x: number;
+>x : Symbol(VecModel.x, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 20, 20))
+
+  y: number;
+>y : Symbol(VecModel.y, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 21, 12))
+
+  z?: number;
+>z : Symbol(VecModel.z, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 22, 12))
+}
+
+interface TLShapeCrop {
+>TLShapeCrop : Symbol(TLShapeCrop, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 24, 1))
+
+  topLeft: VecModel;
+>topLeft : Symbol(TLShapeCrop.topLeft, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 26, 23))
+>VecModel : Symbol(VecModel, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 18, 49))
+
+  bottomRight: VecModel;
+>bottomRight : Symbol(TLShapeCrop.bottomRight, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 27, 20))
+>VecModel : Symbol(VecModel, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 18, 49))
+
+  isCircle?: boolean;
+>isCircle : Symbol(TLShapeCrop.isCircle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 28, 24))
+}
+
+type TLRichText = {
+>TLRichText : Symbol(TLRichText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 30, 1))
+
+  attrs?: any;
+>attrs : Symbol(attrs, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 32, 19))
+
+  content: unknown[];
+>content : Symbol(content, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 33, 14))
+
+  type: string;
+>type : Symbol(type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 34, 21))
+
+};
+
+type TLDefaultColorStyle =
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  | "black"
+  | "blue"
+  | "green"
+  | "grey"
+  | "light-blue"
+  | "light-green"
+  | "light-red"
+  | "light-violet"
+  | "orange"
+  | "red"
+  | "violet"
+  | "white"
+  | "yellow";
+type TLDefaultFillStyle =
+>TLDefaultFillStyle : Symbol(TLDefaultFillStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 51, 13))
+
+  | "fill"
+  | "lined-fill"
+  | "none"
+  | "pattern"
+  | "semi"
+  | "solid";
+type TLDefaultDashStyle = "solid" | "draw" | "dashed" | "dotted";
+>TLDefaultDashStyle : Symbol(TLDefaultDashStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 58, 12))
+
+type TLDefaultSizeStyle = "l" | "m" | "s" | "xl";
+>TLDefaultSizeStyle : Symbol(TLDefaultSizeStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 59, 65))
+
+type TLLineShapeSplineStyle = "line" | "cubic";
+>TLLineShapeSplineStyle : Symbol(TLLineShapeSplineStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 60, 49))
+
+type TLDefaultFontStyle = "draw" | "mono" | "sans" | "serif";
+>TLDefaultFontStyle : Symbol(TLDefaultFontStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 61, 47))
+
+type TLDefaultHorizontalAlignStyle =
+>TLDefaultHorizontalAlignStyle : Symbol(TLDefaultHorizontalAlignStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 62, 61))
+
+  | "end-legacy"
+  | "end"
+  | "middle-legacy"
+  | "middle"
+  | "start-legacy"
+  | "start";
+type TLDefaultVerticalAlignStyle = "end" | "middle" | "start";
+>TLDefaultVerticalAlignStyle : Symbol(TLDefaultVerticalAlignStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 69, 12))
+
+type TLDefaultTextAlignStyle = "end" | "middle" | "start";
+>TLDefaultTextAlignStyle : Symbol(TLDefaultTextAlignStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 70, 62))
+
+type TLArrowShapeKind = "arc" | "elbow";
+>TLArrowShapeKind : Symbol(TLArrowShapeKind, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 71, 58))
+
+type TLArrowShapeArrowheadStyle =
+>TLArrowShapeArrowheadStyle : Symbol(TLArrowShapeArrowheadStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 72, 40))
+
+  | "arrow"
+  | "bar"
+  | "diamond"
+  | "dot"
+  | "inverted"
+  | "none"
+  | "pipe"
+  | "square"
+  | "triangle";
+type TLGeoShapeGeoStyle =
+>TLGeoShapeGeoStyle : Symbol(TLGeoShapeGeoStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 82, 15))
+
+  | "arrow-down"
+  | "arrow-left"
+  | "arrow-right"
+  | "arrow-up"
+  | "check-box"
+  | "cloud"
+  | "diamond"
+  | "ellipse"
+  | "heart"
+  | "hexagon"
+  | "octagon"
+  | "oval"
+  | "pentagon"
+  | "rectangle"
+  | "rhombus"
+  | "rhombus-2"
+  | "star"
+  | "trapezoid"
+  | "triangle"
+  | "x-box";
+type TLOpacityType = number;
+>TLOpacityType : Symbol(TLOpacityType, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 103, 12))
+
+type TLPageId = RecordId<TLPage>;
+>TLPageId : Symbol(TLPageId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 104, 28))
+>RecordId : Symbol(RecordId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 372, 65))
+>TLPage : Symbol(TLPage, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 106, 39))
+
+type TLParentId = TLPageId | TLShapeId;
+>TLParentId : Symbol(TLParentId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 105, 33))
+>TLPageId : Symbol(TLPageId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 104, 28))
+>TLShapeId : Symbol(TLShapeId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 376, 2))
+
+interface TLPage extends BaseRecord<"page", TLPageId> {
+>TLPage : Symbol(TLPage, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 106, 39))
+>BaseRecord : Symbol(BaseRecord, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 362, 21))
+>TLPageId : Symbol(TLPageId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 104, 28))
+
+  name: string;
+>name : Symbol(TLPage.name, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 107, 55))
+
+  index: IndexKey;
+>index : Symbol(TLPage.index, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 108, 15))
+>IndexKey : Symbol(IndexKey, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 5, 1))
+
+  meta: JsonObject;
+>meta : Symbol(TLPage.meta, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 109, 18))
+>JsonObject : Symbol(JsonObject, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 2, 56))
+}
+
+interface TLLineShapePoint {
+>TLLineShapePoint : Symbol(TLLineShapePoint, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 111, 1))
+
+  id: string;
+>id : Symbol(TLLineShapePoint.id, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 113, 28))
+
+  index: IndexKey;
+>index : Symbol(TLLineShapePoint.index, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 114, 13))
+>IndexKey : Symbol(IndexKey, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 5, 1))
+
+  x: number;
+>x : Symbol(TLLineShapePoint.x, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 115, 18))
+
+  y: number;
+>y : Symbol(TLLineShapePoint.y, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 116, 12))
+}
+
+interface TLGlobalShapePropsMap {}
+>TLGlobalShapePropsMap : Symbol(TLGlobalShapePropsMap, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 118, 1), Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 401, 1))
+
+interface TLBaseShape<Type extends string, Props extends object> {
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>Type : Symbol(Type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 122, 22))
+>Props : Symbol(Props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 122, 42))
+
+  readonly id: TLShapeId;
+>id : Symbol(TLBaseShape.id, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 122, 66))
+>TLShapeId : Symbol(TLShapeId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 376, 2))
+
+  readonly typeName: "shape";
+>typeName : Symbol(TLBaseShape.typeName, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 123, 25))
+
+  type: Type;
+>type : Symbol(TLBaseShape.type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 124, 29))
+>Type : Symbol(Type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 122, 22))
+
+  x: number;
+>x : Symbol(TLBaseShape.x, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 125, 13))
+
+  y: number;
+>y : Symbol(TLBaseShape.y, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 126, 12))
+
+  rotation: number;
+>rotation : Symbol(TLBaseShape.rotation, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 127, 12))
+
+  index: IndexKey;
+>index : Symbol(TLBaseShape.index, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 128, 19))
+>IndexKey : Symbol(IndexKey, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 5, 1))
+
+  parentId: TLParentId;
+>parentId : Symbol(TLBaseShape.parentId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 129, 18))
+>TLParentId : Symbol(TLParentId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 105, 33))
+
+  isLocked: boolean;
+>isLocked : Symbol(TLBaseShape.isLocked, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 130, 23))
+
+  opacity: TLOpacityType;
+>opacity : Symbol(TLBaseShape.opacity, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 131, 20))
+>TLOpacityType : Symbol(TLOpacityType, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 103, 12))
+
+  props: Props;
+>props : Symbol(TLBaseShape.props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 132, 25))
+>Props : Symbol(Props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 122, 42))
+
+  meta: JsonObject;
+>meta : Symbol(TLBaseShape.meta, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 133, 15))
+>JsonObject : Symbol(JsonObject, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 2, 56))
+}
+
+interface TLArrowShapeProps {
+>TLArrowShapeProps : Symbol(TLArrowShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 135, 1))
+
+  kind: TLArrowShapeKind;
+>kind : Symbol(TLArrowShapeProps.kind, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 137, 29))
+>TLArrowShapeKind : Symbol(TLArrowShapeKind, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 71, 58))
+
+  labelColor: TLDefaultColorStyle;
+>labelColor : Symbol(TLArrowShapeProps.labelColor, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 138, 25))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  color: TLDefaultColorStyle;
+>color : Symbol(TLArrowShapeProps.color, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 139, 34))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  fill: TLDefaultFillStyle;
+>fill : Symbol(TLArrowShapeProps.fill, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 140, 29))
+>TLDefaultFillStyle : Symbol(TLDefaultFillStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 51, 13))
+
+  dash: TLDefaultDashStyle;
+>dash : Symbol(TLArrowShapeProps.dash, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 141, 27))
+>TLDefaultDashStyle : Symbol(TLDefaultDashStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 58, 12))
+
+  size: TLDefaultSizeStyle;
+>size : Symbol(TLArrowShapeProps.size, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 142, 27))
+>TLDefaultSizeStyle : Symbol(TLDefaultSizeStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 59, 65))
+
+  arrowheadStart: TLArrowShapeArrowheadStyle;
+>arrowheadStart : Symbol(TLArrowShapeProps.arrowheadStart, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 143, 27))
+>TLArrowShapeArrowheadStyle : Symbol(TLArrowShapeArrowheadStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 72, 40))
+
+  arrowheadEnd: TLArrowShapeArrowheadStyle;
+>arrowheadEnd : Symbol(TLArrowShapeProps.arrowheadEnd, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 144, 45))
+>TLArrowShapeArrowheadStyle : Symbol(TLArrowShapeArrowheadStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 72, 40))
+
+  font: TLDefaultFontStyle;
+>font : Symbol(TLArrowShapeProps.font, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 145, 43))
+>TLDefaultFontStyle : Symbol(TLDefaultFontStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 61, 47))
+
+  start: VecModel;
+>start : Symbol(TLArrowShapeProps.start, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 146, 27))
+>VecModel : Symbol(VecModel, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 18, 49))
+
+  end: VecModel;
+>end : Symbol(TLArrowShapeProps.end, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 147, 18))
+>VecModel : Symbol(VecModel, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 18, 49))
+
+  bend: number;
+>bend : Symbol(TLArrowShapeProps.bend, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 148, 16))
+
+  richText: TLRichText;
+>richText : Symbol(TLArrowShapeProps.richText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 149, 15))
+>TLRichText : Symbol(TLRichText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 30, 1))
+
+  labelPosition: number;
+>labelPosition : Symbol(TLArrowShapeProps.labelPosition, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 150, 23))
+
+  scale: number;
+>scale : Symbol(TLArrowShapeProps.scale, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 151, 24))
+
+  elbowMidPoint: number;
+>elbowMidPoint : Symbol(TLArrowShapeProps.elbowMidPoint, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 152, 16))
+}
+type TLArrowShape = TLBaseShape<"arrow", TLArrowShapeProps>;
+>TLArrowShape : Symbol(TLArrowShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 154, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLArrowShapeProps : Symbol(TLArrowShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 135, 1))
+
+interface TLBookmarkShapeProps {
+>TLBookmarkShapeProps : Symbol(TLBookmarkShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 155, 60))
+
+  w: number;
+>w : Symbol(TLBookmarkShapeProps.w, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 157, 32))
+
+  h: number;
+>h : Symbol(TLBookmarkShapeProps.h, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 158, 12))
+
+  assetId: TLAssetId | null;
+>assetId : Symbol(TLBookmarkShapeProps.assetId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 159, 12))
+>TLAssetId : Symbol(TLAssetId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 17, 1))
+
+  url: string;
+>url : Symbol(TLBookmarkShapeProps.url, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 160, 28))
+}
+
+type TLBookmarkShape = TLBaseShape<"bookmark", TLBookmarkShapeProps>;
+>TLBookmarkShape : Symbol(TLBookmarkShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 162, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLBookmarkShapeProps : Symbol(TLBookmarkShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 155, 60))
+
+export interface TLDrawShapeProps {
+>TLDrawShapeProps : Symbol(TLDrawShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 164, 69))
+
+  color: TLDefaultColorStyle;
+>color : Symbol(TLDrawShapeProps.color, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 166, 35))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  fill: TLDefaultFillStyle;
+>fill : Symbol(TLDrawShapeProps.fill, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 167, 29))
+>TLDefaultFillStyle : Symbol(TLDefaultFillStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 51, 13))
+
+  dash: TLDefaultDashStyle;
+>dash : Symbol(TLDrawShapeProps.dash, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 168, 27))
+>TLDefaultDashStyle : Symbol(TLDefaultDashStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 58, 12))
+
+  size: TLDefaultSizeStyle;
+>size : Symbol(TLDrawShapeProps.size, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 169, 27))
+>TLDefaultSizeStyle : Symbol(TLDefaultSizeStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 59, 65))
+
+  segments: TLDrawShapeSegment[];
+>segments : Symbol(TLDrawShapeProps.segments, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 170, 27))
+>TLDrawShapeSegment : Symbol(TLDrawShapeSegment, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 221, 60))
+
+  isComplete: boolean;
+>isComplete : Symbol(TLDrawShapeProps.isComplete, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 171, 33))
+
+  isClosed: boolean;
+>isClosed : Symbol(TLDrawShapeProps.isClosed, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 172, 22))
+
+  isPen: boolean;
+>isPen : Symbol(TLDrawShapeProps.isPen, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 173, 20))
+
+  scale: number;
+>scale : Symbol(TLDrawShapeProps.scale, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 174, 17))
+
+  scaleX: number;
+>scaleX : Symbol(TLDrawShapeProps.scaleX, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 175, 16))
+
+  scaleY: number;
+>scaleY : Symbol(TLDrawShapeProps.scaleY, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 176, 17))
+}
+
+type TLDrawShape = TLBaseShape<"draw", TLDrawShapeProps>;
+>TLDrawShape : Symbol(TLDrawShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 178, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLDrawShapeProps : Symbol(TLDrawShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 164, 69))
+
+interface TLEmbedShapeProps {
+>TLEmbedShapeProps : Symbol(TLEmbedShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 180, 57))
+
+  w: number;
+>w : Symbol(TLEmbedShapeProps.w, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 182, 29))
+
+  h: number;
+>h : Symbol(TLEmbedShapeProps.h, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 183, 12))
+
+  url: string;
+>url : Symbol(TLEmbedShapeProps.url, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 184, 12))
+}
+
+type TLEmbedShape = TLBaseShape<"embed", TLEmbedShapeProps>;
+>TLEmbedShape : Symbol(TLEmbedShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 186, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLEmbedShapeProps : Symbol(TLEmbedShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 180, 57))
+
+interface TLFrameShapeProps {
+>TLFrameShapeProps : Symbol(TLFrameShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 188, 60))
+
+  w: number;
+>w : Symbol(TLFrameShapeProps.w, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 190, 29))
+
+  h: number;
+>h : Symbol(TLFrameShapeProps.h, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 191, 12))
+
+  name: string;
+>name : Symbol(TLFrameShapeProps.name, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 192, 12))
+
+  color: TLDefaultColorStyle;
+>color : Symbol(TLFrameShapeProps.color, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 193, 15))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+}
+
+type TLFrameShape = TLBaseShape<"frame", TLFrameShapeProps>;
+>TLFrameShape : Symbol(TLFrameShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 195, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLFrameShapeProps : Symbol(TLFrameShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 188, 60))
+
+interface TLGeoShapeProps {
+>TLGeoShapeProps : Symbol(TLGeoShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 197, 60))
+
+  geo: TLGeoShapeGeoStyle;
+>geo : Symbol(TLGeoShapeProps.geo, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 199, 27))
+>TLGeoShapeGeoStyle : Symbol(TLGeoShapeGeoStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 82, 15))
+
+  dash: TLDefaultDashStyle;
+>dash : Symbol(TLGeoShapeProps.dash, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 200, 26))
+>TLDefaultDashStyle : Symbol(TLDefaultDashStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 58, 12))
+
+  url: string;
+>url : Symbol(TLGeoShapeProps.url, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 201, 27))
+
+  w: number;
+>w : Symbol(TLGeoShapeProps.w, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 202, 14))
+
+  h: number;
+>h : Symbol(TLGeoShapeProps.h, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 203, 12))
+
+  growY: number;
+>growY : Symbol(TLGeoShapeProps.growY, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 204, 12))
+
+  scale: number;
+>scale : Symbol(TLGeoShapeProps.scale, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 205, 16))
+
+  labelColor: TLDefaultColorStyle;
+>labelColor : Symbol(TLGeoShapeProps.labelColor, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 206, 16))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  color: TLDefaultColorStyle;
+>color : Symbol(TLGeoShapeProps.color, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 207, 34))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  fill: TLDefaultFillStyle;
+>fill : Symbol(TLGeoShapeProps.fill, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 208, 29))
+>TLDefaultFillStyle : Symbol(TLDefaultFillStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 51, 13))
+
+  size: TLDefaultSizeStyle;
+>size : Symbol(TLGeoShapeProps.size, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 209, 27))
+>TLDefaultSizeStyle : Symbol(TLDefaultSizeStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 59, 65))
+
+  font: TLDefaultFontStyle;
+>font : Symbol(TLGeoShapeProps.font, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 210, 27))
+>TLDefaultFontStyle : Symbol(TLDefaultFontStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 61, 47))
+
+  align: TLDefaultHorizontalAlignStyle;
+>align : Symbol(TLGeoShapeProps.align, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 211, 27))
+>TLDefaultHorizontalAlignStyle : Symbol(TLDefaultHorizontalAlignStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 62, 61))
+
+  verticalAlign: TLDefaultVerticalAlignStyle;
+>verticalAlign : Symbol(TLGeoShapeProps.verticalAlign, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 212, 39))
+>TLDefaultVerticalAlignStyle : Symbol(TLDefaultVerticalAlignStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 69, 12))
+
+  richText: TLRichText;
+>richText : Symbol(TLGeoShapeProps.richText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 213, 45))
+>TLRichText : Symbol(TLRichText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 30, 1))
+}
+
+type TLGeoShape = TLBaseShape<"geo", TLGeoShapeProps>;
+>TLGeoShape : Symbol(TLGeoShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 215, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLGeoShapeProps : Symbol(TLGeoShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 197, 60))
+
+interface TLGroupShapeProps {}
+>TLGroupShapeProps : Symbol(TLGroupShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 217, 54))
+
+type TLGroupShape = TLBaseShape<"group", TLGroupShapeProps>;
+>TLGroupShape : Symbol(TLGroupShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 219, 30))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLGroupShapeProps : Symbol(TLGroupShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 217, 54))
+
+interface TLDrawShapeSegment {
+>TLDrawShapeSegment : Symbol(TLDrawShapeSegment, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 221, 60))
+
+  type: "free" | "straight";
+>type : Symbol(TLDrawShapeSegment.type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 223, 30))
+
+  path: string;
+>path : Symbol(TLDrawShapeSegment.path, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 224, 28))
+}
+
+interface TLHighlightShapeProps {
+>TLHighlightShapeProps : Symbol(TLHighlightShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 226, 1))
+
+  color: TLDefaultColorStyle;
+>color : Symbol(TLHighlightShapeProps.color, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 228, 33))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  size: TLDefaultSizeStyle;
+>size : Symbol(TLHighlightShapeProps.size, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 229, 29))
+>TLDefaultSizeStyle : Symbol(TLDefaultSizeStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 59, 65))
+
+  segments: TLDrawShapeSegment[];
+>segments : Symbol(TLHighlightShapeProps.segments, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 230, 27))
+>TLDrawShapeSegment : Symbol(TLDrawShapeSegment, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 221, 60))
+
+  isComplete: boolean;
+>isComplete : Symbol(TLHighlightShapeProps.isComplete, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 231, 33))
+
+  isPen: boolean;
+>isPen : Symbol(TLHighlightShapeProps.isPen, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 232, 22))
+
+  scale: number;
+>scale : Symbol(TLHighlightShapeProps.scale, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 233, 17))
+
+  scaleX: number;
+>scaleX : Symbol(TLHighlightShapeProps.scaleX, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 234, 16))
+
+  scaleY: number;
+>scaleY : Symbol(TLHighlightShapeProps.scaleY, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 235, 17))
+}
+
+type TLHighlightShape = TLBaseShape<"highlight", TLHighlightShapeProps>;
+>TLHighlightShape : Symbol(TLHighlightShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 237, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLHighlightShapeProps : Symbol(TLHighlightShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 226, 1))
+
+interface TLImageShapeProps {
+>TLImageShapeProps : Symbol(TLImageShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 239, 72))
+
+  w: number;
+>w : Symbol(TLImageShapeProps.w, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 241, 29))
+
+  h: number;
+>h : Symbol(TLImageShapeProps.h, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 242, 12))
+
+  playing: boolean;
+>playing : Symbol(TLImageShapeProps.playing, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 244, 12))
+
+  url: string;
+>url : Symbol(TLImageShapeProps.url, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 246, 19))
+
+  assetId: null | TLAssetId;
+>assetId : Symbol(TLImageShapeProps.assetId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 248, 14))
+>TLAssetId : Symbol(TLAssetId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 17, 1))
+
+  crop: null | TLShapeCrop;
+>crop : Symbol(TLImageShapeProps.crop, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 250, 28))
+>TLShapeCrop : Symbol(TLShapeCrop, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 24, 1))
+
+  flipX: boolean;
+>flipX : Symbol(TLImageShapeProps.flipX, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 252, 27))
+
+  flipY: boolean;
+>flipY : Symbol(TLImageShapeProps.flipY, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 254, 17))
+
+  altText: string;
+>altText : Symbol(TLImageShapeProps.altText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 256, 17))
+}
+
+type TLImageShape = TLBaseShape<"image", TLImageShapeProps>;
+>TLImageShape : Symbol(TLImageShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 259, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLImageShapeProps : Symbol(TLImageShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 239, 72))
+
+interface TLLineShapeProps {
+>TLLineShapeProps : Symbol(TLLineShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 261, 60))
+
+  color: TLDefaultColorStyle;
+>color : Symbol(TLLineShapeProps.color, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 263, 28))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  dash: TLDefaultDashStyle;
+>dash : Symbol(TLLineShapeProps.dash, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 264, 29))
+>TLDefaultDashStyle : Symbol(TLDefaultDashStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 58, 12))
+
+  size: TLDefaultSizeStyle;
+>size : Symbol(TLLineShapeProps.size, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 265, 27))
+>TLDefaultSizeStyle : Symbol(TLDefaultSizeStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 59, 65))
+
+  spline: TLLineShapeSplineStyle;
+>spline : Symbol(TLLineShapeProps.spline, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 266, 27))
+>TLLineShapeSplineStyle : Symbol(TLLineShapeSplineStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 60, 49))
+
+  points: Record<string, TLLineShapePoint>;
+>points : Symbol(TLLineShapeProps.points, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 267, 33))
+>Record : Symbol(Record, Decl(lib.es5.d.ts, --, --))
+>TLLineShapePoint : Symbol(TLLineShapePoint, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 111, 1))
+
+  scale: number;
+>scale : Symbol(TLLineShapeProps.scale, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 268, 43))
+}
+
+type TLLineShape = TLBaseShape<"line", TLLineShapeProps>;
+>TLLineShape : Symbol(TLLineShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 270, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLLineShapeProps : Symbol(TLLineShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 261, 60))
+
+interface TLNoteShapeProps {
+>TLNoteShapeProps : Symbol(TLNoteShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 272, 57))
+
+  color: TLDefaultColorStyle;
+>color : Symbol(TLNoteShapeProps.color, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 274, 28))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  labelColor: TLDefaultColorStyle;
+>labelColor : Symbol(TLNoteShapeProps.labelColor, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 275, 29))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  size: TLDefaultSizeStyle;
+>size : Symbol(TLNoteShapeProps.size, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 276, 34))
+>TLDefaultSizeStyle : Symbol(TLDefaultSizeStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 59, 65))
+
+  font: TLDefaultFontStyle;
+>font : Symbol(TLNoteShapeProps.font, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 277, 27))
+>TLDefaultFontStyle : Symbol(TLDefaultFontStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 61, 47))
+
+  fontSizeAdjustment: number;
+>fontSizeAdjustment : Symbol(TLNoteShapeProps.fontSizeAdjustment, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 278, 27))
+
+  align: TLDefaultHorizontalAlignStyle;
+>align : Symbol(TLNoteShapeProps.align, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 279, 29))
+>TLDefaultHorizontalAlignStyle : Symbol(TLDefaultHorizontalAlignStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 62, 61))
+
+  verticalAlign: TLDefaultVerticalAlignStyle;
+>verticalAlign : Symbol(TLNoteShapeProps.verticalAlign, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 280, 39))
+>TLDefaultVerticalAlignStyle : Symbol(TLDefaultVerticalAlignStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 69, 12))
+
+  growY: number;
+>growY : Symbol(TLNoteShapeProps.growY, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 281, 45))
+
+  url: string;
+>url : Symbol(TLNoteShapeProps.url, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 282, 16))
+
+  richText: TLRichText;
+>richText : Symbol(TLNoteShapeProps.richText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 283, 14))
+>TLRichText : Symbol(TLRichText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 30, 1))
+
+  scale: number;
+>scale : Symbol(TLNoteShapeProps.scale, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 284, 23))
+}
+
+type TLNoteShape = TLBaseShape<"note", TLNoteShapeProps>;
+>TLNoteShape : Symbol(TLNoteShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 286, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLNoteShapeProps : Symbol(TLNoteShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 272, 57))
+
+interface TLTextShapeProps {
+>TLTextShapeProps : Symbol(TLTextShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 288, 57))
+
+  color: TLDefaultColorStyle;
+>color : Symbol(TLTextShapeProps.color, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 290, 28))
+>TLDefaultColorStyle : Symbol(TLDefaultColorStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 36, 2))
+
+  size: TLDefaultSizeStyle;
+>size : Symbol(TLTextShapeProps.size, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 291, 29))
+>TLDefaultSizeStyle : Symbol(TLDefaultSizeStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 59, 65))
+
+  font: TLDefaultFontStyle;
+>font : Symbol(TLTextShapeProps.font, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 292, 27))
+>TLDefaultFontStyle : Symbol(TLDefaultFontStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 61, 47))
+
+  textAlign: TLDefaultTextAlignStyle;
+>textAlign : Symbol(TLTextShapeProps.textAlign, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 293, 27))
+>TLDefaultTextAlignStyle : Symbol(TLDefaultTextAlignStyle, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 70, 62))
+
+  w: number;
+>w : Symbol(TLTextShapeProps.w, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 294, 37))
+
+  richText: TLRichText;
+>richText : Symbol(TLTextShapeProps.richText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 295, 12))
+>TLRichText : Symbol(TLRichText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 30, 1))
+
+  scale: number;
+>scale : Symbol(TLTextShapeProps.scale, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 296, 23))
+
+  autoSize: boolean;
+>autoSize : Symbol(TLTextShapeProps.autoSize, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 297, 16))
+}
+
+type TLTextShape = TLBaseShape<"text", TLTextShapeProps>;
+>TLTextShape : Symbol(TLTextShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 299, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLTextShapeProps : Symbol(TLTextShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 288, 57))
+
+interface TLVideoShapeProps {
+>TLVideoShapeProps : Symbol(TLVideoShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 301, 57))
+
+  w: number;
+>w : Symbol(TLVideoShapeProps.w, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 303, 29))
+
+  h: number;
+>h : Symbol(TLVideoShapeProps.h, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 304, 12))
+
+  time: number;
+>time : Symbol(TLVideoShapeProps.time, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 305, 12))
+
+  playing: boolean;
+>playing : Symbol(TLVideoShapeProps.playing, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 306, 15))
+
+  autoplay: boolean;
+>autoplay : Symbol(TLVideoShapeProps.autoplay, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 307, 19))
+
+  url: string;
+>url : Symbol(TLVideoShapeProps.url, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 308, 20))
+
+  assetId: null | TLAssetId;
+>assetId : Symbol(TLVideoShapeProps.assetId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 309, 14))
+>TLAssetId : Symbol(TLAssetId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 17, 1))
+
+  altText: string;
+>altText : Symbol(TLVideoShapeProps.altText, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 310, 28))
+}
+
+type TLVideoShape = TLBaseShape<"video", TLVideoShapeProps>;
+>TLVideoShape : Symbol(TLVideoShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 312, 1))
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>TLVideoShapeProps : Symbol(TLVideoShapeProps, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 301, 57))
+
+type TLDefaultShape =
+>TLDefaultShape : Symbol(TLDefaultShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 314, 60))
+
+  | TLArrowShape
+>TLArrowShape : Symbol(TLArrowShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 154, 1))
+
+  | TLBookmarkShape
+>TLBookmarkShape : Symbol(TLBookmarkShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 162, 1))
+
+  | TLDrawShape
+>TLDrawShape : Symbol(TLDrawShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 178, 1))
+
+  | TLEmbedShape
+>TLEmbedShape : Symbol(TLEmbedShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 186, 1))
+
+  | TLFrameShape
+>TLFrameShape : Symbol(TLFrameShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 195, 1))
+
+  | TLGeoShape
+>TLGeoShape : Symbol(TLGeoShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 215, 1))
+
+  | TLGroupShape
+>TLGroupShape : Symbol(TLGroupShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 219, 30))
+
+  | TLHighlightShape
+>TLHighlightShape : Symbol(TLHighlightShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 237, 1))
+
+  | TLImageShape
+>TLImageShape : Symbol(TLImageShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 259, 1))
+
+  | TLLineShape
+>TLLineShape : Symbol(TLLineShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 270, 1))
+
+  | TLNoteShape
+>TLNoteShape : Symbol(TLNoteShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 286, 1))
+
+  | TLTextShape
+>TLTextShape : Symbol(TLTextShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 299, 1))
+
+  | TLVideoShape;
+>TLVideoShape : Symbol(TLVideoShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 312, 1))
+
+type TLIndexedShapes = {
+>TLIndexedShapes : Symbol(TLIndexedShapes, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 329, 17))
+
+  [K in
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+
+    | keyof TLGlobalShapePropsMap
+>TLGlobalShapePropsMap : Symbol(TLGlobalShapePropsMap, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 118, 1), Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 401, 1))
+
+    | TLDefaultShape["type"] as K extends TLDefaultShape["type"]
+>TLDefaultShape : Symbol(TLDefaultShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 314, 60))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+>TLDefaultShape : Symbol(TLDefaultShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 314, 60))
+
+    ? K extends "group"
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+
+      ? K
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+
+      : K extends keyof TLGlobalShapePropsMap
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+>TLGlobalShapePropsMap : Symbol(TLGlobalShapePropsMap, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 118, 1), Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 401, 1))
+
+        ? TLGlobalShapePropsMap[K] extends null | undefined
+>TLGlobalShapePropsMap : Symbol(TLGlobalShapePropsMap, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 118, 1), Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 401, 1))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+
+          ? never
+          : K
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+
+        : K
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+
+    : K]: K extends "group"
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+
+    ? Extract<
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+
+        TLDefaultShape,
+>TLDefaultShape : Symbol(TLDefaultShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 314, 60))
+        {
+          type: K;
+>type : Symbol(type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 345, 9))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+        }
+      >
+    : K extends TLDefaultShape["type"]
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+>TLDefaultShape : Symbol(TLDefaultShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 314, 60))
+
+      ? K extends keyof TLGlobalShapePropsMap
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+>TLGlobalShapePropsMap : Symbol(TLGlobalShapePropsMap, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 118, 1), Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 401, 1))
+
+        ? TLBaseShape<K, TLGlobalShapePropsMap[K]>
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+>TLGlobalShapePropsMap : Symbol(TLGlobalShapePropsMap, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 118, 1), Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 401, 1))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+
+        : Extract<
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+
+            TLDefaultShape,
+>TLDefaultShape : Symbol(TLDefaultShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 314, 60))
+            {
+              type: K;
+>type : Symbol(type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 354, 13))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+            }
+          >
+      : TLBaseShape<K, TLGlobalShapePropsMap[K & keyof TLGlobalShapePropsMap]>;
+>TLBaseShape : Symbol(TLBaseShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 120, 34))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+>TLGlobalShapePropsMap : Symbol(TLGlobalShapePropsMap, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 118, 1), Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 401, 1))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 332, 3))
+>TLGlobalShapePropsMap : Symbol(TLGlobalShapePropsMap, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 118, 1), Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 401, 1))
+
+};
+
+type TLShape<K extends keyof TLIndexedShapes = keyof TLIndexedShapes> =
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 361, 13))
+>TLIndexedShapes : Symbol(TLIndexedShapes, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 329, 17))
+>TLIndexedShapes : Symbol(TLIndexedShapes, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 329, 17))
+
+  TLIndexedShapes[K];
+>TLIndexedShapes : Symbol(TLIndexedShapes, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 329, 17))
+>K : Symbol(K, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 361, 13))
+
+interface BaseRecord<
+>BaseRecord : Symbol(BaseRecord, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 362, 21))
+
+  TypeName extends string,
+>TypeName : Symbol(TypeName, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 364, 21))
+
+  Id extends RecordId<UnknownRecord>,
+>Id : Symbol(Id, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 365, 26))
+>RecordId : Symbol(RecordId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 372, 65))
+>UnknownRecord : Symbol(UnknownRecord, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 370, 1))
+
+> {
+  readonly id: Id;
+>id : Symbol(BaseRecord.id, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 367, 3))
+>Id : Symbol(Id, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 365, 26))
+
+  readonly typeName: TypeName;
+>typeName : Symbol(BaseRecord.typeName, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 368, 18))
+>TypeName : Symbol(TypeName, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 364, 21))
+}
+
+type UnknownRecord = BaseRecord<string, RecordId<UnknownRecord>>;
+>UnknownRecord : Symbol(UnknownRecord, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 370, 1))
+>BaseRecord : Symbol(BaseRecord, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 362, 21))
+>RecordId : Symbol(RecordId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 372, 65))
+>UnknownRecord : Symbol(UnknownRecord, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 370, 1))
+
+type RecordId<R extends UnknownRecord> = string & {
+>RecordId : Symbol(RecordId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 372, 65))
+>R : Symbol(R, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 374, 14))
+>UnknownRecord : Symbol(UnknownRecord, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 370, 1))
+
+  __type__: R;
+>__type__ : Symbol(__type__, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 374, 51))
+>R : Symbol(R, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 374, 14))
+
+};
+
+type TLShapeId = RecordId<TLShape>;
+>TLShapeId : Symbol(TLShapeId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 376, 2))
+>RecordId : Symbol(RecordId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 372, 65))
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+
+type TLShapePartial<T extends TLShape = TLShape> = T extends T
+>TLShapePartial : Symbol(TLShapePartial, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 378, 35))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 380, 20))
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 380, 20))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 380, 20))
+
+  ? {
+      id: TLShapeId;
+>id : Symbol(id, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 381, 5))
+>TLShapeId : Symbol(TLShapeId, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 376, 2))
+
+      meta?: Partial<T["meta"]>;
+>meta : Symbol(meta, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 382, 20))
+>Partial : Symbol(Partial, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 380, 20))
+
+      props?: Partial<T["props"]>;
+>props : Symbol(props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 383, 32))
+>Partial : Symbol(Partial, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 380, 20))
+
+      type: T["type"];
+>type : Symbol(type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 384, 34))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 380, 20))
+
+    } & Partial<Omit<T, "id" | "meta" | "props" | "type">>
+>Partial : Symbol(Partial, Decl(lib.es5.d.ts, --, --))
+>Omit : Symbol(Omit, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 380, 20))
+
+  : never;
+
+type TLCreateShapePartial<T extends TLShape = TLShape> = T extends T
+>TLCreateShapePartial : Symbol(TLCreateShapePartial, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 387, 10))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 389, 26))
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 389, 26))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 389, 26))
+
+  ? {
+      meta?: Partial<T["meta"]>;
+>meta : Symbol(meta, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 390, 5))
+>Partial : Symbol(Partial, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 389, 26))
+
+      props?: Partial<T["props"]>;
+>props : Symbol(props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 391, 32))
+>Partial : Symbol(Partial, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 389, 26))
+
+      type: T["type"];
+>type : Symbol(type, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 392, 34))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 389, 26))
+
+    } & Partial<Omit<T, "meta" | "props" | "type">>
+>Partial : Symbol(Partial, Decl(lib.es5.d.ts, --, --))
+>Omit : Symbol(Omit, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 389, 26))
+
+  : never;
+
+interface Editor {
+>Editor : Symbol(Editor, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 395, 10))
+
+  createShape<TShape extends TLShape>(
+>createShape : Symbol(Editor.createShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 397, 18))
+>TShape : Symbol(TShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 398, 14))
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+
+    shape: TLCreateShapePartial<TShape>,
+>shape : Symbol(shape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 398, 38))
+>TLCreateShapePartial : Symbol(TLCreateShapePartial, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 387, 10))
+>TShape : Symbol(TShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 398, 14))
+
+  ): this;
+}
+
+interface TLGlobalShapePropsMap {
+>TLGlobalShapePropsMap : Symbol(TLGlobalShapePropsMap, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 118, 1), Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 401, 1))
+
+  note: {
+>note : Symbol(TLGlobalShapePropsMap.note, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 403, 33))
+
+    h: number;
+>h : Symbol(h, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 404, 9))
+
+  };
+  container: {
+>container : Symbol(TLGlobalShapePropsMap.container, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 406, 4))
+
+    w: number;
+>w : Symbol(w, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 407, 14))
+
+    h: number;
+>h : Symbol(h, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 408, 14))
+
+    bg: string;
+>bg : Symbol(bg, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 409, 14))
+
+  };
+}
+
+type Dimensions = {
+>Dimensions : Symbol(Dimensions, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 412, 1))
+
+  w: number;
+>w : Symbol(w, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 414, 19))
+
+  h: number;
+>h : Symbol(h, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 415, 12))
+
+  scale?: number;
+>scale : Symbol(scale, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 416, 12))
+
+};
+
+type ShapeWithDimensions<T extends TLShape> = T & {
+>ShapeWithDimensions : Symbol(ShapeWithDimensions, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 418, 2))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 420, 25))
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 420, 25))
+
+  props: T["props"] & Dimensions;
+>props : Symbol(props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 420, 51))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 420, 25))
+>Dimensions : Symbol(Dimensions, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 412, 1))
+
+};
+
+type ShapePartialWithDimensions<T extends TLShape> = TLShapePartial<
+>ShapePartialWithDimensions : Symbol(ShapePartialWithDimensions, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 422, 2))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 424, 32))
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+>TLShapePartial : Symbol(TLShapePartial, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 378, 35))
+
+  ShapeWithDimensions<T>
+>ShapeWithDimensions : Symbol(ShapeWithDimensions, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 418, 2))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 424, 32))
+
+> & {
+  props: TLShapePartial<ShapeWithDimensions<T>>["props"];
+>props : Symbol(props, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 426, 5))
+>TLShapePartial : Symbol(TLShapePartial, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 378, 35))
+>ShapeWithDimensions : Symbol(ShapeWithDimensions, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 418, 2))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 424, 32))
+
+};
+
+export function createShapeAtCenterPosition<
+>createShapeAtCenterPosition : Symbol(createShapeAtCenterPosition, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 428, 2))
+
+  T extends ShapeWithDimensions<TLShape>,
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 430, 44))
+>ShapeWithDimensions : Symbol(ShapeWithDimensions, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 418, 2))
+>TLShape : Symbol(TLShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 359, 2))
+
+>(
+  editor: Editor,
+>editor : Symbol(editor, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 432, 2))
+>Editor : Symbol(Editor, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 395, 10))
+
+  shapePartial: ShapePartialWithDimensions<T>,
+>shapePartial : Symbol(shapePartial, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 433, 17))
+>ShapePartialWithDimensions : Symbol(ShapePartialWithDimensions, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 422, 2))
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 430, 44))
+
+  pageRotation: number,
+>pageRotation : Symbol(pageRotation, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 434, 46))
+
+): T | undefined {
+>T : Symbol(T, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 430, 44))
+
+  editor.createShape({
+>editor.createShape : Symbol(Editor.createShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 397, 18))
+>editor : Symbol(editor, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 432, 2))
+>createShape : Symbol(Editor.createShape, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 397, 18))
+
+    ...shapePartial,
+>shapePartial : Symbol(shapePartial, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 433, 17))
+
+    rotation: pageRotation,
+>rotation : Symbol(rotation, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 438, 20))
+>pageRotation : Symbol(pageRotation, Decl(crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts, 434, 46))
+
+  });
+}
+

@@ -1,0 +1,1060 @@
+//// [tests/cases/compiler/crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts] ////
+
+=== Performance Stats ===
+Assignability cache: 2,500,000
+Type Count: 1,000,000
+Instantiation count: 50,000
+Symbol count: 500,000
+
+=== crossProductUnionIntersectionRepeatedPropDeclarationsNoOOM2.ts ===
+type JsonPrimitive = boolean | null | number | string;
+>JsonPrimitive : JsonPrimitive
+>              : ^^^^^^^^^^^^^
+
+type JsonArray = JsonValue[];
+>JsonArray : JsonArray
+>          : ^^^^^^^^^
+
+type JsonValue = JsonArray | JsonObject | JsonPrimitive;
+>JsonValue : JsonValue
+>          : ^^^^^^^^^
+
+interface JsonObject {
+  [key: string]: JsonValue | undefined;
+>key : string
+>    : ^^^^^^
+}
+type IndexKey = string & {
+>IndexKey : IndexKey
+>         : ^^^^^^^^
+
+  __brand: "indexKey";
+>__brand : "indexKey"
+>        : ^^^^^^^^^^
+
+};
+
+interface TLBaseAsset<Type extends string, Props> extends BaseRecord<
+  "asset",
+  TLAssetId
+> {
+  type: Type;
+>type : Type
+>     : ^^^^
+
+  props: Props;
+>props : Props
+>      : ^^^^^
+
+  meta: JsonObject;
+>meta : JsonObject
+>     : ^^^^^^^^^^
+}
+type TLAssetId = RecordId<TLBaseAsset<any, any>>;
+>TLAssetId : TLAssetId
+>          : ^^^^^^^^^
+
+interface VecModel {
+  x: number;
+>x : number
+>  : ^^^^^^
+
+  y: number;
+>y : number
+>  : ^^^^^^
+
+  z?: number;
+>z : number | undefined
+>  : ^^^^^^^^^^^^^^^^^^
+}
+
+interface TLShapeCrop {
+  topLeft: VecModel;
+>topLeft : VecModel
+>        : ^^^^^^^^
+
+  bottomRight: VecModel;
+>bottomRight : VecModel
+>            : ^^^^^^^^
+
+  isCircle?: boolean;
+>isCircle : boolean | undefined
+>         : ^^^^^^^^^^^^^^^^^^^
+}
+
+type TLRichText = {
+>TLRichText : TLRichText
+>           : ^^^^^^^^^^
+
+  attrs?: any;
+>attrs : any
+>      : ^^^
+
+  content: unknown[];
+>content : unknown[]
+>        : ^^^^^^^^^
+
+  type: string;
+>type : string
+>     : ^^^^^^
+
+};
+
+type TLDefaultColorStyle =
+>TLDefaultColorStyle : TLDefaultColorStyle
+>                    : ^^^^^^^^^^^^^^^^^^^
+
+  | "black"
+  | "blue"
+  | "green"
+  | "grey"
+  | "light-blue"
+  | "light-green"
+  | "light-red"
+  | "light-violet"
+  | "orange"
+  | "red"
+  | "violet"
+  | "white"
+  | "yellow";
+type TLDefaultFillStyle =
+>TLDefaultFillStyle : TLDefaultFillStyle
+>                   : ^^^^^^^^^^^^^^^^^^
+
+  | "fill"
+  | "lined-fill"
+  | "none"
+  | "pattern"
+  | "semi"
+  | "solid";
+type TLDefaultDashStyle = "solid" | "draw" | "dashed" | "dotted";
+>TLDefaultDashStyle : TLDefaultDashStyle
+>                   : ^^^^^^^^^^^^^^^^^^
+
+type TLDefaultSizeStyle = "l" | "m" | "s" | "xl";
+>TLDefaultSizeStyle : TLDefaultSizeStyle
+>                   : ^^^^^^^^^^^^^^^^^^
+
+type TLLineShapeSplineStyle = "line" | "cubic";
+>TLLineShapeSplineStyle : TLLineShapeSplineStyle
+>                       : ^^^^^^^^^^^^^^^^^^^^^^
+
+type TLDefaultFontStyle = "draw" | "mono" | "sans" | "serif";
+>TLDefaultFontStyle : TLDefaultFontStyle
+>                   : ^^^^^^^^^^^^^^^^^^
+
+type TLDefaultHorizontalAlignStyle =
+>TLDefaultHorizontalAlignStyle : TLDefaultHorizontalAlignStyle
+>                              : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  | "end-legacy"
+  | "end"
+  | "middle-legacy"
+  | "middle"
+  | "start-legacy"
+  | "start";
+type TLDefaultVerticalAlignStyle = "end" | "middle" | "start";
+>TLDefaultVerticalAlignStyle : TLDefaultVerticalAlignStyle
+>                            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+type TLDefaultTextAlignStyle = "end" | "middle" | "start";
+>TLDefaultTextAlignStyle : TLDefaultTextAlignStyle
+>                        : ^^^^^^^^^^^^^^^^^^^^^^^
+
+type TLArrowShapeKind = "arc" | "elbow";
+>TLArrowShapeKind : TLArrowShapeKind
+>                 : ^^^^^^^^^^^^^^^^
+
+type TLArrowShapeArrowheadStyle =
+>TLArrowShapeArrowheadStyle : TLArrowShapeArrowheadStyle
+>                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  | "arrow"
+  | "bar"
+  | "diamond"
+  | "dot"
+  | "inverted"
+  | "none"
+  | "pipe"
+  | "square"
+  | "triangle";
+type TLGeoShapeGeoStyle =
+>TLGeoShapeGeoStyle : TLGeoShapeGeoStyle
+>                   : ^^^^^^^^^^^^^^^^^^
+
+  | "arrow-down"
+  | "arrow-left"
+  | "arrow-right"
+  | "arrow-up"
+  | "check-box"
+  | "cloud"
+  | "diamond"
+  | "ellipse"
+  | "heart"
+  | "hexagon"
+  | "octagon"
+  | "oval"
+  | "pentagon"
+  | "rectangle"
+  | "rhombus"
+  | "rhombus-2"
+  | "star"
+  | "trapezoid"
+  | "triangle"
+  | "x-box";
+type TLOpacityType = number;
+>TLOpacityType : number
+>              : ^^^^^^
+
+type TLPageId = RecordId<TLPage>;
+>TLPageId : TLPageId
+>         : ^^^^^^^^
+
+type TLParentId = TLPageId | TLShapeId;
+>TLParentId : TLParentId
+>           : ^^^^^^^^^^
+
+interface TLPage extends BaseRecord<"page", TLPageId> {
+  name: string;
+>name : string
+>     : ^^^^^^
+
+  index: IndexKey;
+>index : IndexKey
+>      : ^^^^^^^^
+
+  meta: JsonObject;
+>meta : JsonObject
+>     : ^^^^^^^^^^
+}
+
+interface TLLineShapePoint {
+  id: string;
+>id : string
+>   : ^^^^^^
+
+  index: IndexKey;
+>index : IndexKey
+>      : ^^^^^^^^
+
+  x: number;
+>x : number
+>  : ^^^^^^
+
+  y: number;
+>y : number
+>  : ^^^^^^
+}
+
+interface TLGlobalShapePropsMap {}
+
+interface TLBaseShape<Type extends string, Props extends object> {
+  readonly id: TLShapeId;
+>id : TLShapeId
+>   : ^^^^^^^^^
+
+  readonly typeName: "shape";
+>typeName : "shape"
+>         : ^^^^^^^
+
+  type: Type;
+>type : Type
+>     : ^^^^
+
+  x: number;
+>x : number
+>  : ^^^^^^
+
+  y: number;
+>y : number
+>  : ^^^^^^
+
+  rotation: number;
+>rotation : number
+>         : ^^^^^^
+
+  index: IndexKey;
+>index : IndexKey
+>      : ^^^^^^^^
+
+  parentId: TLParentId;
+>parentId : TLParentId
+>         : ^^^^^^^^^^
+
+  isLocked: boolean;
+>isLocked : boolean
+>         : ^^^^^^^
+
+  opacity: TLOpacityType;
+>opacity : number
+>        : ^^^^^^
+
+  props: Props;
+>props : Props
+>      : ^^^^^
+
+  meta: JsonObject;
+>meta : JsonObject
+>     : ^^^^^^^^^^
+}
+
+interface TLArrowShapeProps {
+  kind: TLArrowShapeKind;
+>kind : TLArrowShapeKind
+>     : ^^^^^^^^^^^^^^^^
+
+  labelColor: TLDefaultColorStyle;
+>labelColor : TLDefaultColorStyle
+>           : ^^^^^^^^^^^^^^^^^^^
+
+  color: TLDefaultColorStyle;
+>color : TLDefaultColorStyle
+>      : ^^^^^^^^^^^^^^^^^^^
+
+  fill: TLDefaultFillStyle;
+>fill : TLDefaultFillStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  dash: TLDefaultDashStyle;
+>dash : TLDefaultDashStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  size: TLDefaultSizeStyle;
+>size : TLDefaultSizeStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  arrowheadStart: TLArrowShapeArrowheadStyle;
+>arrowheadStart : TLArrowShapeArrowheadStyle
+>               : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  arrowheadEnd: TLArrowShapeArrowheadStyle;
+>arrowheadEnd : TLArrowShapeArrowheadStyle
+>             : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  font: TLDefaultFontStyle;
+>font : TLDefaultFontStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  start: VecModel;
+>start : VecModel
+>      : ^^^^^^^^
+
+  end: VecModel;
+>end : VecModel
+>    : ^^^^^^^^
+
+  bend: number;
+>bend : number
+>     : ^^^^^^
+
+  richText: TLRichText;
+>richText : TLRichText
+>         : ^^^^^^^^^^
+
+  labelPosition: number;
+>labelPosition : number
+>              : ^^^^^^
+
+  scale: number;
+>scale : number
+>      : ^^^^^^
+
+  elbowMidPoint: number;
+>elbowMidPoint : number
+>              : ^^^^^^
+}
+type TLArrowShape = TLBaseShape<"arrow", TLArrowShapeProps>;
+>TLArrowShape : TLArrowShape
+>             : ^^^^^^^^^^^^
+
+interface TLBookmarkShapeProps {
+  w: number;
+>w : number
+>  : ^^^^^^
+
+  h: number;
+>h : number
+>  : ^^^^^^
+
+  assetId: TLAssetId | null;
+>assetId : TLAssetId | null
+>        : ^^^^^^^^^^^^^^^^
+
+  url: string;
+>url : string
+>    : ^^^^^^
+}
+
+type TLBookmarkShape = TLBaseShape<"bookmark", TLBookmarkShapeProps>;
+>TLBookmarkShape : TLBookmarkShape
+>                : ^^^^^^^^^^^^^^^
+
+export interface TLDrawShapeProps {
+  color: TLDefaultColorStyle;
+>color : TLDefaultColorStyle
+>      : ^^^^^^^^^^^^^^^^^^^
+
+  fill: TLDefaultFillStyle;
+>fill : TLDefaultFillStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  dash: TLDefaultDashStyle;
+>dash : TLDefaultDashStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  size: TLDefaultSizeStyle;
+>size : TLDefaultSizeStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  segments: TLDrawShapeSegment[];
+>segments : TLDrawShapeSegment[]
+>         : ^^^^^^^^^^^^^^^^^^^^
+
+  isComplete: boolean;
+>isComplete : boolean
+>           : ^^^^^^^
+
+  isClosed: boolean;
+>isClosed : boolean
+>         : ^^^^^^^
+
+  isPen: boolean;
+>isPen : boolean
+>      : ^^^^^^^
+
+  scale: number;
+>scale : number
+>      : ^^^^^^
+
+  scaleX: number;
+>scaleX : number
+>       : ^^^^^^
+
+  scaleY: number;
+>scaleY : number
+>       : ^^^^^^
+}
+
+type TLDrawShape = TLBaseShape<"draw", TLDrawShapeProps>;
+>TLDrawShape : TLDrawShape
+>            : ^^^^^^^^^^^
+
+interface TLEmbedShapeProps {
+  w: number;
+>w : number
+>  : ^^^^^^
+
+  h: number;
+>h : number
+>  : ^^^^^^
+
+  url: string;
+>url : string
+>    : ^^^^^^
+}
+
+type TLEmbedShape = TLBaseShape<"embed", TLEmbedShapeProps>;
+>TLEmbedShape : TLEmbedShape
+>             : ^^^^^^^^^^^^
+
+interface TLFrameShapeProps {
+  w: number;
+>w : number
+>  : ^^^^^^
+
+  h: number;
+>h : number
+>  : ^^^^^^
+
+  name: string;
+>name : string
+>     : ^^^^^^
+
+  color: TLDefaultColorStyle;
+>color : TLDefaultColorStyle
+>      : ^^^^^^^^^^^^^^^^^^^
+}
+
+type TLFrameShape = TLBaseShape<"frame", TLFrameShapeProps>;
+>TLFrameShape : TLFrameShape
+>             : ^^^^^^^^^^^^
+
+interface TLGeoShapeProps {
+  geo: TLGeoShapeGeoStyle;
+>geo : TLGeoShapeGeoStyle
+>    : ^^^^^^^^^^^^^^^^^^
+
+  dash: TLDefaultDashStyle;
+>dash : TLDefaultDashStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  url: string;
+>url : string
+>    : ^^^^^^
+
+  w: number;
+>w : number
+>  : ^^^^^^
+
+  h: number;
+>h : number
+>  : ^^^^^^
+
+  growY: number;
+>growY : number
+>      : ^^^^^^
+
+  scale: number;
+>scale : number
+>      : ^^^^^^
+
+  labelColor: TLDefaultColorStyle;
+>labelColor : TLDefaultColorStyle
+>           : ^^^^^^^^^^^^^^^^^^^
+
+  color: TLDefaultColorStyle;
+>color : TLDefaultColorStyle
+>      : ^^^^^^^^^^^^^^^^^^^
+
+  fill: TLDefaultFillStyle;
+>fill : TLDefaultFillStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  size: TLDefaultSizeStyle;
+>size : TLDefaultSizeStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  font: TLDefaultFontStyle;
+>font : TLDefaultFontStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  align: TLDefaultHorizontalAlignStyle;
+>align : TLDefaultHorizontalAlignStyle
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  verticalAlign: TLDefaultVerticalAlignStyle;
+>verticalAlign : TLDefaultVerticalAlignStyle
+>              : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  richText: TLRichText;
+>richText : TLRichText
+>         : ^^^^^^^^^^
+}
+
+type TLGeoShape = TLBaseShape<"geo", TLGeoShapeProps>;
+>TLGeoShape : TLGeoShape
+>           : ^^^^^^^^^^
+
+interface TLGroupShapeProps {}
+
+type TLGroupShape = TLBaseShape<"group", TLGroupShapeProps>;
+>TLGroupShape : TLGroupShape
+>             : ^^^^^^^^^^^^
+
+interface TLDrawShapeSegment {
+  type: "free" | "straight";
+>type : "free" | "straight"
+>     : ^^^^^^^^^^^^^^^^^^^
+
+  path: string;
+>path : string
+>     : ^^^^^^
+}
+
+interface TLHighlightShapeProps {
+  color: TLDefaultColorStyle;
+>color : TLDefaultColorStyle
+>      : ^^^^^^^^^^^^^^^^^^^
+
+  size: TLDefaultSizeStyle;
+>size : TLDefaultSizeStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  segments: TLDrawShapeSegment[];
+>segments : TLDrawShapeSegment[]
+>         : ^^^^^^^^^^^^^^^^^^^^
+
+  isComplete: boolean;
+>isComplete : boolean
+>           : ^^^^^^^
+
+  isPen: boolean;
+>isPen : boolean
+>      : ^^^^^^^
+
+  scale: number;
+>scale : number
+>      : ^^^^^^
+
+  scaleX: number;
+>scaleX : number
+>       : ^^^^^^
+
+  scaleY: number;
+>scaleY : number
+>       : ^^^^^^
+}
+
+type TLHighlightShape = TLBaseShape<"highlight", TLHighlightShapeProps>;
+>TLHighlightShape : TLHighlightShape
+>                 : ^^^^^^^^^^^^^^^^
+
+interface TLImageShapeProps {
+  w: number;
+>w : number
+>  : ^^^^^^
+
+  h: number;
+>h : number
+>  : ^^^^^^
+
+  playing: boolean;
+>playing : boolean
+>        : ^^^^^^^
+
+  url: string;
+>url : string
+>    : ^^^^^^
+
+  assetId: null | TLAssetId;
+>assetId : TLAssetId | null
+>        : ^^^^^^^^^^^^^^^^
+
+  crop: null | TLShapeCrop;
+>crop : TLShapeCrop | null
+>     : ^^^^^^^^^^^^^^^^^^
+
+  flipX: boolean;
+>flipX : boolean
+>      : ^^^^^^^
+
+  flipY: boolean;
+>flipY : boolean
+>      : ^^^^^^^
+
+  altText: string;
+>altText : string
+>        : ^^^^^^
+}
+
+type TLImageShape = TLBaseShape<"image", TLImageShapeProps>;
+>TLImageShape : TLImageShape
+>             : ^^^^^^^^^^^^
+
+interface TLLineShapeProps {
+  color: TLDefaultColorStyle;
+>color : TLDefaultColorStyle
+>      : ^^^^^^^^^^^^^^^^^^^
+
+  dash: TLDefaultDashStyle;
+>dash : TLDefaultDashStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  size: TLDefaultSizeStyle;
+>size : TLDefaultSizeStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  spline: TLLineShapeSplineStyle;
+>spline : TLLineShapeSplineStyle
+>       : ^^^^^^^^^^^^^^^^^^^^^^
+
+  points: Record<string, TLLineShapePoint>;
+>points : Record<string, TLLineShapePoint>
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  scale: number;
+>scale : number
+>      : ^^^^^^
+}
+
+type TLLineShape = TLBaseShape<"line", TLLineShapeProps>;
+>TLLineShape : TLLineShape
+>            : ^^^^^^^^^^^
+
+interface TLNoteShapeProps {
+  color: TLDefaultColorStyle;
+>color : TLDefaultColorStyle
+>      : ^^^^^^^^^^^^^^^^^^^
+
+  labelColor: TLDefaultColorStyle;
+>labelColor : TLDefaultColorStyle
+>           : ^^^^^^^^^^^^^^^^^^^
+
+  size: TLDefaultSizeStyle;
+>size : TLDefaultSizeStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  font: TLDefaultFontStyle;
+>font : TLDefaultFontStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  fontSizeAdjustment: number;
+>fontSizeAdjustment : number
+>                   : ^^^^^^
+
+  align: TLDefaultHorizontalAlignStyle;
+>align : TLDefaultHorizontalAlignStyle
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  verticalAlign: TLDefaultVerticalAlignStyle;
+>verticalAlign : TLDefaultVerticalAlignStyle
+>              : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  growY: number;
+>growY : number
+>      : ^^^^^^
+
+  url: string;
+>url : string
+>    : ^^^^^^
+
+  richText: TLRichText;
+>richText : TLRichText
+>         : ^^^^^^^^^^
+
+  scale: number;
+>scale : number
+>      : ^^^^^^
+}
+
+type TLNoteShape = TLBaseShape<"note", TLNoteShapeProps>;
+>TLNoteShape : TLNoteShape
+>            : ^^^^^^^^^^^
+
+interface TLTextShapeProps {
+  color: TLDefaultColorStyle;
+>color : TLDefaultColorStyle
+>      : ^^^^^^^^^^^^^^^^^^^
+
+  size: TLDefaultSizeStyle;
+>size : TLDefaultSizeStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  font: TLDefaultFontStyle;
+>font : TLDefaultFontStyle
+>     : ^^^^^^^^^^^^^^^^^^
+
+  textAlign: TLDefaultTextAlignStyle;
+>textAlign : TLDefaultTextAlignStyle
+>          : ^^^^^^^^^^^^^^^^^^^^^^^
+
+  w: number;
+>w : number
+>  : ^^^^^^
+
+  richText: TLRichText;
+>richText : TLRichText
+>         : ^^^^^^^^^^
+
+  scale: number;
+>scale : number
+>      : ^^^^^^
+
+  autoSize: boolean;
+>autoSize : boolean
+>         : ^^^^^^^
+}
+
+type TLTextShape = TLBaseShape<"text", TLTextShapeProps>;
+>TLTextShape : TLTextShape
+>            : ^^^^^^^^^^^
+
+interface TLVideoShapeProps {
+  w: number;
+>w : number
+>  : ^^^^^^
+
+  h: number;
+>h : number
+>  : ^^^^^^
+
+  time: number;
+>time : number
+>     : ^^^^^^
+
+  playing: boolean;
+>playing : boolean
+>        : ^^^^^^^
+
+  autoplay: boolean;
+>autoplay : boolean
+>         : ^^^^^^^
+
+  url: string;
+>url : string
+>    : ^^^^^^
+
+  assetId: null | TLAssetId;
+>assetId : TLAssetId | null
+>        : ^^^^^^^^^^^^^^^^
+
+  altText: string;
+>altText : string
+>        : ^^^^^^
+}
+
+type TLVideoShape = TLBaseShape<"video", TLVideoShapeProps>;
+>TLVideoShape : TLVideoShape
+>             : ^^^^^^^^^^^^
+
+type TLDefaultShape =
+>TLDefaultShape : TLDefaultShape
+>               : ^^^^^^^^^^^^^^
+
+  | TLArrowShape
+  | TLBookmarkShape
+  | TLDrawShape
+  | TLEmbedShape
+  | TLFrameShape
+  | TLGeoShape
+  | TLGroupShape
+  | TLHighlightShape
+  | TLImageShape
+  | TLLineShape
+  | TLNoteShape
+  | TLTextShape
+  | TLVideoShape;
+
+type TLIndexedShapes = {
+>TLIndexedShapes : TLIndexedShapes
+>                : ^^^^^^^^^^^^^^^
+
+  [K in
+    | keyof TLGlobalShapePropsMap
+    | TLDefaultShape["type"] as K extends TLDefaultShape["type"]
+    ? K extends "group"
+      ? K
+      : K extends keyof TLGlobalShapePropsMap
+        ? TLGlobalShapePropsMap[K] extends null | undefined
+          ? never
+          : K
+        : K
+    : K]: K extends "group"
+    ? Extract<
+        TLDefaultShape,
+        {
+          type: K;
+>type : K
+>     : ^
+        }
+      >
+    : K extends TLDefaultShape["type"]
+      ? K extends keyof TLGlobalShapePropsMap
+        ? TLBaseShape<K, TLGlobalShapePropsMap[K]>
+        : Extract<
+            TLDefaultShape,
+            {
+              type: K;
+>type : K
+>     : ^
+            }
+          >
+      : TLBaseShape<K, TLGlobalShapePropsMap[K & keyof TLGlobalShapePropsMap]>;
+};
+
+type TLShape<K extends keyof TLIndexedShapes = keyof TLIndexedShapes> =
+>TLShape : TLShape<K>
+>        : ^^^^^^^^^^
+
+  TLIndexedShapes[K];
+
+interface BaseRecord<
+  TypeName extends string,
+  Id extends RecordId<UnknownRecord>,
+> {
+  readonly id: Id;
+>id : Id
+>   : ^^
+
+  readonly typeName: TypeName;
+>typeName : TypeName
+>         : ^^^^^^^^
+}
+
+type UnknownRecord = BaseRecord<string, RecordId<UnknownRecord>>;
+>UnknownRecord : UnknownRecord
+>              : ^^^^^^^^^^^^^
+
+type RecordId<R extends UnknownRecord> = string & {
+>RecordId : RecordId<R>
+>         : ^^^^^^^^^^^
+
+  __type__: R;
+>__type__ : R
+>         : ^
+
+};
+
+type TLShapeId = RecordId<TLShape>;
+>TLShapeId : TLShapeId
+>          : ^^^^^^^^^
+
+type TLShapePartial<T extends TLShape = TLShape> = T extends T
+>TLShapePartial : TLShapePartial<T>
+>               : ^^^^^^^^^^^^^^^^^
+
+  ? {
+      id: TLShapeId;
+>id : TLShapeId
+>   : ^^^^^^^^^
+
+      meta?: Partial<T["meta"]>;
+>meta : Partial<T["meta"]> | undefined
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+      props?: Partial<T["props"]>;
+>props : Partial<T["props"]> | undefined
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+      type: T["type"];
+>type : T["type"]
+>     : ^^^^^^^^^
+
+    } & Partial<Omit<T, "id" | "meta" | "props" | "type">>
+  : never;
+
+type TLCreateShapePartial<T extends TLShape = TLShape> = T extends T
+>TLCreateShapePartial : TLCreateShapePartial<T>
+>                     : ^^^^^^^^^^^^^^^^^^^^^^^
+
+  ? {
+      meta?: Partial<T["meta"]>;
+>meta : Partial<T["meta"]> | undefined
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+      props?: Partial<T["props"]>;
+>props : Partial<T["props"]> | undefined
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+      type: T["type"];
+>type : T["type"]
+>     : ^^^^^^^^^
+
+    } & Partial<Omit<T, "meta" | "props" | "type">>
+  : never;
+
+interface Editor {
+  createShape<TShape extends TLShape>(
+>createShape : <TShape extends TLShape>(shape: TLCreateShapePartial<TShape>) => this
+>            : ^      ^^^^^^^^^       ^^     ^^                            ^^^^^    
+
+    shape: TLCreateShapePartial<TShape>,
+>shape : TLCreateShapePartial<TShape>
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  ): this;
+}
+
+interface TLGlobalShapePropsMap {
+  note: {
+>note : { h: number; }
+>     : ^^^^^      ^^^
+
+    h: number;
+>h : number
+>  : ^^^^^^
+
+  };
+  container: {
+>container : { w: number; h: number; bg: string; }
+>          : ^^^^^      ^^^^^      ^^^^^^      ^^^
+
+    w: number;
+>w : number
+>  : ^^^^^^
+
+    h: number;
+>h : number
+>  : ^^^^^^
+
+    bg: string;
+>bg : string
+>   : ^^^^^^
+
+  };
+}
+
+type Dimensions = {
+>Dimensions : Dimensions
+>           : ^^^^^^^^^^
+
+  w: number;
+>w : number
+>  : ^^^^^^
+
+  h: number;
+>h : number
+>  : ^^^^^^
+
+  scale?: number;
+>scale : number | undefined
+>      : ^^^^^^^^^^^^^^^^^^
+
+};
+
+type ShapeWithDimensions<T extends TLShape> = T & {
+>ShapeWithDimensions : ShapeWithDimensions<T>
+>                    : ^^^^^^^^^^^^^^^^^^^^^^
+
+  props: T["props"] & Dimensions;
+>props : T["props"] & Dimensions
+>      : ^^^^^^^^^^^^^^^^^^^^^^^
+
+};
+
+type ShapePartialWithDimensions<T extends TLShape> = TLShapePartial<
+>ShapePartialWithDimensions : ShapePartialWithDimensions<T>
+>                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  ShapeWithDimensions<T>
+> & {
+  props: TLShapePartial<ShapeWithDimensions<T>>["props"];
+>props : TLShapePartial<ShapeWithDimensions<T>>["props"]
+>      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+};
+
+export function createShapeAtCenterPosition<
+>createShapeAtCenterPosition : <T extends ShapeWithDimensions<TLShape>>(editor: Editor, shapePartial: ShapePartialWithDimensions<T>, pageRotation: number) => T | undefined
+>                            : ^ ^^^^^^^^^                            ^^      ^^      ^^            ^^                             ^^            ^^      ^^^^^             
+
+  T extends ShapeWithDimensions<TLShape>,
+>(
+  editor: Editor,
+>editor : Editor
+>       : ^^^^^^
+
+  shapePartial: ShapePartialWithDimensions<T>,
+>shapePartial : ShapePartialWithDimensions<T>
+>             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  pageRotation: number,
+>pageRotation : number
+>             : ^^^^^^
+
+): T | undefined {
+  editor.createShape({
+>editor.createShape({    ...shapePartial,    rotation: pageRotation,  }) : Editor
+>                                                                        : ^^^^^^
+>editor.createShape : <TShape extends TLShape>(shape: TLCreateShapePartial<TShape>) => Editor
+>                   : ^      ^^^^^^^^^       ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>editor : Editor
+>       : ^^^^^^
+>createShape : <TShape extends TLShape>(shape: TLCreateShapePartial<TShape>) => Editor
+>            : ^      ^^^^^^^^^       ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>{    ...shapePartial,    rotation: pageRotation,  } : { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLArrowShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "arrow"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLBookmarkShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "bookmark"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLDrawShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "draw"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLEmbedShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "embed"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLFrameShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "frame"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLGeoShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "geo"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLGroupShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "group"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLHighlightShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "highlight"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLImageShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "image"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLLineShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "line"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLTextShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "text"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<(TLVideoShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "video"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<({ h: number; } & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "note"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; } | { rotation: number; id: TLShapeId; meta?: Partial<JsonObject> | undefined; props: (Partial<({ w: number; h: number; bg: string; } & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined) & TLShapePartial<ShapeWithDimensions<T>>["props"]; type: "container"; typeName?: "shape" | undefined; x?: number | undefined; y?: number | undefined; index?: IndexKey | undefined; parentId?: TLParentId | undefined; isLocked?: boolean | undefined; opacity?: number | undefined; }
+>                                                    : ^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    ...shapePartial,
+>shapePartial : (({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLArrowShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "arrow"; } & Partial<Omit<TLArrowShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLBookmarkShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "bookmark"; } & Partial<Omit<TLBookmarkShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLDrawShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "draw"; } & Partial<Omit<TLDrawShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLEmbedShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "embed"; } & Partial<Omit<TLEmbedShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLFrameShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "frame"; } & Partial<Omit<TLFrameShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLGeoShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "geo"; } & Partial<Omit<TLGeoShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLGroupShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "group"; } & Partial<Omit<TLGroupShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLHighlightShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "highlight"; } & Partial<Omit<TLHighlightShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLImageShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "image"; } & Partial<Omit<TLImageShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLLineShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "line"; } & Partial<Omit<TLLineShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLTextShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "text"; } & Partial<Omit<TLTextShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<(TLVideoShapeProps & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "video"; } & Partial<Omit<TLVideoShape & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<({ h: number; } & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "note"; } & Partial<Omit<TLBaseShape<"note", { h: number; }> & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>) | ({ id: TLShapeId; meta?: Partial<JsonObject> | undefined; props?: Partial<({ w: number; h: number; bg: string; } & ((TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions)) & T["props"] & Dimensions> | undefined; type: "container"; } & Partial<Omit<TLBaseShape<"container", { w: number; h: number; bg: string; }> & { props: (TLArrowShapeProps | TLBookmarkShapeProps | TLDrawShapeProps | TLEmbedShapeProps | TLFrameShapeProps | TLGeoShapeProps | TLGroupShapeProps | TLHighlightShapeProps | TLImageShapeProps | TLLineShapeProps | TLTextShapeProps | TLVideoShapeProps | { h: number; } | { w: number; h: number; bg: string; }) & Dimensions; } & { props: T["props"] & Dimensions; }, "type" | "meta" | "id" | "props">>)) & { props: TLShapePartial<ShapeWithDimensions<T>>["props"]; }
+>             : ^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^      ^^^^^      ^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    rotation: pageRotation,
+>rotation : number
+>         : ^^^^^^
+>pageRotation : number
+>             : ^^^^^^
+
+  });
+}
+
