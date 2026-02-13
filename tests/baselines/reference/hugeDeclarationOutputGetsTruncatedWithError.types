@@ -2,7 +2,7 @@
 
 === Performance Stats ===
 Type Count: 100,000
-Instantiation count: 500,000
+Instantiation count: 250,000
 Symbol count: 100,000
 
 === hugeDeclarationOutputGetsTruncatedWithError.ts ===

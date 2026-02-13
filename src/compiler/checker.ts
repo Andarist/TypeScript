@@ -2127,12 +2127,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     var outofbandVarianceMarkerHandler: ((onlyUnreliable: boolean) => void) | undefined;
     var reportUnreliableMapper = makeFunctionTypeMapper(t => {
         if (outofbandVarianceMarkerHandler && (t === markerSuperType || t === markerSubType || t === markerOtherType)) {
+            clearActiveMapperCaches();
             outofbandVarianceMarkerHandler(/*onlyUnreliable*/ true);
         }
         return t;
     }, () => "(unmeasurable reporter)");
     var reportUnmeasurableMapper = makeFunctionTypeMapper(t => {
         if (outofbandVarianceMarkerHandler && (t === markerSuperType || t === markerSubType || t === markerOtherType)) {
+            clearActiveMapperCaches();
             outofbandVarianceMarkerHandler(/*onlyUnreliable*/ false);
         }
         return t;
@@ -21043,12 +21045,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         instantiationCount++;
         instantiationDepth++;
         const result = instantiateTypeWorker(type, mapper, aliasSymbol, aliasTypeArguments);
-        if (index === -1) {
-            popActiveMapper();
-        }
-        else {
-            mapperCache.set(key, result);
-        }
+        mapperCache.set(key, result);
         instantiationDepth--;
         return result;
     }
@@ -32914,11 +32911,11 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         activeTypeMappersCount++;
     }
 
-    function popActiveMapper() {
-        activeTypeMappersCount--;
+    function resetActiveMappers() {
+        activeTypeMappersCount = 0;
         // Clear out the popped element's referenced objects.
-        activeTypeMappers[activeTypeMappersCount] = undefined!;
-        activeTypeMappersCaches[activeTypeMappersCount].clear();
+        activeTypeMappers = [];
+        activeTypeMappersCaches = [];
     }
 
     function findActiveMapper(mapper: TypeMapper) {
@@ -41743,6 +41740,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         const saveCurrentNode = currentNode;
         currentNode = node;
         instantiationCount = 0;
+        resetActiveMappers();
         const uninstantiatedType = checkExpressionWorker(node, checkMode, forceTuple);
         const type = instantiateTypeWithSingleGenericCallSignature(node, uninstantiatedType, checkMode);
         if (isConstEnumObjectType(type)) {
@@ -49040,6 +49038,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             const saveWithinUnreachableCode = withinUnreachableCode;
             currentNode = node;
             instantiationCount = 0;
+            resetActiveMappers();
             checkSourceElementWorker(node);
             currentNode = saveCurrentNode;
             withinUnreachableCode = saveWithinUnreachableCode;
@@ -49478,6 +49477,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         const saveCurrentNode = currentNode;
         currentNode = node;
         instantiationCount = 0;
+        resetActiveMappers();
         switch (node.kind) {
             case SyntaxKind.CallExpression:
             case SyntaxKind.NewExpression:

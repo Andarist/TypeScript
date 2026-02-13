@@ -1,8 +1,5 @@
 //// [tests/cases/compiler/reverseMappedIntersectionInference2.ts] ////
 
-=== Performance Stats ===
-Instantiation count: 1,000
-
 === reverseMappedIntersectionInference2.ts ===
 type Results<T> = {
 >Results : Results<T>
