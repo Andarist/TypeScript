@@ -16,8 +16,6 @@ test1([10, , "foo"]); // ok
 >              : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >10 : 10
 >   : ^^
-> : undefined
-> : ^^^^^^^^^
 >"foo" : "foo"
 >      : ^^^^^
 
@@ -30,8 +28,6 @@ const test2 = ["foo", ,] as const;
 >           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >"foo" : "foo"
 >      : ^^^^^
-> : undefined
-> : ^^^^^^^^^
 
 const length2 = test2.length; // 2
 >length2 : 2
