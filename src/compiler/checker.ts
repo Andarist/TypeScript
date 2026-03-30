@@ -20958,7 +20958,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         const propType = instantiateType(getTemplateTypeFromMappedType(type.target as MappedType || type), templateMapper);
         const modifiers = getMappedTypeModifiers(type);
         return strictNullChecks && modifiers & MappedTypeModifiers.IncludeOptional && !maybeTypeOfKind(propType, TypeFlags.Undefined | TypeFlags.Void) ? getOptionalType(propType, /*isProperty*/ true) :
-            strictNullChecks && modifiers & MappedTypeModifiers.ExcludeOptional && isOptional ? getTypeWithFacts(propType, TypeFacts.NEUndefined) :
+            strictNullChecks && modifiers & MappedTypeModifiers.ExcludeOptional && isOptional ? removeMissingOrUndefinedType(propType) :
             propType;
     }
 
