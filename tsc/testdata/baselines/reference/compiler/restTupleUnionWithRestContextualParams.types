@@ -218,3 +218,57 @@ const ie3 = iterateEntries2({ a: true, b: false }, (k, v) => [k, v]);
 >k : "a" | "b"
 >v : boolean
 
+// #49218#discussion_r1446887889
+class CompatibleBase {
+>CompatibleBase : CompatibleBase
+
+  method(...args: [number, string] | [string, number]): void {}
+>method : (...args: [number, string] | [string, number]) => void
+>args : [string, number] | [number, string]
+}
+
+class CompatibleDerived extends CompatibleBase {
+>CompatibleDerived : CompatibleDerived
+>CompatibleBase : CompatibleBase
+
+  method(item: string | number): void {}
+>method : (item: string | number) => void
+>item : string | number
+}
+
+type NowSource<T extends boolean[]> = [...rest: [boolean, ...T, n?: number]];
+>NowSource : [boolean, ...T, n?: number | undefined]
+
+type NowTarget<T extends boolean[]> = [...rest: [boolean, ...T, number | string]];
+>NowTarget : [boolean, ...T, string | number]
+
+class A {
+>A : A
+
+  method<T extends boolean[]>(...args: NowTarget<T>): void {}
+>method : <T extends boolean[]>(...args: NowTarget<T>) => void
+>args : [boolean, ...T, string | number]
+}
+
+class B extends A {
+>B : B
+>A : A
+
+  method<T extends boolean[]>(...args: NowSource<T>): void {}
+>method : <T extends boolean[]>(...args: NowSource<T>) => void
+>args : [boolean, ...T, n?: number | undefined]
+}
+
+declare let func: <T extends boolean[]>(...args: NowTarget<T>) => void;
+>func : <T extends boolean[]>(...args: NowTarget<T>) => void
+>args : [boolean, ...T, string | number]
+
+declare let gunc: <T extends boolean[]>(...args: NowSource<T>) => void;
+>gunc : <T extends boolean[]>(...args: NowSource<T>) => void
+>args : [boolean, ...T, n?: number | undefined]
+
+func = gunc;
+>func = gunc : <T extends boolean[]>(...args: NowSource<T>) => void
+>func : <T extends boolean[]>(...args: NowTarget<T>) => void
+>gunc : <T extends boolean[]>(...args: NowSource<T>) => void
+

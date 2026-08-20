@@ -210,3 +210,72 @@ const ie3 = iterateEntries2({ a: true, b: false }, (k, v) => [k, v]);
 >k : Symbol(k, Decl(restTupleUnionWithRestContextualParams.ts, 54, 52))
 >v : Symbol(v, Decl(restTupleUnionWithRestContextualParams.ts, 54, 54))
 
+// #49218#discussion_r1446887889
+class CompatibleBase {
+>CompatibleBase : Symbol(CompatibleBase, Decl(restTupleUnionWithRestContextualParams.ts, 54, 69))
+
+  method(...args: [number, string] | [string, number]): void {}
+>method : Symbol(CompatibleBase.method, Decl(restTupleUnionWithRestContextualParams.ts, 57, 22))
+>args : Symbol(args, Decl(restTupleUnionWithRestContextualParams.ts, 58, 9))
+}
+
+class CompatibleDerived extends CompatibleBase {
+>CompatibleDerived : Symbol(CompatibleDerived, Decl(restTupleUnionWithRestContextualParams.ts, 59, 1))
+>CompatibleBase : Symbol(CompatibleBase, Decl(restTupleUnionWithRestContextualParams.ts, 54, 69))
+
+  method(item: string | number): void {}
+>method : Symbol(CompatibleDerived.method, Decl(restTupleUnionWithRestContextualParams.ts, 61, 48))
+>item : Symbol(item, Decl(restTupleUnionWithRestContextualParams.ts, 62, 9))
+}
+
+type NowSource<T extends boolean[]> = [...rest: [boolean, ...T, n?: number]];
+>NowSource : Symbol(NowSource, Decl(restTupleUnionWithRestContextualParams.ts, 63, 1))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 65, 15))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 65, 15))
+
+type NowTarget<T extends boolean[]> = [...rest: [boolean, ...T, number | string]];
+>NowTarget : Symbol(NowTarget, Decl(restTupleUnionWithRestContextualParams.ts, 65, 77))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 66, 15))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 66, 15))
+
+class A {
+>A : Symbol(A, Decl(restTupleUnionWithRestContextualParams.ts, 66, 82))
+
+  method<T extends boolean[]>(...args: NowTarget<T>): void {}
+>method : Symbol(A.method, Decl(restTupleUnionWithRestContextualParams.ts, 68, 9))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 69, 9))
+>args : Symbol(args, Decl(restTupleUnionWithRestContextualParams.ts, 69, 30))
+>NowTarget : Symbol(NowTarget, Decl(restTupleUnionWithRestContextualParams.ts, 65, 77))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 69, 9))
+}
+
+class B extends A {
+>B : Symbol(B, Decl(restTupleUnionWithRestContextualParams.ts, 70, 1))
+>A : Symbol(A, Decl(restTupleUnionWithRestContextualParams.ts, 66, 82))
+
+  method<T extends boolean[]>(...args: NowSource<T>): void {}
+>method : Symbol(B.method, Decl(restTupleUnionWithRestContextualParams.ts, 72, 19))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 73, 9))
+>args : Symbol(args, Decl(restTupleUnionWithRestContextualParams.ts, 73, 30))
+>NowSource : Symbol(NowSource, Decl(restTupleUnionWithRestContextualParams.ts, 63, 1))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 73, 9))
+}
+
+declare let func: <T extends boolean[]>(...args: NowTarget<T>) => void;
+>func : Symbol(func, Decl(restTupleUnionWithRestContextualParams.ts, 76, 11))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 76, 19))
+>args : Symbol(args, Decl(restTupleUnionWithRestContextualParams.ts, 76, 40))
+>NowTarget : Symbol(NowTarget, Decl(restTupleUnionWithRestContextualParams.ts, 65, 77))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 76, 19))
+
+declare let gunc: <T extends boolean[]>(...args: NowSource<T>) => void;
+>gunc : Symbol(gunc, Decl(restTupleUnionWithRestContextualParams.ts, 77, 11))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 77, 19))
+>args : Symbol(args, Decl(restTupleUnionWithRestContextualParams.ts, 77, 40))
+>NowSource : Symbol(NowSource, Decl(restTupleUnionWithRestContextualParams.ts, 63, 1))
+>T : Symbol(T, Decl(restTupleUnionWithRestContextualParams.ts, 77, 19))
+
+func = gunc;
+>func : Symbol(func, Decl(restTupleUnionWithRestContextualParams.ts, 76, 11))
+>gunc : Symbol(gunc, Decl(restTupleUnionWithRestContextualParams.ts, 77, 11))
+

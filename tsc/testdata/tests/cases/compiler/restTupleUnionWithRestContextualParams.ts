@@ -56,3 +56,28 @@ declare const iterateEntries2: <const o extends object>(
 ) => void;
 
 const ie3 = iterateEntries2({ a: true, b: false }, (k, v) => [k, v]);
+
+// #49218#discussion_r1446887889
+class CompatibleBase {
+  method(...args: [number, string] | [string, number]): void {}
+}
+
+class CompatibleDerived extends CompatibleBase {
+  method(item: string | number): void {}
+}
+
+type NowSource<T extends boolean[]> = [...rest: [boolean, ...T, n?: number]];
+type NowTarget<T extends boolean[]> = [...rest: [boolean, ...T, number | string]];
+
+class A {
+  method<T extends boolean[]>(...args: NowTarget<T>): void {}
+}
+
+class B extends A {
+  method<T extends boolean[]>(...args: NowSource<T>): void {}
+}
+
+declare let func: <T extends boolean[]>(...args: NowTarget<T>) => void;
+declare let gunc: <T extends boolean[]>(...args: NowSource<T>) => void;
+
+func = gunc;

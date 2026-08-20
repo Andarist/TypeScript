@@ -1585,6 +1585,7 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 		} else {
 			targetType = c.tryGetTypeAtPosition(target, i)
 		}
+		originalTargetType := targetType
 		if i == restIndex && targetType != nil && sourceType != nil && isTupleType(sourceType) {
 			targetType = c.mapType(targetType, func(t *Type) *Type {
 				if !isTupleType(t) ||
@@ -1660,7 +1661,10 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 				related = c.compareSignaturesRelated(targetSig, sourceSig, checkMode&SignatureCheckModeStrictArity|core.IfElse(strictVariance, SignatureCheckModeStrictCallback, SignatureCheckModeBivariantCallback), reportErrors, errorReporter, compareTypes, reportUnreliableMarkers)
 			} else {
 				if checkMode&SignatureCheckModeCallback == 0 && !strictVariance {
-					related = compareTypes(sourceType, targetType, false /*reportErrors*/)
+					// The reshaped target tuple is only valid for the contravariant comparison below. In the
+					// covariant half of a bivariant parameter comparison, use the original target type so
+					// source optionality copied during reshaping doesn't make incompatible methods related.
+					related = compareTypes(sourceType, originalTargetType, false /*reportErrors*/)
 				}
 				if related == TernaryFalse {
 					related = compareTypes(targetType, sourceType, reportErrors)
