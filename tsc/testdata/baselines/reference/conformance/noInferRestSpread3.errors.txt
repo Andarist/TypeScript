@@ -1,0 +1,207 @@
+noInferRestSpread3.ts(18,1): error TS2345: Argument of type '[]' is not assignable to parameter of type 'Mixed'.
+  Type '[]' is not assignable to type '[string]'.
+    Source has 0 element(s) but target requires 1.
+noInferRestSpread3.ts(19,8): error TS2345: Argument of type '[true]' is not assignable to parameter of type 'Mixed'.
+  Type '[true]' is not assignable to type '[number]'.
+    Type 'boolean' is not assignable to type 'number'.
+noInferRestSpread3.ts(20,8): error TS2345: Argument of type '[1, 2]' is not assignable to parameter of type 'Mixed'.
+  Type '[1, 2]' is not assignable to type '[string]'.
+    Source has 2 element(s) but target allows only 1.
+noInferRestSpread3.ts(31,15): error TS2345: Argument of type '(value: number) => void' is not assignable to parameter of type '(...args: Mixed) => void'.
+  Types of parameters 'value' and 'args' are incompatible.
+    Type 'Mixed' is not assignable to type '[value: number]'.
+      Type '[string]' is not assignable to type '[value: number]'.
+        Type 'string' is not assignable to type 'number'.
+noInferRestSpread3.ts(47,7): error TS2345: Argument of type '[""]' is not assignable to parameter of type 'ArityMixed'.
+  Type '[""]' is not assignable to type '[number]'.
+    Type 'string' is not assignable to type 'number'.
+noInferRestSpread3.ts(48,7): error TS2345: Argument of type '[1, true]' is not assignable to parameter of type 'ArityMixed'.
+  Type '[1, true]' is not assignable to type '[string, boolean]'.
+    Type at position 0 in source is not compatible with type at position 0 in target.
+      Type 'number' is not assignable to type 'string'.
+noInferRestSpread3.ts(49,7): error TS2345: Argument of type '["", false, 0]' is not assignable to parameter of type 'ArityMixed'.
+  Type '["", false, 0]' is not assignable to type '[string, boolean]'.
+    Source has 3 element(s) but target allows only 2.
+noInferRestSpread3.ts(56,20): error TS2345: Argument of type '(first: string | number, second: boolean | undefined) => void' is not assignable to parameter of type '(...args: ArityMixed) => void'.
+  Types of parameters 'first' and 'args' are incompatible.
+    Type 'ArityMixed' is not assignable to type '[first: string | number, second: boolean | undefined]'.
+      Type '[number]' is not assignable to type '[first: string | number, second: boolean | undefined]'.
+        Source has 1 element(s) but target requires 2.
+noInferRestSpread3.ts(61,20): error TS2345: Argument of type '(first: string | number, second: boolean) => void' is not assignable to parameter of type '(...args: ArityMixed) => void'.
+  Types of parameters 'first' and 'args' are incompatible.
+    Type 'ArityMixed' is not assignable to type '[first: string | number, second: boolean]'.
+      Type '[number]' is not assignable to type '[first: string | number, second: boolean]'.
+        Source has 1 element(s) but target requires 2.
+noInferRestSpread3.ts(66,25): error TS2345: Argument of type '(first: string | number, second: boolean | undefined) => void' is not assignable to parameter of type '(...args: PlainArityMixed) => void'.
+  Types of parameters 'first' and 'args' are incompatible.
+    Type 'PlainArityMixed' is not assignable to type '[first: string | number, second: boolean | undefined]'.
+      Type '[number]' is not assignable to type '[first: string | number, second: boolean | undefined]'.
+        Source has 1 element(s) but target requires 2.
+noInferRestSpread3.ts(75,25): error TS2345: Argument of type '["other"]' is not assignable to parameter of type '[number] | NoInfer<["source"]>'.
+  Type '["other"]' is not assignable to type '[number]'.
+    Type 'string' is not assignable to type 'number'.
+noInferRestSpread3.ts(84,27): error TS2345: Argument of type '["other"]' is not assignable to parameter of type '[number] | ["source"]'.
+  Type '["other"]' is not assignable to type '[number]'.
+    Type 'string' is not assignable to type 'number'.
+noInferRestSpread3.ts(94,16): error TS2345: Argument of type '[true]' is not assignable to parameter of type '[string] | [number]'.
+  Type '[true]' is not assignable to type '[string]'.
+    Type 'boolean' is not assignable to type 'string'.
+
+
+==== noInferRestSpread3.ts (13 errors) ====
+    type Mixed = [number] | NoInfer<[string]>;
+    type PlainMixed = [number] | [string];
+    
+    declare let mixedFunction: (...args: Mixed) => void;
+    declare let plainFunction: (...args: PlainMixed) => void;
+    declare let zeroFunction: () => void;
+    
+    mixedFunction = plainFunction;
+    plainFunction = mixedFunction;
+    mixedFunction = zeroFunction;
+    zeroFunction = mixedFunction; // currently accepted
+    zeroFunction = plainFunction; // currently accepted
+    
+    declare function direct(...args: Mixed): void;
+    
+    direct(1);
+    direct('');
+    direct(); // error
+    ~~~~~~~~
+!!! error TS2345: Argument of type '[]' is not assignable to parameter of type 'Mixed'.
+!!! error TS2345:   Type '[]' is not assignable to type '[string]'.
+!!! error TS2345:     Source has 0 element(s) but target requires 1.
+    direct(true); // error
+           ~~~~
+!!! error TS2345: Argument of type '[true]' is not assignable to parameter of type 'Mixed'.
+!!! error TS2345:   Type '[true]' is not assignable to type '[number]'.
+!!! error TS2345:     Type 'boolean' is not assignable to type 'number'.
+    direct(1, 2); // error
+           ~~~~
+!!! error TS2345: Argument of type '[1, 2]' is not assignable to parameter of type 'Mixed'.
+!!! error TS2345:   Type '[1, 2]' is not assignable to type '[string]'.
+!!! error TS2345:     Source has 2 element(s) but target allows only 1.
+    
+    declare const mixed: Mixed;
+    direct(...mixed);
+    
+    declare function takesCallback(callback: (...args: Mixed) => void): void;
+    
+    takesCallback(value => {
+      const result: string | number = value;
+    });
+    takesCallback((value: string | number) => {});
+    takesCallback((value: number) => {}); // error
+                  ~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2345: Argument of type '(value: number) => void' is not assignable to parameter of type '(...args: Mixed) => void'.
+!!! error TS2345:   Types of parameters 'value' and 'args' are incompatible.
+!!! error TS2345:     Type 'Mixed' is not assignable to type '[value: number]'.
+!!! error TS2345:       Type '[string]' is not assignable to type '[value: number]'.
+!!! error TS2345:         Type 'string' is not assignable to type 'number'.
+    takesCallback((...args) => {
+      const first: string | number = args[0];
+      args;
+    });
+    
+    function directIdentity(...args: Mixed) {
+      return args;
+    }
+    
+    type ArityMixed = [number] | NoInfer<[string, boolean]>;
+    
+    declare function arity(...args: ArityMixed): void;
+    
+    arity(1);
+    arity('', true);
+    arity(''); // error
+          ~~
+!!! error TS2345: Argument of type '[""]' is not assignable to parameter of type 'ArityMixed'.
+!!! error TS2345:   Type '[""]' is not assignable to type '[number]'.
+!!! error TS2345:     Type 'string' is not assignable to type 'number'.
+    arity(1, true); // error
+          ~~~~~~~
+!!! error TS2345: Argument of type '[1, true]' is not assignable to parameter of type 'ArityMixed'.
+!!! error TS2345:   Type '[1, true]' is not assignable to type '[string, boolean]'.
+!!! error TS2345:     Type at position 0 in source is not compatible with type at position 0 in target.
+!!! error TS2345:       Type 'number' is not assignable to type 'string'.
+    arity('', false, 0); // error
+          ~~~~~~~~~~~~
+!!! error TS2345: Argument of type '["", false, 0]' is not assignable to parameter of type 'ArityMixed'.
+!!! error TS2345:   Type '["", false, 0]' is not assignable to type '[string, boolean]'.
+!!! error TS2345:     Source has 3 element(s) but target allows only 2.
+    
+    declare function takesArityCallback(callback: (...args: ArityMixed) => void): void;
+    
+    takesArityCallback((...args) => {
+      args;
+    });
+    takesArityCallback((first, second) => { // error
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2345: Argument of type '(first: string | number, second: boolean | undefined) => void' is not assignable to parameter of type '(...args: ArityMixed) => void'.
+!!! error TS2345:   Types of parameters 'first' and 'args' are incompatible.
+!!! error TS2345:     Type 'ArityMixed' is not assignable to type '[first: string | number, second: boolean | undefined]'.
+!!! error TS2345:       Type '[number]' is not assignable to type '[first: string | number, second: boolean | undefined]'.
+!!! error TS2345:         Source has 1 element(s) but target requires 2.
+      const firstResult: string | number = first;
+      const secondResult: boolean | undefined = second;
+    });
+    takesArityCallback((first: string | number, second?: boolean) => {});
+    takesArityCallback((first: string | number, second: boolean) => {}); // error
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2345: Argument of type '(first: string | number, second: boolean) => void' is not assignable to parameter of type '(...args: ArityMixed) => void'.
+!!! error TS2345:   Types of parameters 'first' and 'args' are incompatible.
+!!! error TS2345:     Type 'ArityMixed' is not assignable to type '[first: string | number, second: boolean]'.
+!!! error TS2345:       Type '[number]' is not assignable to type '[first: string | number, second: boolean]'.
+!!! error TS2345:         Source has 1 element(s) but target requires 2.
+    
+    type PlainArityMixed = [number] | [string, boolean];
+    declare function takesPlainArityCallback(callback: (...args: PlainArityMixed) => void): void;
+    
+    takesPlainArityCallback((first, second) => {}); // error
+                            ~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2345: Argument of type '(first: string | number, second: boolean | undefined) => void' is not assignable to parameter of type '(...args: PlainArityMixed) => void'.
+!!! error TS2345:   Types of parameters 'first' and 'args' are incompatible.
+!!! error TS2345:     Type 'PlainArityMixed' is not assignable to type '[first: string | number, second: boolean | undefined]'.
+!!! error TS2345:       Type '[number]' is not assignable to type '[first: string | number, second: boolean | undefined]'.
+!!! error TS2345:         Source has 1 element(s) but target requires 2.
+    
+    declare function inferFromRest<C extends string>(
+      source: C,
+      ...args: [number] | NoInfer<[C]>
+    ): C;
+    
+    const inferredFromSource1 = inferFromRest('source', 1);
+    const inferredFromSource2 = inferFromRest('source', 'source');
+    inferFromRest('source', 'other'); // error
+                            ~~~~~~~
+!!! error TS2345: Argument of type '["other"]' is not assignable to parameter of type '[number] | NoInfer<["source"]>'.
+!!! error TS2345:   Type '["other"]' is not assignable to type '[number]'.
+!!! error TS2345:     Type 'string' is not assignable to type 'number'.
+    
+    declare function inferFromSpread<C extends string>(
+      source: C,
+      ...args: [...([number] | NoInfer<[C]>)]
+    ): C;
+    
+    const inferredFromSpreadSource1 = inferFromSpread('source', 1);
+    const inferredFromSpreadSource2 = inferFromSpread('source', 'source');
+    inferFromSpread('source', 'other'); // error
+                              ~~~~~~~
+!!! error TS2345: Argument of type '["other"]' is not assignable to parameter of type '[number] | ["source"]'.
+!!! error TS2345:   Type '["other"]' is not assignable to type '[number]'.
+!!! error TS2345:     Type 'string' is not assignable to type 'number'.
+    
+    type SpreadMixed = [...Mixed];
+    
+    function spreadIdentity(...args: SpreadMixed) {
+      return args;
+    }
+    
+    spreadIdentity(1);
+    spreadIdentity('');
+    spreadIdentity(true); // error
+                   ~~~~
+!!! error TS2345: Argument of type '[true]' is not assignable to parameter of type '[string] | [number]'.
+!!! error TS2345:   Type '[true]' is not assignable to type '[string]'.
+!!! error TS2345:     Type 'boolean' is not assignable to type 'string'.
+    

@@ -1,0 +1,320 @@
+//// [tests/cases/conformance/types/typeRelationships/typeInference/noInferRestSpread3.ts] ////
+
+=== noInferRestSpread3.ts ===
+type Mixed = [number] | NoInfer<[string]>;
+>Mixed : Mixed
+
+type PlainMixed = [number] | [string];
+>PlainMixed : PlainMixed
+
+declare let mixedFunction: (...args: Mixed) => void;
+>mixedFunction : (...args: Mixed) => void
+>args : Mixed
+
+declare let plainFunction: (...args: PlainMixed) => void;
+>plainFunction : (...args: PlainMixed) => void
+>args : PlainMixed
+
+declare let zeroFunction: () => void;
+>zeroFunction : () => void
+
+mixedFunction = plainFunction;
+>mixedFunction = plainFunction : (...args: PlainMixed) => void
+>mixedFunction : (...args: Mixed) => void
+>plainFunction : (...args: PlainMixed) => void
+
+plainFunction = mixedFunction;
+>plainFunction = mixedFunction : (...args: Mixed) => void
+>plainFunction : (...args: PlainMixed) => void
+>mixedFunction : (...args: Mixed) => void
+
+mixedFunction = zeroFunction;
+>mixedFunction = zeroFunction : () => void
+>mixedFunction : (...args: Mixed) => void
+>zeroFunction : () => void
+
+zeroFunction = mixedFunction; // currently accepted
+>zeroFunction = mixedFunction : (...args: Mixed) => void
+>zeroFunction : () => void
+>mixedFunction : (...args: Mixed) => void
+
+zeroFunction = plainFunction; // currently accepted
+>zeroFunction = plainFunction : (...args: PlainMixed) => void
+>zeroFunction : () => void
+>plainFunction : (...args: PlainMixed) => void
+
+declare function direct(...args: Mixed): void;
+>direct : (...args: Mixed) => void
+>args : Mixed
+
+direct(1);
+>direct(1) : void
+>direct : (...args: Mixed) => void
+>1 : 1
+
+direct('');
+>direct('') : void
+>direct : (...args: Mixed) => void
+>'' : ""
+
+direct(); // error
+>direct() : void
+>direct : (...args: Mixed) => void
+
+direct(true); // error
+>direct(true) : void
+>direct : (...args: Mixed) => void
+>true : true
+
+direct(1, 2); // error
+>direct(1, 2) : void
+>direct : (...args: Mixed) => void
+>1 : 1
+>2 : 2
+
+declare const mixed: Mixed;
+>mixed : Mixed
+
+direct(...mixed);
+>direct(...mixed) : void
+>direct : (...args: Mixed) => void
+>...mixed : string | number
+>mixed : Mixed
+
+declare function takesCallback(callback: (...args: Mixed) => void): void;
+>takesCallback : (callback: (...args: Mixed) => void) => void
+>callback : (...args: Mixed) => void
+>args : Mixed
+
+takesCallback(value => {
+>takesCallback(value => {  const result: string | number = value;}) : void
+>takesCallback : (callback: (...args: Mixed) => void) => void
+>value => {  const result: string | number = value;} : (value: string | number) => void
+>value : string | number
+
+  const result: string | number = value;
+>result : string | number
+>value : string | number
+
+});
+takesCallback((value: string | number) => {});
+>takesCallback((value: string | number) => {}) : void
+>takesCallback : (callback: (...args: Mixed) => void) => void
+>(value: string | number) => {} : (value: string | number) => void
+>value : string | number
+
+takesCallback((value: number) => {}); // error
+>takesCallback((value: number) => {}) : void
+>takesCallback : (callback: (...args: Mixed) => void) => void
+>(value: number) => {} : (value: number) => void
+>value : number
+
+takesCallback((...args) => {
+>takesCallback((...args) => {  const first: string | number = args[0];  args;}) : void
+>takesCallback : (callback: (...args: Mixed) => void) => void
+>(...args) => {  const first: string | number = args[0];  args;} : (...args: Mixed) => void
+>args : Mixed
+
+  const first: string | number = args[0];
+>first : string | number
+>args[0] : string | number
+>args : Mixed
+>0 : 0
+
+  args;
+>args : Mixed
+
+});
+
+function directIdentity(...args: Mixed) {
+>directIdentity : (...args: Mixed) => Mixed
+>args : Mixed
+
+  return args;
+>args : Mixed
+}
+
+type ArityMixed = [number] | NoInfer<[string, boolean]>;
+>ArityMixed : ArityMixed
+
+declare function arity(...args: ArityMixed): void;
+>arity : (...args: ArityMixed) => void
+>args : ArityMixed
+
+arity(1);
+>arity(1) : void
+>arity : (...args: ArityMixed) => void
+>1 : 1
+
+arity('', true);
+>arity('', true) : void
+>arity : (...args: ArityMixed) => void
+>'' : ""
+>true : true
+
+arity(''); // error
+>arity('') : void
+>arity : (...args: ArityMixed) => void
+>'' : ""
+
+arity(1, true); // error
+>arity(1, true) : void
+>arity : (...args: ArityMixed) => void
+>1 : 1
+>true : true
+
+arity('', false, 0); // error
+>arity('', false, 0) : void
+>arity : (...args: ArityMixed) => void
+>'' : ""
+>false : false
+>0 : 0
+
+declare function takesArityCallback(callback: (...args: ArityMixed) => void): void;
+>takesArityCallback : (callback: (...args: ArityMixed) => void) => void
+>callback : (...args: ArityMixed) => void
+>args : ArityMixed
+
+takesArityCallback((...args) => {
+>takesArityCallback((...args) => {  args;}) : void
+>takesArityCallback : (callback: (...args: ArityMixed) => void) => void
+>(...args) => {  args;} : (...args: ArityMixed) => void
+>args : ArityMixed
+
+  args;
+>args : ArityMixed
+
+});
+takesArityCallback((first, second) => { // error
+>takesArityCallback((first, second) => { // error  const firstResult: string | number = first;  const secondResult: boolean | undefined = second;}) : void
+>takesArityCallback : (callback: (...args: ArityMixed) => void) => void
+>(first, second) => { // error  const firstResult: string | number = first;  const secondResult: boolean | undefined = second;} : (first: string | number, second: boolean | undefined) => void
+>first : string | number
+>second : boolean | undefined
+
+  const firstResult: string | number = first;
+>firstResult : string | number
+>first : string | number
+
+  const secondResult: boolean | undefined = second;
+>secondResult : boolean | undefined
+>second : boolean | undefined
+
+});
+takesArityCallback((first: string | number, second?: boolean) => {});
+>takesArityCallback((first: string | number, second?: boolean) => {}) : void
+>takesArityCallback : (callback: (...args: ArityMixed) => void) => void
+>(first: string | number, second?: boolean) => {} : (first: string | number, second?: boolean) => void
+>first : string | number
+>second : boolean | undefined
+
+takesArityCallback((first: string | number, second: boolean) => {}); // error
+>takesArityCallback((first: string | number, second: boolean) => {}) : void
+>takesArityCallback : (callback: (...args: ArityMixed) => void) => void
+>(first: string | number, second: boolean) => {} : (first: string | number, second: boolean) => void
+>first : string | number
+>second : boolean
+
+type PlainArityMixed = [number] | [string, boolean];
+>PlainArityMixed : PlainArityMixed
+
+declare function takesPlainArityCallback(callback: (...args: PlainArityMixed) => void): void;
+>takesPlainArityCallback : (callback: (...args: PlainArityMixed) => void) => void
+>callback : (...args: PlainArityMixed) => void
+>args : PlainArityMixed
+
+takesPlainArityCallback((first, second) => {}); // error
+>takesPlainArityCallback((first, second) => {}) : void
+>takesPlainArityCallback : (callback: (...args: PlainArityMixed) => void) => void
+>(first, second) => {} : (first: string | number, second: boolean | undefined) => void
+>first : string | number
+>second : boolean | undefined
+
+declare function inferFromRest<C extends string>(
+>inferFromRest : <C extends string>(source: C, ...args: [number] | NoInfer<[C]>) => C
+
+  source: C,
+>source : C
+
+  ...args: [number] | NoInfer<[C]>
+>args : [number] | NoInfer<[C]>
+
+): C;
+
+const inferredFromSource1 = inferFromRest('source', 1);
+>inferredFromSource1 : "source"
+>inferFromRest('source', 1) : "source"
+>inferFromRest : <C extends string>(source: C, ...args: [number] | NoInfer<[C]>) => C
+>'source' : "source"
+>1 : 1
+
+const inferredFromSource2 = inferFromRest('source', 'source');
+>inferredFromSource2 : "source"
+>inferFromRest('source', 'source') : "source"
+>inferFromRest : <C extends string>(source: C, ...args: [number] | NoInfer<[C]>) => C
+>'source' : "source"
+>'source' : "source"
+
+inferFromRest('source', 'other'); // error
+>inferFromRest('source', 'other') : "source"
+>inferFromRest : <C extends string>(source: C, ...args: [number] | NoInfer<[C]>) => C
+>'source' : "source"
+>'other' : "other"
+
+declare function inferFromSpread<C extends string>(
+>inferFromSpread : <C extends string>(source: C, ...args: [...([number] | NoInfer<[C]>)]) => C
+
+  source: C,
+>source : C
+
+  ...args: [...([number] | NoInfer<[C]>)]
+>args : [number] | [NoInfer<C>]
+
+): C;
+
+const inferredFromSpreadSource1 = inferFromSpread('source', 1);
+>inferredFromSpreadSource1 : "source"
+>inferFromSpread('source', 1) : "source"
+>inferFromSpread : <C extends string>(source: C, ...args: [...([number] | NoInfer<[C]>)]) => C
+>'source' : "source"
+>1 : 1
+
+const inferredFromSpreadSource2 = inferFromSpread('source', 'source');
+>inferredFromSpreadSource2 : "source"
+>inferFromSpread('source', 'source') : "source"
+>inferFromSpread : <C extends string>(source: C, ...args: [...([number] | NoInfer<[C]>)]) => C
+>'source' : "source"
+>'source' : "source"
+
+inferFromSpread('source', 'other'); // error
+>inferFromSpread('source', 'other') : "source"
+>inferFromSpread : <C extends string>(source: C, ...args: [...([number] | NoInfer<[C]>)]) => C
+>'source' : "source"
+>'other' : "other"
+
+type SpreadMixed = [...Mixed];
+>SpreadMixed : [string] | [number]
+
+function spreadIdentity(...args: SpreadMixed) {
+>spreadIdentity : (...args: SpreadMixed) => [string] | [number]
+>args : [string] | [number]
+
+  return args;
+>args : [string] | [number]
+}
+
+spreadIdentity(1);
+>spreadIdentity(1) : [string] | [number]
+>spreadIdentity : (...args: SpreadMixed) => [string] | [number]
+>1 : 1
+
+spreadIdentity('');
+>spreadIdentity('') : [string] | [number]
+>spreadIdentity : (...args: SpreadMixed) => [string] | [number]
+>'' : ""
+
+spreadIdentity(true); // error
+>spreadIdentity(true) : [string] | [number]
+>spreadIdentity : (...args: SpreadMixed) => [string] | [number]
+>true : true
+

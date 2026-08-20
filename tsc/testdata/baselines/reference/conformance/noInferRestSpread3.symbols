@@ -1,0 +1,269 @@
+//// [tests/cases/conformance/types/typeRelationships/typeInference/noInferRestSpread3.ts] ////
+
+=== noInferRestSpread3.ts ===
+type Mixed = [number] | NoInfer<[string]>;
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread3.ts, 0, 0))
+>NoInfer : Symbol(NoInfer, Decl(lib.es5.d.ts, --, --))
+
+type PlainMixed = [number] | [string];
+>PlainMixed : Symbol(PlainMixed, Decl(noInferRestSpread3.ts, 0, 42))
+
+declare let mixedFunction: (...args: Mixed) => void;
+>mixedFunction : Symbol(mixedFunction, Decl(noInferRestSpread3.ts, 3, 11))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 3, 28))
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread3.ts, 0, 0))
+
+declare let plainFunction: (...args: PlainMixed) => void;
+>plainFunction : Symbol(plainFunction, Decl(noInferRestSpread3.ts, 4, 11))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 4, 28))
+>PlainMixed : Symbol(PlainMixed, Decl(noInferRestSpread3.ts, 0, 42))
+
+declare let zeroFunction: () => void;
+>zeroFunction : Symbol(zeroFunction, Decl(noInferRestSpread3.ts, 5, 11))
+
+mixedFunction = plainFunction;
+>mixedFunction : Symbol(mixedFunction, Decl(noInferRestSpread3.ts, 3, 11))
+>plainFunction : Symbol(plainFunction, Decl(noInferRestSpread3.ts, 4, 11))
+
+plainFunction = mixedFunction;
+>plainFunction : Symbol(plainFunction, Decl(noInferRestSpread3.ts, 4, 11))
+>mixedFunction : Symbol(mixedFunction, Decl(noInferRestSpread3.ts, 3, 11))
+
+mixedFunction = zeroFunction;
+>mixedFunction : Symbol(mixedFunction, Decl(noInferRestSpread3.ts, 3, 11))
+>zeroFunction : Symbol(zeroFunction, Decl(noInferRestSpread3.ts, 5, 11))
+
+zeroFunction = mixedFunction; // currently accepted
+>zeroFunction : Symbol(zeroFunction, Decl(noInferRestSpread3.ts, 5, 11))
+>mixedFunction : Symbol(mixedFunction, Decl(noInferRestSpread3.ts, 3, 11))
+
+zeroFunction = plainFunction; // currently accepted
+>zeroFunction : Symbol(zeroFunction, Decl(noInferRestSpread3.ts, 5, 11))
+>plainFunction : Symbol(plainFunction, Decl(noInferRestSpread3.ts, 4, 11))
+
+declare function direct(...args: Mixed): void;
+>direct : Symbol(direct, Decl(noInferRestSpread3.ts, 11, 29))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 13, 24))
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread3.ts, 0, 0))
+
+direct(1);
+>direct : Symbol(direct, Decl(noInferRestSpread3.ts, 11, 29))
+
+direct('');
+>direct : Symbol(direct, Decl(noInferRestSpread3.ts, 11, 29))
+
+direct(); // error
+>direct : Symbol(direct, Decl(noInferRestSpread3.ts, 11, 29))
+
+direct(true); // error
+>direct : Symbol(direct, Decl(noInferRestSpread3.ts, 11, 29))
+
+direct(1, 2); // error
+>direct : Symbol(direct, Decl(noInferRestSpread3.ts, 11, 29))
+
+declare const mixed: Mixed;
+>mixed : Symbol(mixed, Decl(noInferRestSpread3.ts, 21, 13))
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread3.ts, 0, 0))
+
+direct(...mixed);
+>direct : Symbol(direct, Decl(noInferRestSpread3.ts, 11, 29))
+>mixed : Symbol(mixed, Decl(noInferRestSpread3.ts, 21, 13))
+
+declare function takesCallback(callback: (...args: Mixed) => void): void;
+>takesCallback : Symbol(takesCallback, Decl(noInferRestSpread3.ts, 22, 17))
+>callback : Symbol(callback, Decl(noInferRestSpread3.ts, 24, 31))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 24, 42))
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread3.ts, 0, 0))
+
+takesCallback(value => {
+>takesCallback : Symbol(takesCallback, Decl(noInferRestSpread3.ts, 22, 17))
+>value : Symbol(value, Decl(noInferRestSpread3.ts, 26, 14))
+
+  const result: string | number = value;
+>result : Symbol(result, Decl(noInferRestSpread3.ts, 27, 7))
+>value : Symbol(value, Decl(noInferRestSpread3.ts, 26, 14))
+
+});
+takesCallback((value: string | number) => {});
+>takesCallback : Symbol(takesCallback, Decl(noInferRestSpread3.ts, 22, 17))
+>value : Symbol(value, Decl(noInferRestSpread3.ts, 29, 15))
+
+takesCallback((value: number) => {}); // error
+>takesCallback : Symbol(takesCallback, Decl(noInferRestSpread3.ts, 22, 17))
+>value : Symbol(value, Decl(noInferRestSpread3.ts, 30, 15))
+
+takesCallback((...args) => {
+>takesCallback : Symbol(takesCallback, Decl(noInferRestSpread3.ts, 22, 17))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 31, 15))
+
+  const first: string | number = args[0];
+>first : Symbol(first, Decl(noInferRestSpread3.ts, 32, 7))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 31, 15))
+>0 : Symbol(0)
+
+  args;
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 31, 15))
+
+});
+
+function directIdentity(...args: Mixed) {
+>directIdentity : Symbol(directIdentity, Decl(noInferRestSpread3.ts, 34, 3))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 36, 24))
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread3.ts, 0, 0))
+
+  return args;
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 36, 24))
+}
+
+type ArityMixed = [number] | NoInfer<[string, boolean]>;
+>ArityMixed : Symbol(ArityMixed, Decl(noInferRestSpread3.ts, 38, 1))
+>NoInfer : Symbol(NoInfer, Decl(lib.es5.d.ts, --, --))
+
+declare function arity(...args: ArityMixed): void;
+>arity : Symbol(arity, Decl(noInferRestSpread3.ts, 40, 56))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 42, 23))
+>ArityMixed : Symbol(ArityMixed, Decl(noInferRestSpread3.ts, 38, 1))
+
+arity(1);
+>arity : Symbol(arity, Decl(noInferRestSpread3.ts, 40, 56))
+
+arity('', true);
+>arity : Symbol(arity, Decl(noInferRestSpread3.ts, 40, 56))
+
+arity(''); // error
+>arity : Symbol(arity, Decl(noInferRestSpread3.ts, 40, 56))
+
+arity(1, true); // error
+>arity : Symbol(arity, Decl(noInferRestSpread3.ts, 40, 56))
+
+arity('', false, 0); // error
+>arity : Symbol(arity, Decl(noInferRestSpread3.ts, 40, 56))
+
+declare function takesArityCallback(callback: (...args: ArityMixed) => void): void;
+>takesArityCallback : Symbol(takesArityCallback, Decl(noInferRestSpread3.ts, 48, 20))
+>callback : Symbol(callback, Decl(noInferRestSpread3.ts, 50, 36))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 50, 47))
+>ArityMixed : Symbol(ArityMixed, Decl(noInferRestSpread3.ts, 38, 1))
+
+takesArityCallback((...args) => {
+>takesArityCallback : Symbol(takesArityCallback, Decl(noInferRestSpread3.ts, 48, 20))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 52, 20))
+
+  args;
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 52, 20))
+
+});
+takesArityCallback((first, second) => { // error
+>takesArityCallback : Symbol(takesArityCallback, Decl(noInferRestSpread3.ts, 48, 20))
+>first : Symbol(first, Decl(noInferRestSpread3.ts, 55, 20))
+>second : Symbol(second, Decl(noInferRestSpread3.ts, 55, 26))
+
+  const firstResult: string | number = first;
+>firstResult : Symbol(firstResult, Decl(noInferRestSpread3.ts, 56, 7))
+>first : Symbol(first, Decl(noInferRestSpread3.ts, 55, 20))
+
+  const secondResult: boolean | undefined = second;
+>secondResult : Symbol(secondResult, Decl(noInferRestSpread3.ts, 57, 7))
+>second : Symbol(second, Decl(noInferRestSpread3.ts, 55, 26))
+
+});
+takesArityCallback((first: string | number, second?: boolean) => {});
+>takesArityCallback : Symbol(takesArityCallback, Decl(noInferRestSpread3.ts, 48, 20))
+>first : Symbol(first, Decl(noInferRestSpread3.ts, 59, 20))
+>second : Symbol(second, Decl(noInferRestSpread3.ts, 59, 43))
+
+takesArityCallback((first: string | number, second: boolean) => {}); // error
+>takesArityCallback : Symbol(takesArityCallback, Decl(noInferRestSpread3.ts, 48, 20))
+>first : Symbol(first, Decl(noInferRestSpread3.ts, 60, 20))
+>second : Symbol(second, Decl(noInferRestSpread3.ts, 60, 43))
+
+type PlainArityMixed = [number] | [string, boolean];
+>PlainArityMixed : Symbol(PlainArityMixed, Decl(noInferRestSpread3.ts, 60, 68))
+
+declare function takesPlainArityCallback(callback: (...args: PlainArityMixed) => void): void;
+>takesPlainArityCallback : Symbol(takesPlainArityCallback, Decl(noInferRestSpread3.ts, 62, 52))
+>callback : Symbol(callback, Decl(noInferRestSpread3.ts, 63, 41))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 63, 52))
+>PlainArityMixed : Symbol(PlainArityMixed, Decl(noInferRestSpread3.ts, 60, 68))
+
+takesPlainArityCallback((first, second) => {}); // error
+>takesPlainArityCallback : Symbol(takesPlainArityCallback, Decl(noInferRestSpread3.ts, 62, 52))
+>first : Symbol(first, Decl(noInferRestSpread3.ts, 65, 25))
+>second : Symbol(second, Decl(noInferRestSpread3.ts, 65, 31))
+
+declare function inferFromRest<C extends string>(
+>inferFromRest : Symbol(inferFromRest, Decl(noInferRestSpread3.ts, 65, 47))
+>C : Symbol(C, Decl(noInferRestSpread3.ts, 67, 31))
+
+  source: C,
+>source : Symbol(source, Decl(noInferRestSpread3.ts, 67, 49))
+>C : Symbol(C, Decl(noInferRestSpread3.ts, 67, 31))
+
+  ...args: [number] | NoInfer<[C]>
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 68, 12))
+>NoInfer : Symbol(NoInfer, Decl(lib.es5.d.ts, --, --))
+>C : Symbol(C, Decl(noInferRestSpread3.ts, 67, 31))
+
+): C;
+>C : Symbol(C, Decl(noInferRestSpread3.ts, 67, 31))
+
+const inferredFromSource1 = inferFromRest('source', 1);
+>inferredFromSource1 : Symbol(inferredFromSource1, Decl(noInferRestSpread3.ts, 72, 5))
+>inferFromRest : Symbol(inferFromRest, Decl(noInferRestSpread3.ts, 65, 47))
+
+const inferredFromSource2 = inferFromRest('source', 'source');
+>inferredFromSource2 : Symbol(inferredFromSource2, Decl(noInferRestSpread3.ts, 73, 5))
+>inferFromRest : Symbol(inferFromRest, Decl(noInferRestSpread3.ts, 65, 47))
+
+inferFromRest('source', 'other'); // error
+>inferFromRest : Symbol(inferFromRest, Decl(noInferRestSpread3.ts, 65, 47))
+
+declare function inferFromSpread<C extends string>(
+>inferFromSpread : Symbol(inferFromSpread, Decl(noInferRestSpread3.ts, 74, 33))
+>C : Symbol(C, Decl(noInferRestSpread3.ts, 76, 33))
+
+  source: C,
+>source : Symbol(source, Decl(noInferRestSpread3.ts, 76, 51))
+>C : Symbol(C, Decl(noInferRestSpread3.ts, 76, 33))
+
+  ...args: [...([number] | NoInfer<[C]>)]
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 77, 12))
+>NoInfer : Symbol(NoInfer, Decl(lib.es5.d.ts, --, --))
+>C : Symbol(C, Decl(noInferRestSpread3.ts, 76, 33))
+
+): C;
+>C : Symbol(C, Decl(noInferRestSpread3.ts, 76, 33))
+
+const inferredFromSpreadSource1 = inferFromSpread('source', 1);
+>inferredFromSpreadSource1 : Symbol(inferredFromSpreadSource1, Decl(noInferRestSpread3.ts, 81, 5))
+>inferFromSpread : Symbol(inferFromSpread, Decl(noInferRestSpread3.ts, 74, 33))
+
+const inferredFromSpreadSource2 = inferFromSpread('source', 'source');
+>inferredFromSpreadSource2 : Symbol(inferredFromSpreadSource2, Decl(noInferRestSpread3.ts, 82, 5))
+>inferFromSpread : Symbol(inferFromSpread, Decl(noInferRestSpread3.ts, 74, 33))
+
+inferFromSpread('source', 'other'); // error
+>inferFromSpread : Symbol(inferFromSpread, Decl(noInferRestSpread3.ts, 74, 33))
+
+type SpreadMixed = [...Mixed];
+>SpreadMixed : Symbol(SpreadMixed, Decl(noInferRestSpread3.ts, 83, 35))
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread3.ts, 0, 0))
+
+function spreadIdentity(...args: SpreadMixed) {
+>spreadIdentity : Symbol(spreadIdentity, Decl(noInferRestSpread3.ts, 85, 30))
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 87, 24))
+>SpreadMixed : Symbol(SpreadMixed, Decl(noInferRestSpread3.ts, 83, 35))
+
+  return args;
+>args : Symbol(args, Decl(noInferRestSpread3.ts, 87, 24))
+}
+
+spreadIdentity(1);
+>spreadIdentity : Symbol(spreadIdentity, Decl(noInferRestSpread3.ts, 85, 30))
+
+spreadIdentity('');
+>spreadIdentity : Symbol(spreadIdentity, Decl(noInferRestSpread3.ts, 85, 30))
+
+spreadIdentity(true); // error
+>spreadIdentity : Symbol(spreadIdentity, Decl(noInferRestSpread3.ts, 85, 30))
+
