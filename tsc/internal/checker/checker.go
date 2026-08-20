@@ -23484,7 +23484,7 @@ func (c *Checker) normalizeNoInferSpread(t *Type) *Type {
 	}
 	return c.mapType(t.AsSubstitutionType().baseType, func(element *Type) *Type {
 		if !isTupleType(element) {
-			return c.getNoInferType(t)
+			return c.getNoInferType(element)
 		}
 		target := element.TargetTupleType()
 		return c.createTupleTypeEx(core.Map(c.getElementTypes(element), c.getNoInferType), target.elementInfos, target.readonly)

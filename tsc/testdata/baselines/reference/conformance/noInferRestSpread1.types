@@ -136,11 +136,11 @@ declare const mixed: Mixed;
 >mixed : Mixed
 
 function direct(...args: NoInfer<Mixed>) {
->direct : (...args: [tuple: string] | NoInfer<Mixed>) => [tuple: string] | NoInfer<Mixed>
->args : [tuple: string] | NoInfer<Mixed>
+>direct : (...args: [tuple: string] | NoInfer<number[]>) => [tuple: string] | NoInfer<number[]>
+>args : [tuple: string] | NoInfer<number[]>
 
   return args;
->args : [tuple: string] | NoInfer<Mixed>
+>args : [tuple: string] | NoInfer<number[]>
 }
 
 declare function contextual<A extends readonly unknown[], R>(
@@ -156,11 +156,11 @@ declare function contextual<A extends readonly unknown[], R>(
 ): R;
 
 const contextualResult = contextual(mixed, (...args) => args);
->contextualResult : [tuple: string] | NoInfer<Mixed>
->contextual(mixed, (...args) => args) : [tuple: string] | NoInfer<Mixed>
+>contextualResult : [tuple: string] | NoInfer<number[]>
+>contextual(mixed, (...args) => args) : [tuple: string] | NoInfer<number[]>
 >contextual : <A extends readonly unknown[], R>(args: A, callback: (...args: NoInfer<A>) => R) => R
 >mixed : Mixed
->(...args) => args : (...args: [tuple: string] | NoInfer<Mixed>) => [tuple: string] | NoInfer<Mixed>
->args : [tuple: string] | NoInfer<Mixed>
->args : Mixed
+>(...args) => args : (...args: [tuple: string] | NoInfer<number[]>) => [tuple: string] | NoInfer<number[]>
+>args : [tuple: string] | NoInfer<number[]>
+>args : [tuple: string] | NoInfer<number[]>
 
