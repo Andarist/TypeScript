@@ -467,3 +467,11 @@ const parameterReassignedContextualRest1: (...args: [1, 2] | [3, 4]) => void = (
     x; // 1 | 3
   }
 }
+
+// repros from #47190#issuecomment-1339753554
+const f70: (...args: [type: "one"] | [type: "two", x: string]) => void = (type, x) => {
+  if (type !== "one") x.toUpperCase();
+}
+const f71: (...args: [type: "one", x?: number] | [type: "two", x: string]) => void = (type, x) => {
+  if (type !== "one") x.toUpperCase();
+}

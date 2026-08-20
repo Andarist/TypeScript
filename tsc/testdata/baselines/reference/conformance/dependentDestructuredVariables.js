@@ -466,6 +466,14 @@ const parameterReassignedContextualRest1: (...args: [1, 2] | [3, 4]) => void = (
   }
 }
 
+// repros from #47190#issuecomment-1339753554
+const f70: (...args: [type: "one"] | [type: "two", x: string]) => void = (type, x) => {
+  if (type !== "one") x.toUpperCase();
+}
+const f71: (...args: [type: "one", x?: number] | [type: "two", x: string]) => void = (type, x) => {
+  if (type !== "one") x.toUpperCase();
+}
+
 
 //// [dependentDestructuredVariables.js]
 "use strict";
@@ -823,6 +831,15 @@ const parameterReassignedContextualRest1 = (x, y) => {
         x; // 1 | 3
     }
 };
+// repros from #47190#issuecomment-1339753554
+const f70 = (type, x) => {
+    if (type !== "one")
+        x.toUpperCase();
+};
+const f71 = (type, x) => {
+    if (type !== "one")
+        x.toUpperCase();
+};
 
 
 //// [dependentDestructuredVariables.d.ts]
@@ -976,3 +993,5 @@ declare function tooNarrow([x, y]: [1, 1] | [1, 2] | [1]): void;
 declare function parameterReassigned1([x, y]: [1, 2] | [3, 4]): void;
 declare function parameterReassigned2([x, y]: [1, 2] | [3, 4]): void;
 declare const parameterReassignedContextualRest1: (...args: [1, 2] | [3, 4]) => void;
+declare const f70: (...args: [type: "one"] | [type: "two", x: string]) => void;
+declare const f71: (...args: [type: "one", x?: number] | [type: "two", x: string]) => void;

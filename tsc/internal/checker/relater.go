@@ -27,6 +27,14 @@ const (
 	SignatureCheckModeCallback           SignatureCheckMode = SignatureCheckModeBivariantCallback | SignatureCheckModeStrictCallback
 )
 
+type TupleStructureComparisonKind uint32
+
+const (
+	TupleStructureComparisonKindNone          TupleStructureComparisonKind = 0
+	TupleStructureComparisonKindMatchFixed    TupleStructureComparisonKind = 1 << 0
+	TupleStructureComparisonKindMatchVariable TupleStructureComparisonKind = 1 << 1
+)
+
 type MinArgumentCountFlags uint32
 
 const (
@@ -1576,6 +1584,57 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 			targetType = c.getRestOrAnyTypeAtPosition(target, i)
 		} else {
 			targetType = c.tryGetTypeAtPosition(target, i)
+		}
+		if i == restIndex && targetType != nil && sourceType != nil && isTupleType(sourceType) {
+			targetType = c.mapType(targetType, func(t *Type) *Type {
+				if !isTupleType(t) ||
+					// When both sides are tuples of the same structure, we don't want to "propagate" types from elements of variable positions
+					// to the following positions as that would disallow signatures of the exact same structures when trailing fixed elements are involved:
+					//
+					// let fn: (...rest: [...string[], number]) => void = (...rest: [...string[], number]) => {}; // ok
+					//
+					// Since we want to allow contextual types to flow into parameters, we don't need to differentiate between rest and variadic elements
+					// as that doesn't affect the contextual type of the parameter.
+					c.isTupleTypeStructureMatching(sourceType, t, TupleStructureComparisonKindMatchVariable) {
+					return t
+				}
+
+				// We create a tuple type based on the target elements and the source's length here.
+				// When the source signature accepts fewer parameters than the target signature
+				// we only need to check the used elements of the target tuple. The rest is ignored by the source
+				// and thus it can be safely ignored here.
+				//
+				// let fn: (a: number, b: string) => void = (a: number) => {}; // ok
+				//
+				// In addition to that we also want to "propagate" element types of variable positions
+				// to all following positions, as that represents possible argument types.
+				//
+				// function fn(...[a, b]: [...number[], string]) {
+				//   a; // number | string
+				//   b; // number | string
+				// }
+				// fn('str'); // valid
+				elementTypes := []*Type{}
+				elementInfos := []TupleElementInfo{}
+
+				sourceArity := c.getTypeReferenceArity(sourceType)
+				targetArity := c.getTypeReferenceArity(t)
+				sourceElementInfos := sourceType.TargetTupleType().elementInfos
+
+				for j := range sourceArity {
+					if j >= targetArity {
+						if sourceElementInfos[j].flags&ElementFlagsFixed != 0 {
+							elementTypes = append(elementTypes, c.undefinedType)
+							elementInfos = append(elementInfos, TupleElementInfo{flags: sourceElementInfos[j].flags})
+						}
+						continue
+					}
+					elementTypes = append(elementTypes, c.getTupleElementType(t, j))
+					elementInfos = append(elementInfos, TupleElementInfo{flags: sourceElementInfos[j].flags})
+				}
+
+				return c.createTupleTypeEx(elementTypes, elementInfos, false /*readonly*/)
+			})
 		}
 		if sourceType != nil && targetType != nil && (sourceType != targetType || checkMode&SignatureCheckModeStrictArity != 0) {
 			// In order to ensure that any generic type Foo<T> is at least co-variant with respect to T no matter
