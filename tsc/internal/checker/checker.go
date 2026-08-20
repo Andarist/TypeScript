@@ -16704,12 +16704,10 @@ func (c *Checker) getTypeOfVariableOrParameterOrPropertyWorker(symbol *ast.Symbo
 	}
 	var result *Type
 	switch declaration.Kind {
-	case ast.KindPropertyDeclaration, ast.KindPropertySignature, ast.KindVariableDeclaration,
+	case ast.KindParameter, ast.KindPropertyDeclaration, ast.KindPropertySignature, ast.KindVariableDeclaration,
 		ast.KindBindingElement:
 		result = c.getWidenedTypeForVariableLikeDeclaration(declaration, !c.isParameterOfContextSensitiveSignature(symbol)) // only report diagnostics for context-insensitive parameters - context-sensitive ones may have their type fixed to something else
-	case ast.KindParameter:
-		result = c.getWidenedTypeForVariableLikeDeclaration(declaration, !c.isParameterOfContextSensitiveSignature(symbol)) // only report diagnostics for context-insensitive parameters - context-sensitive ones may have their type fixed to something else
-		if hasDotDotDotToken(declaration) {
+		if ast.IsParameterDeclaration(declaration) && hasDotDotDotToken(declaration) {
 			result = c.normalizeNoInferSpread(result)
 		}
 	case ast.KindPropertyAssignment:
