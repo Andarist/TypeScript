@@ -39,3 +39,17 @@ noInferRestSpread1.ts(7,22): error TS2345: Argument of type '(a: number, b: numb
     
     fn2((a, ...rest) => {});
     
+    type Mixed = [tuple: string] | number[];
+    declare const mixed: Mixed;
+    
+    function direct(...args: NoInfer<Mixed>) {
+      return args;
+    }
+    
+    declare function contextual<A extends readonly unknown[], R>(
+      args: A,
+      callback: (...args: NoInfer<A>) => R,
+    ): R;
+    
+    const contextualResult = contextual(mixed, (...args) => args);
+    

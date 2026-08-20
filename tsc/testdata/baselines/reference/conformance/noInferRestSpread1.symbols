@@ -111,3 +111,46 @@ fn2((a, ...rest) => {});
 >a : Symbol(a, Decl(noInferRestSpread1.ts, 31, 5))
 >rest : Symbol(rest, Decl(noInferRestSpread1.ts, 31, 7))
 
+type Mixed = [tuple: string] | number[];
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread1.ts, 31, 24))
+
+declare const mixed: Mixed;
+>mixed : Symbol(mixed, Decl(noInferRestSpread1.ts, 34, 13))
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread1.ts, 31, 24))
+
+function direct(...args: NoInfer<Mixed>) {
+>direct : Symbol(direct, Decl(noInferRestSpread1.ts, 34, 27))
+>args : Symbol(args, Decl(noInferRestSpread1.ts, 36, 16))
+>NoInfer : Symbol(NoInfer, Decl(lib.es5.d.ts, --, --))
+>Mixed : Symbol(Mixed, Decl(noInferRestSpread1.ts, 31, 24))
+
+  return args;
+>args : Symbol(args, Decl(noInferRestSpread1.ts, 36, 16))
+}
+
+declare function contextual<A extends readonly unknown[], R>(
+>contextual : Symbol(contextual, Decl(noInferRestSpread1.ts, 38, 1))
+>A : Symbol(A, Decl(noInferRestSpread1.ts, 40, 28))
+>R : Symbol(R, Decl(noInferRestSpread1.ts, 40, 57))
+
+  args: A,
+>args : Symbol(args, Decl(noInferRestSpread1.ts, 40, 61))
+>A : Symbol(A, Decl(noInferRestSpread1.ts, 40, 28))
+
+  callback: (...args: NoInfer<A>) => R,
+>callback : Symbol(callback, Decl(noInferRestSpread1.ts, 41, 10))
+>args : Symbol(args, Decl(noInferRestSpread1.ts, 42, 13))
+>NoInfer : Symbol(NoInfer, Decl(lib.es5.d.ts, --, --))
+>A : Symbol(A, Decl(noInferRestSpread1.ts, 40, 28))
+>R : Symbol(R, Decl(noInferRestSpread1.ts, 40, 57))
+
+): R;
+>R : Symbol(R, Decl(noInferRestSpread1.ts, 40, 57))
+
+const contextualResult = contextual(mixed, (...args) => args);
+>contextualResult : Symbol(contextualResult, Decl(noInferRestSpread1.ts, 45, 5))
+>contextual : Symbol(contextual, Decl(noInferRestSpread1.ts, 38, 1))
+>mixed : Symbol(mixed, Decl(noInferRestSpread1.ts, 34, 13))
+>args : Symbol(args, Decl(noInferRestSpread1.ts, 45, 44))
+>args : Symbol(args, Decl(noInferRestSpread1.ts, 45, 44))
+

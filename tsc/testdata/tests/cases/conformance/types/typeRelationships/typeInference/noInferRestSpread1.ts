@@ -33,3 +33,17 @@ const result8 = fn1((arg) => {
 declare function fn2(arg: (...args: NoInfer<[string, number]>) => void): void;
 
 fn2((a, ...rest) => {});
+
+type Mixed = [tuple: string] | number[];
+declare const mixed: Mixed;
+
+function direct(...args: NoInfer<Mixed>) {
+  return args;
+}
+
+declare function contextual<A extends readonly unknown[], R>(
+  args: A,
+  callback: (...args: NoInfer<A>) => R,
+): R;
+
+const contextualResult = contextual(mixed, (...args) => args);
