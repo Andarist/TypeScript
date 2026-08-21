@@ -110,3 +110,12 @@ restTupleUnionWithRestContextualParams.ts(80,1): error TS2322: Type '<T extends 
 !!! error TS2322:         Type 'string | number | T[number] | undefined' is not assignable to type 'number | undefined'.
 !!! error TS2322:           Type 'string' is not assignable to type 'number'.
     
+    type Args2 = [value: number] | [value: string, flag: boolean];
+    
+    declare function takesCallback2(callback: (...args: Args2) => void): void;
+    
+    takesCallback2((value, flag) => {
+      const check1: string | number = value;
+      const check2: boolean | undefined = flag;
+    });
+    

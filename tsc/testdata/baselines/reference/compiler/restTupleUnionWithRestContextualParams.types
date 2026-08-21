@@ -272,3 +272,28 @@ func = gunc;
 >func : <T extends boolean[]>(...args: NowTarget<T>) => void
 >gunc : <T extends boolean[]>(...args: NowSource<T>) => void
 
+type Args2 = [value: number] | [value: string, flag: boolean];
+>Args2 : Args2
+
+declare function takesCallback2(callback: (...args: Args2) => void): void;
+>takesCallback2 : (callback: (...args: Args2) => void) => void
+>callback : (...args: Args2) => void
+>args : Args2
+
+takesCallback2((value, flag) => {
+>takesCallback2((value, flag) => {  const check1: string | number = value;  const check2: boolean | undefined = flag;}) : void
+>takesCallback2 : (callback: (...args: Args2) => void) => void
+>(value, flag) => {  const check1: string | number = value;  const check2: boolean | undefined = flag;} : (value: string | number, flag: boolean | undefined) => void
+>value : string | number
+>flag : boolean | undefined
+
+  const check1: string | number = value;
+>check1 : string | number
+>value : string | number
+
+  const check2: boolean | undefined = flag;
+>check2 : boolean | undefined
+>flag : boolean | undefined
+
+});
+

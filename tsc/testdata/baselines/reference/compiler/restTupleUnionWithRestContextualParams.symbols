@@ -279,3 +279,27 @@ func = gunc;
 >func : Symbol(func, Decl(restTupleUnionWithRestContextualParams.ts, 76, 11))
 >gunc : Symbol(gunc, Decl(restTupleUnionWithRestContextualParams.ts, 77, 11))
 
+type Args2 = [value: number] | [value: string, flag: boolean];
+>Args2 : Symbol(Args2, Decl(restTupleUnionWithRestContextualParams.ts, 79, 12))
+
+declare function takesCallback2(callback: (...args: Args2) => void): void;
+>takesCallback2 : Symbol(takesCallback2, Decl(restTupleUnionWithRestContextualParams.ts, 81, 62))
+>callback : Symbol(callback, Decl(restTupleUnionWithRestContextualParams.ts, 83, 32))
+>args : Symbol(args, Decl(restTupleUnionWithRestContextualParams.ts, 83, 43))
+>Args2 : Symbol(Args2, Decl(restTupleUnionWithRestContextualParams.ts, 79, 12))
+
+takesCallback2((value, flag) => {
+>takesCallback2 : Symbol(takesCallback2, Decl(restTupleUnionWithRestContextualParams.ts, 81, 62))
+>value : Symbol(value, Decl(restTupleUnionWithRestContextualParams.ts, 85, 16))
+>flag : Symbol(flag, Decl(restTupleUnionWithRestContextualParams.ts, 85, 22))
+
+  const check1: string | number = value;
+>check1 : Symbol(check1, Decl(restTupleUnionWithRestContextualParams.ts, 86, 7))
+>value : Symbol(value, Decl(restTupleUnionWithRestContextualParams.ts, 85, 16))
+
+  const check2: boolean | undefined = flag;
+>check2 : Symbol(check2, Decl(restTupleUnionWithRestContextualParams.ts, 87, 7))
+>flag : Symbol(flag, Decl(restTupleUnionWithRestContextualParams.ts, 85, 22))
+
+});
+

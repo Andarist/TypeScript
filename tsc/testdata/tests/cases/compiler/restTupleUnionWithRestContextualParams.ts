@@ -81,3 +81,12 @@ declare let func: <T extends boolean[]>(...args: NowTarget<T>) => void;
 declare let gunc: <T extends boolean[]>(...args: NowSource<T>) => void;
 
 func = gunc;
+
+type Args2 = [value: number] | [value: string, flag: boolean];
+
+declare function takesCallback2(callback: (...args: Args2) => void): void;
+
+takesCallback2((value, flag) => {
+  const check1: string | number = value;
+  const check2: boolean | undefined = flag;
+});
