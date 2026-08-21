@@ -1,0 +1,18 @@
+//// [tests/cases/compiler/restTupleUnionRequiredArity.ts] ////
+
+=== restTupleUnionRequiredArity.ts ===
+type Requires1 = [number] | [string];
+>Requires1 : Symbol(Requires1, Decl(restTupleUnionRequiredArity.ts, 0, 0))
+
+declare let requires1Fn: (...args: Requires1) => void;
+>requires1Fn : Symbol(requires1Fn, Decl(restTupleUnionRequiredArity.ts, 2, 11))
+>args : Symbol(args, Decl(restTupleUnionRequiredArity.ts, 2, 26))
+>Requires1 : Symbol(Requires1, Decl(restTupleUnionRequiredArity.ts, 0, 0))
+
+declare let zeroFn: () => void;
+>zeroFn : Symbol(zeroFn, Decl(restTupleUnionRequiredArity.ts, 3, 11))
+
+zeroFn = requires1Fn;
+>zeroFn : Symbol(zeroFn, Decl(restTupleUnionRequiredArity.ts, 3, 11))
+>requires1Fn : Symbol(requires1Fn, Decl(restTupleUnionRequiredArity.ts, 2, 11))
+
