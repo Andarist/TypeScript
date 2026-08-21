@@ -41,3 +41,8 @@ restTupleVariableSourceProjection.ts(10,1): error TS2322: Type '(...args: [...nu
 !!! error TS2322:           Type 'boolean' is not assignable to type 'number'.
     compatibleTargetWithLeadingRest = sourceWithLeadingRest; // ok
     
+    declare let targetWithGenericLeadingRest: <T extends boolean[]>(...args: [...T, number]) => void;
+    declare let sourceWithGenericLeadingRest: <T extends boolean[]>(...args: [...T, n?: number]) => void;
+    
+    targetWithGenericLeadingRest = sourceWithGenericLeadingRest; // ok
+    

@@ -1677,7 +1677,9 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 						positionFromEnd := sourceArity - 1 - j
 						if positionFromEnd < targetEndCount {
 							targetIndex := targetArity - 1 - positionFromEnd
-							elementTypes = append(elementTypes, c.getTupleElementType(t, targetIndex))
+							// This element is aligned with a fixed tuple descriptor from the end. A positional
+							// lookup would also include types from a preceding variable element.
+							elementTypes = append(elementTypes, c.getTypeArguments(t)[targetIndex])
 						} else {
 							elementTypes = append(elementTypes, c.undefinedType)
 						}

@@ -1,15 +1,15 @@
 restTupleUnionWithRestContextualParams.ts(74,3): error TS2416: Property 'method' in type 'B' is not assignable to the same property in base type 'A'.
   Type '<T extends boolean[]>(...args: [boolean, ...T, n?: number | undefined]) => void' is not assignable to type '<T extends boolean[]>(...args: [boolean, ...T, string | number]) => void'.
     Types of parameters 'args' and 'args' are incompatible.
-      Type '[...T, (string | number | T[number] | undefined)?]' is not assignable to type '[...T, n?: number | undefined]'.
+      Type '[...T, (string | number | undefined)?]' is not assignable to type '[...T, n?: number | undefined]'.
         Type at position 1 in source is not compatible with type at position 1 in target.
-          Type 'string | number | T[number] | undefined' is not assignable to type 'number | undefined'.
+          Type 'string | number | undefined' is not assignable to type 'number | undefined'.
             Type 'string' is not assignable to type 'number'.
 restTupleUnionWithRestContextualParams.ts(80,1): error TS2322: Type '<T extends boolean[]>(...args: [boolean, ...T, n?: number | undefined]) => void' is not assignable to type '<T extends boolean[]>(...args: [boolean, ...T, string | number]) => void'.
   Types of parameters 'args' and 'args' are incompatible.
-    Type '[...T, (string | number | T[number] | undefined)?]' is not assignable to type '[...T, n?: number | undefined]'.
+    Type '[...T, (string | number | undefined)?]' is not assignable to type '[...T, n?: number | undefined]'.
       Type at position 1 in source is not compatible with type at position 1 in target.
-        Type 'string | number | T[number] | undefined' is not assignable to type 'number | undefined'.
+        Type 'string | number | undefined' is not assignable to type 'number | undefined'.
           Type 'string' is not assignable to type 'number'.
 
 
@@ -92,9 +92,9 @@ restTupleUnionWithRestContextualParams.ts(80,1): error TS2322: Type '<T extends 
 !!! error TS2416: Property 'method' in type 'B' is not assignable to the same property in base type 'A'.
 !!! error TS2416:   Type '<T extends boolean[]>(...args: [boolean, ...T, n?: number | undefined]) => void' is not assignable to type '<T extends boolean[]>(...args: [boolean, ...T, string | number]) => void'.
 !!! error TS2416:     Types of parameters 'args' and 'args' are incompatible.
-!!! error TS2416:       Type '[...T, (string | number | T[number] | undefined)?]' is not assignable to type '[...T, n?: number | undefined]'.
+!!! error TS2416:       Type '[...T, (string | number | undefined)?]' is not assignable to type '[...T, n?: number | undefined]'.
 !!! error TS2416:         Type at position 1 in source is not compatible with type at position 1 in target.
-!!! error TS2416:           Type 'string | number | T[number] | undefined' is not assignable to type 'number | undefined'.
+!!! error TS2416:           Type 'string | number | undefined' is not assignable to type 'number | undefined'.
 !!! error TS2416:             Type 'string' is not assignable to type 'number'.
     }
     
@@ -105,9 +105,9 @@ restTupleUnionWithRestContextualParams.ts(80,1): error TS2322: Type '<T extends 
     ~~~~
 !!! error TS2322: Type '<T extends boolean[]>(...args: [boolean, ...T, n?: number | undefined]) => void' is not assignable to type '<T extends boolean[]>(...args: [boolean, ...T, string | number]) => void'.
 !!! error TS2322:   Types of parameters 'args' and 'args' are incompatible.
-!!! error TS2322:     Type '[...T, (string | number | T[number] | undefined)?]' is not assignable to type '[...T, n?: number | undefined]'.
+!!! error TS2322:     Type '[...T, (string | number | undefined)?]' is not assignable to type '[...T, n?: number | undefined]'.
 !!! error TS2322:       Type at position 1 in source is not compatible with type at position 1 in target.
-!!! error TS2322:         Type 'string | number | T[number] | undefined' is not assignable to type 'number | undefined'.
+!!! error TS2322:         Type 'string | number | undefined' is not assignable to type 'number | undefined'.
 !!! error TS2322:           Type 'string' is not assignable to type 'number'.
     
     type Args2 = [value: number] | [value: string, flag: boolean];
