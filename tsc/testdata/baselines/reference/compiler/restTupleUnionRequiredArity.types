@@ -16,3 +16,15 @@ zeroFn = requires1Fn;
 >zeroFn : () => void
 >requires1Fn : (...args: Requires1) => void
 
+type Allows0 = [void] | [number];
+>Allows0 : Allows0
+
+declare let allows0Fn: (...args: Allows0) => void;
+>allows0Fn : (...args: Allows0) => void
+>args : Allows0
+
+zeroFn = allows0Fn;
+>zeroFn = allows0Fn : (...args: Allows0) => void
+>zeroFn : () => void
+>allows0Fn : (...args: Allows0) => void
+

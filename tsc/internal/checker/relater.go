@@ -1508,18 +1508,20 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 	}
 	targetCount := c.getParameterCount(target)
 	var sourceHasMoreParameters bool
+	var sourceMinArgumentCount int
 	if !c.hasEffectiveRestParameter(target) {
 		if checkMode&SignatureCheckModeStrictArity != 0 {
 			sourceHasMoreParameters = c.hasEffectiveRestParameter(source) || c.getParameterCount(source) > targetCount
 		} else {
-			sourceHasMoreParameters = c.getMinArgumentCount(source) > targetCount
+			sourceMinArgumentCount = c.getMinArgumentCountForSignatureRelation(source)
+			sourceHasMoreParameters = sourceMinArgumentCount > targetCount
 		}
 	}
 	if sourceHasMoreParameters {
 		if reportErrors && (checkMode&SignatureCheckModeStrictArity == 0) {
 			// the second condition should be redundant, because there is no error reporting when comparing signatures by strict arity
 			// since it is only done for subtype reduction
-			errorReporter(diagnostics.Target_signature_provides_too_few_arguments_Expected_0_or_more_but_got_1, c.getMinArgumentCount(source), targetCount)
+			errorReporter(diagnostics.Target_signature_provides_too_few_arguments_Expected_0_or_more_but_got_1, sourceMinArgumentCount, targetCount)
 		}
 		return TernaryFalse
 	}
@@ -1864,6 +1866,39 @@ func (c *Checker) getParameterCount(signature *Signature) int {
 
 func (c *Checker) getMinArgumentCount(signature *Signature) int {
 	return c.getMinArgumentCountEx(signature, MinArgumentCountFlagsNone)
+}
+
+func (c *Checker) getMinArgumentCountForSignatureRelation(signature *Signature) int {
+	minArgumentCount := c.getMinArgumentCount(signature)
+	if !signatureHasRestParameter(signature) {
+		return minArgumentCount
+	}
+	restType := c.getTypeOfSymbol(signature.parameters[len(signature.parameters)-1])
+	if restType.flags&TypeFlagsUnion == 0 || !everyType(restType, isTupleType) {
+		return minArgumentCount
+	}
+	requiredCount := -1
+	forEachType(restType, func(t *Type) {
+		constituentRequiredCount := c.getMinRequiredTupleElementCount(t)
+		if requiredCount < 0 || constituentRequiredCount < requiredCount {
+			requiredCount = constituentRequiredCount
+		}
+	})
+	return max(minArgumentCount, len(signature.parameters)-1+requiredCount)
+}
+
+func (c *Checker) getMinRequiredTupleElementCount(t *Type) int {
+	firstOptionalIndex := core.FindIndex(t.TargetTupleType().elementInfos, func(info TupleElementInfo) bool {
+		return info.flags&ElementFlagsRequired == 0
+	})
+	requiredCount := firstOptionalIndex
+	if firstOptionalIndex < 0 {
+		requiredCount = t.TargetTupleType().fixedLength
+	}
+	for requiredCount > 0 && someType(c.getTupleElementType(t, requiredCount-1), func(t *Type) bool { return t.flags&TypeFlagsVoid != 0 }) {
+		requiredCount--
+	}
+	return requiredCount
 }
 
 func (c *Checker) getMinArgumentCountEx(signature *Signature, flags MinArgumentCountFlags) int {

@@ -1,0 +1,20 @@
+restTupleUnionRequiredArity.ts(6,1): error TS2322: Type '(...args: Requires1) => void' is not assignable to type '() => void'.
+  Target signature provides too few arguments. Expected 1 or more, but got 0.
+
+
+==== restTupleUnionRequiredArity.ts (1 errors) ====
+    type Requires1 = [number] | [string];
+    
+    declare let requires1Fn: (...args: Requires1) => void;
+    declare let zeroFn: () => void;
+    
+    zeroFn = requires1Fn;
+    ~~~~~~
+!!! error TS2322: Type '(...args: Requires1) => void' is not assignable to type '() => void'.
+!!! error TS2322:   Target signature provides too few arguments. Expected 1 or more, but got 0.
+    
+    type Allows0 = [void] | [number];
+    declare let allows0Fn: (...args: Allows0) => void;
+    
+    zeroFn = allows0Fn;
+    

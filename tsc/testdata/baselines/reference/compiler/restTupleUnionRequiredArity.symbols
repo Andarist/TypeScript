@@ -16,3 +16,15 @@ zeroFn = requires1Fn;
 >zeroFn : Symbol(zeroFn, Decl(restTupleUnionRequiredArity.ts, 3, 11))
 >requires1Fn : Symbol(requires1Fn, Decl(restTupleUnionRequiredArity.ts, 2, 11))
 
+type Allows0 = [void] | [number];
+>Allows0 : Symbol(Allows0, Decl(restTupleUnionRequiredArity.ts, 5, 21))
+
+declare let allows0Fn: (...args: Allows0) => void;
+>allows0Fn : Symbol(allows0Fn, Decl(restTupleUnionRequiredArity.ts, 8, 11))
+>args : Symbol(args, Decl(restTupleUnionRequiredArity.ts, 8, 24))
+>Allows0 : Symbol(Allows0, Decl(restTupleUnionRequiredArity.ts, 5, 21))
+
+zeroFn = allows0Fn;
+>zeroFn : Symbol(zeroFn, Decl(restTupleUnionRequiredArity.ts, 3, 11))
+>allows0Fn : Symbol(allows0Fn, Decl(restTupleUnionRequiredArity.ts, 8, 11))
+
