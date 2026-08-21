@@ -13,3 +13,8 @@ declare let sourceWithLeadingRest: (...args: [...number[], boolean]) => void;
 
 incompatibleTargetWithLeadingRest = sourceWithLeadingRest; // error
 compatibleTargetWithLeadingRest = sourceWithLeadingRest; // ok
+
+declare let targetWithGenericLeadingRest: <T extends boolean[]>(...args: [...T, number]) => void;
+declare let sourceWithGenericLeadingRest: <T extends boolean[]>(...args: [...T, n?: number]) => void;
+
+targetWithGenericLeadingRest = sourceWithGenericLeadingRest; // ok
