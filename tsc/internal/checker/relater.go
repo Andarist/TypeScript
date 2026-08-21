@@ -1629,17 +1629,73 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 				sourceArity := c.getTypeReferenceArity(sourceType)
 				targetArity := c.getTypeReferenceArity(t)
 				sourceElementInfos := sourceType.TargetTupleType().elementInfos
+				targetTupleType := t.TargetTupleType()
+				sourceVariableIndex := core.FindIndex(sourceElementInfos, func(info TupleElementInfo) bool {
+					return info.flags&ElementFlagsVariable != 0
+				})
+				if sourceVariableIndex >= 0 && core.CountWhere(sourceElementInfos, func(info TupleElementInfo) bool {
+					return info.flags&ElementFlagsVariable != 0
+				}) != 1 {
+					// Multiple variable source elements don't have an unambiguous alignment without
+					// knowing their instantiated lengths. Use the normal tuple relation instead.
+					return t
+				}
+				sourceEndCount := 0
+				if sourceVariableIndex >= 0 {
+					// A variable source element observes a slice of runtime arguments, not the single
+					// position represented by its tuple descriptor. Align its fixed tail from the end
+					// and project the entire target slice into the variable element.
+					sourceEndCount = sourceArity - sourceVariableIndex - 1
+				}
+				targetEndCount := getEndElementCount(targetTupleType, ElementFlagsFixed)
+				targetRequiredCount := core.CountWhere(targetTupleType.elementInfos, func(info TupleElementInfo) bool {
+					return info.flags&ElementFlagsRequired != 0
+				})
 
 				for j := range sourceArity {
-					if j >= targetArity {
-						if sourceElementInfos[j].flags&ElementFlagsFixed != 0 {
+					sourceElementInfo := sourceElementInfos[j]
+					if j == sourceVariableIndex {
+						startIndex := min(sourceVariableIndex, targetTupleType.fixedLength)
+						endSkipCount := min(sourceEndCount, targetEndCount)
+						var elementType *Type
+						if sourceElementInfo.flags&ElementFlagsRest != 0 {
+							elementType = c.getElementTypeOfSliceOfTupleType(t, startIndex, endSkipCount, false /*writing*/, false /*noReductions*/)
+							if elementType == nil {
+								elementType = c.neverType
+							}
+						} else {
+							elementType = c.sliceTupleType(t, startIndex, endSkipCount)
+						}
+						elementTypes = append(elementTypes, elementType)
+						elementInfos = append(elementInfos, TupleElementInfo{flags: sourceElementInfo.flags})
+						continue
+					}
+
+					if sourceVariableIndex >= 0 && j > sourceVariableIndex {
+						positionFromEnd := sourceArity - 1 - j
+						if positionFromEnd < targetEndCount {
+							targetIndex := targetArity - 1 - positionFromEnd
+							elementTypes = append(elementTypes, c.getTupleElementType(t, targetIndex))
+						} else {
 							elementTypes = append(elementTypes, c.undefinedType)
-							elementInfos = append(elementInfos, TupleElementInfo{flags: sourceElementInfos[j].flags})
+						}
+						elementInfos = append(elementInfos, TupleElementInfo{flags: sourceElementInfo.flags})
+						continue
+					}
+
+					if j >= targetArity {
+						if sourceElementInfo.flags&ElementFlagsFixed != 0 {
+							elementTypes = append(elementTypes, c.undefinedType)
+							elementInfos = append(elementInfos, TupleElementInfo{flags: sourceElementInfo.flags})
 						}
 						continue
 					}
-					elementTypes = append(elementTypes, c.getTupleElementType(t, j))
-					elementInfos = append(elementInfos, TupleElementInfo{flags: sourceElementInfos[j].flags})
+					elementType := c.getTupleElementType(t, j)
+					if sourceVariableIndex >= 0 && targetTupleType.combinedFlags&ElementFlagsVariable != 0 && j >= targetRequiredCount {
+						elementType = c.getUnionType([]*Type{elementType, c.undefinedType})
+					}
+					elementTypes = append(elementTypes, elementType)
+					elementInfos = append(elementInfos, TupleElementInfo{flags: sourceElementInfo.flags})
 				}
 
 				return c.createTupleTypeEx(elementTypes, elementInfos, false /*readonly*/)

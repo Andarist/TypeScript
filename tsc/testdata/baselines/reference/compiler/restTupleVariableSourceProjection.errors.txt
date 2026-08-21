@@ -1,14 +1,16 @@
 restTupleVariableSourceProjection.ts(4,1): error TS2322: Type '(args_0: number, ...args: boolean[]) => void' is not assignable to type '(...args: [number, boolean, string] | [number, boolean, boolean]) => void'.
   Types of parameters 'args_0' and 'args' are incompatible.
-    Type '[number, boolean, string] | [number, boolean, boolean]' is not assignable to type '[number, ...boolean[]]'.
-      Type '[number, boolean, string]' is not assignable to type '[number, ...boolean[]]'.
-        Type at positions 1 through 2 in source is not compatible with type at position 1 in target.
-          Type 'string' is not assignable to type 'boolean'.
+    Type '[number, ...(string | boolean)[]] | [number, ...boolean[]]' is not assignable to type '[number, ...boolean[]]'.
+      Type '[number, ...(string | boolean)[]]' is not assignable to type '[number, ...boolean[]]'.
+        Type at position 1 in source is not compatible with type at position 1 in target.
+          Type 'string | boolean' is not assignable to type 'boolean'.
+            Type 'string' is not assignable to type 'boolean'.
 restTupleVariableSourceProjection.ts(10,1): error TS2322: Type '(...args: [...number[], boolean]) => void' is not assignable to type '(args_0: number, args_1: boolean, args_2: string) => void'.
   Types of parameters 'args' and 'args_0' are incompatible.
-    Type '[number, boolean, string]' is not assignable to type '[...number[], boolean]'.
-      Type at positions 0 through 1 in source is not compatible with type at position 0 in target.
-        Type 'boolean' is not assignable to type 'number'.
+    Type '[...(number | boolean)[], string]' is not assignable to type '[...number[], boolean]'.
+      Type at position 0 in source is not compatible with type at position 0 in target.
+        Type 'number | boolean' is not assignable to type 'number'.
+          Type 'boolean' is not assignable to type 'number'.
 
 
 ==== restTupleVariableSourceProjection.ts (2 errors) ====
@@ -19,10 +21,11 @@ restTupleVariableSourceProjection.ts(10,1): error TS2322: Type '(...args: [...nu
     ~~~~~~~~~~~~~~~~~~~~~~
 !!! error TS2322: Type '(args_0: number, ...args: boolean[]) => void' is not assignable to type '(...args: [number, boolean, string] | [number, boolean, boolean]) => void'.
 !!! error TS2322:   Types of parameters 'args_0' and 'args' are incompatible.
-!!! error TS2322:     Type '[number, boolean, string] | [number, boolean, boolean]' is not assignable to type '[number, ...boolean[]]'.
-!!! error TS2322:       Type '[number, boolean, string]' is not assignable to type '[number, ...boolean[]]'.
-!!! error TS2322:         Type at positions 1 through 2 in source is not compatible with type at position 1 in target.
-!!! error TS2322:           Type 'string' is not assignable to type 'boolean'.
+!!! error TS2322:     Type '[number, ...(string | boolean)[]] | [number, ...boolean[]]' is not assignable to type '[number, ...boolean[]]'.
+!!! error TS2322:       Type '[number, ...(string | boolean)[]]' is not assignable to type '[number, ...boolean[]]'.
+!!! error TS2322:         Type at position 1 in source is not compatible with type at position 1 in target.
+!!! error TS2322:           Type 'string | boolean' is not assignable to type 'boolean'.
+!!! error TS2322:             Type 'string' is not assignable to type 'boolean'.
     
     declare let incompatibleTargetWithLeadingRest: (...args: [number, boolean, string]) => void;
     declare let compatibleTargetWithLeadingRest: (...args: [number, number, boolean]) => void;
@@ -32,8 +35,9 @@ restTupleVariableSourceProjection.ts(10,1): error TS2322: Type '(...args: [...nu
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !!! error TS2322: Type '(...args: [...number[], boolean]) => void' is not assignable to type '(args_0: number, args_1: boolean, args_2: string) => void'.
 !!! error TS2322:   Types of parameters 'args' and 'args_0' are incompatible.
-!!! error TS2322:     Type '[number, boolean, string]' is not assignable to type '[...number[], boolean]'.
-!!! error TS2322:       Type at positions 0 through 1 in source is not compatible with type at position 0 in target.
-!!! error TS2322:         Type 'boolean' is not assignable to type 'number'.
+!!! error TS2322:     Type '[...(number | boolean)[], string]' is not assignable to type '[...number[], boolean]'.
+!!! error TS2322:       Type at position 0 in source is not compatible with type at position 0 in target.
+!!! error TS2322:         Type 'number | boolean' is not assignable to type 'number'.
+!!! error TS2322:           Type 'boolean' is not assignable to type 'number'.
     compatibleTargetWithLeadingRest = sourceWithLeadingRest; // ok
     
