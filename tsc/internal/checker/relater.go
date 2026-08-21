@@ -27,14 +27,6 @@ const (
 	SignatureCheckModeCallback           SignatureCheckMode = SignatureCheckModeBivariantCallback | SignatureCheckModeStrictCallback
 )
 
-type TupleStructureComparisonKind uint32
-
-const (
-	TupleStructureComparisonKindNone          TupleStructureComparisonKind = 0
-	TupleStructureComparisonKindMatchFixed    TupleStructureComparisonKind = 1 << 0
-	TupleStructureComparisonKindMatchVariable TupleStructureComparisonKind = 1 << 1
-)
-
 type MinArgumentCountFlags uint32
 
 const (
@@ -1606,7 +1598,7 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 					//
 					// Since we want to allow contextual types to flow into parameters, we don't need to differentiate between rest and variadic elements
 					// as that doesn't affect the contextual type of the parameter.
-					c.isTupleTypeStructureMatching(sourceType, t, TupleStructureComparisonKindMatchVariable) {
+					c.hasSameTupleStructureForParameterProjection(sourceType, t) {
 					return t
 				}
 
@@ -1802,6 +1794,22 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 		}
 	}
 	return result
+}
+
+func (c *Checker) hasSameTupleStructureForParameterProjection(t1 *Type, t2 *Type) bool {
+	if c.getTypeReferenceArity(t1) != c.getTypeReferenceArity(t2) {
+		return false
+	}
+	for i, e1 := range t1.TargetTupleType().elementInfos {
+		f1 := e1.flags
+		f2 := t2.TargetTupleType().elementInfos[i].flags
+		// Rest and variadic elements both occupy a variable argument range, so they don't
+		// require projection when every other element kind is the same.
+		if f1 != f2 && !(f1&ElementFlagsVariable != 0 && f2&ElementFlagsVariable != 0) {
+			return false
+		}
+	}
+	return true
 }
 
 func (c *Checker) compareTypePredicateRelatedTo(source *TypePredicate, target *TypePredicate, reportErrors bool, errorReporter ErrorReporter, compareTypes TypeComparer) Ternary {

@@ -723,7 +723,7 @@ func (c *Checker) inferFromObjectTypes(n *InferenceState, source *Type, target *
 			elementInfos := target.TargetTupleType().elementInfos
 			// When source and target are tuple types with the same structure (fixed, variadic, and rest are matched
 			// to the same kind in each position), simply infer between the element types.
-			if isTupleType(source) && c.isTupleTypeStructureMatching(source, target, TupleStructureComparisonKindMatchFixed) {
+			if isTupleType(source) && c.hasSameTupleStructureForInference(source, target) {
 				for i := range targetArity {
 					c.inferFromTypes(n, c.getTypeArguments(source)[i], elementTypes[i])
 				}
@@ -1199,16 +1199,16 @@ func tupleTypesDefinitelyUnrelated(source *Type, target *Type) bool {
 		t.combinedFlags&ElementFlagsVariable == 0 && (s.combinedFlags&ElementFlagsVariable != 0 || t.fixedLength < s.fixedLength)
 }
 
-func (c *Checker) isTupleTypeStructureMatching(t1 *Type, t2 *Type, kind TupleStructureComparisonKind) bool {
+func (c *Checker) hasSameTupleStructureForInference(t1 *Type, t2 *Type) bool {
 	if c.getTypeReferenceArity(t1) != c.getTypeReferenceArity(t2) {
 		return false
 	}
 	for i, e1 := range t1.TargetTupleType().elementInfos {
 		f1 := e1.flags
 		f2 := t2.TargetTupleType().elementInfos[i].flags
-		if f1 != f2 &&
-			!(kind&TupleStructureComparisonKindMatchFixed != 0 && f1&ElementFlagsFixed != 0 && f2&ElementFlagsFixed != 0) &&
-			!(kind&TupleStructureComparisonKindMatchVariable != 0 && f1&ElementFlagsVariable != 0 && f2&ElementFlagsVariable != 0) {
+		// Required and optional elements use the same positional inference path. Rest and
+		// variadic elements retain their distinct inference behavior.
+		if f1 != f2 && !(f1&ElementFlagsFixed != 0 && f2&ElementFlagsFixed != 0) {
 			return false
 		}
 	}
