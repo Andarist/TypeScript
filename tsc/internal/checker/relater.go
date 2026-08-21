@@ -1586,7 +1586,15 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 			targetType = c.tryGetTypeAtPosition(target, i)
 		}
 		originalTargetType := targetType
-		if i == restIndex && targetType != nil && sourceType != nil && isTupleType(sourceType) {
+		targetTypeResolved := false
+		getTargetType := func() *Type {
+			if targetTypeResolved {
+				return targetType
+			}
+			targetTypeResolved = true
+			if i != restIndex || targetType == nil || sourceType == nil || !isTupleType(sourceType) {
+				return targetType
+			}
 			targetType = c.mapType(targetType, func(t *Type) *Type {
 				if !isTupleType(t) ||
 					// When both sides are tuples of the same structure, we don't want to "propagate" types from elements of variable positions
@@ -1636,8 +1644,9 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 
 				return c.createTupleTypeEx(elementTypes, elementInfos, false /*readonly*/)
 			})
+			return targetType
 		}
-		if sourceType != nil && targetType != nil && (sourceType != targetType || checkMode&SignatureCheckModeStrictArity != 0) {
+		if sourceType != nil && originalTargetType != nil && (sourceType != originalTargetType || checkMode&SignatureCheckModeStrictArity != 0) {
 			// In order to ensure that any generic type Foo<T> is at least co-variant with respect to T no matter
 			// how Foo uses T, we need to relate parameters bi-variantly (given that parameters are input positions,
 			// they naturally relate only contra-variantly). However, if the source and target parameters both have
@@ -1651,8 +1660,8 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 			if checkMode&SignatureCheckModeCallback == 0 && !c.isInstantiatedGenericParameter(source, i) {
 				sourceSig = c.getSingleCallSignature(c.GetNonNullableType(sourceType))
 			}
-			if checkMode&SignatureCheckModeCallback == 0 && !c.isInstantiatedGenericParameter(target, i) {
-				targetSig = c.getSingleCallSignature(c.GetNonNullableType(targetType))
+			if sourceSig != nil && checkMode&SignatureCheckModeCallback == 0 && !c.isInstantiatedGenericParameter(target, i) {
+				targetSig = c.getSingleCallSignature(c.GetNonNullableType(getTargetType()))
 			}
 			callbacks := sourceSig != nil && targetSig != nil && c.getTypePredicateOfSignature(sourceSig) == nil && c.getTypePredicateOfSignature(targetSig) == nil &&
 				c.getTypeFacts(sourceType, TypeFactsIsUndefinedOrNull) == c.getTypeFacts(targetType, TypeFactsIsUndefinedOrNull)
@@ -1667,11 +1676,11 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 					related = compareTypes(sourceType, originalTargetType, false /*reportErrors*/)
 				}
 				if related == TernaryFalse {
-					related = compareTypes(targetType, sourceType, reportErrors)
+					related = compareTypes(getTargetType(), sourceType, reportErrors)
 				}
 			}
 			// With strict arity, (x: number | undefined) => void is a subtype of (x?: number | undefined) => void
-			if related != TernaryFalse && checkMode&SignatureCheckModeStrictArity != 0 && i >= c.getMinArgumentCount(source) && i < c.getMinArgumentCount(target) && compareTypes(sourceType, targetType, false /*reportErrors*/) != TernaryFalse {
+			if related != TernaryFalse && checkMode&SignatureCheckModeStrictArity != 0 && i >= c.getMinArgumentCount(source) && i < c.getMinArgumentCount(target) && compareTypes(sourceType, getTargetType(), false /*reportErrors*/) != TernaryFalse {
 				related = TernaryFalse
 			}
 			if related == TernaryFalse {
