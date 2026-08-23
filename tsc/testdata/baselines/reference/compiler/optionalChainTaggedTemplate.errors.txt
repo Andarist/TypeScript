@@ -1,0 +1,11 @@
+optionalChainTaggedTemplate.ts(1,1): error TS2304: Cannot find name 'e'.
+optionalChainTaggedTemplate.ts(2,1): error TS1005: ')' expected.
+
+
+==== optionalChainTaggedTemplate.ts (2 errors) ====
+    e?.``(
+    ~
+!!! error TS2304: Cannot find name 'e'.
+    
+    
+!!! error TS1005: ')' expected.

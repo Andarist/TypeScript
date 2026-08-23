@@ -140,6 +140,9 @@ func flattenChain(chain *ast.Node) flattenResult {
 		debug.Assert(!isNonNullChain(chain))
 		links = append([]*ast.Node{chain}, links...)
 	}
+	if ast.IsTaggedTemplateExpression(chain) {
+		return flattenResult{chain.AsTaggedTemplateExpression().Tag, links}
+	}
 	return flattenResult{chain.Expression(), links}
 }
 
@@ -169,6 +172,15 @@ func (ch *optionalChainTransformer) visitOptionalExpression(node *ast.Node, capt
 
 	for i, segment := range chain {
 		switch segment.Kind {
+		case ast.KindTaggedTemplateExpression:
+			taggedTemplate := segment.AsTaggedTemplateExpression()
+			rightExpression = ch.Factory().NewTaggedTemplateExpression(
+				rightExpression,
+				nil,
+				nil,
+				ch.Visitor().VisitNode(taggedTemplate.Template),
+				ast.NodeFlagsNone,
+			)
 		case ast.KindElementAccessExpression, ast.KindPropertyAccessExpression:
 			if i == len(chain)-1 && captureThisArg {
 				if !transformers.IsSimpleCopiableExpression(rightExpression) {

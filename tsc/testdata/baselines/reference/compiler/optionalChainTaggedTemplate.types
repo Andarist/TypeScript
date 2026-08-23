@@ -1,0 +1,9 @@
+//// [tests/cases/compiler/optionalChainTaggedTemplate.ts] ////
+
+=== optionalChainTaggedTemplate.ts ===
+e?.``(
+>e?.``( : any
+>e?.`` : any
+>e : any
+>`` : ""
+
