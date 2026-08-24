@@ -1,0 +1,48 @@
+//// [tests/cases/compiler/contextuallyInferredImplicitUndefinedReturn.ts] ////
+
+=== contextuallyInferredImplicitUndefinedReturn.ts ===
+declare function doesStuff<T>(value: T, callback: (x: T) => T): T;
+>doesStuff : Symbol(doesStuff, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 0))
+>T : Symbol(T, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 27))
+>value : Symbol(value, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 30))
+>T : Symbol(T, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 27))
+>callback : Symbol(callback, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 39))
+>x : Symbol(x, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 51))
+>T : Symbol(T, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 27))
+>T : Symbol(T, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 27))
+>T : Symbol(T, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 27))
+
+const result = doesStuff(undefined, x => {});
+>result : Symbol(result, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 2, 5))
+>doesStuff : Symbol(doesStuff, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 0))
+>undefined : Symbol(undefined)
+>x : Symbol(x, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 2, 35))
+
+declare const maybeNumber: number | undefined;
+>maybeNumber : Symbol(maybeNumber, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 4, 13))
+
+const unionResult = doesStuff(maybeNumber, x => {});
+>unionResult : Symbol(unionResult, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 5, 5))
+>doesStuff : Symbol(doesStuff, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 0))
+>maybeNumber : Symbol(maybeNumber, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 4, 13))
+>x : Symbol(x, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 5, 42))
+
+const callback = () => {};
+>callback : Symbol(callback, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 7, 5))
+
+doesStuff(undefined, callback);
+>doesStuff : Symbol(doesStuff, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 0))
+>undefined : Symbol(undefined)
+>callback : Symbol(callback, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 7, 5))
+
+// @ts-expect-error An independently inferred void return should not become undefined when the type argument is fixed.
+doesStuff<undefined>(undefined, callback);
+>doesStuff : Symbol(doesStuff, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 0))
+>undefined : Symbol(undefined)
+>callback : Symbol(callback, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 7, 5))
+
+// @ts-expect-error A contextual return type without undefined still requires a value.
+doesStuff(1, x => {});
+>doesStuff : Symbol(doesStuff, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 0, 0))
+>x : Symbol(x, Decl(contextuallyInferredImplicitUndefinedReturn.ts, 13, 12))
+

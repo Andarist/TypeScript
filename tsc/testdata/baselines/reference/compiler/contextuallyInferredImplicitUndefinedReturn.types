@@ -1,0 +1,53 @@
+//// [tests/cases/compiler/contextuallyInferredImplicitUndefinedReturn.ts] ////
+
+=== contextuallyInferredImplicitUndefinedReturn.ts ===
+declare function doesStuff<T>(value: T, callback: (x: T) => T): T;
+>doesStuff : <T>(value: T, callback: (x: T) => T) => T
+>value : T
+>callback : (x: T) => T
+>x : T
+
+const result = doesStuff(undefined, x => {});
+>result : undefined
+>doesStuff(undefined, x => {}) : undefined
+>doesStuff : <T>(value: T, callback: (x: T) => T) => T
+>undefined : undefined
+>x => {} : (x: undefined) => undefined
+>x : undefined
+
+declare const maybeNumber: number | undefined;
+>maybeNumber : number | undefined
+
+const unionResult = doesStuff(maybeNumber, x => {});
+>unionResult : number | undefined
+>doesStuff(maybeNumber, x => {}) : number | undefined
+>doesStuff : <T>(value: T, callback: (x: T) => T) => T
+>maybeNumber : number | undefined
+>x => {} : (x: number | undefined) => undefined
+>x : number | undefined
+
+const callback = () => {};
+>callback : () => void
+>() => {} : () => void
+
+doesStuff(undefined, callback);
+>doesStuff(undefined, callback) : void | undefined
+>doesStuff : <T>(value: T, callback: (x: T) => T) => T
+>undefined : undefined
+>callback : () => void
+
+// @ts-expect-error An independently inferred void return should not become undefined when the type argument is fixed.
+doesStuff<undefined>(undefined, callback);
+>doesStuff<undefined>(undefined, callback) : undefined
+>doesStuff : <T>(value: T, callback: (x: T) => T) => T
+>undefined : undefined
+>callback : () => void
+
+// @ts-expect-error A contextual return type without undefined still requires a value.
+doesStuff(1, x => {});
+>doesStuff(1, x => {}) : 1
+>doesStuff : <T>(value: T, callback: (x: T) => T) => T
+>1 : 1
+>x => {} : (x: number) => void
+>x : number
+
