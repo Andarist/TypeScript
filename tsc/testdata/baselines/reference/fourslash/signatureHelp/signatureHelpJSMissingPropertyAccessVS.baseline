@@ -3,8 +3,8 @@
 // foo.filter()
 //            ^
 // | ----------------------------------------------------------------------
-// | ReadonlyArray.filter<S extends T>(**predicate: (value: T, index: number, array: readonly T[]) => value is S**, thisArg?: any): S[]
-// | - `predicate: (value: T, index: number, array: readonly T[]) => value is S`: A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array.
+// | ReadonlyArray.filter<S extends T>(**predicate: (value: T, index: number, array: readonly T[]) => proves value is S**, thisArg?: any): S[]
+// | - `predicate: (value: T, index: number, array: readonly T[]) => proves value is S`: A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array.
 // | Returns the elements of an array that meet the condition specified in a callback function.
 // | ----------------------------------------------------------------------
 [
@@ -21,14 +21,14 @@
     "item": {
       "signatures": [
         {
-          "label": "ReadonlyArray.filter<S extends T>(predicate: (value: T, index: number, array: readonly T[]) => value is S, thisArg?: any): S[]",
+          "label": "ReadonlyArray.filter<S extends T>(predicate: (value: T, index: number, array: readonly T[]) => proves value is S, thisArg?: any): S[]",
           "documentation": {
             "kind": "markdown",
             "value": "Returns the elements of an array that meet the condition specified in a callback function."
           },
           "parameters": [
             {
-              "label": "predicate: (value: T, index: number, array: readonly T[]) => value is S",
+              "label": "predicate: (value: T, index: number, array: readonly T[]) => proves value is S",
               "documentation": {
                 "kind": "markdown",
                 "value": "A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array."
@@ -203,6 +203,16 @@
               {
                 "ClassificationTypeName": "punctuation",
                 "Text": "=>",
+                "_vs_type": "ClassifiedTextRun"
+              },
+              {
+                "ClassificationTypeName": "whitespace",
+                "Text": " ",
+                "_vs_type": "ClassifiedTextRun"
+              },
+              {
+                "ClassificationTypeName": "keyword",
+                "Text": "proves",
                 "_vs_type": "ClassifiedTextRun"
               },
               {

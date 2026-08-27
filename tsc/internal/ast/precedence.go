@@ -617,8 +617,10 @@ const (
 	//       `(` Type[~Extends] `)`
 	//
 	//   TypePredicateNode:
-	//       `asserts`? TypePredicateParameterName
-	//       `asserts`? TypePredicateParameterName `is` Type[~Extends]
+	//       `asserts` TypePredicateParameterName
+	//       `asserts` TypePredicateParameterName `is` Type[~Extends]
+	//       `proves` TypePredicateParameterName `is` Type[~Extends]
+	//       TypePredicateParameterName `is` Type[~Extends]
 	//
 	//   TypePredicateParameterName:
 	//       `this`

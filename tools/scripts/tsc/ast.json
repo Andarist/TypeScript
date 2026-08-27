@@ -195,6 +195,7 @@
             "BigIntKeyword",
             "OverrideKeyword",
             "OfKeyword",
+            "ProvesKeyword",
             {
                 "name": "DeferKeyword",
                 "comment": "LastKeyword and LastToken and LastContextualKeyword"
@@ -1215,6 +1216,7 @@
                     "ReadonlyKeyword": "ReadonlyKeyword",
                     "OutKeyword": "OutKeyword",
                     "OverrideKeyword": "OverrideKeyword",
+                    "ProvesKeyword": "ProvesKeyword",
                     "StaticKeyword": "StaticKeyword",
                     "BinaryOperatorToken": "BinaryOperator",
                     "AssignmentOperatorToken": "AssignmentOperator"
@@ -3663,6 +3665,11 @@
                     {
                         "name": "AssertsModifier",
                         "type": "AssertsKeyword",
+                        "optional": true
+                    },
+                    {
+                        "name": "ProvesModifier",
+                        "type": "ProvesKeyword",
                         "optional": true
                     },
                     {

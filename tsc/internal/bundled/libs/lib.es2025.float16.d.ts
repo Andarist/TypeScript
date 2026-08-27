@@ -124,7 +124,7 @@ interface Float16Array<TArrayBuffer extends ArrayBufferLike = ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(

@@ -24,7 +24,7 @@ interface Array<T> {
      * @param thisArg If provided, it will be used as the this value for each invocation of
      * predicate. If it is not provided, undefined is used instead.
      */
-    findLast<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S | undefined;
+    findLast<S extends T>(predicate: (value: T, index: number, array: T[]) => proves value is S, thisArg?: any): S | undefined;
     findLast(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T | undefined;
 
     /**
@@ -94,7 +94,7 @@ interface ReadonlyArray<T> {
      * predicate. If it is not provided, undefined is used instead.
      */
     findLast<S extends T>(
-        predicate: (value: T, index: number, array: readonly T[]) => value is S,
+        predicate: (value: T, index: number, array: readonly T[]) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -176,7 +176,7 @@ interface Int8Array<TArrayBuffer extends ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -240,7 +240,7 @@ interface Uint8Array<TArrayBuffer extends ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -304,7 +304,7 @@ interface Uint8ClampedArray<TArrayBuffer extends ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -376,7 +376,7 @@ interface Int16Array<TArrayBuffer extends ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -440,7 +440,7 @@ interface Uint16Array<TArrayBuffer extends ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -512,7 +512,7 @@ interface Int32Array<TArrayBuffer extends ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -576,7 +576,7 @@ interface Uint32Array<TArrayBuffer extends ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -648,7 +648,7 @@ interface Float32Array<TArrayBuffer extends ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -720,7 +720,7 @@ interface Float64Array<TArrayBuffer extends ArrayBufferLike> {
             value: number,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -792,7 +792,7 @@ interface BigInt64Array<TArrayBuffer extends ArrayBufferLike> {
             value: bigint,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(
@@ -864,7 +864,7 @@ interface BigUint64Array<TArrayBuffer extends ArrayBufferLike> {
             value: bigint,
             index: number,
             array: this,
-        ) => value is S,
+        ) => proves value is S,
         thisArg?: any,
     ): S | undefined;
     findLast(

@@ -23,9 +23,9 @@ const mapped = iterator.map(String);
 const filtered = iterator.filter(x => x > 0);
 >filtered : IteratorObject<number, undefined, unknown>
 >iterator.filter(x => x > 0) : IteratorObject<number, undefined, unknown>
->iterator.filter : { <S extends number>(predicate: (value: number, index: number) => value is S): IteratorObject<S, undefined, unknown>; (predicate: (value: number, index: number) => unknown): IteratorObject<number, undefined, unknown>; }
+>iterator.filter : { <S extends number>(predicate: (value: number, index: number) => proves value is S): IteratorObject<S, undefined, unknown>; (predicate: (value: number, index: number) => unknown): IteratorObject<number, undefined, unknown>; }
 >iterator : IteratorObject<number, undefined, unknown>
->filter : { <S extends number>(predicate: (value: number, index: number) => value is S): IteratorObject<S, undefined, unknown>; (predicate: (value: number, index: number) => unknown): IteratorObject<number, undefined, unknown>; }
+>filter : { <S extends number>(predicate: (value: number, index: number) => proves value is S): IteratorObject<S, undefined, unknown>; (predicate: (value: number, index: number) => unknown): IteratorObject<number, undefined, unknown>; }
 >x => x > 0 : (x: number) => boolean
 >x : number
 >x > 0 : boolean
@@ -44,9 +44,9 @@ function isZero(x: number): x is 0 {
 const zero = iterator.filter(isZero);
 >zero : IteratorObject<0, undefined, unknown>
 >iterator.filter(isZero) : IteratorObject<0, undefined, unknown>
->iterator.filter : { <S extends number>(predicate: (value: number, index: number) => value is S): IteratorObject<S, undefined, unknown>; (predicate: (value: number, index: number) => unknown): IteratorObject<number, undefined, unknown>; }
+>iterator.filter : { <S extends number>(predicate: (value: number, index: number) => proves value is S): IteratorObject<S, undefined, unknown>; (predicate: (value: number, index: number) => unknown): IteratorObject<number, undefined, unknown>; }
 >iterator : IteratorObject<number, undefined, unknown>
->filter : { <S extends number>(predicate: (value: number, index: number) => value is S): IteratorObject<S, undefined, unknown>; (predicate: (value: number, index: number) => unknown): IteratorObject<number, undefined, unknown>; }
+>filter : { <S extends number>(predicate: (value: number, index: number) => proves value is S): IteratorObject<S, undefined, unknown>; (predicate: (value: number, index: number) => unknown): IteratorObject<number, undefined, unknown>; }
 >isZero : (x: number) => x is 0
 
 const iteratorFromBare = Iterator.from({

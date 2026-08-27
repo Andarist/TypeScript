@@ -42,17 +42,17 @@ export let lastIndex2 = array.findLastIndex(somePredicate);
 export let last1 = array.findLast(somePredicate);
 >last1 : number | undefined
 >array.findLast(somePredicate) : number | undefined
->array.findLast : { <S extends number>(predicate: (value: number, index: number, array: number[]) => value is S, thisArg?: any): S | undefined; (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): number | undefined; }
+>array.findLast : { <S extends number>(predicate: (value: number, index: number, array: number[]) => proves value is S, thisArg?: any): S | undefined; (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): number | undefined; }
 >array : number[]
->findLast : { <S extends number>(predicate: (value: number, index: number, array: number[]) => value is S, thisArg?: any): S | undefined; (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): number | undefined; }
+>findLast : { <S extends number>(predicate: (value: number, index: number, array: number[]) => proves value is S, thisArg?: any): S | undefined; (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): number | undefined; }
 >somePredicate : (x: any) => boolean
 
 export let last2 = array.findLast(somePredicate);
 >last2 : number | undefined
 >array.findLast(somePredicate) : number | undefined
->array.findLast : { <S extends number>(predicate: (value: number, index: number, array: number[]) => value is S, thisArg?: any): S | undefined; (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): number | undefined; }
+>array.findLast : { <S extends number>(predicate: (value: number, index: number, array: number[]) => proves value is S, thisArg?: any): S | undefined; (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): number | undefined; }
 >array : number[]
->findLast : { <S extends number>(predicate: (value: number, index: number, array: number[]) => value is S, thisArg?: any): S | undefined; (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): number | undefined; }
+>findLast : { <S extends number>(predicate: (value: number, index: number, array: number[]) => proves value is S, thisArg?: any): S | undefined; (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): number | undefined; }
 >somePredicate : (x: any) => boolean
 
 export let sorted = array.toSorted();

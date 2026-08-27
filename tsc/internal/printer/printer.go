@@ -1887,6 +1887,10 @@ func (p *Printer) emitTypePredicate(node *ast.TypePredicateNode) {
 		p.emitTokenNode(node.AssertsModifier)
 		p.writeSpace()
 	}
+	if node.ProvesModifier != nil {
+		p.emitTokenNode(node.ProvesModifier)
+		p.writeSpace()
+	}
 	p.emitTypePredicateParameterName(node.ParameterName)
 	if node.Type != nil {
 		p.writeSpace()

@@ -4,17 +4,17 @@
 // https://github.com/microsoft/TypeScript/issues/16069
 
 const numsOrNull = [1, 2, 3, 4, null];
-const filteredNumsTruthy: number[] = numsOrNull.filter(x => !!x);  // should error
+const filteredNumsTruthy: number[] = numsOrNull.filter(x => !!x);  // should ok with a one-sided predicate
 const filteredNumsNonNullish: number[] = numsOrNull.filter(x => x !== null);  // should ok
 
-const evenSquaresInline: number[] =  // should error
+const evenSquaresInline: number[] =  // should ok with a one-sided predicate
     [1, 2, 3, 4]
         .map(x => x % 2 === 0 ? x * x : null)
         .filter(x => !!x); // tests truthiness, not non-nullishness
 
 const isTruthy = (x: number | null) => !!x;
 
-const evenSquares: number[] =  // should error
+const evenSquares: number[] =  // should ok with a one-sided predicate
     [1, 2, 3, 4]
     .map(x => x % 2 === 0 ? x * x : null)
       .filter(isTruthy);
@@ -113,7 +113,7 @@ function flakyIsString(x: string | number) {
   return typeof x === 'string' && Math.random() > 0.5;
 }
 if (flakyIsString(strOrNum)) {
-  let t: string = strOrNum;  // should error
+  let t: string = strOrNum;  // should ok
 } else {
   let t: number = strOrNum;  // should error
 }
@@ -133,7 +133,7 @@ if (isDate(maybeDate)) {
 }
 
 if (flakyIsDate(maybeDate)) {
-  let t: Date = maybeDate;  // should error
+  let t: Date = maybeDate;  // should ok
 } else {
   let t: object = maybeDate;  // should ok
 }
@@ -149,7 +149,7 @@ function irrelevantIsNumberDestructuring(x: string | number) {
   return typeof x === 'string';
 }
 
-// Cannot infer a type guard for either param because of the false case.
+// Infer a one-sided predicate for the first refined parameter.
 function areBothNums(x: string|number, y: string|number) {
   return typeof x === 'number' && typeof y === 'number';
 }
@@ -318,14 +318,14 @@ function negative(t: Something) {
 "use strict";
 // https://github.com/microsoft/TypeScript/issues/16069
 const numsOrNull = [1, 2, 3, 4, null];
-const filteredNumsTruthy = numsOrNull.filter(x => !!x); // should error
+const filteredNumsTruthy = numsOrNull.filter(x => !!x); // should ok with a one-sided predicate
 const filteredNumsNonNullish = numsOrNull.filter(x => x !== null); // should ok
-const evenSquaresInline = // should error
+const evenSquaresInline = // should ok with a one-sided predicate
  [1, 2, 3, 4]
     .map(x => x % 2 === 0 ? x * x : null)
     .filter(x => !!x); // tests truthiness, not non-nullishness
 const isTruthy = (x) => !!x;
-const evenSquares = // should error
+const evenSquares = // should ok with a one-sided predicate
  [1, 2, 3, 4]
     .map(x => x % 2 === 0 ? x * x : null)
     .filter(isTruthy);
@@ -395,7 +395,7 @@ function flakyIsString(x) {
     return typeof x === 'string' && Math.random() > 0.5;
 }
 if (flakyIsString(strOrNum)) {
-    let t = strOrNum; // should error
+    let t = strOrNum; // should ok
 }
 else {
     let t = strOrNum; // should error
@@ -413,7 +413,7 @@ else {
     let t = maybeDate; // should ok
 }
 if (flakyIsDate(maybeDate)) {
-    let t = maybeDate; // should error
+    let t = maybeDate; // should ok
 }
 else {
     let t = maybeDate; // should ok
@@ -428,7 +428,7 @@ function irrelevantIsNumberDestructuring(x) {
     [x] = [Math.random() < 0.5 ? "string" : 123];
     return typeof x === 'string';
 }
-// Cannot infer a type guard for either param because of the false case.
+// Infer a one-sided predicate for the first refined parameter.
 function areBothNums(x, y) {
     return typeof x === 'number' && typeof y === 'number';
 }
@@ -553,7 +553,7 @@ declare const numsOrNull: (number | null)[];
 declare const filteredNumsTruthy: number[];
 declare const filteredNumsNonNullish: number[];
 declare const evenSquaresInline: number[];
-declare const isTruthy: (x: number | null) => boolean;
+declare const isTruthy: (x: number | null) => proves x is number;
 declare const evenSquares: number[];
 declare const evenSquaresNonNull: number[];
 declare function isNonNull(x: number | null): x is number;
@@ -584,13 +584,13 @@ declare const a: string[];
 declare function backwardsGuard(x: number | string): x is number;
 declare function isString(x: string | number): x is string;
 declare let strOrNum: string | number;
-declare function flakyIsString(x: string | number): boolean;
+declare function flakyIsString(x: string | number): proves x is string;
 declare function isDate(x: object): x is Date;
-declare function flakyIsDate(x: object): boolean;
+declare function flakyIsDate(x: object): proves x is Date;
 declare let maybeDate: object;
 declare function irrelevantIsNumber(x: string | number): boolean;
 declare function irrelevantIsNumberDestructuring(x: string | number): boolean;
-declare function areBothNums(x: string | number, y: string | number): boolean;
+declare function areBothNums(x: string | number, y: string | number): proves x is number;
 declare function doubleReturn(x: string | number): boolean;
 declare function guardsOneButNotOthers(a: string | number, b: string | number, c: string | number): b is string;
 declare function dunderguard(__x: number | string): __x is string;
@@ -615,7 +615,7 @@ declare function doNotRefineDestructuredParam({ x, y }: {
     x: number | null;
     y: number;
 }): boolean;
-declare function isShortString(x: unknown): boolean;
+declare function isShortString(x: unknown): proves x is string;
 declare let str: string;
 declare function isStringFromUnknown(x: unknown): x is string;
 declare function isNumOrStr(x: unknown): x is string | number;

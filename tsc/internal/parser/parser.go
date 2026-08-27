@@ -2860,6 +2860,11 @@ func (p *Parser) parseNonArrayType() *ast.Node {
 			return p.parseAssertsTypePredicate()
 		}
 		return p.parseTypeReference()
+	case ast.KindProvesKeyword:
+		if p.lookAhead((*Parser).nextTokenIsIdentifierOrKeywordOnSameLine) {
+			return p.parseProvesTypePredicate()
+		}
+		return p.parseTypeReference()
 	case ast.KindTemplateHead:
 		return p.parseTemplateType()
 	default:
@@ -2882,7 +2887,7 @@ func (p *Parser) parseThisTypeNode() *ast.Node {
 
 func (p *Parser) parseThisTypePredicate(lhs *ast.Node) *ast.Node {
 	p.nextToken()
-	return p.finishNode(p.factory.NewTypePredicateNode(nil /*assertsModifier*/, lhs, p.parseType()), lhs.Pos())
+	return p.finishNode(p.factory.NewTypePredicateNode(nil /*assertsModifier*/, nil /*provesModifier*/, lhs, p.parseType()), lhs.Pos())
 }
 
 func (p *Parser) parseJSDocAllType() *ast.Node {
@@ -3456,7 +3461,7 @@ func (p *Parser) parseTypeOrTypePredicate() *ast.TypeNode {
 		id := p.parseIdentifier()
 		if p.token == ast.KindIsKeyword && !p.hasPrecedingLineBreak() {
 			p.nextToken()
-			return p.finishNode(p.factory.NewTypePredicateNode(nil /*assertsModifier*/, id, p.parseType()), pos)
+			return p.finishNode(p.factory.NewTypePredicateNode(nil /*assertsModifier*/, nil /*provesModifier*/, id, p.parseType()), pos)
 		}
 		p.rewind(state)
 	}
@@ -3728,7 +3733,21 @@ func (p *Parser) parseAssertsTypePredicate() *ast.TypeNode {
 	if p.parseOptional(ast.KindIsKeyword) {
 		typeNode = p.parseType()
 	}
-	return p.finishNode(p.factory.NewTypePredicateNode(assertsModifier, parameterName, typeNode), pos)
+	return p.finishNode(p.factory.NewTypePredicateNode(assertsModifier, nil /*provesModifier*/, parameterName, typeNode), pos)
+}
+
+func (p *Parser) parseProvesTypePredicate() *ast.TypeNode {
+	pos := p.nodePos()
+	provesModifier := p.parseExpectedToken(ast.KindProvesKeyword)
+	var parameterName *ast.Node
+	if p.token == ast.KindThisKeyword {
+		parameterName = p.parseThisTypeNode()
+	} else {
+		parameterName = p.parseIdentifier()
+	}
+	p.parseExpected(ast.KindIsKeyword)
+	typeNode := p.parseType()
+	return p.finishNode(p.factory.NewTypePredicateNode(nil /*assertsModifier*/, provesModifier, parameterName, typeNode), pos)
 }
 
 func (p *Parser) parseTemplateType() *ast.Node {
@@ -6238,7 +6257,7 @@ func (p *Parser) isStartOfType(inStartOfParameter bool) bool {
 		ast.KindOpenBraceToken, ast.KindOpenBracketToken, ast.KindLessThanToken, ast.KindBarToken, ast.KindAmpersandToken,
 		ast.KindNewKeyword, ast.KindStringLiteral, ast.KindNumericLiteral, ast.KindBigIntLiteral, ast.KindTrueKeyword,
 		ast.KindFalseKeyword, ast.KindObjectKeyword, ast.KindAsteriskToken, ast.KindQuestionToken, ast.KindExclamationToken,
-		ast.KindDotDotDotToken, ast.KindInferKeyword, ast.KindImportKeyword, ast.KindAssertsKeyword, ast.KindNoSubstitutionTemplateLiteral,
+		ast.KindDotDotDotToken, ast.KindInferKeyword, ast.KindImportKeyword, ast.KindAssertsKeyword, ast.KindProvesKeyword, ast.KindNoSubstitutionTemplateLiteral,
 		ast.KindTemplateHead:
 		return true
 	case ast.KindFunctionKeyword:

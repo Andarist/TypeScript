@@ -256,6 +256,7 @@ import type {
     PropertyNameLiteral,
     PropertySignatureDeclaration,
     ProtectedKeyword,
+    ProvesKeyword,
     PseudoLiteralSyntaxKind,
     PseudoLiteralToken,
     PublicKeyword,
@@ -3232,6 +3233,16 @@ export declare namespace isOverrideKeyword {
 }
 
 isOverrideKeyword.Handle = isOverrideKeyword as any;
+
+export function isProvesKeyword(node: Node): node is ProvesKeyword {
+    return node.kind === SyntaxKind.ProvesKeyword;
+}
+
+export declare namespace isProvesKeyword {
+    function Handle<T extends NodeHandleLike<Node>>(node: T): node is SpecializeNodeHandle<T, ProvesKeyword>;
+}
+
+isProvesKeyword.Handle = isProvesKeyword as any;
 
 export function isStaticKeyword(node: Node): node is StaticKeyword {
     return node.kind === SyntaxKind.StaticKeyword;

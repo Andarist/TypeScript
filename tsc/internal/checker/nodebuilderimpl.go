@@ -1573,11 +1573,15 @@ func (b *NodeBuilderImpl) createMappedTypeNodeFromType(t *Type) *ast.TypeNode {
 
 func (b *NodeBuilderImpl) typePredicateToTypePredicateNode(predicate *TypePredicate) *ast.Node {
 	var assertsModifier *ast.Node
-	if predicate.kind == TypePredicateKindAssertsIdentifier || predicate.kind == TypePredicateKindAssertsThis {
+	if isAssertsTypePredicateKind(predicate.kind) {
 		assertsModifier = b.f.NewToken(ast.KindAssertsKeyword)
 	}
+	var provesModifier *ast.Node
+	if isProvesTypePredicateKind(predicate.kind) {
+		provesModifier = b.f.NewToken(ast.KindProvesKeyword)
+	}
 	var parameterName *ast.Node
-	if predicate.kind == TypePredicateKindIdentifier || predicate.kind == TypePredicateKindAssertsIdentifier {
+	if isIdentifierTypePredicateKind(predicate.kind) {
 		parameterName = b.f.NewIdentifier(predicate.parameterName)
 		b.e.AddEmitFlags(parameterName, printer.EFNoAsciiEscaping)
 	} else {
@@ -1589,6 +1593,7 @@ func (b *NodeBuilderImpl) typePredicateToTypePredicateNode(predicate *TypePredic
 	}
 	return b.f.NewTypePredicateNode(
 		assertsModifier,
+		provesModifier,
 		parameterName,
 		typeNode,
 	)
@@ -1764,13 +1769,17 @@ func (b *NodeBuilderImpl) serializeInferredReturnTypeForSignature(signature *Sig
 
 func (b *NodeBuilderImpl) typePredicateToTypePredicateNodeHelper(typePredicate *TypePredicate) *ast.Node {
 	var assertsModifier *ast.Node
-	if typePredicate.kind == TypePredicateKindAssertsThis || typePredicate.kind == TypePredicateKindAssertsIdentifier {
+	if isAssertsTypePredicateKind(typePredicate.kind) {
 		assertsModifier = b.f.NewToken(ast.KindAssertsKeyword)
 	} else {
 		assertsModifier = nil
 	}
+	var provesModifier *ast.Node
+	if isProvesTypePredicateKind(typePredicate.kind) {
+		provesModifier = b.f.NewToken(ast.KindProvesKeyword)
+	}
 	var parameterName *ast.Node
-	if typePredicate.kind == TypePredicateKindIdentifier || typePredicate.kind == TypePredicateKindAssertsIdentifier {
+	if isIdentifierTypePredicateKind(typePredicate.kind) {
 		parameterName = b.newIdentifier(typePredicate.parameterName, nil /*symbol*/)
 		b.e.SetEmitFlags(parameterName, printer.EFNoAsciiEscaping)
 	} else {
@@ -1780,7 +1789,7 @@ func (b *NodeBuilderImpl) typePredicateToTypePredicateNodeHelper(typePredicate *
 	if typePredicate.t != nil {
 		typeNode = b.typeToTypeNode(typePredicate.t)
 	}
-	return b.f.NewTypePredicateNode(assertsModifier, parameterName, typeNode)
+	return b.f.NewTypePredicateNode(assertsModifier, provesModifier, parameterName, typeNode)
 }
 
 type SignatureToSignatureDeclarationOptions struct {

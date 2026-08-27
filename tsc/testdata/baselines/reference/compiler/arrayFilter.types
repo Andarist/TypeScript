@@ -23,9 +23,9 @@ var foo = [
 
 foo.filter(x => x.name); //should accepted all possible types not only boolean! 
 >foo.filter(x => x.name) : ({ name: string; } | { name: null; })[]
->foo.filter : { <S extends { name: string; } | { name: null; }>(predicate: (value: { name: string; } | { name: null; }, index: number, array: ({ name: string; } | { name: null; })[]) => value is S, thisArg?: any): S[]; (predicate: (value: { name: string; } | { name: null; }, index: number, array: ({ name: string; } | { name: null; })[]) => unknown, thisArg?: any): ({ name: string; } | { name: null; })[]; }
+>foo.filter : { <S extends { name: string; } | { name: null; }>(predicate: (value: { name: string; } | { name: null; }, index: number, array: ({ name: string; } | { name: null; })[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: { name: string; } | { name: null; }, index: number, array: ({ name: string; } | { name: null; })[]) => unknown, thisArg?: any): ({ name: string; } | { name: null; })[]; }
 >foo : ({ name: string; } | { name: null; })[]
->filter : { <S extends { name: string; } | { name: null; }>(predicate: (value: { name: string; } | { name: null; }, index: number, array: ({ name: string; } | { name: null; })[]) => value is S, thisArg?: any): S[]; (predicate: (value: { name: string; } | { name: null; }, index: number, array: ({ name: string; } | { name: null; })[]) => unknown, thisArg?: any): ({ name: string; } | { name: null; })[]; }
+>filter : { <S extends { name: string; } | { name: null; }>(predicate: (value: { name: string; } | { name: null; }, index: number, array: ({ name: string; } | { name: null; })[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: { name: string; } | { name: null; }, index: number, array: ({ name: string; } | { name: null; })[]) => unknown, thisArg?: any): ({ name: string; } | { name: null; })[]; }
 >x => x.name : (x: { name: string; } | { name: null; }) => string | null
 >x : { name: string; } | { name: null; }
 >x.name : string | null

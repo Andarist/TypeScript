@@ -289,7 +289,7 @@ func (c *Checker) getTypeAtFlowCall(f *FlowState, flow *ast.FlowNode) FlowType {
 	signature := c.getEffectsSignature(flow.Node)
 	if signature != nil {
 		predicate := c.getTypePredicateOfSignature(signature)
-		if predicate != nil && (predicate.kind == TypePredicateKindAssertsThis || predicate.kind == TypePredicateKindAssertsIdentifier) {
+		if predicate != nil && isAssertsTypePredicateKind(predicate.kind) {
 			flowType := c.getTypeAtFlowNode(f, flow.Antecedent)
 			t := c.finalizeEvolvingArrayType(flowType.t)
 			var narrowedType *Type
@@ -314,6 +314,9 @@ func (c *Checker) getTypeAtFlowCall(f *FlowState, flow *ast.FlowNode) FlowType {
 }
 
 func (c *Checker) narrowTypeByTypePredicate(f *FlowState, t *Type, predicate *TypePredicate, callExpression *ast.Node, assumeTrue bool) *Type {
+	if !assumeTrue && isProvesTypePredicateKind(predicate.kind) {
+		return t
+	}
 	// Don't narrow from 'any' if the predicate type is exactly 'Object' or 'Function'
 	if predicate.t != nil && !(IsTypeAny(t) && (predicate.t == c.globalObjectType || predicate.t == c.globalFunctionType)) {
 		predicateArgument := c.getTypePredicateArgument(predicate, callExpression)
@@ -450,7 +453,7 @@ func (c *Checker) narrowTypeByCallExpression(f *FlowState, t *Type, callExpressi
 				predicate = c.getTypePredicateOfSignature(signature)
 			}
 		}
-		if predicate != nil && (predicate.kind == TypePredicateKindThis || predicate.kind == TypePredicateKindIdentifier) {
+		if predicate != nil && isNarrowingTypePredicateKind(predicate.kind) {
 			return c.narrowTypeByTypePredicate(f, t, predicate, callExpression, assumeTrue)
 		}
 	}
@@ -828,7 +831,10 @@ func (c *Checker) narrowTypeByInstanceof(f *FlowState, t *Type, expr *ast.Binary
 	if signature := c.getEffectsSignature(expr.AsNode()); signature != nil {
 		predicate = c.getTypePredicateOfSignature(signature)
 	}
-	if predicate != nil && predicate.kind == TypePredicateKindIdentifier && predicate.parameterIndex == 0 {
+	if predicate != nil && (predicate.kind == TypePredicateKindIdentifier || predicate.kind == TypePredicateKindProvesIdentifier) && predicate.parameterIndex == 0 {
+		if !assumeTrue && isProvesTypePredicateKind(predicate.kind) {
+			return t
+		}
 		return c.getNarrowedType(t, predicate.t, assumeTrue, true /*checkDerived*/)
 	}
 	if !c.isTypeDerivedFrom(rightType, c.globalFunctionType) {
@@ -2449,7 +2455,7 @@ func (c *Checker) typeMaybeAssignableTo(source *Type, target *Type) bool {
 }
 
 func (c *Checker) getTypePredicateArgument(predicate *TypePredicate, callExpression *ast.Node) *ast.Node {
-	if predicate.kind == TypePredicateKindIdentifier || predicate.kind == TypePredicateKindAssertsIdentifier {
+	if isIdentifierTypePredicateKind(predicate.kind) {
 		arguments := callExpression.Arguments()
 		if predicate.parameterIndex >= 0 && int(predicate.parameterIndex) < len(arguments) {
 			return arguments[predicate.parameterIndex]

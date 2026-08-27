@@ -1,0 +1,110 @@
+provesTypePredicateErrors.ts(1,42): error TS1005: 'is' expected.
+provesTypePredicateErrors.ts(5,10): error TS2391: Function implementation is missing or not immediately following the declaration.
+provesTypePredicateErrors.ts(6,5): error TS1131: Property or signature expected.
+provesTypePredicateErrors.ts(7,1): error TS1128: Declaration or statement expected.
+provesTypePredicateErrors.ts(9,40): error TS1225: Cannot find parameter 'proves'.
+provesTypePredicateErrors.ts(9,47): error TS1144: '{' or ';' expected.
+provesTypePredicateErrors.ts(9,47): error TS2304: Cannot find name 'x'.
+provesTypePredicateErrors.ts(9,49): error TS2304: Cannot find name 'is'.
+provesTypePredicateErrors.ts(9,49): error TS1228: A type predicate is only allowed in return type position for functions and methods.
+provesTypePredicateErrors.ts(9,52): error TS1434: Unexpected keyword or identifier.
+provesTypePredicateErrors.ts(9,52): error TS2693: 'string' only refers to a type, but is being used as a value here.
+provesTypePredicateErrors.ts(17,5): error TS2322: Type 'string' is not assignable to type 'boolean'.
+provesTypePredicateErrors.ts(20,55): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  Property 'b' is missing in type 'C' but required in type 'B'.
+provesTypePredicateErrors.ts(24,47): error TS1225: Cannot find parameter 'x'.
+provesTypePredicateErrors.ts(28,54): error TS1229: A type predicate cannot reference a rest parameter.
+provesTypePredicateErrors.ts(34,1): error TS2322: Type '(x: A) => proves x is C' is not assignable to type '(x: A) => proves x is B'.
+  Type predicate 'proves x is C' is not assignable to 'proves x is B'.
+    Property 'b' is missing in type 'C' but required in type 'B'.
+provesTypePredicateErrors.ts(38,1): error TS2322: Type '(x: A, y: A) => proves y is C' is not assignable to type '(x: A, y: A) => proves x is C'.
+  Type predicate 'proves y is C' is not assignable to 'proves x is C'.
+    Parameter 'y' is not in the same position as parameter 'x'.
+provesTypePredicateErrors.ts(40,22): error TS1228: A type predicate is only allowed in return type position for functions and methods.
+
+
+==== provesTypePredicateErrors.ts (18 errors) ====
+    function missingIs(x: unknown): proves x string {
+                                             ~~~~~~
+!!! error TS1005: 'is' expected.
+        return true;
+    }
+    
+    function missingType(x: unknown): proves x is {
+             ~~~~~~~~~~~
+!!! error TS2391: Function implementation is missing or not immediately following the declaration.
+        return true;
+        ~~~~~~
+!!! error TS1131: Property or signature expected.
+    }
+    ~
+!!! error TS1128: Declaration or statement expected.
+    
+    function combined(x: unknown): asserts proves x is string {
+                                           ~~~~~~
+!!! error TS1225: Cannot find parameter 'proves'.
+                                                  ~
+!!! error TS1144: '{' or ';' expected.
+                                                  ~
+!!! error TS2304: Cannot find name 'x'.
+                                                    ~~
+!!! error TS2304: Cannot find name 'is'.
+                                                    ~~~
+!!! error TS1228: A type predicate is only allowed in return type position for functions and methods.
+                                                       ~~~~~~
+!!! error TS1434: Unexpected keyword or identifier.
+                                                       ~~~~~~
+!!! error TS2693: 'string' only refers to a type, but is being used as a value here.
+    }
+    
+    class A { a = 0; }
+    class B extends A { b = 0; }
+    class C extends A { c = 0; }
+    
+    function nonBooleanReturn(x: unknown): proves x is string {
+        return "yes";
+        ~~~~~~
+!!! error TS2322: Type 'string' is not assignable to type 'boolean'.
+    }
+    
+    function incompatiblePredicateType(x: B): proves x is C {
+                                                          ~
+!!! error TS2677: A type predicate's type must be assignable to its parameter's type.
+!!! error TS2677:   Property 'b' is missing in type 'C' but required in type 'B'.
+!!! related TS2728 provesTypePredicateErrors.ts:13:21: 'b' is declared here.
+        return true;
+    }
+    
+    function unknownParameter(y: unknown): proves x is string {
+                                                  ~
+!!! error TS1225: Cannot find parameter 'x'.
+        return true;
+    }
+    
+    function restParameter(...values: unknown[]): proves values is string[] {
+                                                         ~~~~~~
+!!! error TS1229: A type predicate cannot reference a rest parameter.
+        return true;
+    }
+    
+    declare const provesC: (x: A) => proves x is C;
+    declare let provesB: (x: A) => proves x is B;
+    provesB = provesC;
+    ~~~~~~~
+!!! error TS2322: Type '(x: A) => proves x is C' is not assignable to type '(x: A) => proves x is B'.
+!!! error TS2322:   Type predicate 'proves x is C' is not assignable to 'proves x is B'.
+!!! error TS2322:     Property 'b' is missing in type 'C' but required in type 'B'.
+!!! related TS2728 provesTypePredicateErrors.ts:13:21: 'b' is declared here.
+    
+    declare let firstParameter: (x: A, y: A) => proves x is C;
+    declare const secondParameter: (x: A, y: A) => proves y is C;
+    firstParameter = secondParameter;
+    ~~~~~~~~~~~~~~
+!!! error TS2322: Type '(x: A, y: A) => proves y is C' is not assignable to type '(x: A, y: A) => proves x is C'.
+!!! error TS2322:   Type predicate 'proves y is C' is not assignable to 'proves x is C'.
+!!! error TS2322:     Parameter 'y' is not in the same position as parameter 'x'.
+    
+    let invalidPosition: proves x is A;
+                         ~~~~~~~~~~~~~
+!!! error TS1228: A type predicate is only allowed in return type position for functions and methods.
+    

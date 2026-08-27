@@ -87,6 +87,7 @@ var textToKeyword = map[string]ast.Kind{
 	"package":     ast.KindPackageKeyword,
 	"private":     ast.KindPrivateKeyword,
 	"protected":   ast.KindProtectedKeyword,
+	"proves":      ast.KindProvesKeyword,
 	"public":      ast.KindPublicKeyword,
 	"override":    ast.KindOverrideKeyword,
 	"out":         ast.KindOutKeyword,

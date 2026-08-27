@@ -772,6 +772,9 @@ export class RemoteNode extends RemoteNodeBase implements Node {
     get propertyName(): RemoteNode | undefined {
         return this.getNamedChild("propertyName") as RemoteNode;
     }
+    get provesModifier(): RemoteNode | undefined {
+        return this.getNamedChild("provesModifier") as RemoteNode;
+    }
     get qualifier(): RemoteNode | undefined {
         return this.getNamedChild("qualifier") as RemoteNode;
     }

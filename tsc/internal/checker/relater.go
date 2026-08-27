@@ -1634,7 +1634,7 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 			sourceTypePredicate := c.getTypePredicateOfSignature(source)
 			if sourceTypePredicate != nil {
 				result &= c.compareTypePredicateRelatedTo(sourceTypePredicate, targetTypePredicate, reportErrors, errorReporter, compareTypes)
-			} else if targetTypePredicate.kind == TypePredicateKindIdentifier || targetTypePredicate.kind == TypePredicateKindThis {
+			} else if isNarrowingTypePredicateKind(targetTypePredicate.kind) {
 				if reportErrors {
 					errorReporter(diagnostics.Signature_0_must_be_a_type_predicate, c.signatureToString(source))
 				}
@@ -1673,14 +1673,16 @@ func (c *Checker) compareSignaturesRelated(source *Signature, target *Signature,
 }
 
 func (c *Checker) compareTypePredicateRelatedTo(source *TypePredicate, target *TypePredicate, reportErrors bool, errorReporter ErrorReporter, compareTypes TypeComparer) Ternary {
-	if source.kind != target.kind {
+	if !typePredicateKindsAssignable(source.kind, target.kind) {
 		if reportErrors {
-			errorReporter(diagnostics.A_this_based_type_guard_is_not_compatible_with_a_parameter_based_type_guard)
+			if isThisTypePredicateKind(source.kind) != isThisTypePredicateKind(target.kind) {
+				errorReporter(diagnostics.A_this_based_type_guard_is_not_compatible_with_a_parameter_based_type_guard)
+			}
 			errorReporter(diagnostics.Type_predicate_0_is_not_assignable_to_1, c.typePredicateToString(source), c.typePredicateToString(target))
 		}
 		return TernaryFalse
 	}
-	if source.kind == TypePredicateKindIdentifier || source.kind == TypePredicateKindAssertsIdentifier {
+	if isIdentifierTypePredicateKind(source.kind) {
 		if source.parameterIndex != target.parameterIndex {
 			if reportErrors {
 				errorReporter(diagnostics.Parameter_0_is_not_in_the_same_position_as_parameter_1, source.parameterName, target.parameterName)
@@ -2087,7 +2089,7 @@ func (c *Checker) getUnionOrIntersectionTypePredicate(signatures []*Signature, i
 		pred := c.getTypePredicateOfSignature(sig)
 		if pred != nil {
 			// Constituent type predicates must all have matching kinds. We don't create composite type predicates for assertions.
-			if pred.kind != TypePredicateKindThis && pred.kind != TypePredicateKindIdentifier || last != nil && !c.typePredicateKindsMatch(last, pred) {
+			if !isNarrowingTypePredicateKind(pred.kind) || last != nil && !typePredicateSubjectsMatch(last, pred) {
 				return nil
 			}
 			last = pred
@@ -2107,11 +2109,32 @@ func (c *Checker) getUnionOrIntersectionTypePredicate(signatures []*Signature, i
 		return nil
 	}
 	compositeType := c.getUnionOrIntersectionType(types, isUnion, UnionReductionLiteral)
-	return c.newTypePredicate(last.kind, last.parameterName, last.parameterIndex, compositeType)
+	kind := last.kind
+	for _, sig := range signatures {
+		if pred := c.getTypePredicateOfSignature(sig); pred != nil && isProvesTypePredicateKind(pred.kind) {
+			kind = core.IfElse(isThisTypePredicateKind(kind), TypePredicateKindProvesThis, TypePredicateKindProvesIdentifier)
+			break
+		}
+	}
+	return c.newTypePredicate(kind, last.parameterName, last.parameterIndex, compositeType)
 }
 
 func (c *Checker) typePredicateKindsMatch(a *TypePredicate, b *TypePredicate) bool {
 	return a.kind == b.kind && a.parameterIndex == b.parameterIndex
+}
+
+func typePredicateSubjectsMatch(a *TypePredicate, b *TypePredicate) bool {
+	return isThisTypePredicateKind(a.kind) == isThisTypePredicateKind(b.kind) && a.parameterIndex == b.parameterIndex
+}
+
+func typePredicateKindsAssignable(source TypePredicateKind, target TypePredicateKind) bool {
+	if isThisTypePredicateKind(source) != isThisTypePredicateKind(target) {
+		return false
+	}
+	if isProvesTypePredicateKind(target) {
+		return isProvesTypePredicateKind(source) || source == TypePredicateKindThis || source == TypePredicateKindIdentifier
+	}
+	return source == target
 }
 
 func (c *Checker) createTypePredicateFromTypePredicateNode(node *ast.Node, signature *Signature) *TypePredicate {
@@ -2121,10 +2144,20 @@ func (c *Checker) createTypePredicateFromTypePredicateNode(node *ast.Node, signa
 		t = c.getTypeFromTypeNode(predicateNode.Type)
 	}
 	if ast.IsThisTypeNode(predicateNode.ParameterName) {
-		kind := core.IfElse(predicateNode.AssertsModifier != nil, TypePredicateKindAssertsThis, TypePredicateKindThis)
+		kind := TypePredicateKindThis
+		if predicateNode.AssertsModifier != nil {
+			kind = TypePredicateKindAssertsThis
+		} else if predicateNode.ProvesModifier != nil {
+			kind = TypePredicateKindProvesThis
+		}
 		return c.newTypePredicate(kind, "" /*parameterName*/, 0 /*parameterIndex*/, t)
 	}
-	kind := core.IfElse(predicateNode.AssertsModifier != nil, TypePredicateKindAssertsIdentifier, TypePredicateKindIdentifier)
+	kind := TypePredicateKindIdentifier
+	if predicateNode.AssertsModifier != nil {
+		kind = TypePredicateKindAssertsIdentifier
+	} else if predicateNode.ProvesModifier != nil {
+		kind = TypePredicateKindProvesIdentifier
+	}
 	name := predicateNode.ParameterName.Text()
 	index := core.FindIndex(signature.parameters, func(p *ast.Symbol) bool { return p.Name == name })
 	return c.newTypePredicate(kind, name, int32(index), t)

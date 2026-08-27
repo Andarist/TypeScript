@@ -240,7 +240,7 @@ const filtered = nf
 >nf  .formatRangeToParts(100, 100)  .filter((part) => part.type !== "approximatelySign")  .map((part) => part.value) : string[]
 >nf  .formatRangeToParts(100, 100)  .filter((part) => part.type !== "approximatelySign")  .map : <U>(callbackfn: (value: Intl.NumberRangeFormatPart, index: number, array: Intl.NumberRangeFormatPart[]) => U, thisArg?: any) => U[]
 >nf  .formatRangeToParts(100, 100)  .filter((part) => part.type !== "approximatelySign") : Intl.NumberRangeFormatPart[]
->nf  .formatRangeToParts(100, 100)  .filter : { <S extends Intl.NumberRangeFormatPart>(predicate: (value: Intl.NumberRangeFormatPart, index: number, array: Intl.NumberRangeFormatPart[]) => value is S, thisArg?: any): S[]; (predicate: (value: Intl.NumberRangeFormatPart, index: number, array: Intl.NumberRangeFormatPart[]) => unknown, thisArg?: any): Intl.NumberRangeFormatPart[]; }
+>nf  .formatRangeToParts(100, 100)  .filter : { <S extends Intl.NumberRangeFormatPart>(predicate: (value: Intl.NumberRangeFormatPart, index: number, array: Intl.NumberRangeFormatPart[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: Intl.NumberRangeFormatPart, index: number, array: Intl.NumberRangeFormatPart[]) => unknown, thisArg?: any): Intl.NumberRangeFormatPart[]; }
 >nf  .formatRangeToParts(100, 100) : Intl.NumberRangeFormatPart[]
 >nf  .formatRangeToParts : (start: number | bigint | Intl.StringNumericLiteral, end: number | bigint | Intl.StringNumericLiteral) => Intl.NumberRangeFormatPart[]
 >nf : Intl.NumberFormat
@@ -251,7 +251,7 @@ const filtered = nf
 >100 : 100
 
   .filter((part) => part.type !== "approximatelySign")
->filter : { <S extends Intl.NumberRangeFormatPart>(predicate: (value: Intl.NumberRangeFormatPart, index: number, array: Intl.NumberRangeFormatPart[]) => value is S, thisArg?: any): S[]; (predicate: (value: Intl.NumberRangeFormatPart, index: number, array: Intl.NumberRangeFormatPart[]) => unknown, thisArg?: any): Intl.NumberRangeFormatPart[]; }
+>filter : { <S extends Intl.NumberRangeFormatPart>(predicate: (value: Intl.NumberRangeFormatPart, index: number, array: Intl.NumberRangeFormatPart[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: Intl.NumberRangeFormatPart, index: number, array: Intl.NumberRangeFormatPart[]) => unknown, thisArg?: any): Intl.NumberRangeFormatPart[]; }
 >(part) => part.type !== "approximatelySign" : (part: Intl.NumberRangeFormatPart) => boolean
 >part : Intl.NumberRangeFormatPart
 >part.type !== "approximatelySign" : boolean

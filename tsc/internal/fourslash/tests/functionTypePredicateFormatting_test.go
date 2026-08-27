@@ -17,3 +17,14 @@ func TestFunctionTypePredicateFormatting(t *testing.T) {
 	f.FormatDocument(t, "")
 	f.VerifyCurrentLineContent(t, `function bar(a: A): a is B { }`)
 }
+
+func TestProvesTypePredicateFormatting(t *testing.T) {
+	t.Parallel()
+	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+	const content = `/**/function bar(a: A):     proves      a        is       B    {}`
+	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+	defer done()
+	f.GoToMarker(t, "")
+	f.FormatDocument(t, "")
+	f.VerifyCurrentLineContent(t, `function bar(a: A): proves a is B { }`)
+}

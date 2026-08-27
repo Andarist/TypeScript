@@ -1,0 +1,107 @@
+//// [tests/cases/compiler/provesTypePredicateErrors.ts] ////
+
+=== provesTypePredicateErrors.ts ===
+function missingIs(x: unknown): proves x string {
+>missingIs : (x: unknown) => proves x is string
+>x : unknown
+
+    return true;
+>true : true
+}
+
+function missingType(x: unknown): proves x is {
+>missingType : (x: unknown) => proves x is {}
+>x : unknown
+
+    return true;
+>true : true
+}
+
+function combined(x: unknown): asserts proves x is string {
+>combined : (x: unknown) => asserts proves
+>x : unknown
+>x : any
+>is : any
+>string : any
+}
+
+class A { a = 0; }
+>A : A
+>a : number
+>0 : 0
+
+class B extends A { b = 0; }
+>B : B
+>A : A
+>b : number
+>0 : 0
+
+class C extends A { c = 0; }
+>C : C
+>A : A
+>c : number
+>0 : 0
+
+function nonBooleanReturn(x: unknown): proves x is string {
+>nonBooleanReturn : (x: unknown) => proves x is string
+>x : unknown
+
+    return "yes";
+>"yes" : "yes"
+}
+
+function incompatiblePredicateType(x: B): proves x is C {
+>incompatiblePredicateType : (x: B) => proves x is C
+>x : B
+
+    return true;
+>true : true
+}
+
+function unknownParameter(y: unknown): proves x is string {
+>unknownParameter : (y: unknown) => proves x is string
+>y : unknown
+
+    return true;
+>true : true
+}
+
+function restParameter(...values: unknown[]): proves values is string[] {
+>restParameter : (...values: unknown[]) => proves values is string[]
+>values : unknown[]
+
+    return true;
+>true : true
+}
+
+declare const provesC: (x: A) => proves x is C;
+>provesC : (x: A) => proves x is C
+>x : A
+
+declare let provesB: (x: A) => proves x is B;
+>provesB : (x: A) => proves x is B
+>x : A
+
+provesB = provesC;
+>provesB = provesC : (x: A) => proves x is C
+>provesB : (x: A) => proves x is B
+>provesC : (x: A) => proves x is C
+
+declare let firstParameter: (x: A, y: A) => proves x is C;
+>firstParameter : (x: A, y: A) => proves x is C
+>x : A
+>y : A
+
+declare const secondParameter: (x: A, y: A) => proves y is C;
+>secondParameter : (x: A, y: A) => proves y is C
+>x : A
+>y : A
+
+firstParameter = secondParameter;
+>firstParameter = secondParameter : (x: A, y: A) => proves y is C
+>firstParameter : (x: A, y: A) => proves x is C
+>secondParameter : (x: A, y: A) => proves y is C
+
+let invalidPosition: proves x is A;
+>invalidPosition : boolean
+

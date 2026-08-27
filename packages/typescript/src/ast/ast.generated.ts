@@ -159,6 +159,7 @@ export type KeywordSyntaxKind =
     | SyntaxKind.BigIntKeyword
     | SyntaxKind.OverrideKeyword
     | SyntaxKind.OfKeyword
+    | SyntaxKind.ProvesKeyword
     | SyntaxKind.DeferKeyword;
 export type ModifierSyntaxKind = SyntaxKind.AbstractKeyword | SyntaxKind.AccessorKeyword | SyntaxKind.AsyncKeyword | SyntaxKind.ConstKeyword | SyntaxKind.DeclareKeyword | SyntaxKind.DefaultKeyword | SyntaxKind.ExportKeyword | SyntaxKind.InKeyword | SyntaxKind.PrivateKeyword | SyntaxKind.ProtectedKeyword | SyntaxKind.PublicKeyword | SyntaxKind.ReadonlyKeyword | SyntaxKind.OutKeyword | SyntaxKind.OverrideKeyword | SyntaxKind.StaticKeyword;
 export type KeywordTypeSyntaxKind = SyntaxKind.AnyKeyword | SyntaxKind.BigIntKeyword | SyntaxKind.BooleanKeyword | SyntaxKind.IntrinsicKeyword | SyntaxKind.NeverKeyword | SyntaxKind.NumberKeyword | SyntaxKind.ObjectKeyword | SyntaxKind.StringKeyword | SyntaxKind.SymbolKeyword | SyntaxKind.UndefinedKeyword | SyntaxKind.UnknownKeyword | SyntaxKind.VoidKeyword;
@@ -330,6 +331,7 @@ export type TokenSyntaxKind =
     | SyntaxKind.BigIntKeyword
     | SyntaxKind.OverrideKeyword
     | SyntaxKind.OfKeyword
+    | SyntaxKind.ProvesKeyword
     | SyntaxKind.DeferKeyword;
 export type JsxTokenSyntaxKind = SyntaxKind.LessThanSlashToken | SyntaxKind.EndOfFile | SyntaxKind.ConflictMarkerTrivia | SyntaxKind.JsxText | SyntaxKind.JsxTextAllWhiteSpaces | SyntaxKind.OpenBraceToken | SyntaxKind.LessThanToken;
 export type JSDocNodeSyntaxKind =
@@ -997,6 +999,7 @@ export interface ThisTypeNode extends TypeNodeBase {
 export interface TypePredicateNode extends TypeNodeBase {
     readonly kind: SyntaxKind.TypePredicate;
     readonly assertsModifier?: AssertsKeyword;
+    readonly provesModifier?: ProvesKeyword;
     readonly parameterName: TypePredicateParameterName;
     readonly type?: TypeNode;
 }
@@ -1489,6 +1492,7 @@ export type PublicKeyword = Token<SyntaxKind.PublicKeyword>;
 export type ReadonlyKeyword = Token<SyntaxKind.ReadonlyKeyword>;
 export type OutKeyword = Token<SyntaxKind.OutKeyword>;
 export type OverrideKeyword = Token<SyntaxKind.OverrideKeyword>;
+export type ProvesKeyword = Token<SyntaxKind.ProvesKeyword>;
 export type StaticKeyword = Token<SyntaxKind.StaticKeyword>;
 export type BinaryOperatorToken = Token<BinaryOperator>;
 export type AssignmentOperatorToken = Token<AssignmentOperator>;

@@ -391,6 +391,7 @@ import {
     isNamedExportBindings,
     isNamedImportBindings,
     isPropertyName,
+    isProvesKeyword,
     isQuestionDotToken,
     isQuestionOrExclamationToken,
     isQuestionOrPlusOrMinusToken,
@@ -1041,9 +1042,10 @@ const visitEachChildTable: Record<number, VisitEachChildFunction> = {
     },
     [SyntaxKind.TypePredicate]: (node: TypePredicateNode, visitor: Visitor): TypePredicateNode => {
         const _assertsModifier = visitNode(node.assertsModifier, visitor, isAssertsKeyword);
+        const _provesModifier = visitNode(node.provesModifier, visitor, isProvesKeyword);
         const _parameterName = visitNode(node.parameterName, visitor, isTypePredicateParameterName);
         const _type = visitNode(node.type, visitor, isTypeNode);
-        return updateTypePredicateNode(node, _assertsModifier, _parameterName, _type);
+        return updateTypePredicateNode(node, _assertsModifier, _provesModifier, _parameterName, _type);
     },
     [SyntaxKind.ImportAttribute]: (node: ImportAttribute, visitor: Visitor): ImportAttribute => {
         const _name = visitNode(node.name, visitor, isImportAttributeName);

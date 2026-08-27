@@ -314,8 +314,24 @@ export interface AssertsIdentifierTypePredicate extends TypePredicateBase {
     readonly type: Type | undefined;
 }
 
-/** A type predicate — e.g. `x is T` or `asserts x is T` */
-export type TypePredicate = ThisTypePredicate | IdentifierTypePredicate | AssertsThisTypePredicate | AssertsIdentifierTypePredicate;
+/** `proves this is T` */
+export interface ProvesThisTypePredicate extends TypePredicateBase {
+    readonly kind: TypePredicateKind.ProvesThis;
+    readonly parameterName: undefined;
+    readonly parameterIndex: undefined;
+    readonly type: Type;
+}
+
+/** `proves x is T` */
+export interface ProvesIdentifierTypePredicate extends TypePredicateBase {
+    readonly kind: TypePredicateKind.ProvesIdentifier;
+    readonly parameterName: string;
+    readonly parameterIndex: number;
+    readonly type: Type;
+}
+
+/** A type predicate — e.g. `x is T`, `proves x is T`, or `asserts x is T` */
+export type TypePredicate = ThisTypePredicate | IdentifierTypePredicate | AssertsThisTypePredicate | AssertsIdentifierTypePredicate | ProvesThisTypePredicate | ProvesIdentifierTypePredicate;
 
 /** An index signature — e.g. `[key: string]: T` */
 export interface IndexInfo {

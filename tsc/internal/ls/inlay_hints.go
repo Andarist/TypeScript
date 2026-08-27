@@ -481,6 +481,9 @@ func (s *inlayHintState) getInlayHintLabelParts(node *ast.Node, idToSymbol map[*
 			if node.AsTypePredicateNode().AssertsModifier != nil {
 				parts = append(parts, &lsproto.InlayHintLabelPart{Value: "asserts "})
 			}
+			if node.AsTypePredicateNode().ProvesModifier != nil {
+				parts = append(parts, &lsproto.InlayHintLabelPart{Value: "proves "})
+			}
 			visitForDisplayParts(node.AsTypePredicateNode().ParameterName)
 			if node.Type() != nil {
 				parts = append(parts, &lsproto.InlayHintLabelPart{Value: " is "})

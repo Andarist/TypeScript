@@ -35,14 +35,14 @@ export declare const thing: {
     indexOf: (searchElement: number, fromIndex?: number) => number;
     lastIndexOf: (searchElement: number, fromIndex?: number) => number;
     every: {
-        <S extends number>(predicate: (value: number, index: number, array: number[]) => value is S, thisArg?: any): this is S[];
+        <S extends number>(predicate: (value: number, index: number, array: number[]) => proves value is S, thisArg?: any): this is S[];
         (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): boolean;
     };
     some: (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any) => boolean;
     forEach: (callbackfn: (value: number, index: number, array: number[]) => void, thisArg?: any) => void;
     map: <U>(callbackfn: (value: number, index: number, array: number[]) => U, thisArg?: any) => U[];
     filter: {
-        <S extends number>(predicate: (value: number, index: number, array: number[]) => value is S, thisArg?: any): S[];
+        <S extends number>(predicate: (value: number, index: number, array: number[]) => proves value is S, thisArg?: any): S[];
         (predicate: (value: number, index: number, array: number[]) => unknown, thisArg?: any): number[];
     };
     reduce: {
@@ -56,7 +56,7 @@ export declare const thing: {
         <U>(callbackfn: (previousValue: U, currentValue: number, currentIndex: number, array: number[]) => U, initialValue: U): U;
     };
     find: {
-        <S extends number>(predicate: (value: number, index: number, obj: number[]) => value is S, thisArg?: any): S | undefined;
+        <S extends number>(predicate: (value: number, index: number, obj: number[]) => proves value is S, thisArg?: any): S | undefined;
         (predicate: (value: number, index: number, obj: number[]) => unknown, thisArg?: any): number | undefined;
     };
     findIndex: (predicate: (value: number, index: number, obj: number[]) => unknown, thisArg?: any) => number;

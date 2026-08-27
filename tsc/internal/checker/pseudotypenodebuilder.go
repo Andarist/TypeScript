@@ -653,13 +653,17 @@ func (b *NodeBuilderImpl) pseudoReturnTypeMatchesPredicate(rt *pseudochecker.Pse
 	tp := node.AsTypePredicateNode()
 	// Check asserts modifier matches
 	isAsserts := tp.AssertsModifier != nil
-	predicateIsAsserts := predicate.kind == TypePredicateKindAssertsThis || predicate.kind == TypePredicateKindAssertsIdentifier
+	predicateIsAsserts := isAssertsTypePredicateKind(predicate.kind)
 	if isAsserts != predicateIsAsserts {
+		return false
+	}
+	isProves := tp.ProvesModifier != nil
+	if isProves != isProvesTypePredicateKind(predicate.kind) {
 		return false
 	}
 	// Check this vs identifier matches
 	isThis := ast.IsThisTypeNode(tp.ParameterName)
-	predicateIsThis := predicate.kind == TypePredicateKindThis || predicate.kind == TypePredicateKindAssertsThis
+	predicateIsThis := isThisTypePredicateKind(predicate.kind)
 	if isThis != predicateIsThis {
 		return false
 	}

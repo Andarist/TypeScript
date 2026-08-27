@@ -3273,6 +3273,31 @@ describe("Checker - getTypePredicateOfSignature", () => {
         }
     });
 
+    test("returns type predicate for 'proves x is T' guard", () => {
+        const api = spawnAPI({
+            "/tsconfig.json": JSON.stringify({ compilerOptions: { strict: true } }),
+            "/src/main.ts": `export function isShortString(x: unknown): proves x is string { return typeof x === "string" && x.length < 10; }`,
+        });
+        try {
+            const snapshot = api.updateSnapshot({ openProject: "/tsconfig.json" });
+            const project = snapshot.getProject("/tsconfig.json")!;
+            const src = `export function isShortString(x: unknown): proves x is string { return typeof x === "string" && x.length < 10; }`;
+            const symbol = project.checker.getSymbolAtPosition("/src/main.ts", src.indexOf("isShortString("));
+            assert.ok(symbol);
+            const sigs = project.checker.getSignaturesOfType(project.checker.getTypeOfSymbol(symbol), SignatureKind.Call);
+            const predicate = project.checker.getTypePredicateOfSignature(sigs[0]);
+            assert.ok(predicate);
+            assert.equal(predicate.kind, TypePredicateKind.ProvesIdentifier);
+            assert.equal(predicate.parameterName, "x");
+            const predicateType = predicate.type;
+            assert.ok(predicateType);
+            assert.ok(predicateType.flags & TypeFlags.String);
+        }
+        finally {
+            api.close();
+        }
+    });
+
     test("returns type predicate for 'this is T' guard", () => {
         const api = spawnAPI({
             "/tsconfig.json": JSON.stringify({ compilerOptions: { strict: true } }),

@@ -31,9 +31,9 @@ const usersOverAge = make((age: number) => data => {
 
     return data.filter(user => user.age >= age);
 >data.filter(user => user.age >= age) : { id: string; age: number; }[]
->data.filter : { <S extends { id: string; age: number; }>(predicate: (value: { id: string; age: number; }, index: number, array: { id: string; age: number; }[]) => value is S, thisArg?: any): S[]; (predicate: (value: { id: string; age: number; }, index: number, array: { id: string; age: number; }[]) => unknown, thisArg?: any): { id: string; age: number; }[]; }
+>data.filter : { <S extends { id: string; age: number; }>(predicate: (value: { id: string; age: number; }, index: number, array: { id: string; age: number; }[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: { id: string; age: number; }, index: number, array: { id: string; age: number; }[]) => unknown, thisArg?: any): { id: string; age: number; }[]; }
 >data : { id: string; age: number; }[]
->filter : { <S extends { id: string; age: number; }>(predicate: (value: { id: string; age: number; }, index: number, array: { id: string; age: number; }[]) => value is S, thisArg?: any): S[]; (predicate: (value: { id: string; age: number; }, index: number, array: { id: string; age: number; }[]) => unknown, thisArg?: any): { id: string; age: number; }[]; }
+>filter : { <S extends { id: string; age: number; }>(predicate: (value: { id: string; age: number; }, index: number, array: { id: string; age: number; }[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: { id: string; age: number; }, index: number, array: { id: string; age: number; }[]) => unknown, thisArg?: any): { id: string; age: number; }[]; }
 >user => user.age >= age : (user: { id: string; age: number; }) => boolean
 >user : { id: string; age: number; }
 >user.age >= age : boolean

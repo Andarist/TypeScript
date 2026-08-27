@@ -1,0 +1,115 @@
+//// [tests/cases/compiler/provesTypePredicateErrors.ts] ////
+
+=== provesTypePredicateErrors.ts ===
+function missingIs(x: unknown): proves x string {
+>missingIs : Symbol(missingIs, Decl(provesTypePredicateErrors.ts, 0, 0))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 0, 19))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 0, 19))
+
+    return true;
+}
+
+function missingType(x: unknown): proves x is {
+>missingType : Symbol(missingType, Decl(provesTypePredicateErrors.ts, 2, 1))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 4, 21))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 4, 21))
+
+    return true;
+}
+
+function combined(x: unknown): asserts proves x is string {
+>combined : Symbol(combined, Decl(provesTypePredicateErrors.ts, 6, 1))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 8, 18))
+}
+
+class A { a = 0; }
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+>a : Symbol(A.a, Decl(provesTypePredicateErrors.ts, 11, 9))
+
+class B extends A { b = 0; }
+>B : Symbol(B, Decl(provesTypePredicateErrors.ts, 11, 18))
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+>b : Symbol(B.b, Decl(provesTypePredicateErrors.ts, 12, 19))
+
+class C extends A { c = 0; }
+>C : Symbol(C, Decl(provesTypePredicateErrors.ts, 12, 28))
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+>c : Symbol(C.c, Decl(provesTypePredicateErrors.ts, 13, 19))
+
+function nonBooleanReturn(x: unknown): proves x is string {
+>nonBooleanReturn : Symbol(nonBooleanReturn, Decl(provesTypePredicateErrors.ts, 13, 28))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 15, 26))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 15, 26))
+
+    return "yes";
+}
+
+function incompatiblePredicateType(x: B): proves x is C {
+>incompatiblePredicateType : Symbol(incompatiblePredicateType, Decl(provesTypePredicateErrors.ts, 17, 1))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 19, 35))
+>B : Symbol(B, Decl(provesTypePredicateErrors.ts, 11, 18))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 19, 35))
+>C : Symbol(C, Decl(provesTypePredicateErrors.ts, 12, 28))
+
+    return true;
+}
+
+function unknownParameter(y: unknown): proves x is string {
+>unknownParameter : Symbol(unknownParameter, Decl(provesTypePredicateErrors.ts, 21, 1))
+>y : Symbol(y, Decl(provesTypePredicateErrors.ts, 23, 26))
+
+    return true;
+}
+
+function restParameter(...values: unknown[]): proves values is string[] {
+>restParameter : Symbol(restParameter, Decl(provesTypePredicateErrors.ts, 25, 1))
+>values : Symbol(values, Decl(provesTypePredicateErrors.ts, 27, 23))
+>values : Symbol(values, Decl(provesTypePredicateErrors.ts, 27, 23))
+
+    return true;
+}
+
+declare const provesC: (x: A) => proves x is C;
+>provesC : Symbol(provesC, Decl(provesTypePredicateErrors.ts, 31, 13))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 31, 24))
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 31, 24))
+>C : Symbol(C, Decl(provesTypePredicateErrors.ts, 12, 28))
+
+declare let provesB: (x: A) => proves x is B;
+>provesB : Symbol(provesB, Decl(provesTypePredicateErrors.ts, 32, 11))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 32, 22))
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 32, 22))
+>B : Symbol(B, Decl(provesTypePredicateErrors.ts, 11, 18))
+
+provesB = provesC;
+>provesB : Symbol(provesB, Decl(provesTypePredicateErrors.ts, 32, 11))
+>provesC : Symbol(provesC, Decl(provesTypePredicateErrors.ts, 31, 13))
+
+declare let firstParameter: (x: A, y: A) => proves x is C;
+>firstParameter : Symbol(firstParameter, Decl(provesTypePredicateErrors.ts, 35, 11))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 35, 29))
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+>y : Symbol(y, Decl(provesTypePredicateErrors.ts, 35, 34))
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 35, 29))
+>C : Symbol(C, Decl(provesTypePredicateErrors.ts, 12, 28))
+
+declare const secondParameter: (x: A, y: A) => proves y is C;
+>secondParameter : Symbol(secondParameter, Decl(provesTypePredicateErrors.ts, 36, 13))
+>x : Symbol(x, Decl(provesTypePredicateErrors.ts, 36, 32))
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+>y : Symbol(y, Decl(provesTypePredicateErrors.ts, 36, 37))
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+>y : Symbol(y, Decl(provesTypePredicateErrors.ts, 36, 37))
+>C : Symbol(C, Decl(provesTypePredicateErrors.ts, 12, 28))
+
+firstParameter = secondParameter;
+>firstParameter : Symbol(firstParameter, Decl(provesTypePredicateErrors.ts, 35, 11))
+>secondParameter : Symbol(secondParameter, Decl(provesTypePredicateErrors.ts, 36, 13))
+
+let invalidPosition: proves x is A;
+>invalidPosition : Symbol(invalidPosition, Decl(provesTypePredicateErrors.ts, 39, 3))
+>A : Symbol(A, Decl(provesTypePredicateErrors.ts, 9, 1))
+

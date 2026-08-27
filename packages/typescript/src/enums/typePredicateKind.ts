@@ -5,4 +5,6 @@ export var TypePredicateKind: any;
     TypePredicateKind[TypePredicateKind["Identifier"] = 1] = "Identifier";
     TypePredicateKind[TypePredicateKind["AssertsThis"] = 2] = "AssertsThis";
     TypePredicateKind[TypePredicateKind["AssertsIdentifier"] = 3] = "AssertsIdentifier";
+    TypePredicateKind[TypePredicateKind["ProvesThis"] = 4] = "ProvesThis";
+    TypePredicateKind[TypePredicateKind["ProvesIdentifier"] = 5] = "ProvesIdentifier";
 })(TypePredicateKind || (TypePredicateKind = {}));

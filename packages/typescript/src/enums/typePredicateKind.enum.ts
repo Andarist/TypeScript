@@ -5,4 +5,6 @@ export enum TypePredicateKind {
     Identifier = 1,
     AssertsThis = 2,
     AssertsIdentifier = 3,
+    ProvesThis = 4,
+    ProvesIdentifier = 5,
 }

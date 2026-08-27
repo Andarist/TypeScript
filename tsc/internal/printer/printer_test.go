@@ -349,6 +349,8 @@ func TestEmit(t *testing.T) {
 		{title: "TypePredicateNode#2", input: `function f(): asserts a is b`, output: `function f(): asserts a is b;`},
 		{title: "TypePredicateNode#3", input: `function f(): asserts this`, output: `function f(): asserts this;`},
 		{title: "TypePredicateNode#4", input: `function f(): asserts this is b`, output: `function f(): asserts this is b;`},
+		{title: "TypePredicateNode#5", input: `function f(): proves a is b`, output: `function f(): proves a is b;`},
+		{title: "TypePredicateNode#6", input: `function f(): proves this is b`, output: `function f(): proves this is b;`},
 		{title: "TypeReferenceNode#1", input: `type T = a`, output: `type T = a;`},
 		{title: "TypeReferenceNode#2", input: `type T = a.b`, output: `type T = a.b;`},
 		{title: "TypeReferenceNode#3", input: `type T = a<U>`, output: `type T = a<U>;`},

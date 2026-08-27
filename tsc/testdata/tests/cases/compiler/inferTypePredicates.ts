@@ -5,17 +5,17 @@
 // https://github.com/microsoft/TypeScript/issues/16069
 
 const numsOrNull = [1, 2, 3, 4, null];
-const filteredNumsTruthy: number[] = numsOrNull.filter(x => !!x);  // should error
+const filteredNumsTruthy: number[] = numsOrNull.filter(x => !!x);  // should ok with a one-sided predicate
 const filteredNumsNonNullish: number[] = numsOrNull.filter(x => x !== null);  // should ok
 
-const evenSquaresInline: number[] =  // should error
+const evenSquaresInline: number[] =  // should ok with a one-sided predicate
     [1, 2, 3, 4]
         .map(x => x % 2 === 0 ? x * x : null)
         .filter(x => !!x); // tests truthiness, not non-nullishness
 
 const isTruthy = (x: number | null) => !!x;
 
-const evenSquares: number[] =  // should error
+const evenSquares: number[] =  // should ok with a one-sided predicate
     [1, 2, 3, 4]
     .map(x => x % 2 === 0 ? x * x : null)
       .filter(isTruthy);
@@ -114,7 +114,7 @@ function flakyIsString(x: string | number) {
   return typeof x === 'string' && Math.random() > 0.5;
 }
 if (flakyIsString(strOrNum)) {
-  let t: string = strOrNum;  // should error
+  let t: string = strOrNum;  // should ok
 } else {
   let t: number = strOrNum;  // should error
 }
@@ -134,7 +134,7 @@ if (isDate(maybeDate)) {
 }
 
 if (flakyIsDate(maybeDate)) {
-  let t: Date = maybeDate;  // should error
+  let t: Date = maybeDate;  // should ok
 } else {
   let t: object = maybeDate;  // should ok
 }
@@ -150,7 +150,7 @@ function irrelevantIsNumberDestructuring(x: string | number) {
   return typeof x === 'string';
 }
 
-// Cannot infer a type guard for either param because of the false case.
+// Infer a one-sided predicate for the first refined parameter.
 function areBothNums(x: string|number, y: string|number) {
   return typeof x === 'number' && typeof y === 'number';
 }

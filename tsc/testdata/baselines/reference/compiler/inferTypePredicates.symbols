@@ -6,7 +6,7 @@
 const numsOrNull = [1, 2, 3, 4, null];
 >numsOrNull : Symbol(numsOrNull, Decl(inferTypePredicates.ts, 2, 5))
 
-const filteredNumsTruthy: number[] = numsOrNull.filter(x => !!x);  // should error
+const filteredNumsTruthy: number[] = numsOrNull.filter(x => !!x);  // should ok with a one-sided predicate
 >filteredNumsTruthy : Symbol(filteredNumsTruthy, Decl(inferTypePredicates.ts, 3, 5))
 >numsOrNull.filter : Symbol(Array.filter, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --))
 >numsOrNull : Symbol(numsOrNull, Decl(inferTypePredicates.ts, 2, 5))
@@ -22,7 +22,7 @@ const filteredNumsNonNullish: number[] = numsOrNull.filter(x => x !== null);  //
 >x : Symbol(x, Decl(inferTypePredicates.ts, 4, 59))
 >x : Symbol(x, Decl(inferTypePredicates.ts, 4, 59))
 
-const evenSquaresInline: number[] =  // should error
+const evenSquaresInline: number[] =  // should ok with a one-sided predicate
 >evenSquaresInline : Symbol(evenSquaresInline, Decl(inferTypePredicates.ts, 6, 5))
 
     [1, 2, 3, 4]
@@ -46,7 +46,7 @@ const isTruthy = (x: number | null) => !!x;
 >x : Symbol(x, Decl(inferTypePredicates.ts, 11, 18))
 >x : Symbol(x, Decl(inferTypePredicates.ts, 11, 18))
 
-const evenSquares: number[] =  // should error
+const evenSquares: number[] =  // should ok with a one-sided predicate
 >evenSquares : Symbol(evenSquares, Decl(inferTypePredicates.ts, 13, 5))
 
     [1, 2, 3, 4]
@@ -368,7 +368,7 @@ if (flakyIsString(strOrNum)) {
 >flakyIsString : Symbol(flakyIsString, Decl(inferTypePredicates.ts, 106, 1))
 >strOrNum : Symbol(strOrNum, Decl(inferTypePredicates.ts, 101, 11))
 
-  let t: string = strOrNum;  // should error
+  let t: string = strOrNum;  // should ok
 >t : Symbol(t, Decl(inferTypePredicates.ts, 112, 5))
 >strOrNum : Symbol(strOrNum, Decl(inferTypePredicates.ts, 101, 11))
 
@@ -420,7 +420,7 @@ if (flakyIsDate(maybeDate)) {
 >flakyIsDate : Symbol(flakyIsDate, Decl(inferTypePredicates.ts, 119, 1))
 >maybeDate : Symbol(maybeDate, Decl(inferTypePredicates.ts, 124, 11))
 
-  let t: Date = maybeDate;  // should error
+  let t: Date = maybeDate;  // should ok
 >t : Symbol(t, Decl(inferTypePredicates.ts, 132, 5))
 >Date : Symbol(Date, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.scripthost.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --))
 >maybeDate : Symbol(maybeDate, Decl(inferTypePredicates.ts, 124, 11))
@@ -460,7 +460,7 @@ function irrelevantIsNumberDestructuring(x: string | number) {
 >x : Symbol(x, Decl(inferTypePredicates.ts, 143, 41))
 }
 
-// Cannot infer a type guard for either param because of the false case.
+// Infer a one-sided predicate for the first refined parameter.
 function areBothNums(x: string|number, y: string|number) {
 >areBothNums : Symbol(areBothNums, Decl(inferTypePredicates.ts, 146, 1))
 >x : Symbol(x, Decl(inferTypePredicates.ts, 149, 21))

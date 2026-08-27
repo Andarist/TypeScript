@@ -897,7 +897,7 @@ func (c *Checker) applyToReturnTypes(source *Signature, target *Signature, callb
 	targetTypePredicate := c.getTypePredicateOfSignature(target)
 	if targetTypePredicate != nil {
 		sourceTypePredicate := c.getTypePredicateOfSignature(source)
-		if sourceTypePredicate != nil && c.typePredicateKindsMatch(sourceTypePredicate, targetTypePredicate) && sourceTypePredicate.t != nil && targetTypePredicate.t != nil {
+		if sourceTypePredicate != nil && typePredicateKindsAssignable(sourceTypePredicate.kind, targetTypePredicate.kind) && sourceTypePredicate.parameterIndex == targetTypePredicate.parameterIndex && sourceTypePredicate.t != nil && targetTypePredicate.t != nil {
 			callback(sourceTypePredicate.t, targetTypePredicate.t)
 			return
 		}

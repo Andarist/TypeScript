@@ -51,7 +51,7 @@ declare global {
          * Creates an iterator whose values are those from this iterator for which the provided predicate returns true.
          * @param predicate A function that accepts up to two arguments to be used to test values from the underlying iterator.
          */
-        filter<S extends T>(predicate: (value: T, index: number) => value is S): IteratorObject<S, undefined, unknown>;
+        filter<S extends T>(predicate: (value: T, index: number) => proves value is S): IteratorObject<S, undefined, unknown>;
 
         /**
          * Creates an iterator whose values are those from this iterator for which the provided predicate returns true.
@@ -126,7 +126,7 @@ declare global {
          * order, until it finds one where predicate returns true. If such an element is found, find
          * immediately returns that element value. Otherwise, find returns undefined.
          */
-        find<S extends T>(predicate: (value: T, index: number) => value is S): S | undefined;
+        find<S extends T>(predicate: (value: T, index: number) => proves value is S): S | undefined;
         find(predicate: (value: T, index: number) => unknown): T | undefined;
 
         readonly [Symbol.toStringTag]: string;

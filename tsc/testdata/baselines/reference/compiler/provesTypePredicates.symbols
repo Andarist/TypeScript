@@ -1,0 +1,300 @@
+//// [tests/cases/compiler/provesTypePredicates.ts] ////
+
+=== provesTypePredicates.ts ===
+export function isSmallNumber(x: string | number): proves x is number {
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 0, 30))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 0, 30))
+
+    return typeof x === "number" && Math.abs(x) < 10;
+>x : Symbol(x, Decl(provesTypePredicates.ts, 0, 30))
+>Math.abs : Symbol(Math.abs, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --))
+>abs : Symbol(Math.abs, Decl(lib.es5.d.ts, --, --))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 0, 30))
+}
+
+declare let value: string | number;
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+if (isSmallNumber(value)) {
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const n: number = value;
+>n : Symbol(n, Decl(provesTypePredicates.ts, 7, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const s: string = value; // error
+>s : Symbol(s, Decl(provesTypePredicates.ts, 8, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+else {
+    const original: string | number = value;
+>original : Symbol(original, Decl(provesTypePredicates.ts, 11, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const s: string = value; // error
+>s : Symbol(s, Decl(provesTypePredicates.ts, 12, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+
+if (!isSmallNumber(value)) {
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const original: string | number = value;
+>original : Symbol(original, Decl(provesTypePredicates.ts, 16, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const s: string = value; // error
+>s : Symbol(s, Decl(provesTypePredicates.ts, 17, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+
+if (isSmallNumber(value) === false) {
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const original: string | number = value;
+>original : Symbol(original, Decl(provesTypePredicates.ts, 21, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const s: string = value; // error
+>s : Symbol(s, Decl(provesTypePredicates.ts, 22, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+
+if (isSmallNumber(value) && value.toFixed()) {
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+>value.toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+>toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+
+    const n: number = value;
+>n : Symbol(n, Decl(provesTypePredicates.ts, 26, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+
+isSmallNumber(value) || value.length; // error: the right side observes the unchanged type
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+const formattedOrOriginal = isSmallNumber(value) ? value.toFixed() : value;
+>formattedOrOriginal : Symbol(formattedOrOriginal, Decl(provesTypePredicates.ts, 31, 5))
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+>value.toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+>toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+if (!isSmallNumber(value) || typeof value === "string") {
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const original: string | number = value;
+>original : Symbol(original, Decl(provesTypePredicates.ts, 34, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+
+declare const maybeSmallNumber: typeof isSmallNumber | undefined;
+>maybeSmallNumber : Symbol(maybeSmallNumber, Decl(provesTypePredicates.ts, 37, 13))
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+
+if (maybeSmallNumber?.(value)) {
+>maybeSmallNumber : Symbol(maybeSmallNumber, Decl(provesTypePredicates.ts, 37, 13))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const n: number = value;
+>n : Symbol(n, Decl(provesTypePredicates.ts, 39, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+else {
+    const original: string | number = value;
+>original : Symbol(original, Decl(provesTypePredicates.ts, 42, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+
+class Base {
+>Base : Symbol(Base, Decl(provesTypePredicates.ts, 43, 1))
+
+    isDerived(): proves this is Derived {
+>isDerived : Symbol(Base.isDerived, Decl(provesTypePredicates.ts, 45, 12))
+>Derived : Symbol(Derived, Decl(provesTypePredicates.ts, 49, 1))
+
+        return this instanceof Derived && Math.random() > 0.5;
+>this : Symbol(Base, Decl(provesTypePredicates.ts, 43, 1))
+>Derived : Symbol(Derived, Decl(provesTypePredicates.ts, 49, 1))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+    }
+}
+
+class Derived extends Base {
+>Derived : Symbol(Derived, Decl(provesTypePredicates.ts, 49, 1))
+>Base : Symbol(Base, Decl(provesTypePredicates.ts, 43, 1))
+
+    derived = true;
+>derived : Symbol(Derived.derived, Decl(provesTypePredicates.ts, 51, 28))
+}
+
+declare const base: Base;
+>base : Symbol(base, Decl(provesTypePredicates.ts, 55, 13))
+>Base : Symbol(Base, Decl(provesTypePredicates.ts, 43, 1))
+
+if (base.isDerived()) {
+>base.isDerived : Symbol(Base.isDerived, Decl(provesTypePredicates.ts, 45, 12))
+>base : Symbol(base, Decl(provesTypePredicates.ts, 55, 13))
+>isDerived : Symbol(Base.isDerived, Decl(provesTypePredicates.ts, 45, 12))
+
+    base.derived;
+>base.derived : Symbol(Derived.derived, Decl(provesTypePredicates.ts, 51, 28))
+>base : Symbol(base, Decl(provesTypePredicates.ts, 55, 13))
+>derived : Symbol(Derived.derived, Decl(provesTypePredicates.ts, 51, 28))
+}
+else {
+    base.derived; // error
+>base : Symbol(base, Decl(provesTypePredicates.ts, 55, 13))
+}
+
+declare let twoSided: (x: unknown) => x is string;
+>twoSided : Symbol(twoSided, Decl(provesTypePredicates.ts, 63, 11))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 63, 23))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 63, 23))
+
+declare let oneSided: (x: unknown) => proves x is string;
+>oneSided : Symbol(oneSided, Decl(provesTypePredicates.ts, 64, 11))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 64, 23))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 64, 23))
+
+declare let booleanFunction: (x: unknown) => boolean;
+>booleanFunction : Symbol(booleanFunction, Decl(provesTypePredicates.ts, 65, 11))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 65, 30))
+
+oneSided = twoSided;
+>oneSided : Symbol(oneSided, Decl(provesTypePredicates.ts, 64, 11))
+>twoSided : Symbol(twoSided, Decl(provesTypePredicates.ts, 63, 11))
+
+twoSided = oneSided; // error
+>twoSided : Symbol(twoSided, Decl(provesTypePredicates.ts, 63, 11))
+>oneSided : Symbol(oneSided, Decl(provesTypePredicates.ts, 64, 11))
+
+booleanFunction = oneSided;
+>booleanFunction : Symbol(booleanFunction, Decl(provesTypePredicates.ts, 65, 11))
+>oneSided : Symbol(oneSided, Decl(provesTypePredicates.ts, 64, 11))
+
+oneSided = booleanFunction; // error
+>oneSided : Symbol(oneSided, Decl(provesTypePredicates.ts, 64, 11))
+>booleanFunction : Symbol(booleanFunction, Decl(provesTypePredicates.ts, 65, 11))
+
+export function isShortString(x: unknown) {
+>isShortString : Symbol(isShortString, Decl(provesTypePredicates.ts, 70, 27))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 72, 30))
+
+    return typeof x === "string" && x.length < 10;
+>x : Symbol(x, Decl(provesTypePredicates.ts, 72, 30))
+>x.length : Symbol(String.length, Decl(lib.es5.d.ts, --, --))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 72, 30))
+>length : Symbol(String.length, Decl(lib.es5.d.ts, --, --))
+}
+
+export function isString(x: unknown) {
+>isString : Symbol(isString, Decl(provesTypePredicates.ts, 74, 1))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 76, 25))
+
+    return typeof x === "string";
+>x : Symbol(x, Decl(provesTypePredicates.ts, 76, 25))
+}
+
+if (isShortString(value)) {
+>isShortString : Symbol(isShortString, Decl(provesTypePredicates.ts, 70, 27))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const s: string = value;
+>s : Symbol(s, Decl(provesTypePredicates.ts, 81, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+else {
+    const original: string | number = value;
+>original : Symbol(original, Decl(provesTypePredicates.ts, 84, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+
+if (isString(value)) {
+>isString : Symbol(isString, Decl(provesTypePredicates.ts, 74, 1))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const s: string = value;
+>s : Symbol(s, Decl(provesTypePredicates.ts, 88, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+else {
+    const n: number = value;
+>n : Symbol(n, Decl(provesTypePredicates.ts, 91, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+
+const values: (string | number)[] = ["a", 1, 100];
+>values : Symbol(values, Decl(provesTypePredicates.ts, 94, 5))
+
+const smallNumbers: number[] = values.filter(isSmallNumber);
+>smallNumbers : Symbol(smallNumbers, Decl(provesTypePredicates.ts, 95, 5))
+>values.filter : Symbol(Array.filter, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --))
+>values : Symbol(values, Decl(provesTypePredicates.ts, 94, 5))
+>filter : Symbol(Array.filter, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --))
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+
+const inferredSmallNumbers: number[] = values.filter(x => typeof x === "number" && x < 10);
+>inferredSmallNumbers : Symbol(inferredSmallNumbers, Decl(provesTypePredicates.ts, 96, 5))
+>values.filter : Symbol(Array.filter, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --))
+>values : Symbol(values, Decl(provesTypePredicates.ts, 94, 5))
+>filter : Symbol(Array.filter, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 96, 53))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 96, 53))
+>x : Symbol(x, Decl(provesTypePredicates.ts, 96, 53))
+
+const foundSmallNumber: number | undefined = values.find(isSmallNumber);
+>foundSmallNumber : Symbol(foundSmallNumber, Decl(provesTypePredicates.ts, 97, 5))
+>values.find : Symbol(Array.find, Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --))
+>values : Symbol(values, Decl(provesTypePredicates.ts, 94, 5))
+>find : Symbol(Array.find, Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --))
+>isSmallNumber : Symbol(isSmallNumber, Decl(provesTypePredicates.ts, 0, 0))
+
+declare const unionPredicate: typeof twoSided | typeof oneSided;
+>unionPredicate : Symbol(unionPredicate, Decl(provesTypePredicates.ts, 99, 13))
+>twoSided : Symbol(twoSided, Decl(provesTypePredicates.ts, 63, 11))
+>oneSided : Symbol(oneSided, Decl(provesTypePredicates.ts, 64, 11))
+
+if (unionPredicate(value)) {
+>unionPredicate : Symbol(unionPredicate, Decl(provesTypePredicates.ts, 99, 13))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const s: string = value;
+>s : Symbol(s, Decl(provesTypePredicates.ts, 101, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+else {
+    const original: string | number = value;
+>original : Symbol(original, Decl(provesTypePredicates.ts, 104, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+
+    const s: string = value; // error
+>s : Symbol(s, Decl(provesTypePredicates.ts, 105, 9))
+>value : Symbol(value, Decl(provesTypePredicates.ts, 4, 11))
+}
+
+const proves = 1;
+>proves : Symbol(proves, Decl(provesTypePredicates.ts, 108, 5), Decl(provesTypePredicates.ts, 108, 17))
+
+type proves = string;
+>proves : Symbol(proves, Decl(provesTypePredicates.ts, 108, 5), Decl(provesTypePredicates.ts, 108, 17))
+
+const contextualKeyword: proves = "ok";
+>contextualKeyword : Symbol(contextualKeyword, Decl(provesTypePredicates.ts, 110, 5))
+>proves : Symbol(proves, Decl(provesTypePredicates.ts, 108, 5), Decl(provesTypePredicates.ts, 108, 17))
+

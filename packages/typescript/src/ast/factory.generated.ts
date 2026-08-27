@@ -201,6 +201,7 @@ import type {
     PropertyDeclaration,
     PropertyName,
     PropertySignatureDeclaration,
+    ProvesKeyword,
     QualifiedName,
     QuestionDotToken,
     QuestionToken,
@@ -559,6 +560,9 @@ export class NodeObject {
     }
     get propertyName(): any {
         return this._data?.propertyName;
+    }
+    get provesModifier(): any {
+        return this._data?.provesModifier;
     }
     get qualifier(): any {
         return this._data?.qualifier;
@@ -955,7 +959,7 @@ function cloneNodeData(node: Node): any {
         case SyntaxKind.LiteralType:
             return { literal: n.literal };
         case SyntaxKind.TypePredicate:
-            return { assertsModifier: n.assertsModifier, parameterName: n.parameterName, type: n.type };
+            return { assertsModifier: n.assertsModifier, provesModifier: n.provesModifier, parameterName: n.parameterName, type: n.type };
         case SyntaxKind.ImportAttribute:
             return { name: n.name, value: n.value };
         case SyntaxKind.ImportAttributes:
@@ -1439,6 +1443,7 @@ const forEachChildTable: Record<number, ForEachChildFunction> = {
     [SyntaxKind.LiteralType]: (data, cbNode, cbNodes) => visitNode(cbNode, data.literal),
     [SyntaxKind.TypePredicate]: (data, cbNode, cbNodes) =>
         visitNode(cbNode, data.assertsModifier) ||
+        visitNode(cbNode, data.provesModifier) ||
         visitNode(cbNode, data.parameterName) ||
         visitNode(cbNode, data.type),
     [SyntaxKind.ImportAttribute]: (data, cbNode, cbNodes) =>
@@ -2501,9 +2506,10 @@ export function createThisTypeNode(): ThisTypeNode {
     return new NodeObject(SyntaxKind.ThisType, undefined) as unknown as ThisTypeNode;
 }
 
-export function createTypePredicateNode(assertsModifier: AssertsKeyword | undefined, parameterName: TypePredicateParameterName, type?: TypeNode): TypePredicateNode {
+export function createTypePredicateNode(assertsModifier: AssertsKeyword | undefined, provesModifier: ProvesKeyword | undefined, parameterName: TypePredicateParameterName, type?: TypeNode): TypePredicateNode {
     return new NodeObject(SyntaxKind.TypePredicate, {
         assertsModifier,
+        provesModifier,
         parameterName,
         type,
     }) as unknown as TypePredicateNode;
@@ -3502,8 +3508,8 @@ export function updateLiteralTypeNode(node: LiteralTypeNode, literal: Node): Lit
     return node.literal !== literal ? createLiteralTypeNode(literal) : node;
 }
 
-export function updateTypePredicateNode(node: TypePredicateNode, assertsModifier: AssertsKeyword | undefined, parameterName: TypePredicateParameterName, type?: TypeNode): TypePredicateNode {
-    return node.assertsModifier !== assertsModifier || node.parameterName !== parameterName || node.type !== type ? createTypePredicateNode(assertsModifier, parameterName, type) : node;
+export function updateTypePredicateNode(node: TypePredicateNode, assertsModifier: AssertsKeyword | undefined, provesModifier: ProvesKeyword | undefined, parameterName: TypePredicateParameterName, type?: TypeNode): TypePredicateNode {
+    return node.assertsModifier !== assertsModifier || node.provesModifier !== provesModifier || node.parameterName !== parameterName || node.type !== type ? createTypePredicateNode(assertsModifier, provesModifier, parameterName, type) : node;
 }
 
 export function updateImportAttribute(node: ImportAttribute, name: ImportAttributeName, value: Expression): ImportAttribute {

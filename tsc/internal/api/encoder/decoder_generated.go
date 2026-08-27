@@ -210,6 +210,7 @@ func (d *astDecoder) createChildrenNode(kind ast.Kind, data uint32, childIndices
 		ast.KindGlobalKeyword,
 		ast.KindOverrideKeyword,
 		ast.KindOfKeyword,
+		ast.KindProvesKeyword,
 		ast.KindDeferKeyword:
 		return d.factory.NewToken(kind), nil
 	case ast.KindQualifiedName:
@@ -778,9 +779,10 @@ func (d *astDecoder) createChildrenNode(kind ast.Kind, data uint32, childIndices
 	case ast.KindTypePredicate:
 		it := newChildIter(childIndices)
 		assertsModifier := d.nodeAt(it.nextIf(mask, 0))
-		parameterName := d.nodeAt(it.nextIf(mask, 1))
-		typeNode := d.nodeAt(it.nextIf(mask, 2))
-		return d.factory.NewTypePredicateNode(assertsModifier, parameterName, typeNode), nil
+		provesModifier := d.nodeAt(it.nextIf(mask, 1))
+		parameterName := d.nodeAt(it.nextIf(mask, 2))
+		typeNode := d.nodeAt(it.nextIf(mask, 3))
+		return d.factory.NewTypePredicateNode(assertsModifier, provesModifier, parameterName, typeNode), nil
 	case ast.KindImportAttribute:
 		it := newChildIter(childIndices)
 		name := d.nodeAt(it.nextIf(mask, 0))

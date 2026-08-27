@@ -116,10 +116,10 @@ const testReflectSetPrototypeOf = Reflect.setPrototypeOf({}, {});
 const testArrayFind = [""].find((val, idx, obj) => {
 >testArrayFind : string | undefined
 >[""].find((val, idx, obj) => {    return true;}) : string | undefined
->[""].find : { <S extends string>(predicate: (value: string, index: number, obj: string[]) => value is S, thisArg?: any): S | undefined; (predicate: (value: string, index: number, obj: string[]) => unknown, thisArg?: any): string | undefined; }
+>[""].find : { <S extends string>(predicate: (value: string, index: number, obj: string[]) => proves value is S, thisArg?: any): S | undefined; (predicate: (value: string, index: number, obj: string[]) => unknown, thisArg?: any): string | undefined; }
 >[""] : string[]
 >"" : ""
->find : { <S extends string>(predicate: (value: string, index: number, obj: string[]) => value is S, thisArg?: any): S | undefined; (predicate: (value: string, index: number, obj: string[]) => unknown, thisArg?: any): string | undefined; }
+>find : { <S extends string>(predicate: (value: string, index: number, obj: string[]) => proves value is S, thisArg?: any): S | undefined; (predicate: (value: string, index: number, obj: string[]) => unknown, thisArg?: any): string | undefined; }
 >(val, idx, obj) => {    return true;} : (val: string, idx: number, obj: string[]) => true
 >val : string
 >idx : number

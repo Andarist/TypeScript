@@ -1352,7 +1352,29 @@ const (
 	TypePredicateKindIdentifier
 	TypePredicateKindAssertsThis
 	TypePredicateKindAssertsIdentifier
+	TypePredicateKindProvesThis
+	TypePredicateKindProvesIdentifier
 )
+
+func isAssertsTypePredicateKind(kind TypePredicateKind) bool {
+	return kind == TypePredicateKindAssertsThis || kind == TypePredicateKindAssertsIdentifier
+}
+
+func isProvesTypePredicateKind(kind TypePredicateKind) bool {
+	return kind == TypePredicateKindProvesThis || kind == TypePredicateKindProvesIdentifier
+}
+
+func isThisTypePredicateKind(kind TypePredicateKind) bool {
+	return kind == TypePredicateKindThis || kind == TypePredicateKindAssertsThis || kind == TypePredicateKindProvesThis
+}
+
+func isIdentifierTypePredicateKind(kind TypePredicateKind) bool {
+	return kind == TypePredicateKindIdentifier || kind == TypePredicateKindAssertsIdentifier || kind == TypePredicateKindProvesIdentifier
+}
+
+func isNarrowingTypePredicateKind(kind TypePredicateKind) bool {
+	return kind == TypePredicateKindThis || kind == TypePredicateKindIdentifier || isProvesTypePredicateKind(kind)
+}
 
 type TypePredicate struct {
 	kind           TypePredicateKind

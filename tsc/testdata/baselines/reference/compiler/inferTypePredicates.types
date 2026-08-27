@@ -11,13 +11,13 @@ const numsOrNull = [1, 2, 3, 4, null];
 >3 : 3
 >4 : 4
 
-const filteredNumsTruthy: number[] = numsOrNull.filter(x => !!x);  // should error
+const filteredNumsTruthy: number[] = numsOrNull.filter(x => !!x);  // should ok with a one-sided predicate
 >filteredNumsTruthy : number[]
->numsOrNull.filter(x => !!x) : (number | null)[]
->numsOrNull.filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>numsOrNull.filter(x => !!x) : number[]
+>numsOrNull.filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
 >numsOrNull : (number | null)[]
->filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
->x => !!x : (x: number | null) => boolean
+>filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>x => !!x : (x: number | null) => proves x is number
 >x : number | null
 >!!x : boolean
 >!x : boolean
@@ -26,20 +26,20 @@ const filteredNumsTruthy: number[] = numsOrNull.filter(x => !!x);  // should err
 const filteredNumsNonNullish: number[] = numsOrNull.filter(x => x !== null);  // should ok
 >filteredNumsNonNullish : number[]
 >numsOrNull.filter(x => x !== null) : number[]
->numsOrNull.filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>numsOrNull.filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
 >numsOrNull : (number | null)[]
->filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
 >x => x !== null : (x: number | null) => x is number
 >x : number | null
 >x !== null : boolean
 >x : number | null
 
-const evenSquaresInline: number[] =  // should error
+const evenSquaresInline: number[] =  // should ok with a one-sided predicate
 >evenSquaresInline : number[]
 
     [1, 2, 3, 4]
->[1, 2, 3, 4]        .map(x => x % 2 === 0 ? x * x : null)        .filter(x => !!x) : (number | null)[]
->[1, 2, 3, 4]        .map(x => x % 2 === 0 ? x * x : null)        .filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>[1, 2, 3, 4]        .map(x => x % 2 === 0 ? x * x : null)        .filter(x => !!x) : number[]
+>[1, 2, 3, 4]        .map(x => x % 2 === 0 ? x * x : null)        .filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
 >[1, 2, 3, 4]        .map(x => x % 2 === 0 ? x * x : null) : (number | null)[]
 >[1, 2, 3, 4]        .map : <U>(callbackfn: (value: number, index: number, array: number[]) => U, thisArg?: any) => U[]
 >[1, 2, 3, 4] : number[]
@@ -63,27 +63,27 @@ const evenSquaresInline: number[] =  // should error
 >x : number
 
         .filter(x => !!x); // tests truthiness, not non-nullishness
->filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
->x => !!x : (x: number | null) => boolean
+>filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>x => !!x : (x: number | null) => proves x is number
 >x : number | null
 >!!x : boolean
 >!x : boolean
 >x : number | null
 
 const isTruthy = (x: number | null) => !!x;
->isTruthy : (x: number | null) => boolean
->(x: number | null) => !!x : (x: number | null) => boolean
+>isTruthy : (x: number | null) => proves x is number
+>(x: number | null) => !!x : (x: number | null) => proves x is number
 >x : number | null
 >!!x : boolean
 >!x : boolean
 >x : number | null
 
-const evenSquares: number[] =  // should error
+const evenSquares: number[] =  // should ok with a one-sided predicate
 >evenSquares : number[]
 
     [1, 2, 3, 4]
->[1, 2, 3, 4]    .map(x => x % 2 === 0 ? x * x : null)      .filter(isTruthy) : (number | null)[]
->[1, 2, 3, 4]    .map(x => x % 2 === 0 ? x * x : null)      .filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>[1, 2, 3, 4]    .map(x => x % 2 === 0 ? x * x : null)      .filter(isTruthy) : number[]
+>[1, 2, 3, 4]    .map(x => x % 2 === 0 ? x * x : null)      .filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
 >[1, 2, 3, 4]    .map(x => x % 2 === 0 ? x * x : null) : (number | null)[]
 >[1, 2, 3, 4]    .map : <U>(callbackfn: (value: number, index: number, array: number[]) => U, thisArg?: any) => U[]
 >[1, 2, 3, 4] : number[]
@@ -107,15 +107,15 @@ const evenSquares: number[] =  // should error
 >x : number
 
       .filter(isTruthy);
->filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
->isTruthy : (x: number | null) => boolean
+>filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>isTruthy : (x: number | null) => proves x is number
 
 const evenSquaresNonNull: number[] =  // should ok
 >evenSquaresNonNull : number[]
 
     [1, 2, 3, 4]
 >[1, 2, 3, 4]    .map(x => x % 2 === 0 ? x * x : null)    .filter(x => x !== null) : number[]
->[1, 2, 3, 4]    .map(x => x % 2 === 0 ? x * x : null)    .filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>[1, 2, 3, 4]    .map(x => x % 2 === 0 ? x * x : null)    .filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
 >[1, 2, 3, 4]    .map(x => x % 2 === 0 ? x * x : null) : (number | null)[]
 >[1, 2, 3, 4]    .map : <U>(callbackfn: (value: number, index: number, array: number[]) => U, thisArg?: any) => U[]
 >[1, 2, 3, 4] : number[]
@@ -139,7 +139,7 @@ const evenSquaresNonNull: number[] =  // should ok
 >x : number
 
     .filter(x => x !== null);
->filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
 >x => x !== null : (x: number | null) => x is number
 >x : number | null
 >x !== null : boolean
@@ -214,7 +214,7 @@ const result = myArray
 >myArray  .map((arr) => arr.list)  .filter((arr) => arr && arr.length)  .map((arr) => arr // should error    .filter((obj) => obj && obj.data)    .map(obj => JSON.parse(obj.data))  // should error  ) : any[][]
 >myArray  .map((arr) => arr.list)  .filter((arr) => arr && arr.length)  .map : <U>(callbackfn: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => U, thisArg?: any) => U[]
 >myArray  .map((arr) => arr.list)  .filter((arr) => arr && arr.length) : (MyObj[] | undefined)[]
->myArray  .map((arr) => arr.list)  .filter : { <S extends MyObj[] | undefined>(predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => unknown, thisArg?: any): (MyObj[] | undefined)[]; }
+>myArray  .map((arr) => arr.list)  .filter : { <S extends MyObj[] | undefined>(predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => unknown, thisArg?: any): (MyObj[] | undefined)[]; }
 >myArray  .map((arr) => arr.list) : (MyObj[] | undefined)[]
 >myArray  .map : <U>(callbackfn: (value: { list?: MyObj[]; }, index: number, array: { list?: MyObj[]; }[]) => U, thisArg?: any) => U[]
 >myArray : MyArray
@@ -228,7 +228,7 @@ const result = myArray
 >list : MyObj[] | undefined
 
   .filter((arr) => arr && arr.length)
->filter : { <S extends MyObj[] | undefined>(predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => unknown, thisArg?: any): (MyObj[] | undefined)[]; }
+>filter : { <S extends MyObj[] | undefined>(predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => unknown, thisArg?: any): (MyObj[] | undefined)[]; }
 >(arr) => arr && arr.length : (arr: MyObj[] | undefined) => number | undefined
 >arr : MyObj[] | undefined
 >arr && arr.length : number | undefined
@@ -244,11 +244,11 @@ const result = myArray
 >arr // should error    .filter((obj) => obj && obj.data)    .map(obj => JSON.parse(obj.data)) : any[]
 >arr // should error    .filter((obj) => obj && obj.data)    .map : <U>(callbackfn: (value: MyObj, index: number, array: MyObj[]) => U, thisArg?: any) => U[]
 >arr // should error    .filter((obj) => obj && obj.data) : MyObj[]
->arr // should error    .filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
+>arr // should error    .filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
 >arr : MyObj[] | undefined
 
     .filter((obj) => obj && obj.data)
->filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
+>filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
 >(obj) => obj && obj.data : (obj: MyObj) => string | undefined
 >obj : MyObj
 >obj && obj.data : string | undefined
@@ -276,9 +276,9 @@ const result2 = myArray
 >myArray  .map((arr) => arr.list)  .filter((arr) => !!arr)  .filter(arr => arr.length)  .map((arr) => arr  // should ok    .filter((obj) => obj)    // inferring a guard here would require https://github.com/microsoft/TypeScript/issues/42384    .filter(obj => !!obj.data)    .map(obj => JSON.parse(obj.data))  ) : any[][]
 >myArray  .map((arr) => arr.list)  .filter((arr) => !!arr)  .filter(arr => arr.length)  .map : <U>(callbackfn: (value: MyObj[], index: number, array: MyObj[][]) => U, thisArg?: any) => U[]
 >myArray  .map((arr) => arr.list)  .filter((arr) => !!arr)  .filter(arr => arr.length) : MyObj[][]
->myArray  .map((arr) => arr.list)  .filter((arr) => !!arr)  .filter : { <S extends MyObj[]>(predicate: (value: MyObj[], index: number, array: MyObj[][]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj[], index: number, array: MyObj[][]) => unknown, thisArg?: any): MyObj[][]; }
+>myArray  .map((arr) => arr.list)  .filter((arr) => !!arr)  .filter : { <S extends MyObj[]>(predicate: (value: MyObj[], index: number, array: MyObj[][]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj[], index: number, array: MyObj[][]) => unknown, thisArg?: any): MyObj[][]; }
 >myArray  .map((arr) => arr.list)  .filter((arr) => !!arr) : MyObj[][]
->myArray  .map((arr) => arr.list)  .filter : { <S extends MyObj[] | undefined>(predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => unknown, thisArg?: any): (MyObj[] | undefined)[]; }
+>myArray  .map((arr) => arr.list)  .filter : { <S extends MyObj[] | undefined>(predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => unknown, thisArg?: any): (MyObj[] | undefined)[]; }
 >myArray  .map((arr) => arr.list) : (MyObj[] | undefined)[]
 >myArray  .map : <U>(callbackfn: (value: { list?: MyObj[]; }, index: number, array: { list?: MyObj[]; }[]) => U, thisArg?: any) => U[]
 >myArray : MyArray
@@ -292,7 +292,7 @@ const result2 = myArray
 >list : MyObj[] | undefined
 
   .filter((arr) => !!arr)
->filter : { <S extends MyObj[] | undefined>(predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => unknown, thisArg?: any): (MyObj[] | undefined)[]; }
+>filter : { <S extends MyObj[] | undefined>(predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj[] | undefined, index: number, array: (MyObj[] | undefined)[]) => unknown, thisArg?: any): (MyObj[] | undefined)[]; }
 >(arr) => !!arr : (arr: MyObj[] | undefined) => arr is MyObj[]
 >arr : MyObj[] | undefined
 >!!arr : boolean
@@ -300,7 +300,7 @@ const result2 = myArray
 >arr : MyObj[] | undefined
 
   .filter(arr => arr.length)
->filter : { <S extends MyObj[]>(predicate: (value: MyObj[], index: number, array: MyObj[][]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj[], index: number, array: MyObj[][]) => unknown, thisArg?: any): MyObj[][]; }
+>filter : { <S extends MyObj[]>(predicate: (value: MyObj[], index: number, array: MyObj[][]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj[], index: number, array: MyObj[][]) => unknown, thisArg?: any): MyObj[][]; }
 >arr => arr.length : (arr: MyObj[]) => number
 >arr : MyObj[]
 >arr.length : number
@@ -314,20 +314,20 @@ const result2 = myArray
 >arr  // should ok    .filter((obj) => obj)    // inferring a guard here would require https://github.com/microsoft/TypeScript/issues/42384    .filter(obj => !!obj.data)    .map(obj => JSON.parse(obj.data)) : any[]
 >arr  // should ok    .filter((obj) => obj)    // inferring a guard here would require https://github.com/microsoft/TypeScript/issues/42384    .filter(obj => !!obj.data)    .map : <U>(callbackfn: (value: MyObj, index: number, array: MyObj[]) => U, thisArg?: any) => U[]
 >arr  // should ok    .filter((obj) => obj)    // inferring a guard here would require https://github.com/microsoft/TypeScript/issues/42384    .filter(obj => !!obj.data) : MyObj[]
->arr  // should ok    .filter((obj) => obj)    // inferring a guard here would require https://github.com/microsoft/TypeScript/issues/42384    .filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
+>arr  // should ok    .filter((obj) => obj)    // inferring a guard here would require https://github.com/microsoft/TypeScript/issues/42384    .filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
 >arr  // should ok    .filter((obj) => obj) : MyObj[]
->arr  // should ok    .filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
+>arr  // should ok    .filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
 >arr : MyObj[]
 
     .filter((obj) => obj)
->filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
+>filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
 >(obj) => obj : (obj: MyObj) => MyObj
 >obj : MyObj
 >obj : MyObj
 
     // inferring a guard here would require https://github.com/microsoft/TypeScript/issues/42384
     .filter(obj => !!obj.data)
->filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
+>filter : { <S extends MyObj>(predicate: (value: MyObj, index: number, array: MyObj[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: MyObj, index: number, array: MyObj[]) => unknown, thisArg?: any): MyObj[]; }
 >obj => !!obj.data : (obj: MyObj) => boolean
 >obj : MyObj
 >!!obj.data : boolean
@@ -371,9 +371,9 @@ const list: (Foo | Bar)[] = [];
 const resultBars: Bar[] = list.filter((value) => 'bar' in value);  // should ok
 >resultBars : Bar[]
 >list.filter((value) => 'bar' in value) : Bar[]
->list.filter : { <S extends Foo | Bar>(predicate: (value: Foo | Bar, index: number, array: (Foo | Bar)[]) => value is S, thisArg?: any): S[]; (predicate: (value: Foo | Bar, index: number, array: (Foo | Bar)[]) => unknown, thisArg?: any): (Foo | Bar)[]; }
+>list.filter : { <S extends Foo | Bar>(predicate: (value: Foo | Bar, index: number, array: (Foo | Bar)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: Foo | Bar, index: number, array: (Foo | Bar)[]) => unknown, thisArg?: any): (Foo | Bar)[]; }
 >list : (Foo | Bar)[]
->filter : { <S extends Foo | Bar>(predicate: (value: Foo | Bar, index: number, array: (Foo | Bar)[]) => value is S, thisArg?: any): S[]; (predicate: (value: Foo | Bar, index: number, array: (Foo | Bar)[]) => unknown, thisArg?: any): (Foo | Bar)[]; }
+>filter : { <S extends Foo | Bar>(predicate: (value: Foo | Bar, index: number, array: (Foo | Bar)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: Foo | Bar, index: number, array: (Foo | Bar)[]) => unknown, thisArg?: any): (Foo | Bar)[]; }
 >(value) => 'bar' in value : (value: Foo | Bar) => value is Bar
 >value : Foo | Bar
 >'bar' in value : boolean
@@ -412,13 +412,13 @@ if (isBarNonNull(fooOrBar)) {
 const a = [1, "foo", 2, "bar"].filter(x => typeof x === "string");
 >a : string[]
 >[1, "foo", 2, "bar"].filter(x => typeof x === "string") : string[]
->[1, "foo", 2, "bar"].filter : { <S extends string | number>(predicate: (value: string | number, index: number, array: (string | number)[]) => value is S, thisArg?: any): S[]; (predicate: (value: string | number, index: number, array: (string | number)[]) => unknown, thisArg?: any): (string | number)[]; }
+>[1, "foo", 2, "bar"].filter : { <S extends string | number>(predicate: (value: string | number, index: number, array: (string | number)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: string | number, index: number, array: (string | number)[]) => unknown, thisArg?: any): (string | number)[]; }
 >[1, "foo", 2, "bar"] : (string | number)[]
 >1 : 1
 >"foo" : "foo"
 >2 : 2
 >"bar" : "bar"
->filter : { <S extends string | number>(predicate: (value: string | number, index: number, array: (string | number)[]) => value is S, thisArg?: any): S[]; (predicate: (value: string | number, index: number, array: (string | number)[]) => unknown, thisArg?: any): (string | number)[]; }
+>filter : { <S extends string | number>(predicate: (value: string | number, index: number, array: (string | number)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: string | number, index: number, array: (string | number)[]) => unknown, thisArg?: any): (string | number)[]; }
 >x => typeof x === "string" : (x: string | number) => x is string
 >x : string | number
 >typeof x === "string" : boolean
@@ -476,7 +476,7 @@ if (isString(strOrNum)) {
 }
 
 function flakyIsString(x: string | number) {
->flakyIsString : (x: string | number) => boolean
+>flakyIsString : (x: string | number) => proves x is string
 >x : string | number
 
   return typeof x === 'string' && Math.random() > 0.5;
@@ -494,12 +494,12 @@ function flakyIsString(x: string | number) {
 }
 if (flakyIsString(strOrNum)) {
 >flakyIsString(strOrNum) : boolean
->flakyIsString : (x: string | number) => boolean
+>flakyIsString : (x: string | number) => proves x is string
 >strOrNum : string | number
 
-  let t: string = strOrNum;  // should error
+  let t: string = strOrNum;  // should ok
 >t : string
->strOrNum : string | number
+>strOrNum : string
 
 } else {
   let t: number = strOrNum;  // should error
@@ -517,7 +517,7 @@ function isDate(x: object) {
 >Date : DateConstructor
 }
 function flakyIsDate(x: object) {
->flakyIsDate : (x: object) => boolean
+>flakyIsDate : (x: object) => proves x is Date
 >x : object
 
   return x instanceof Date && Math.random() > 0.5;
@@ -553,12 +553,12 @@ if (isDate(maybeDate)) {
 
 if (flakyIsDate(maybeDate)) {
 >flakyIsDate(maybeDate) : boolean
->flakyIsDate : (x: object) => boolean
+>flakyIsDate : (x: object) => proves x is Date
 >maybeDate : object
 
-  let t: Date = maybeDate;  // should error
+  let t: Date = maybeDate;  // should ok
 >t : Date
->maybeDate : object
+>maybeDate : Date
 
 } else {
   let t: object = maybeDate;  // should ok
@@ -617,9 +617,9 @@ function irrelevantIsNumberDestructuring(x: string | number) {
 >'string' : "string"
 }
 
-// Cannot infer a type guard for either param because of the false case.
+// Infer a one-sided predicate for the first refined parameter.
 function areBothNums(x: string|number, y: string|number) {
->areBothNums : (x: string | number, y: string | number) => boolean
+>areBothNums : (x: string | number, y: string | number) => proves x is number
 >x : string | number
 >y : string | number
 
@@ -793,7 +793,7 @@ function doNotRefineDestructuredParam({x, y}: {x: number | null, y: number}) {
 
 // The type predicate must remain valid when the function is called with subtypes.
 function isShortString(x: unknown) {
->isShortString : (x: unknown) => boolean
+>isShortString : (x: unknown) => proves x is string
 >x : unknown
 
   return typeof x === "string" && x.length < 10;
@@ -814,7 +814,7 @@ declare let str: string;
 
 if (isShortString(str)) {
 >isShortString(str) : boolean
->isShortString : (x: unknown) => boolean
+>isShortString : (x: unknown) => proves x is string
 >str : string
 
   str.charAt(0);  // should ok
@@ -1017,12 +1017,12 @@ if (foobarPred(foobar)) {
 const arrTest: Array<number> = [1, 2, null, 3].filter(
 >arrTest : number[]
 >[1, 2, null, 3].filter(  (x) => (x != null) satisfies boolean,) : number[]
->[1, 2, null, 3].filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>[1, 2, null, 3].filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
 >[1, 2, null, 3] : (number | null)[]
 >1 : 1
 >2 : 2
 >3 : 3
->filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
+>filter : { <S extends number | null>(predicate: (value: number | null, index: number, array: (number | null)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: number | null, index: number, array: (number | null)[]) => unknown, thisArg?: any): (number | null)[]; }
 
   (x) => (x != null) satisfies boolean,
 >(x) => (x != null) satisfies boolean : (x: number | null) => x is number

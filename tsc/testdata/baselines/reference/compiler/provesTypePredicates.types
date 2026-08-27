@@ -1,0 +1,365 @@
+//// [tests/cases/compiler/provesTypePredicates.ts] ////
+
+=== provesTypePredicates.ts ===
+export function isSmallNumber(x: string | number): proves x is number {
+>isSmallNumber : (x: string | number) => proves x is number
+>x : string | number
+
+    return typeof x === "number" && Math.abs(x) < 10;
+>typeof x === "number" && Math.abs(x) < 10 : boolean
+>typeof x === "number" : boolean
+>typeof x : "bigint" | "boolean" | "function" | "number" | "object" | "string" | "symbol" | "undefined"
+>x : string | number
+>"number" : "number"
+>Math.abs(x) < 10 : boolean
+>Math.abs(x) : number
+>Math.abs : (x: number) => number
+>Math : Math
+>abs : (x: number) => number
+>x : number
+>10 : 10
+}
+
+declare let value: string | number;
+>value : string | number
+
+if (isSmallNumber(value)) {
+>isSmallNumber(value) : boolean
+>isSmallNumber : (x: string | number) => proves x is number
+>value : string | number
+
+    const n: number = value;
+>n : number
+>value : number
+
+    const s: string = value; // error
+>s : string
+>value : number
+}
+else {
+    const original: string | number = value;
+>original : string | number
+>value : string | number
+
+    const s: string = value; // error
+>s : string
+>value : string | number
+}
+
+if (!isSmallNumber(value)) {
+>!isSmallNumber(value) : boolean
+>isSmallNumber(value) : boolean
+>isSmallNumber : (x: string | number) => proves x is number
+>value : string | number
+
+    const original: string | number = value;
+>original : string | number
+>value : string | number
+
+    const s: string = value; // error
+>s : string
+>value : string | number
+}
+
+if (isSmallNumber(value) === false) {
+>isSmallNumber(value) === false : boolean
+>isSmallNumber(value) : boolean
+>isSmallNumber : (x: string | number) => proves x is number
+>value : string | number
+>false : false
+
+    const original: string | number = value;
+>original : string | number
+>value : string | number
+
+    const s: string = value; // error
+>s : string
+>value : string | number
+}
+
+if (isSmallNumber(value) && value.toFixed()) {
+>isSmallNumber(value) && value.toFixed() : string | false
+>isSmallNumber(value) : boolean
+>isSmallNumber : (x: string | number) => proves x is number
+>value : string | number
+>value.toFixed() : string
+>value.toFixed : (fractionDigits?: number) => string
+>value : number
+>toFixed : (fractionDigits?: number) => string
+
+    const n: number = value;
+>n : number
+>value : number
+}
+
+isSmallNumber(value) || value.length; // error: the right side observes the unchanged type
+>isSmallNumber(value) || value.length : any
+>isSmallNumber(value) : boolean
+>isSmallNumber : (x: string | number) => proves x is number
+>value : string | number
+>value.length : any
+>value : string | number
+>length : any
+
+const formattedOrOriginal = isSmallNumber(value) ? value.toFixed() : value;
+>formattedOrOriginal : string | number
+>isSmallNumber(value) ? value.toFixed() : value : string | number
+>isSmallNumber(value) : boolean
+>isSmallNumber : (x: string | number) => proves x is number
+>value : string | number
+>value.toFixed() : string
+>value.toFixed : (fractionDigits?: number) => string
+>value : number
+>toFixed : (fractionDigits?: number) => string
+>value : string | number
+
+if (!isSmallNumber(value) || typeof value === "string") {
+>!isSmallNumber(value) || typeof value === "string" : boolean
+>!isSmallNumber(value) : boolean
+>isSmallNumber(value) : boolean
+>isSmallNumber : (x: string | number) => proves x is number
+>value : string | number
+>typeof value === "string" : boolean
+>typeof value : "bigint" | "boolean" | "function" | "number" | "object" | "string" | "symbol" | "undefined"
+>value : number
+>"string" : "string"
+
+    const original: string | number = value;
+>original : string | number
+>value : string | number
+}
+
+declare const maybeSmallNumber: typeof isSmallNumber | undefined;
+>maybeSmallNumber : ((x: string | number) => proves x is number) | undefined
+>isSmallNumber : (x: string | number) => proves x is number
+
+if (maybeSmallNumber?.(value)) {
+>maybeSmallNumber?.(value) : boolean | undefined
+>maybeSmallNumber : ((x: string | number) => proves x is number) | undefined
+>value : string | number
+
+    const n: number = value;
+>n : number
+>value : number
+}
+else {
+    const original: string | number = value;
+>original : string | number
+>value : string | number
+}
+
+class Base {
+>Base : Base
+
+    isDerived(): proves this is Derived {
+>isDerived : () => proves this is Derived
+
+        return this instanceof Derived && Math.random() > 0.5;
+>this instanceof Derived && Math.random() > 0.5 : boolean
+>this instanceof Derived : boolean
+>this : this
+>Derived : typeof Derived
+>Math.random() > 0.5 : boolean
+>Math.random() : number
+>Math.random : () => number
+>Math : Math
+>random : () => number
+>0.5 : 0.5
+    }
+}
+
+class Derived extends Base {
+>Derived : Derived
+>Base : Base
+
+    derived = true;
+>derived : boolean
+>true : true
+}
+
+declare const base: Base;
+>base : Base
+
+if (base.isDerived()) {
+>base.isDerived() : boolean
+>base.isDerived : () => proves this is Derived
+>base : Base
+>isDerived : () => proves this is Derived
+
+    base.derived;
+>base.derived : boolean
+>base : Derived
+>derived : boolean
+}
+else {
+    base.derived; // error
+>base.derived : any
+>base : Base
+>derived : any
+}
+
+declare let twoSided: (x: unknown) => x is string;
+>twoSided : (x: unknown) => x is string
+>x : unknown
+
+declare let oneSided: (x: unknown) => proves x is string;
+>oneSided : (x: unknown) => proves x is string
+>x : unknown
+
+declare let booleanFunction: (x: unknown) => boolean;
+>booleanFunction : (x: unknown) => boolean
+>x : unknown
+
+oneSided = twoSided;
+>oneSided = twoSided : (x: unknown) => x is string
+>oneSided : (x: unknown) => proves x is string
+>twoSided : (x: unknown) => x is string
+
+twoSided = oneSided; // error
+>twoSided = oneSided : (x: unknown) => proves x is string
+>twoSided : (x: unknown) => x is string
+>oneSided : (x: unknown) => proves x is string
+
+booleanFunction = oneSided;
+>booleanFunction = oneSided : (x: unknown) => proves x is string
+>booleanFunction : (x: unknown) => boolean
+>oneSided : (x: unknown) => proves x is string
+
+oneSided = booleanFunction; // error
+>oneSided = booleanFunction : (x: unknown) => boolean
+>oneSided : (x: unknown) => proves x is string
+>booleanFunction : (x: unknown) => boolean
+
+export function isShortString(x: unknown) {
+>isShortString : (x: unknown) => proves x is string
+>x : unknown
+
+    return typeof x === "string" && x.length < 10;
+>typeof x === "string" && x.length < 10 : boolean
+>typeof x === "string" : boolean
+>typeof x : "bigint" | "boolean" | "function" | "number" | "object" | "string" | "symbol" | "undefined"
+>x : unknown
+>"string" : "string"
+>x.length < 10 : boolean
+>x.length : number
+>x : string
+>length : number
+>10 : 10
+}
+
+export function isString(x: unknown) {
+>isString : (x: unknown) => x is string
+>x : unknown
+
+    return typeof x === "string";
+>typeof x === "string" : boolean
+>typeof x : "bigint" | "boolean" | "function" | "number" | "object" | "string" | "symbol" | "undefined"
+>x : unknown
+>"string" : "string"
+}
+
+if (isShortString(value)) {
+>isShortString(value) : boolean
+>isShortString : (x: unknown) => proves x is string
+>value : string | number
+
+    const s: string = value;
+>s : string
+>value : string
+}
+else {
+    const original: string | number = value;
+>original : string | number
+>value : string | number
+}
+
+if (isString(value)) {
+>isString(value) : boolean
+>isString : (x: unknown) => x is string
+>value : string | number
+
+    const s: string = value;
+>s : string
+>value : string
+}
+else {
+    const n: number = value;
+>n : number
+>value : number
+}
+
+const values: (string | number)[] = ["a", 1, 100];
+>values : (string | number)[]
+>["a", 1, 100] : (string | number)[]
+>"a" : "a"
+>1 : 1
+>100 : 100
+
+const smallNumbers: number[] = values.filter(isSmallNumber);
+>smallNumbers : number[]
+>values.filter(isSmallNumber) : number[]
+>values.filter : { <S extends string | number>(predicate: (value: string | number, index: number, array: (string | number)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: string | number, index: number, array: (string | number)[]) => unknown, thisArg?: any): (string | number)[]; }
+>values : (string | number)[]
+>filter : { <S extends string | number>(predicate: (value: string | number, index: number, array: (string | number)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: string | number, index: number, array: (string | number)[]) => unknown, thisArg?: any): (string | number)[]; }
+>isSmallNumber : (x: string | number) => proves x is number
+
+const inferredSmallNumbers: number[] = values.filter(x => typeof x === "number" && x < 10);
+>inferredSmallNumbers : number[]
+>values.filter(x => typeof x === "number" && x < 10) : number[]
+>values.filter : { <S extends string | number>(predicate: (value: string | number, index: number, array: (string | number)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: string | number, index: number, array: (string | number)[]) => unknown, thisArg?: any): (string | number)[]; }
+>values : (string | number)[]
+>filter : { <S extends string | number>(predicate: (value: string | number, index: number, array: (string | number)[]) => proves value is S, thisArg?: any): S[]; (predicate: (value: string | number, index: number, array: (string | number)[]) => unknown, thisArg?: any): (string | number)[]; }
+>x => typeof x === "number" && x < 10 : (x: string | number) => proves x is number
+>x : string | number
+>typeof x === "number" && x < 10 : boolean
+>typeof x === "number" : boolean
+>typeof x : "bigint" | "boolean" | "function" | "number" | "object" | "string" | "symbol" | "undefined"
+>x : string | number
+>"number" : "number"
+>x < 10 : boolean
+>x : number
+>10 : 10
+
+const foundSmallNumber: number | undefined = values.find(isSmallNumber);
+>foundSmallNumber : number | undefined
+>values.find(isSmallNumber) : number | undefined
+>values.find : { <S extends string | number>(predicate: (value: string | number, index: number, obj: (string | number)[]) => proves value is S, thisArg?: any): S | undefined; (predicate: (value: string | number, index: number, obj: (string | number)[]) => unknown, thisArg?: any): string | number | undefined; }
+>values : (string | number)[]
+>find : { <S extends string | number>(predicate: (value: string | number, index: number, obj: (string | number)[]) => proves value is S, thisArg?: any): S | undefined; (predicate: (value: string | number, index: number, obj: (string | number)[]) => unknown, thisArg?: any): string | number | undefined; }
+>isSmallNumber : (x: string | number) => proves x is number
+
+declare const unionPredicate: typeof twoSided | typeof oneSided;
+>unionPredicate : ((x: unknown) => x is string) | ((x: unknown) => proves x is string)
+>twoSided : (x: unknown) => x is string
+>oneSided : (x: unknown) => proves x is string
+
+if (unionPredicate(value)) {
+>unionPredicate(value) : boolean
+>unionPredicate : ((x: unknown) => x is string) | ((x: unknown) => proves x is string)
+>value : string | number
+
+    const s: string = value;
+>s : string
+>value : string
+}
+else {
+    const original: string | number = value;
+>original : string | number
+>value : string | number
+
+    const s: string = value; // error
+>s : string
+>value : string | number
+}
+
+const proves = 1;
+>proves : 1
+>1 : 1
+
+type proves = string;
+>proves : string
+
+const contextualKeyword: proves = "ok";
+>contextualKeyword : string
+>"ok" : "ok"
+

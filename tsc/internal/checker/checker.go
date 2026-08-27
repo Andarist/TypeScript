@@ -3076,7 +3076,7 @@ func (c *Checker) checkTypePredicate(node *ast.Node) {
 		return
 	}
 	parameterName := node.AsTypePredicateNode().ParameterName
-	if typePredicate.kind != TypePredicateKindThis && typePredicate.kind != TypePredicateKindAssertsThis {
+	if !isThisTypePredicateKind(typePredicate.kind) {
 		if typePredicate.parameterIndex >= 0 {
 			if signatureHasRestParameter(signature) && int(typePredicate.parameterIndex) == len(signature.parameters)-1 {
 				c.error(parameterName, diagnostics.A_type_predicate_cannot_reference_a_rest_parameter)
@@ -20688,15 +20688,16 @@ func (c *Checker) checkIfExpressionRefinesAnyParameter(fn *ast.Node, expr *ast.N
 			// Refining "x: boolean" to "x is true" or "x is false" isn't useful.
 			continue
 		}
-		trueType := c.checkIfExpressionRefinesParameter(fn, expr, param, initType)
+		trueType, isTwoSided := c.checkIfExpressionRefinesParameter(fn, expr, param, initType)
 		if trueType != nil {
-			return c.newTypePredicate(TypePredicateKindIdentifier, param.Name().Text(), int32(i), trueType)
+			kind := core.IfElse(isTwoSided, TypePredicateKindIdentifier, TypePredicateKindProvesIdentifier)
+			return c.newTypePredicate(kind, param.Name().Text(), int32(i), trueType)
 		}
 	}
 	return nil
 }
 
-func (c *Checker) checkIfExpressionRefinesParameter(fn *ast.Node, expr *ast.Node, param *ast.Node, initType *Type) *Type {
+func (c *Checker) checkIfExpressionRefinesParameter(fn *ast.Node, expr *ast.Node, param *ast.Node, initType *Type) (*Type, bool) {
 	antecedent := getFlowNodeOfNode(expr)
 	if antecedent == nil && ast.IsReturnStatement(expr.Parent) {
 		antecedent = getFlowNodeOfNode(expr.Parent)
@@ -20707,16 +20708,18 @@ func (c *Checker) checkIfExpressionRefinesParameter(fn *ast.Node, expr *ast.Node
 	trueCondition := &ast.FlowNode{Flags: ast.FlowFlagsTrueCondition, Node: expr, Antecedent: antecedent}
 	trueType := c.getFlowTypeOfReferenceEx(param.Name(), initType, initType, fn, trueCondition)
 	if trueType == initType {
-		return nil
+		return nil, false
 	}
 	// "x is T" means that x is T if and only if it returns true. If it returns false then x is not T.
 	// This means that if the function is called with an argument of type trueType, there can't be anything left in the `else` branch. It must reduce to `never`.
 	falseCondition := &ast.FlowNode{Flags: ast.FlowFlagsFalseCondition, Node: expr, Antecedent: antecedent}
 	falseSubtype := c.getReducedType(c.getFlowTypeOfReferenceEx(param.Name(), initType, trueType, fn, falseCondition))
 	if falseSubtype.flags&TypeFlagsNever != 0 {
-		return trueType
+		return trueType, true
 	}
-	return nil
+	// "proves x is T" only promises the true branch, so no corresponding
+	// exhaustiveness check is required for the false branch.
+	return trueType, false
 }
 
 func (c *Checker) addOptionalTypeMarker(t *Type) *Type {
