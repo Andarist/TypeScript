@@ -1,0 +1,116 @@
+//// [tests/cases/compiler/inheritedConstructorWithRecursiveTypeArguments.ts] ////
+
+=== inheritedConstructorWithRecursiveTypeArguments.ts ===
+declare function mixin<Base extends new (...args: any[]) => any>(base: Base): any;
+>mixin : Symbol(mixin, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 0, 0))
+>Base : Symbol(Base, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 0, 23))
+>args : Symbol(args, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 0, 41))
+>base : Symbol(base, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 0, 65))
+>Base : Symbol(Base, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 0, 23))
+
+declare class Document1<Parent, Owner = Parent> {
+>Document1 : Symbol(Document1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 0, 82))
+>Parent : Symbol(Parent, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 2, 24))
+>Owner : Symbol(Owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 2, 31))
+>Parent : Symbol(Parent, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 2, 24))
+
+    constructor(owner: Owner);
+>owner : Symbol(owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 3, 16))
+>Owner : Symbol(Owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 2, 31))
+
+    owner: Owner;
+>owner : Symbol(Document1.owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 3, 30))
+>Owner : Symbol(Owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 2, 31))
+}
+
+declare class BaseItem1 extends Document1<typeof Item1> {}
+>BaseItem1 : Symbol(BaseItem1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 5, 1))
+>Document1 : Symbol(Document1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 0, 82))
+>Item1 : Symbol(Item1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 7, 58))
+
+declare class Item1 extends mixin(BaseItem1) {}
+>Item1 : Symbol(Item1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 7, 58))
+>mixin : Symbol(mixin, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 0, 0))
+>BaseItem1 : Symbol(BaseItem1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 5, 1))
+
+const item1 = new BaseItem1(Item1);
+>item1 : Symbol(item1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 11, 5))
+>BaseItem1 : Symbol(BaseItem1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 5, 1))
+>Item1 : Symbol(Item1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 7, 58))
+
+const owner1: typeof Item1 = item1.owner;
+>owner1 : Symbol(owner1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 12, 5))
+>Item1 : Symbol(Item1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 7, 58))
+>item1.owner : Symbol(Document1.owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 3, 30))
+>item1 : Symbol(item1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 11, 5))
+>owner : Symbol(Document1.owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 3, 30))
+
+new BaseItem1(123);
+>BaseItem1 : Symbol(BaseItem1, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 5, 1))
+
+declare class Document2<Parent> {
+>Document2 : Symbol(Document2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 14, 19))
+>Parent : Symbol(Parent, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 16, 24))
+
+    constructor(owner: Parent);
+>owner : Symbol(owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 17, 16))
+>Parent : Symbol(Parent, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 16, 24))
+
+    owner: Parent;
+>owner : Symbol(Document2.owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 17, 31))
+>Parent : Symbol(Parent, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 16, 24))
+}
+
+declare class BaseItem2 extends Document2<typeof Item2> {}
+>BaseItem2 : Symbol(BaseItem2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 19, 1))
+>Document2 : Symbol(Document2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 14, 19))
+>Item2 : Symbol(Item2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 21, 58))
+
+declare class Item2 extends mixin<typeof BaseItem2>(BaseItem2) {}
+>Item2 : Symbol(Item2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 21, 58))
+>mixin : Symbol(mixin, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 0, 0))
+>BaseItem2 : Symbol(BaseItem2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 19, 1))
+>BaseItem2 : Symbol(BaseItem2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 19, 1))
+
+const item2 = new BaseItem2(Item2);
+>item2 : Symbol(item2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 25, 5))
+>BaseItem2 : Symbol(BaseItem2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 19, 1))
+>Item2 : Symbol(Item2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 21, 58))
+
+const owner2: typeof Item2 = item2.owner;
+>owner2 : Symbol(owner2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 26, 5))
+>Item2 : Symbol(Item2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 21, 58))
+>item2.owner : Symbol(Document2.owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 17, 31))
+>item2 : Symbol(item2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 25, 5))
+>owner : Symbol(Document2.owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 17, 31))
+
+new BaseItem2(123);
+>BaseItem2 : Symbol(BaseItem2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 19, 1))
+
+declare class Item3 extends Document2<InstanceType<typeof Item3>> {}
+>Item3 : Symbol(Item3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 28, 19))
+>Document2 : Symbol(Document2, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 14, 19))
+>InstanceType : Symbol(InstanceType, Decl(lib.es5.d.ts, --, --))
+>Item3 : Symbol(Item3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 28, 19))
+
+declare const existingItem3: Item3;
+>existingItem3 : Symbol(existingItem3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 32, 13))
+>Item3 : Symbol(Item3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 28, 19))
+
+const item3 = new Item3(existingItem3);
+>item3 : Symbol(item3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 33, 5))
+>Item3 : Symbol(Item3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 28, 19))
+>existingItem3 : Symbol(existingItem3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 32, 13))
+
+const owner3: Item3 = item3.owner;
+>owner3 : Symbol(owner3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 34, 5))
+>Item3 : Symbol(Item3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 28, 19))
+>item3.owner : Symbol(Document2.owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 17, 31))
+>item3 : Symbol(item3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 33, 5))
+>owner : Symbol(Document2.owner, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 17, 31))
+
+new Item3(123);
+>Item3 : Symbol(Item3, Decl(inheritedConstructorWithRecursiveTypeArguments.ts, 28, 19))
+
+export {};
+

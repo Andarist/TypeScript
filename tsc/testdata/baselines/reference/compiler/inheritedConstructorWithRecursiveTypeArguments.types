@@ -1,0 +1,114 @@
+//// [tests/cases/compiler/inheritedConstructorWithRecursiveTypeArguments.ts] ////
+
+=== inheritedConstructorWithRecursiveTypeArguments.ts ===
+declare function mixin<Base extends new (...args: any[]) => any>(base: Base): any;
+>mixin : <Base extends new (...args: any[]) => any>(base: Base) => any
+>args : any[]
+>base : Base
+
+declare class Document1<Parent, Owner = Parent> {
+>Document1 : Document1<Parent, Owner>
+
+    constructor(owner: Owner);
+>owner : Owner
+
+    owner: Owner;
+>owner : Owner
+}
+
+declare class BaseItem1 extends Document1<typeof Item1> {}
+>BaseItem1 : BaseItem1
+>Document1 : Document1<typeof Item1, typeof Item1>
+>Item1 : typeof Item1
+
+declare class Item1 extends mixin(BaseItem1) {}
+>Item1 : Item1
+>mixin(BaseItem1) : any
+>mixin : <Base extends new (...args: any[]) => any>(base: Base) => any
+>BaseItem1 : typeof BaseItem1
+
+const item1 = new BaseItem1(Item1);
+>item1 : BaseItem1
+>new BaseItem1(Item1) : BaseItem1
+>BaseItem1 : typeof BaseItem1
+>Item1 : typeof Item1
+
+const owner1: typeof Item1 = item1.owner;
+>owner1 : typeof Item1
+>Item1 : typeof Item1
+>item1.owner : typeof Item1
+>item1 : BaseItem1
+>owner : typeof Item1
+
+new BaseItem1(123);
+>new BaseItem1(123) : BaseItem1
+>BaseItem1 : typeof BaseItem1
+>123 : 123
+
+declare class Document2<Parent> {
+>Document2 : Document2<Parent>
+
+    constructor(owner: Parent);
+>owner : Parent
+
+    owner: Parent;
+>owner : Parent
+}
+
+declare class BaseItem2 extends Document2<typeof Item2> {}
+>BaseItem2 : BaseItem2
+>Document2 : Document2<typeof Item2>
+>Item2 : typeof Item2
+
+declare class Item2 extends mixin<typeof BaseItem2>(BaseItem2) {}
+>Item2 : Item2
+>mixin<typeof BaseItem2>(BaseItem2) : any
+>mixin : <Base extends new (...args: any[]) => any>(base: Base) => any
+>BaseItem2 : typeof BaseItem2
+>BaseItem2 : typeof BaseItem2
+
+const item2 = new BaseItem2(Item2);
+>item2 : BaseItem2
+>new BaseItem2(Item2) : BaseItem2
+>BaseItem2 : typeof BaseItem2
+>Item2 : typeof Item2
+
+const owner2: typeof Item2 = item2.owner;
+>owner2 : typeof Item2
+>Item2 : typeof Item2
+>item2.owner : typeof Item2
+>item2 : BaseItem2
+>owner : typeof Item2
+
+new BaseItem2(123);
+>new BaseItem2(123) : BaseItem2
+>BaseItem2 : typeof BaseItem2
+>123 : 123
+
+declare class Item3 extends Document2<InstanceType<typeof Item3>> {}
+>Item3 : Item3
+>Document2 : Document2<Item3>
+>Item3 : typeof Item3
+
+declare const existingItem3: Item3;
+>existingItem3 : Item3
+
+const item3 = new Item3(existingItem3);
+>item3 : Item3
+>new Item3(existingItem3) : Item3
+>Item3 : typeof Item3
+>existingItem3 : Item3
+
+const owner3: Item3 = item3.owner;
+>owner3 : Item3
+>item3.owner : Item3
+>item3 : Item3
+>owner : Item3
+
+new Item3(123);
+>new Item3(123) : Item3
+>Item3 : typeof Item3
+>123 : 123
+
+export {};
+

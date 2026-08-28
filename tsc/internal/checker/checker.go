@@ -20979,8 +20979,7 @@ func (c *Checker) getDefaultConstructSignatures(classType *Type) []*Signature {
 	}
 	baseTypeNode := getBaseTypeNodeOfClass(classType)
 	isJavaScript := declaration != nil && ast.IsInJSFile(declaration)
-	typeArguments := c.getTypeArgumentsFromNode(baseTypeNode)
-	typeArgCount := len(typeArguments)
+	typeArgCount := len(baseTypeNode.TypeArguments())
 	var result []*Signature
 	for _, baseSig := range baseSignatures {
 		minTypeArgumentCount := c.getMinTypeArgumentCount(baseSig.typeParameters)
@@ -20988,7 +20987,18 @@ func (c *Checker) getDefaultConstructSignatures(classType *Type) []*Signature {
 		if isJavaScript || typeArgCount >= minTypeArgumentCount && typeArgCount <= typeParamCount {
 			var sig *Signature
 			if typeParamCount != 0 {
-				sig = c.createSignatureInstantiation(baseSig, c.fillMissingTypeArguments(typeArguments, baseSig.typeParameters, minTypeArgumentCount, isJavaScript))
+				// Defer type arguments until parameter types are needed so recursive references can
+				// observe the completed constructor signatures instead of a temporarily empty list.
+				var typeArguments []*Type
+				mapper := newDeferredTypeMapper(c.getTypeParametersForMapper(baseSig), core.MapIndex(baseSig.typeParameters, func(_ *Type, index int) func() *Type {
+					return func() *Type {
+						if typeArguments == nil {
+							typeArguments = c.fillMissingTypeArguments(c.getTypeArgumentsFromNode(baseTypeNode), baseSig.typeParameters, minTypeArgumentCount, isJavaScript)
+						}
+						return typeArguments[index]
+					}
+				}))
+				sig = c.instantiateSignatureEx(baseSig, mapper, true /*eraseTypeParameters*/)
 			} else {
 				sig = c.cloneSignature(baseSig)
 			}
