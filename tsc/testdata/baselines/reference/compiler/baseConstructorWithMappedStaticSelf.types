@@ -1,0 +1,40 @@
+//// [tests/cases/compiler/baseConstructorWithMappedStaticSelf.ts] ////
+
+=== baseConstructorWithMappedStaticSelf.ts ===
+declare const MakeClass: <Self, T>() => {
+>MakeClass : <Self, T>() => { [K in keyof Self]: () => Self[K]; } & { new (args: T): T; }
+
+    [K in keyof Self]: () => Self[K];
+} & {
+    new(args: T): T;
+>args : T
+
+};
+
+class Demo extends MakeClass<Demo, { a: number }>() {}
+>Demo : Demo
+>MakeClass<Demo, { a: number }>() : { a: number; }
+>MakeClass : <Self, T>() => { [K in keyof Self]: () => Self[K]; } & { new (args: T): T; }
+>a : number
+
+const demo = new Demo({ a: 1 });
+>demo : Demo
+>new Demo({ a: 1 }) : Demo
+>Demo : typeof Demo
+>{ a: 1 } : { a: number; }
+>a : number
+>1 : 1
+
+const instanceValue: number = demo.a;
+>instanceValue : number
+>demo.a : number
+>demo : Demo
+>a : number
+
+const staticValue: number = Demo.a();
+>staticValue : number
+>Demo.a() : number
+>Demo.a : () => number
+>Demo : typeof Demo
+>a : () => number
+

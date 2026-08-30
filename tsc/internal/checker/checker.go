@@ -17065,11 +17065,6 @@ func (c *Checker) getBaseConstructorTypeOfClass(t *Type) *Type {
 		return c.errorType
 	}
 	baseConstructorType := c.checkExpression(baseTypeNode.Expression())
-	if baseConstructorType.flags&(TypeFlagsObject|TypeFlagsIntersection) != 0 {
-		// Resolving the members of a class requires us to resolve the base class of that class.
-		// We force resolution here such that we catch circularities now.
-		c.resolveStructuredTypeMembers(baseConstructorType)
-	}
 	if !c.popTypeResolution() {
 		c.error(t.symbol.ValueDeclaration, diagnostics.X_0_is_referenced_directly_or_indirectly_in_its_own_base_expression, c.symbolToString(t.symbol))
 		if data.resolvedBaseConstructorType == nil {

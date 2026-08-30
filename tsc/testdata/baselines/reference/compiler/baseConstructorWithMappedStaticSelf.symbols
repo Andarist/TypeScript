@@ -1,0 +1,45 @@
+//// [tests/cases/compiler/baseConstructorWithMappedStaticSelf.ts] ////
+
+=== baseConstructorWithMappedStaticSelf.ts ===
+declare const MakeClass: <Self, T>() => {
+>MakeClass : Symbol(MakeClass, Decl(baseConstructorWithMappedStaticSelf.ts, 0, 13))
+>Self : Symbol(Self, Decl(baseConstructorWithMappedStaticSelf.ts, 0, 26))
+>T : Symbol(T, Decl(baseConstructorWithMappedStaticSelf.ts, 0, 31))
+
+    [K in keyof Self]: () => Self[K];
+>K : Symbol(K, Decl(baseConstructorWithMappedStaticSelf.ts, 1, 5))
+>Self : Symbol(Self, Decl(baseConstructorWithMappedStaticSelf.ts, 0, 26))
+>Self : Symbol(Self, Decl(baseConstructorWithMappedStaticSelf.ts, 0, 26))
+>K : Symbol(K, Decl(baseConstructorWithMappedStaticSelf.ts, 1, 5))
+
+} & {
+    new(args: T): T;
+>args : Symbol(args, Decl(baseConstructorWithMappedStaticSelf.ts, 3, 8))
+>T : Symbol(T, Decl(baseConstructorWithMappedStaticSelf.ts, 0, 31))
+>T : Symbol(T, Decl(baseConstructorWithMappedStaticSelf.ts, 0, 31))
+
+};
+
+class Demo extends MakeClass<Demo, { a: number }>() {}
+>Demo : Symbol(Demo, Decl(baseConstructorWithMappedStaticSelf.ts, 4, 2))
+>MakeClass : Symbol(MakeClass, Decl(baseConstructorWithMappedStaticSelf.ts, 0, 13))
+>Demo : Symbol(Demo, Decl(baseConstructorWithMappedStaticSelf.ts, 4, 2))
+>a : Symbol(a, Decl(baseConstructorWithMappedStaticSelf.ts, 6, 36))
+
+const demo = new Demo({ a: 1 });
+>demo : Symbol(demo, Decl(baseConstructorWithMappedStaticSelf.ts, 8, 5))
+>Demo : Symbol(Demo, Decl(baseConstructorWithMappedStaticSelf.ts, 4, 2))
+>a : Symbol(a, Decl(baseConstructorWithMappedStaticSelf.ts, 8, 23))
+
+const instanceValue: number = demo.a;
+>instanceValue : Symbol(instanceValue, Decl(baseConstructorWithMappedStaticSelf.ts, 9, 5))
+>demo.a : Symbol(a, Decl(baseConstructorWithMappedStaticSelf.ts, 6, 36))
+>demo : Symbol(demo, Decl(baseConstructorWithMappedStaticSelf.ts, 8, 5))
+>a : Symbol(a, Decl(baseConstructorWithMappedStaticSelf.ts, 6, 36))
+
+const staticValue: number = Demo.a();
+>staticValue : Symbol(staticValue, Decl(baseConstructorWithMappedStaticSelf.ts, 10, 5))
+>Demo.a : Symbol(a, Decl(baseConstructorWithMappedStaticSelf.ts, 6, 36))
+>Demo : Symbol(Demo, Decl(baseConstructorWithMappedStaticSelf.ts, 4, 2))
+>a : Symbol(a, Decl(baseConstructorWithMappedStaticSelf.ts, 6, 36))
+
