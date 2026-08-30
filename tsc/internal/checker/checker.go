@@ -22622,6 +22622,9 @@ func (c *Checker) instantiateAnonymousType(t *Type, m *TypeMapper, alias *TypeAl
 
 func (c *Checker) getConditionalTypeInstantiation(t *Type, mapper *TypeMapper, forConstraint bool, alias *TypeAlias) *Type {
 	root := t.AsConditionalType().root
+	if result := c.getNestedConditionalTypeInstantiation(t, mapper, forConstraint, alias); result != nil {
+		return result
+	}
 	if len(root.outerTypeParameters) != 0 {
 		// We are instantiating a conditional type that has one or more type parameters in scope. Apply the
 		// mapper to the type parameters to produce the effective list of type arguments, and compute the
@@ -22651,6 +22654,73 @@ func (c *Checker) getConditionalTypeInstantiation(t *Type, mapper *TypeMapper, f
 		return result
 	}
 	return t
+}
+
+// Reduce conditional types nested in the check position without recursively instantiating each
+// intermediate conditional. We can replay each conditional from the inside out when its check type
+// is a type parameter and all inputs have become concrete.
+func (c *Checker) getNestedConditionalTypeInstantiation(t *Type, mapper *TypeMapper, forConstraint bool, alias *TypeAlias) *Type {
+	if forConstraint {
+		return nil
+	}
+	var conditionals []*ConditionalType
+	checkType := t
+	for checkType.flags&TypeFlagsConditional != 0 {
+		conditional := checkType.AsConditionalType()
+		if conditional.root.checkType.flags&TypeFlagsTypeParameter == 0 {
+			break
+		}
+		conditionals = append(conditionals, conditional)
+		checkType = conditional.checkType
+	}
+	if len(conditionals) < 2 {
+		return nil
+	}
+
+	result := c.instantiateType(checkType, mapper)
+	if c.isDeferredType(result, false /*checkTuples*/) {
+		return nil
+	}
+	for i := len(conditionals) - 1; i >= 0; i-- {
+		conditional := conditionals[i]
+		root := conditional.root
+		inputMapper := c.combineTypeMappers(conditional.mapper, mapper)
+		stepCheckType := result
+		stepMapper := newFunctionTypeMapper(func(t *Type) *Type {
+			if t == root.checkType {
+				return stepCheckType
+			}
+			return inputMapper.Map(t)
+		})
+		if core.Some(root.outerTypeParameters, func(t *Type) bool {
+			return t != root.checkType && c.isDeferredType(c.instantiateType(t, stepMapper), false /*checkTuples*/)
+		}) {
+			return nil
+		}
+		stepAlias := core.IfElse(i == 0, alias, nil)
+		var distributionType *Type
+		if root.isDistributive {
+			distributionType = c.getReducedType(result)
+		}
+		if distributionType != nil && distributionType.flags&(TypeFlagsUnion|TypeFlagsNever) != 0 {
+			result = c.mapTypeWithAlias(distributionType, func(t *Type) *Type {
+				constituent := t
+				constituentMapper := newFunctionTypeMapper(func(t *Type) *Type {
+					if t == root.checkType {
+						return constituent
+					}
+					return stepMapper.Map(t)
+				})
+				return c.getConditionalType(root, constituentMapper, false /*forConstraint*/, nil)
+			}, stepAlias)
+		} else {
+			result = c.getConditionalType(root, stepMapper, false /*forConstraint*/, stepAlias)
+		}
+		if i != 0 && c.isDeferredType(result, false /*checkTuples*/) {
+			return nil
+		}
+	}
+	return result
 }
 
 func (c *Checker) cloneTypeParameter(tp *Type) *Type {
