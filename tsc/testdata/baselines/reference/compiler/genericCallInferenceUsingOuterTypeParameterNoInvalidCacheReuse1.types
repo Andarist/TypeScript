@@ -1,0 +1,112 @@
+//// [tests/cases/compiler/genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts] ////
+
+=== genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts ===
+declare const EffectTypeId: unique symbol;
+>EffectTypeId : unique symbol
+
+type Covariant<A> = (_: never) => A;
+>Covariant : Covariant<A>
+>_ : never
+
+interface Effect<out A, out E = never, out R = never> {
+    readonly [EffectTypeId]: {
+>[EffectTypeId] : { readonly _A: Covariant<A>; readonly _E: Covariant<E>; readonly _R: Covariant<R>; }
+>EffectTypeId : unique symbol
+
+        readonly _A: Covariant<A>;
+>_A : Covariant<A>
+
+        readonly _E: Covariant<E>;
+>_E : Covariant<E>
+
+        readonly _R: Covariant<R>;
+>_R : Covariant<R>
+
+    };
+}
+
+declare const succeed: <A>(value: A) => Effect<A>;
+>succeed : <A>(value: A) => Effect<A>
+>value : A
+
+type AddEnvironment<X, Y> = Y extends { _type: infer Z }
+>AddEnvironment : AddEnvironment<X, Y>
+>_type : Z
+
+    ? X extends Effect<infer A, infer E, infer R>
+        ? Effect<A, E, R | Z>
+        : X
+    : X;
+
+declare const implement: <T>() => <I extends readonly any[], X>(
+>implement : <T>() => <I extends readonly any[], X>(callback: (...args: I) => X) => (...args: I) => AddEnvironment<X, T>
+
+    callback: (...args: I) => X,
+>callback : (...args: I) => X
+>args : I
+
+) => (...args: I) => AddEnvironment<X, T>;
+>args : I
+
+function make<P>() {
+>make : <P>() => <N extends number>(value: N) => AddEnvironment<Effect<N, never, never>, P>
+
+    return implement<P>()(<N extends number>(value: N) => succeed(value));
+>implement<P>()(<N extends number>(value: N) => succeed(value)) : <N extends number>(value: N) => AddEnvironment<Effect<N, never, never>, P>
+>implement<P>() : <I extends readonly any[], X>(callback: (...args: I) => X) => (...args: I) => AddEnvironment<X, P>
+>implement : <T>() => <I extends readonly any[], X>(callback: (...args: I) => X) => (...args: I) => AddEnvironment<X, T>
+><N extends number>(value: N) => succeed(value) : <N extends number>(value: N) => Effect<N, never, never>
+>value : N
+>succeed(value) : Effect<N, never, never>
+>succeed : <A>(value: A) => Effect<A>
+>value : N
+}
+
+function makeReverse<P>() {
+>makeReverse : <P>() => <N extends number>(value: N) => AddEnvironment<Effect<N, never, never>, P>
+
+    return implement<P>()(<N extends number>(value: N) => succeed(value));
+>implement<P>()(<N extends number>(value: N) => succeed(value)) : <N extends number>(value: N) => AddEnvironment<Effect<N, never, never>, P>
+>implement<P>() : <I extends readonly any[], X>(callback: (...args: I) => X) => (...args: I) => AddEnvironment<X, P>
+>implement : <T>() => <I extends readonly any[], X>(callback: (...args: I) => X) => (...args: I) => AddEnvironment<X, T>
+><N extends number>(value: N) => succeed(value) : <N extends number>(value: N) => Effect<N, never, never>
+>value : N
+>succeed(value) : Effect<N, never, never>
+>succeed : <A>(value: A) => Effect<A>
+>value : N
+}
+
+interface A { readonly _type: "a" }
+>_type : "a"
+
+interface B { readonly _type: "b" }
+>_type : "b"
+
+export const a = make<A>()(1);
+>a : Effect<1, never, "a">
+>make<A>()(1) : Effect<1, never, "a">
+>make<A>() : <N extends number>(value: N) => Effect<N, never, "a">
+>make : <P>() => <N extends number>(value: N) => AddEnvironment<Effect<N, never, never>, P>
+>1 : 1
+
+export const b = make<B>()(2);
+>b : Effect<2, never, "b">
+>make<B>()(2) : Effect<2, never, "b">
+>make<B>() : <N extends number>(value: N) => Effect<N, never, "b">
+>make : <P>() => <N extends number>(value: N) => AddEnvironment<Effect<N, never, never>, P>
+>2 : 2
+
+export const bFirst = makeReverse<B>()(3);
+>bFirst : Effect<3, never, "b">
+>makeReverse<B>()(3) : Effect<3, never, "b">
+>makeReverse<B>() : <N extends number>(value: N) => Effect<N, never, "b">
+>makeReverse : <P>() => <N extends number>(value: N) => AddEnvironment<Effect<N, never, never>, P>
+>3 : 3
+
+export const aSecond = makeReverse<A>()(4);
+>aSecond : Effect<4, never, "a">
+>makeReverse<A>()(4) : Effect<4, never, "a">
+>makeReverse<A>() : <N extends number>(value: N) => Effect<N, never, "a">
+>makeReverse : <P>() => <N extends number>(value: N) => AddEnvironment<Effect<N, never, never>, P>
+>4 : 4
+

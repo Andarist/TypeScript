@@ -1,0 +1,151 @@
+//// [tests/cases/compiler/genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts] ////
+
+=== genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts ===
+declare const EffectTypeId: unique symbol;
+>EffectTypeId : Symbol(EffectTypeId, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 0, 13))
+
+type Covariant<A> = (_: never) => A;
+>Covariant : Symbol(Covariant, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 0, 42))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 2, 15))
+>_ : Symbol(_, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 2, 21))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 2, 15))
+
+interface Effect<out A, out E = never, out R = never> {
+>Effect : Symbol(Effect, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 2, 36))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 4, 17))
+>E : Symbol(E, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 4, 23))
+>R : Symbol(R, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 4, 38))
+
+    readonly [EffectTypeId]: {
+>[EffectTypeId] : Symbol(Effect[EffectTypeId], Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 4, 55))
+>EffectTypeId : Symbol(EffectTypeId, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 0, 13))
+
+        readonly _A: Covariant<A>;
+>_A : Symbol(_A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 5, 30))
+>Covariant : Symbol(Covariant, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 0, 42))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 4, 17))
+
+        readonly _E: Covariant<E>;
+>_E : Symbol(_E, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 6, 34))
+>Covariant : Symbol(Covariant, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 0, 42))
+>E : Symbol(E, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 4, 23))
+
+        readonly _R: Covariant<R>;
+>_R : Symbol(_R, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 7, 34))
+>Covariant : Symbol(Covariant, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 0, 42))
+>R : Symbol(R, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 4, 38))
+
+    };
+}
+
+declare const succeed: <A>(value: A) => Effect<A>;
+>succeed : Symbol(succeed, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 12, 13))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 12, 24))
+>value : Symbol(value, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 12, 27))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 12, 24))
+>Effect : Symbol(Effect, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 2, 36))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 12, 24))
+
+type AddEnvironment<X, Y> = Y extends { _type: infer Z }
+>AddEnvironment : Symbol(AddEnvironment, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 12, 50))
+>X : Symbol(X, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 14, 20))
+>Y : Symbol(Y, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 14, 22))
+>Y : Symbol(Y, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 14, 22))
+>_type : Symbol(_type, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 14, 39))
+>Z : Symbol(Z, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 14, 52))
+
+    ? X extends Effect<infer A, infer E, infer R>
+>X : Symbol(X, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 14, 20))
+>Effect : Symbol(Effect, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 2, 36))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 15, 28))
+>E : Symbol(E, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 15, 37))
+>R : Symbol(R, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 15, 46))
+
+        ? Effect<A, E, R | Z>
+>Effect : Symbol(Effect, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 2, 36))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 15, 28))
+>E : Symbol(E, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 15, 37))
+>R : Symbol(R, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 15, 46))
+>Z : Symbol(Z, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 14, 52))
+
+        : X
+>X : Symbol(X, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 14, 20))
+
+    : X;
+>X : Symbol(X, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 14, 20))
+
+declare const implement: <T>() => <I extends readonly any[], X>(
+>implement : Symbol(implement, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 13))
+>T : Symbol(T, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 26))
+>I : Symbol(I, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 35))
+>X : Symbol(X, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 60))
+
+    callback: (...args: I) => X,
+>callback : Symbol(callback, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 64))
+>args : Symbol(args, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 21, 15))
+>I : Symbol(I, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 35))
+>X : Symbol(X, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 60))
+
+) => (...args: I) => AddEnvironment<X, T>;
+>args : Symbol(args, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 22, 6))
+>I : Symbol(I, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 35))
+>AddEnvironment : Symbol(AddEnvironment, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 12, 50))
+>X : Symbol(X, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 60))
+>T : Symbol(T, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 26))
+
+function make<P>() {
+>make : Symbol(make, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 22, 42))
+>P : Symbol(P, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 24, 14))
+
+    return implement<P>()(<N extends number>(value: N) => succeed(value));
+>implement : Symbol(implement, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 13))
+>P : Symbol(P, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 24, 14))
+>N : Symbol(N, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 25, 27))
+>value : Symbol(value, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 25, 45))
+>N : Symbol(N, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 25, 27))
+>succeed : Symbol(succeed, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 12, 13))
+>value : Symbol(value, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 25, 45))
+}
+
+function makeReverse<P>() {
+>makeReverse : Symbol(makeReverse, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 26, 1))
+>P : Symbol(P, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 28, 21))
+
+    return implement<P>()(<N extends number>(value: N) => succeed(value));
+>implement : Symbol(implement, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 20, 13))
+>P : Symbol(P, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 28, 21))
+>N : Symbol(N, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 29, 27))
+>value : Symbol(value, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 29, 45))
+>N : Symbol(N, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 29, 27))
+>succeed : Symbol(succeed, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 12, 13))
+>value : Symbol(value, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 29, 45))
+}
+
+interface A { readonly _type: "a" }
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 30, 1))
+>_type : Symbol(A._type, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 32, 13))
+
+interface B { readonly _type: "b" }
+>B : Symbol(B, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 32, 35))
+>_type : Symbol(B._type, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 33, 13))
+
+export const a = make<A>()(1);
+>a : Symbol(a, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 35, 12))
+>make : Symbol(make, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 22, 42))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 30, 1))
+
+export const b = make<B>()(2);
+>b : Symbol(b, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 36, 12))
+>make : Symbol(make, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 22, 42))
+>B : Symbol(B, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 32, 35))
+
+export const bFirst = makeReverse<B>()(3);
+>bFirst : Symbol(bFirst, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 37, 12))
+>makeReverse : Symbol(makeReverse, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 26, 1))
+>B : Symbol(B, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 32, 35))
+
+export const aSecond = makeReverse<A>()(4);
+>aSecond : Symbol(aSecond, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 38, 12))
+>makeReverse : Symbol(makeReverse, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 26, 1))
+>A : Symbol(A, Decl(genericCallInferenceUsingOuterTypeParameterNoInvalidCacheReuse1.ts, 30, 1))
+

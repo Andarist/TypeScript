@@ -22374,6 +22374,9 @@ func (c *Checker) instantiateTypeWorker(t *Type, m *TypeMapper, alias *TypeAlias
 			if objectFlags&ObjectFlagsReverseMapped != 0 {
 				return c.instantiateReverseMappedType(t, m)
 			}
+			if objectFlags&ObjectFlagsSingleSignatureType != 0 {
+				return c.instantiateAnonymousType(t, m, alias)
+			}
 			return c.getObjectTypeInstantiation(t, m, alias)
 		}
 		return t
