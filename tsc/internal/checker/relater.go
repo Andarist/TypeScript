@@ -1111,7 +1111,11 @@ func (c *Checker) getMatchingUnionConstituentForType(unionType *Type, t *Type) *
 func (c *Checker) getKeyPropertyName(t *Type) string {
 	u := t.AsUnionType()
 	if u.keyPropertyName == "" {
-		u.keyPropertyName, u.constituentMap = c.computeKeyPropertyNameAndMap(t)
+		keyPropertyName, constituentMap, deferred := c.computeKeyPropertyNameAndMap(t)
+		if deferred {
+			return ""
+		}
+		u.keyPropertyName, u.constituentMap = keyPropertyName, constituentMap
 	}
 	if u.keyPropertyName == ast.InternalSymbolNameMissing {
 		return ""
@@ -1129,51 +1133,78 @@ func (c *Checker) getConstituentTypeForKeyType(t *Type, keyType *Type) *Type {
 	return nil
 }
 
-func (c *Checker) computeKeyPropertyNameAndMap(t *Type) (string, map[*Type]*Type) {
+func (c *Checker) computeKeyPropertyNameAndMap(t *Type) (keyPropertyName string, constituentMap map[*Type]*Type, deferred bool) {
 	types := t.Types()
 	if len(types) < 10 || t.objectFlags&ObjectFlagsPrimitiveUnion != 0 || core.CountWhere(types, isObjectOrInstantiableNonPrimitive) < 10 {
-		return ast.InternalSymbolNameMissing, nil
+		return ast.InternalSymbolNameMissing, nil, false
 	}
-	keyPropertyName := c.getKeyPropertyCandidateName(types)
+	keyPropertyName, deferred = c.getKeyPropertyCandidateName(types)
+	if deferred {
+		return "", nil, true
+	}
 	if keyPropertyName == "" {
-		return ast.InternalSymbolNameMissing, nil
+		return ast.InternalSymbolNameMissing, nil, false
 	}
-	mapByKeyProperty := c.mapTypesByKeyProperty(types, keyPropertyName)
+	mapByKeyProperty, deferred := c.mapTypesByKeyProperty(types, keyPropertyName)
+	if deferred {
+		return "", nil, true
+	}
 	if mapByKeyProperty == nil {
-		return ast.InternalSymbolNameMissing, nil
+		return ast.InternalSymbolNameMissing, nil, false
 	}
-	return keyPropertyName, mapByKeyProperty
+	return keyPropertyName, mapByKeyProperty, false
 }
 
 func isObjectOrInstantiableNonPrimitive(t *Type) bool {
 	return t.flags&(TypeFlagsObject|TypeFlagsInstantiableNonPrimitive) != 0
 }
 
-func (c *Checker) getKeyPropertyCandidateName(types []*Type) string {
+func (c *Checker) getKeyPropertyCandidateName(types []*Type) (name string, deferred bool) {
 	for _, t := range types {
 		if t.flags&(TypeFlagsObject|TypeFlagsInstantiableNonPrimitive) != 0 {
 			for _, p := range c.getPropertiesOfType(t) {
+				links := c.valueSymbolLinks.Get(p)
+				resolutionTarget := p
+				if p.CheckFlags&ast.CheckFlagsInstantiated != 0 {
+					resolutionTarget = links.target
+				}
+				if links.resolvedType == nil && c.findResolutionCycleStartIndex(resolutionTarget, TypeSystemPropertyNameType) >= 0 {
+					return "", true
+				}
 				if isUnitType(c.getTypeOfSymbol(p)) {
-					return p.Name
+					return p.Name, false
 				}
 			}
 		}
 	}
-	return ""
+	return "", false
 }
 
 // Given a set of constituent types and a property name, create and return a map keyed by the literal
 // types of the property by that name in each constituent type. No map is returned if some key property
 // has a non-literal type or if less than 10 or less than 50% of the constituents have a unique key.
-// Entries with duplicate keys have unknownType as the value.
-func (c *Checker) mapTypesByKeyProperty(types []*Type, keyPropertyName string) map[*Type]*Type {
+// Entries with duplicate keys have unknownType as the value. Construction is deferred when a property type is
+// already being resolved because this map is only an optimization and re-entering that resolution would be circular.
+func (c *Checker) mapTypesByKeyProperty(types []*Type, keyPropertyName string) (map[*Type]*Type, bool) {
 	typesByKey := make(map[*Type]*Type)
 	count := 0
 	for _, t := range types {
 		if t.flags&(TypeFlagsObject|TypeFlagsIntersection|TypeFlagsInstantiableNonPrimitive) != 0 {
-			discriminant := c.getTypeOfPropertyOfType(t, keyPropertyName)
-			if discriminant == nil || !isLiteralType(discriminant) {
-				return nil
+			property := c.getPropertyOfType(t, keyPropertyName)
+			if property == nil {
+				return nil, false
+			}
+			links := c.valueSymbolLinks.Get(property)
+			resolutionTarget := property
+			if property.CheckFlags&ast.CheckFlagsInstantiated != 0 {
+				resolutionTarget = links.target
+			}
+			if links.resolvedType == nil && c.findResolutionCycleStartIndex(resolutionTarget, TypeSystemPropertyNameType) >= 0 {
+				return nil, true
+			}
+			discriminant := c.getTypeOfSymbol(property)
+			if !isLiteralType(discriminant) {
+				return nil, false
 			}
 			duplicate := false
 			for _, d := range discriminant.Distributed() {
@@ -1191,9 +1222,9 @@ func (c *Checker) mapTypesByKeyProperty(types []*Type, keyPropertyName string) m
 		}
 	}
 	if count >= 10 && count*2 >= len(types) {
-		return typesByKey
+		return typesByKey, false
 	}
-	return nil
+	return nil, false
 }
 
 type Discriminator interface {

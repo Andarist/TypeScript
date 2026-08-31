@@ -1,0 +1,84 @@
+//// [tests/cases/compiler/deferredKeyPropertyMapDuringCircularPropertyResolution.ts] ////
+
+=== deferredKeyPropertyMapDuringCircularPropertyResolution.ts ===
+interface ObjectFor {
+>ObjectFor : Symbol(ObjectFor, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 0, 0))
+
+    AmbientLight: { layer: typeof LightingLayer };
+>AmbientLight : Symbol(ObjectFor.AmbientLight, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 0, 21))
+>layer : Symbol(layer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 1, 19))
+>LightingLayer : Symbol(LightingLayer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 22, 84))
+
+    AmbientSound: { a: 1 };
+>AmbientSound : Symbol(ObjectFor.AmbientSound, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 1, 50))
+>a : Symbol(a, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 2, 19))
+
+    Drawing: { a: 1 };
+>Drawing : Symbol(ObjectFor.Drawing, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 2, 27))
+>a : Symbol(a, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 3, 14))
+
+    MeasuredTemplate: { a: 1 };
+>MeasuredTemplate : Symbol(ObjectFor.MeasuredTemplate, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 3, 22))
+>a : Symbol(a, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 4, 23))
+
+    Note: { a: 1 };
+>Note : Symbol(ObjectFor.Note, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 4, 31))
+>a : Symbol(a, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 5, 11))
+
+    Region: { a: 1 };
+>Region : Symbol(ObjectFor.Region, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 5, 19))
+>a : Symbol(a, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 6, 13))
+
+    Tile: { a: 1 };
+>Tile : Symbol(ObjectFor.Tile, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 6, 21))
+>a : Symbol(a, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 7, 11))
+
+    Token: { a: 1 };
+>Token : Symbol(ObjectFor.Token, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 7, 19))
+>a : Symbol(a, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 8, 12))
+
+    Wall: { a: 1 };
+>Wall : Symbol(ObjectFor.Wall, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 8, 20))
+>a : Symbol(a, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 9, 11))
+}
+
+declare class PlaceablesLayer<N extends keyof ObjectFor> {
+>PlaceablesLayer : Symbol(PlaceablesLayer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 10, 1))
+>N : Symbol(N, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 12, 30))
+>ObjectFor : Symbol(ObjectFor, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 0, 0))
+
+    onWheel(): Promise<ObjectFor[N] | ObjectFor[N][]>;
+>onWheel : Symbol(PlaceablesLayer.onWheel, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 12, 58))
+>Promise : Symbol(Promise, Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.iterable.d.ts, --, --), Decl(lib.es2015.promise.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.es2018.promise.d.ts, --, --))
+>ObjectFor : Symbol(ObjectFor, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 0, 0))
+>N : Symbol(N, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 12, 30))
+>ObjectFor : Symbol(ObjectFor, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 0, 0))
+>N : Symbol(N, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 12, 30))
+}
+
+declare abstract class AnyPlaceablesLayer extends PlaceablesLayer<keyof ObjectFor> {
+>AnyPlaceablesLayer : Symbol(AnyPlaceablesLayer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 14, 1))
+>PlaceablesLayer : Symbol(PlaceablesLayer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 10, 1))
+>ObjectFor : Symbol(ObjectFor, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 0, 0))
+
+    constructor(...args: never);
+>args : Symbol(args, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 17, 16))
+}
+
+declare function ShapeLayerMixin<B extends typeof AnyPlaceablesLayer>(Base: B): B;
+>ShapeLayerMixin : Symbol(ShapeLayerMixin, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 18, 1))
+>B : Symbol(B, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 20, 33))
+>AnyPlaceablesLayer : Symbol(AnyPlaceablesLayer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 14, 1))
+>Base : Symbol(Base, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 20, 70))
+>B : Symbol(B, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 20, 33))
+>B : Symbol(B, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 20, 33))
+
+declare class AmbientLightPlaceablesLayer extends PlaceablesLayer<"AmbientLight"> {}
+>AmbientLightPlaceablesLayer : Symbol(AmbientLightPlaceablesLayer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 20, 82))
+>PlaceablesLayer : Symbol(PlaceablesLayer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 10, 1))
+
+declare class LightingLayer extends ShapeLayerMixin(AmbientLightPlaceablesLayer) {}
+>LightingLayer : Symbol(LightingLayer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 22, 84))
+>ShapeLayerMixin : Symbol(ShapeLayerMixin, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 18, 1))
+>AmbientLightPlaceablesLayer : Symbol(AmbientLightPlaceablesLayer, Decl(deferredKeyPropertyMapDuringCircularPropertyResolution.ts, 20, 82))
+
