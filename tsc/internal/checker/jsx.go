@@ -1118,7 +1118,7 @@ func (c *Checker) getStaticTypeOfReferencedJsxConstructor(context *ast.Node) *Ty
 	if isJsxIntrinsicTagName(context.TagName()) {
 		result := c.getIntrinsicAttributesTypeFromJsxOpeningLikeElement(context)
 		fakeSignature := c.createSignatureForJSXIntrinsic(context, result)
-		return c.getOrCreateTypeFromSignature(fakeSignature)
+		return c.getOrCreateTypeFromSignature(fakeSignature, nil)
 	}
 	tagType := c.checkExpressionCached(context.TagName())
 	if tagType.flags&TypeFlagsStringLiteral != 0 {
@@ -1127,7 +1127,7 @@ func (c *Checker) getStaticTypeOfReferencedJsxConstructor(context *ast.Node) *Ty
 			return c.errorType
 		}
 		fakeSignature := c.createSignatureForJSXIntrinsic(context, result)
-		return c.getOrCreateTypeFromSignature(fakeSignature)
+		return c.getOrCreateTypeFromSignature(fakeSignature, nil)
 	}
 	return tagType
 }

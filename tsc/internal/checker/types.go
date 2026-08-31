@@ -709,6 +709,7 @@ func (t *Type) AsInstantiationExpressionType() *InstantiationExpressionType {
 	return t.data.(*InstantiationExpressionType)
 }
 func (t *Type) AsMappedType() *MappedType                   { return t.data.(*MappedType) }
+func (t *Type) AsSingleSignatureType() *SingleSignatureType { return t.data.(*SingleSignatureType) }
 func (t *Type) AsReverseMappedType() *ReverseMappedType     { return t.data.(*ReverseMappedType) }
 func (t *Type) AsEvolvingArrayType() *EvolvingArrayType     { return t.data.(*EvolvingArrayType) }
 func (t *Type) AsTypeParameter() *TypeParameter             { return t.data.(*TypeParameter) }
@@ -994,6 +995,11 @@ type ObjectType struct {
 }
 
 func (t *ObjectType) AsObjectType() *ObjectType { return t }
+
+type SingleSignatureType struct {
+	ObjectType
+	outerTypeParameters []*Type // Type parameters captured from the context that produced the signature
+}
 
 // TypeReference (instantiation of an InterfaceType)
 
