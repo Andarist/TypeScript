@@ -10575,11 +10575,12 @@ func (c *Checker) isAritySmaller(signature *Signature, target *ast.Node) bool {
 }
 
 func (c *Checker) assignContextualParameterTypes(sig *Signature, context *Signature) {
-	if len(context.typeParameters) != 0 {
-		if len(sig.typeParameters) != 0 {
-			// This signature has already has a contextual inference performed and cached on it
+	if len(context.typeParameters) != 0 && len(sig.typeParameters) != 0 {
+		context = c.instantiateContextualSignature(context, sig)
+		if context == nil {
 			return
 		}
+	} else if len(context.typeParameters) != 0 {
 		sig.typeParameters = context.typeParameters
 	}
 	if context.thisParameter != nil {
@@ -10618,6 +10619,15 @@ func (c *Checker) assignContextualParameterTypes(sig *Signature, context *Signat
 			c.assignParameterType(parameter, contextualParameterType)
 		}
 	}
+}
+
+func (c *Checker) instantiateContextualSignature(context *Signature, sig *Signature) *Signature {
+	if len(context.typeParameters) != len(sig.typeParameters) {
+		return nil
+	}
+	// Bind the contextual signature's type parameters to the corresponding type parameters
+	// declared by the function expression, so contextual parameter types don't escape their binder.
+	return c.getSignatureInstantiationWithoutFillingInTypeArguments(context, sig.typeParameters)
 }
 
 func (c *Checker) assignNonContextualParameterTypes(signature *Signature) {
@@ -29883,6 +29893,12 @@ func (c *Checker) getContextuallyTypedParameterType(parameter *ast.Node) *Type {
 	}
 	contextualSignature := c.getContextualSignature(fn)
 	if contextualSignature != nil {
+		if len(contextualSignature.typeParameters) != 0 && len(fn.TypeParameters()) != 0 {
+			contextualSignature = c.instantiateContextualSignature(contextualSignature, c.getSignatureFromDeclaration(fn))
+			if contextualSignature == nil {
+				return nil
+			}
+		}
 		index := slices.Index(fn.Parameters(), parameter) - core.IfElse(ast.GetThisParameter(fn) != nil, 1, 0)
 		if hasDotDotDotToken(parameter) && core.LastOrNil(fn.Parameters()) == parameter {
 			return c.getRestTypeAtPosition(contextualSignature, index, false)

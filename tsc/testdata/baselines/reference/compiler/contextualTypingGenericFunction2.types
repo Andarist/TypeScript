@@ -25,17 +25,17 @@ export const result1 = fn({
 >result1 : (params: unknown) => number
 >fn({  callback: <T,>(params: T) => {    return (a: boolean, b) => (a ? 1 : 0);  },  unrelated: (_) => {},}) : (params: unknown) => number
 >fn : <P>(config: { callback: (params: P) => (context: number, params: P) => number; unrelated?: (arg: string) => void; }) => (params: P) => number
->{  callback: <T,>(params: T) => {    return (a: boolean, b) => (a ? 1 : 0);  },  unrelated: (_) => {},} : { callback: <T>(params: T) => (a: boolean, b: unknown) => 0 | 1; unrelated: (_: string) => void; }
+>{  callback: <T,>(params: T) => {    return (a: boolean, b) => (a ? 1 : 0);  },  unrelated: (_) => {},} : { callback: <T>(params: T) => (a: boolean, b: T) => 0 | 1; unrelated: (_: string) => void; }
 
   callback: <T,>(params: T) => {
->callback : <T>(params: T) => (a: boolean, b: unknown) => 0 | 1
-><T,>(params: T) => {    return (a: boolean, b) => (a ? 1 : 0);  } : <T>(params: T) => (a: boolean, b: unknown) => 0 | 1
+>callback : <T>(params: T) => (a: boolean, b: T) => 0 | 1
+><T,>(params: T) => {    return (a: boolean, b) => (a ? 1 : 0);  } : <T>(params: T) => (a: boolean, b: T) => 0 | 1
 >params : T
 
     return (a: boolean, b) => (a ? 1 : 0);
->(a: boolean, b) => (a ? 1 : 0) : (a: boolean, b: unknown) => 0 | 1
+>(a: boolean, b) => (a ? 1 : 0) : (a: boolean, b: T) => 0 | 1
 >a : boolean
->b : unknown
+>b : T
 >(a ? 1 : 0) : 0 | 1
 >a ? 1 : 0 : 0 | 1
 >a : boolean
@@ -55,17 +55,17 @@ export const result2 = fn({
 >result2 : (params: unknown) => number
 >fn({  callback: <T,>(params: T) => {    return (a, b): boolean => true;  },  unrelated: (_) => {},}) : (params: unknown) => number
 >fn : <P>(config: { callback: (params: P) => (context: number, params: P) => number; unrelated?: (arg: string) => void; }) => (params: P) => number
->{  callback: <T,>(params: T) => {    return (a, b): boolean => true;  },  unrelated: (_) => {},} : { callback: <T>(params: T) => (a: number, b: unknown) => boolean; unrelated: (_: string) => void; }
+>{  callback: <T,>(params: T) => {    return (a, b): boolean => true;  },  unrelated: (_) => {},} : { callback: <T>(params: T) => (a: number, b: T) => boolean; unrelated: (_: string) => void; }
 
   callback: <T,>(params: T) => {
->callback : <T>(params: T) => (a: number, b: unknown) => boolean
-><T,>(params: T) => {    return (a, b): boolean => true;  } : <T>(params: T) => (a: number, b: unknown) => boolean
+>callback : <T>(params: T) => (a: number, b: T) => boolean
+><T,>(params: T) => {    return (a, b): boolean => true;  } : <T>(params: T) => (a: number, b: T) => boolean
 >params : T
 
     return (a, b): boolean => true;
->(a, b): boolean => true : (a: number, b: unknown) => boolean
+>(a, b): boolean => true : (a: number, b: T) => boolean
 >a : number
->b : unknown
+>b : T
 >true : true
 
   },
@@ -81,17 +81,17 @@ export const result3 = fn({
 >result3 : (params: unknown) => number
 >fn({  callback: <T,>(params: T) => {    return (a, b) => true;  },  unrelated: (_) => {},}) : (params: unknown) => number
 >fn : <P>(config: { callback: (params: P) => (context: number, params: P) => number; unrelated?: (arg: string) => void; }) => (params: P) => number
->{  callback: <T,>(params: T) => {    return (a, b) => true;  },  unrelated: (_) => {},} : { callback: <T>(params: T) => (a: number, b: unknown) => boolean; unrelated: (_: string) => void; }
+>{  callback: <T,>(params: T) => {    return (a, b) => true;  },  unrelated: (_) => {},} : { callback: <T>(params: T) => (a: number, b: T) => boolean; unrelated: (_: string) => void; }
 
   callback: <T,>(params: T) => {
->callback : <T>(params: T) => (a: number, b: unknown) => boolean
-><T,>(params: T) => {    return (a, b) => true;  } : <T>(params: T) => (a: number, b: unknown) => boolean
+>callback : <T>(params: T) => (a: number, b: T) => boolean
+><T,>(params: T) => {    return (a, b) => true;  } : <T>(params: T) => (a: number, b: T) => boolean
 >params : T
 
     return (a, b) => true;
->(a, b) => true : (a: number, b: unknown) => boolean
+>(a, b) => true : (a: number, b: T) => boolean
 >a : number
->b : unknown
+>b : T
 >true : true
 
   },

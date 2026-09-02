@@ -373,3 +373,23 @@ export const result13: (value: string) => void = <N>(value) => {
 >toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
 
 };
+
+export const result14: <T>(value: T) => T = <N>(value) => {
+>result14 : Symbol(result14, Decl(contextualTypingGenericFunction3.ts, 105, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction3.ts, 105, 24))
+>value : Symbol(value, Decl(contextualTypingGenericFunction3.ts, 105, 27))
+>T : Symbol(T, Decl(contextualTypingGenericFunction3.ts, 105, 24))
+>T : Symbol(T, Decl(contextualTypingGenericFunction3.ts, 105, 24))
+>N : Symbol(N, Decl(contextualTypingGenericFunction3.ts, 105, 45))
+>value : Symbol(value, Decl(contextualTypingGenericFunction3.ts, 105, 48))
+
+  const local: N = value;
+>local : Symbol(local, Decl(contextualTypingGenericFunction3.ts, 106, 7))
+>N : Symbol(N, Decl(contextualTypingGenericFunction3.ts, 105, 45))
+>value : Symbol(value, Decl(contextualTypingGenericFunction3.ts, 105, 48))
+
+  return local;
+>local : Symbol(local, Decl(contextualTypingGenericFunction3.ts, 106, 7))
+
+};
+

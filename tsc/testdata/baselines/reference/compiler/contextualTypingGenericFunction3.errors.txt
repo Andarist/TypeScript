@@ -117,3 +117,9 @@ contextualTypingGenericFunction3.ts(65,3): error TS2322: Type '<N>(params: N) =>
     export const result13: (value: string) => void = <N>(value) => {
       value.toUpperCase();
     };
+    
+    export const result14: <T>(value: T) => T = <N>(value) => {
+      const local: N = value;
+      return local;
+    };
+    

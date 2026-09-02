@@ -107,3 +107,8 @@ export const result12 = fn6(<N>(params: string) => {});
 export const result13: (value: string) => void = <N>(value) => {
   value.toUpperCase();
 };
+
+export const result14: <T>(value: T) => T = <N>(value) => {
+  const local: N = value;
+  return local;
+};

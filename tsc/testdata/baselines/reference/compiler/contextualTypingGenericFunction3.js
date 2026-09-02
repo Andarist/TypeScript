@@ -106,6 +106,11 @@ export const result13: (value: string) => void = <N>(value) => {
   value.toUpperCase();
 };
 
+export const result14: <T>(value: T) => T = <N>(value) => {
+  const local: N = value;
+  return local;
+};
+
 
 
 
@@ -125,3 +130,4 @@ export declare const result11: <N extends {
 }, N1>(first: N, second: N1) => void;
 export declare const result12: string;
 export declare const result13: (value: string) => void;
+export declare const result14: <T>(value: T) => T;
