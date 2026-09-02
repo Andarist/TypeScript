@@ -7789,44 +7789,19 @@ func (c *Checker) instantiateTypeWithSingleGenericCallSignature(node *ast.Node, 
 		return c.anyFunctionType
 	}
 	context := c.getInferenceContext(node)
-	// We have an expression that is an argument of a generic function for which we are performing
-	// type argument inference. The expression is of a function type with a single generic call
-	// signature and a contextual function type with a single non-generic call signature. Now check
-	// if the outer function returns a function type with a single non-generic call signature and
-	// if some of the outer function type parameters have no inferences so far. If so, we can
-	// potentially add inferred type parameters to the outer function return type.
-	var returnSignature *Signature
-	if context.signature != nil {
-		returnType := c.getReturnTypeOfSignature(context.signature)
-		if returnType != nil {
-			returnSignature = c.getSingleCallOrConstructSignature(returnType)
-		}
-	}
-	if returnSignature != nil && len(returnSignature.typeParameters) == 0 && !core.Every(context.inferences, hasInferenceCandidates) {
-		// Instantiate the signature with its own type parameters as type arguments, possibly
-		// renaming the type parameters to ensure they have unique names.
-		uniqueTypeParameters := c.getUniqueTypeParameters(context, signature.typeParameters)
+	// Infer from the complete generic signature, and only propagate its type parameters when none
+	// of the resulting candidates overlap inferences already made for the outer call.
+	uniqueTypeParameters, inferences := c.getHigherOrderInferences(signature, context)
+	if inferences != nil {
 		instantiatedSignature := c.getSignatureInstantiationWithoutFillingInTypeArguments(signature, uniqueTypeParameters)
-		// Infer from the parameters of the instantiated signature to the parameters of the
-		// contextual signature starting with an empty set of inference candidates.
-		inferences := core.Map(context.inferences, func(info *InferenceInfo) *InferenceInfo {
-			return newInferenceInfo(info.typeParameter)
-		})
 		c.applyToParameterTypes(instantiatedSignature, contextualSignature, func(source *Type, target *Type) {
 			c.inferTypes(inferences, source, target, InferencePriorityNone, true /*contravariant*/)
 		})
 		if core.Some(inferences, hasInferenceCandidates) {
-			// We have inference candidates, indicating that one or more type parameters are referenced
-			// in the parameter types of the contextual signature. Now also infer from the return type.
 			c.applyToReturnTypes(instantiatedSignature, contextualSignature, func(source *Type, target *Type) {
 				c.inferTypes(inferences, source, target, InferencePriorityNone, false)
 			})
-			// If the type parameters for which we produced candidates do not have any inferences yet,
-			// we adopt the new inference candidates and add the type parameters of the expression type
-			// to the set of inferred type parameters for the outer function return type.
-			if !hasOverlappingInferences(context.inferences, inferences) {
-				c.mergeInferences(context.inferences, inferences)
-				context.inferredTypeParameters = core.Concatenate(context.inferredTypeParameters, uniqueTypeParameters)
+			if c.commitHigherOrderInferences(context, uniqueTypeParameters, inferences) {
 				return c.getOrCreateTypeFromSignature(instantiatedSignature)
 			}
 		}
@@ -7836,6 +7811,62 @@ func (c *Checker) instantiateTypeWithSingleGenericCallSignature(node *ast.Node, 
 	// types *also* get cached on the first pass. If we ever properly speculate, though, the cached "isolatedSignatureType" signature
 	// field absolutely needs to be included in the list of speculative caches.
 	return c.getOrCreateTypeFromSignature(c.instantiateSignatureInContextOf(signature, contextualSignature, context, nil))
+}
+
+// Create a fresh set of inferences for propagating the type parameters of a generic function
+// argument into the return type of its outer call. The fresh set lets us reject the propagation
+// as a whole when it overlaps inferences already made from other arguments.
+func (c *Checker) getHigherOrderInferences(signature *Signature, context *InferenceContext) ([]*Type, []*InferenceInfo) {
+	if !c.canPropagateTypeParametersIntoOuterReturn(context) {
+		return nil, nil
+	}
+	uniqueTypeParameters := c.getUniqueTypeParameters(context, signature.typeParameters)
+	inferences := core.Map(context.inferences, func(info *InferenceInfo) *InferenceInfo {
+		return newInferenceInfo(info.typeParameter)
+	})
+	return uniqueTypeParameters, inferences
+}
+
+// Higher-order inference can propagate the type parameters of a generic function argument into
+// the non-generic function returned by the outer call, provided some outer inferences remain open.
+func (c *Checker) canPropagateTypeParametersIntoOuterReturn(context *InferenceContext) bool {
+	var returnSignature *Signature
+	if context.signature != nil {
+		returnType := c.getReturnTypeOfSignature(context.signature)
+		if returnType != nil {
+			returnSignature = c.getSingleCallOrConstructSignature(returnType)
+		}
+	}
+	return returnSignature != nil && len(returnSignature.typeParameters) == 0 && !core.Every(context.inferences, hasInferenceCandidates)
+}
+
+// Adopt higher-order inferences only when every affected outer type parameter was previously
+// uninferred. Mixing the two sets could allow a local type parameter to escape without a binder.
+func (c *Checker) commitHigherOrderInferences(context *InferenceContext, typeParameters []*Type, inferences []*InferenceInfo) bool {
+	if hasOverlappingInferences(context.inferences, inferences) {
+		return false
+	}
+	c.mergeInferences(context.inferences, inferences)
+	context.inferredTypeParameters = core.Concatenate(context.inferredTypeParameters, typeParameters)
+	return true
+}
+
+// Infer from annotated parameters before checking a context-sensitive generic function body. This
+// allows higher-order inferences to provide contextual parameter types within the body without
+// resolving the body's return type early.
+func (c *Checker) inferFromAnnotatedParametersOfGenericFunction(signature *Signature, contextualSignature *Signature, context *InferenceContext) bool {
+	uniqueTypeParameters, inferences := c.getHigherOrderInferences(signature, context)
+	if inferences == nil {
+		return false
+	}
+	mapper := newTypeMapper(signature.typeParameters, uniqueTypeParameters)
+	c.applyToAnnotatedParameterTypes(signature, contextualSignature, func(source *Type, target *Type) {
+		c.inferTypes(inferences, c.instantiateType(source, mapper), target, InferencePriorityNone, true /*contravariant*/)
+	})
+	if core.Some(inferences, hasInferenceCandidates) {
+		return c.commitHigherOrderInferences(context, uniqueTypeParameters, inferences)
+	}
+	return false
 }
 
 func (c *Checker) getOuterInferenceTypeParameters() []*Type {
@@ -10305,6 +10336,11 @@ func (c *Checker) checkFunctionExpressionOrObjectLiteralMethod(node *ast.Node, c
 				return returnOnlyType
 			}
 		}
+		if node.TypeParameters() != nil {
+			// A context-sensitive generic function is omitted before its signature is available to
+			// instantiateTypeWithSingleGenericCallSignature, so request the same second inference pass here.
+			c.skippedGenericFunction(node, checkMode)
+		}
 		return c.anyFunctionType
 	}
 	// Grammar checking
@@ -10335,12 +10371,21 @@ func (c *Checker) contextuallyCheckFunctionExpressionOrObjectLiteralMethod(node 
 			if signature == nil {
 				return
 			}
-			if c.isContextSensitive(node) {
+			contextSensitive := c.isContextSensitive(node)
+			inferenceContext := c.getInferenceContext(node)
+			if contextualSignature != nil && inferenceContext != nil && checkMode&CheckModeInferential != 0 && node.TypeParameters() != nil {
+				propagatedTypeParameters := contextSensitive && c.inferFromAnnotatedParametersOfGenericFunction(signature, contextualSignature, inferenceContext)
+				if !propagatedTypeParameters && !c.canPropagateTypeParametersIntoOuterReturn(inferenceContext) {
+					c.inferFromAnnotatedParametersAndReturnWorker(signature, contextualSignature, inferenceContext, signature.typeParameters)
+				}
+			}
+			if contextSensitive {
 				if contextualSignature != nil {
-					inferenceContext := c.getInferenceContext(node)
 					var instantiatedContextualSignature *Signature
 					if checkMode&CheckModeInferential != 0 {
-						c.inferFromAnnotatedParametersAndReturn(signature, contextualSignature, inferenceContext)
+						if node.TypeParameters() == nil {
+							c.inferFromAnnotatedParametersAndReturn(signature, contextualSignature, inferenceContext)
+						}
 						restType := c.getEffectiveRestType(contextualSignature)
 						if restType != nil && restType.flags&TypeFlagsTypeParameter != 0 {
 							instantiatedContextualSignature = c.instantiateSignature(contextualSignature, inferenceContext.nonFixingMapper)
@@ -10359,7 +10404,6 @@ func (c *Checker) contextuallyCheckFunctionExpressionOrObjectLiteralMethod(node 
 					c.assignNonContextualParameterTypes(signature)
 				}
 			} else if contextualSignature != nil && node.TypeParameters() == nil && len(contextualSignature.parameters) > len(node.Parameters()) {
-				inferenceContext := c.getInferenceContext(node)
 				if checkMode&CheckModeInferential != 0 {
 					c.inferFromAnnotatedParametersAndReturn(signature, contextualSignature, inferenceContext)
 				}
@@ -10411,11 +10455,15 @@ func (c *Checker) checkFunctionExpressionOrObjectLiteralMethodDeferred(node *ast
 }
 
 func (c *Checker) inferFromAnnotatedParametersAndReturn(sig *Signature, context *Signature, inferenceContext *InferenceContext) {
+	c.inferFromAnnotatedParametersAndReturnWorker(sig, context, inferenceContext, nil)
+}
+
+func (c *Checker) inferFromAnnotatedParametersAndReturnWorker(sig *Signature, context *Signature, inferenceContext *InferenceContext, excludedTypeParameters []*Type) {
 	length := len(sig.parameters) - core.IfElse(signatureHasRestParameter(sig), 1, 0)
 	for i := range length {
 		declaration := sig.parameters[i].ValueDeclaration
 		typeNode := declaration.Type()
-		if typeNode != nil {
+		if typeNode != nil && !c.typeNodeReferencesAnyTypeParameter(typeNode, excludedTypeParameters) {
 			source := c.addOptionalityEx(c.getTypeFromTypeNode(typeNode), false /*isProperty*/, isOptionalDeclaration(declaration))
 			target := c.getTypeAtPosition(context, i)
 			c.inferTypes(inferenceContext.inferences, source, target, InferencePriorityNone, false)
@@ -10423,11 +10471,17 @@ func (c *Checker) inferFromAnnotatedParametersAndReturn(sig *Signature, context 
 	}
 	if declaration := sig.Declaration(); declaration != nil {
 		if returnTypeNode := declaration.Type(); returnTypeNode != nil {
-			source := c.getTypeFromTypeNode(returnTypeNode)
-			target := c.getReturnTypeOfSignature(context)
-			c.inferTypes(inferenceContext.inferences, source, target, InferencePriorityNone, false)
+			if !c.typeNodeReferencesAnyTypeParameter(returnTypeNode, excludedTypeParameters) {
+				source := c.getTypeFromTypeNode(returnTypeNode)
+				target := c.getReturnTypeOfSignature(context)
+				c.inferTypes(inferenceContext.inferences, source, target, InferencePriorityNone, false)
+			}
 		}
 	}
+}
+
+func (c *Checker) typeNodeReferencesAnyTypeParameter(node *ast.Node, typeParameters []*Type) bool {
+	return core.Some(typeParameters, func(tp *Type) bool { return c.isTypeParameterPossiblyReferenced(tp, node) })
 }
 
 // Return the contextual signature for a given expression node. A contextual type provides a
@@ -31278,7 +31332,7 @@ func (c *Checker) isContextSensitiveFunctionLikeDeclaration(node *ast.Node) bool
 }
 
 func (c *Checker) hasContextSensitiveReturnExpression(node *ast.Node) bool {
-	if node.TypeParameters() != nil || node.Type() != nil {
+	if node.Type() != nil {
 		return false
 	}
 	body := node.Body()

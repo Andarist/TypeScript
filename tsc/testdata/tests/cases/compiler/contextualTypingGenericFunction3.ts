@@ -85,3 +85,25 @@ export const result9 = fnGen1({ message: "foo" }, function* (n: number) {
 export const result10 = fnGen1({ message: "foo" }, function* <N>(n: N) {
   this.message;
 });
+
+declare function fn5<P, Q>(config: {
+  first: (params: P) => (params: P) => void;
+  second: (params: Q) => (params: Q) => void;
+}): (first: P, second: Q) => void;
+
+export const result11 = fn5({
+  first: <N extends { id: string }>(params: N) => value => {
+    value.id;
+  },
+  second: <N>(params: N) => value => {
+    value;
+  },
+});
+
+declare function fn6<P>(callback: (params: P) => void): P;
+
+export const result12 = fn6(<N>(params: string) => {});
+
+export const result13: (value: string) => void = <N>(value) => {
+  value.toUpperCase();
+};

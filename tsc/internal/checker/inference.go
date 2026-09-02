@@ -866,6 +866,15 @@ func (c *Checker) inferFromSignature(n *InferenceState, source *Signature, targe
 }
 
 func (c *Checker) applyToParameterTypes(source *Signature, target *Signature, callback func(s *Type, t *Type)) {
+	c.applyToParameterTypesWorker(source, target, callback, false /*skipUnannotatedParameters*/)
+}
+
+func (c *Checker) applyToAnnotatedParameterTypes(source *Signature, target *Signature, callback func(s *Type, t *Type)) {
+	c.applyToParameterTypesWorker(source, target, callback, true /*skipUnannotatedParameters*/)
+}
+
+func (c *Checker) applyToParameterTypesWorker(source *Signature, target *Signature, callback func(s *Type, t *Type), skipUnannotatedParameters bool) {
+	sourceDeclaredCount := len(source.parameters) - core.IfElse(signatureHasRestParameter(source), 1, 0)
 	sourceCount := c.getParameterCount(source)
 	targetCount := c.getParameterCount(target)
 	sourceRestType := c.getEffectiveRestType(source)
@@ -886,10 +895,33 @@ func (c *Checker) applyToParameterTypes(source *Signature, target *Signature, ca
 		}
 	}
 	for i := range paramCount {
+		if skipUnannotatedParameters {
+			var parameter *ast.Symbol
+			if i < sourceDeclaredCount {
+				parameter = source.parameters[i]
+			} else if signatureHasRestParameter(source) {
+				parameter = source.parameters[sourceDeclaredCount]
+			}
+			if parameter != nil && parameter.ValueDeclaration != nil && parameter.ValueDeclaration.Type() == nil {
+				continue
+			}
+		}
 		callback(c.getTypeAtPosition(source, i), c.getTypeAtPosition(target, i))
 	}
 	if targetRestType != nil {
-		callback(c.getRestTypeAtPosition(source, paramCount, c.isConstTypeVariable(targetRestType, 0) && !someType(targetRestType, c.isMutableArrayLikeType) /*readonly*/), targetRestType)
+		shouldApply := true
+		if skipUnannotatedParameters {
+			for i := paramCount; i < len(source.parameters); i++ {
+				parameter := source.parameters[i]
+				if parameter.ValueDeclaration != nil && parameter.ValueDeclaration.Type() == nil {
+					shouldApply = false
+					break
+				}
+			}
+		}
+		if shouldApply {
+			callback(c.getRestTypeAtPosition(source, paramCount, c.isConstTypeVariable(targetRestType, 0) && !someType(targetRestType, c.isMutableArrayLikeType) /*readonly*/), targetRestType)
+		}
 	}
 }
 

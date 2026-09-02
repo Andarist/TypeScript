@@ -84,6 +84,28 @@ export const result10 = fnGen1({ message: "foo" }, function* <N>(n: N) {
   this.message;
 });
 
+declare function fn5<P, Q>(config: {
+  first: (params: P) => (params: P) => void;
+  second: (params: Q) => (params: Q) => void;
+}): (first: P, second: Q) => void;
+
+export const result11 = fn5({
+  first: <N extends { id: string }>(params: N) => value => {
+    value.id;
+  },
+  second: <N>(params: N) => value => {
+    value;
+  },
+});
+
+declare function fn6<P>(callback: (params: P) => void): P;
+
+export const result12 = fn6(<N>(params: string) => {});
+
+export const result13: (value: string) => void = <N>(value) => {
+  value.toUpperCase();
+};
+
 
 
 
@@ -94,7 +116,12 @@ export declare const result3: <N>(n: N) => void;
 export declare const result4: <N>(n: N) => number;
 export declare const result5: <N>(params: N) => number;
 export declare const result6: <N>(params: N) => number;
-export declare const result7: <N>(params: N) => number;
-export declare const result8: <N>(params: N) => number;
+export declare const result7: (params: unknown) => number;
+export declare const result8: (params: unknown) => number;
 export declare const result9: (n: number) => void;
 export declare const result10: <N>(n: N) => void;
+export declare const result11: <N extends {
+    id: string;
+}, N1>(first: N, second: N1) => void;
+export declare const result12: string;
+export declare const result13: (value: string) => void;
