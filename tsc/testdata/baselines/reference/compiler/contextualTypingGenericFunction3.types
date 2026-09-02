@@ -1,0 +1,287 @@
+//// [tests/cases/compiler/contextualTypingGenericFunction3.ts] ////
+
+=== contextualTypingGenericFunction3.ts ===
+// https://github.com/microsoft/TypeScript/issues/61791
+
+declare const fn1: <T, Args extends Array<any>, Ret>(
+>fn1 : <T, Args extends Array<any>, Ret>(self: T, body: (this: T, ...args: Args) => Ret) => (...args: Args) => Ret
+
+  self: T,
+>self : T
+
+  body: (this: T, ...args: Args) => Ret,
+>body : (this: T, ...args: Args) => Ret
+>this : T
+>args : Args
+
+) => (...args: Args) => Ret;
+>args : Args
+
+export const result1 = fn1({ message: "foo" }, function (n: number) {
+>result1 : (n: number) => void
+>fn1({ message: "foo" }, function (n: number) {  this.message;}) : (n: number) => void
+>fn1 : <T, Args extends Array<any>, Ret>(self: T, body: (this: T, ...args: Args) => Ret) => (...args: Args) => Ret
+>{ message: "foo" } : { message: string; }
+>message : string
+>"foo" : "foo"
+>function (n: number) {  this.message;} : (this: { message: string; }, n: number) => void
+>n : number
+
+  this.message;
+>this.message : string
+>this : { message: string; }
+>message : string
+
+});
+
+export const result2 = fn1({ message: "foo" }, function <N>(n: N) {
+>result2 : <N>(n: N) => void
+>fn1({ message: "foo" }, function <N>(n: N) {  this.message;}) : <N>(n: N) => void
+>fn1 : <T, Args extends Array<any>, Ret>(self: T, body: (this: T, ...args: Args) => Ret) => (...args: Args) => Ret
+>{ message: "foo" } : { message: string; }
+>message : string
+>"foo" : "foo"
+>function <N>(n: N) {  this.message;} : <N>(n: N) => void
+>n : N
+
+  this.message;
+>this.message : any
+>this : any
+>message : any
+
+});
+
+declare const fn2: <Args extends Array<any>, Ret>(
+>fn2 : <Args extends Array<any>, Ret>(body: (first: string, ...args: Args) => Ret) => (...args: Args) => Ret
+
+  body: (first: string, ...args: Args) => Ret,
+>body : (first: string, ...args: Args) => Ret
+>first : string
+>args : Args
+
+) => (...args: Args) => Ret;
+>args : Args
+
+export const result3 = fn2(function <N>(first, n: N) {});
+>result3 : <N>(n: N) => void
+>fn2(function <N>(first, n: N) {}) : <N>(n: N) => void
+>fn2 : <Args extends Array<any>, Ret>(body: (first: string, ...args: Args) => Ret) => (...args: Args) => Ret
+>function <N>(first, n: N) {} : <N>(first: any, n: N) => void
+>first : any
+>n : N
+
+declare const fn3: <Args extends Array<any>, Ret>(
+>fn3 : <Args extends Array<any>, Ret>(body: (...args: Args) => (arg: string) => Ret) => (...args: Args) => Ret
+
+  body: (...args: Args) => (arg: string) => Ret,
+>body : (...args: Args) => (arg: string) => Ret
+>args : Args
+>arg : string
+
+) => (...args: Args) => Ret;
+>args : Args
+
+export const result4 = fn3(function <N>(n: N) {
+>result4 : <N>(n: N) => number
+>fn3(function <N>(n: N) {  return (arg) => {    return 10;  };}) : <N>(n: N) => number
+>fn3 : <Args extends Array<any>, Ret>(body: (...args: Args) => (arg: string) => Ret) => (...args: Args) => Ret
+>function <N>(n: N) {  return (arg) => {    return 10;  };} : <N>(n: N) => (arg: string) => number
+>n : N
+
+  return (arg) => {
+>(arg) => {    return 10;  } : (arg: string) => number
+>arg : string
+
+    return 10;
+>10 : 10
+
+  };
+});
+
+declare function fn4<T, P>(config: {
+>fn4 : <T, P>(config: { context: T; callback: (params: P) => (context: T, params: P) => number; other?: (arg: string) => void; }) => (params: P) => number
+>config : { context: T; callback: (params: P) => (context: T, params: P) => number; other?: (arg: string) => void; }
+
+  context: T;
+>context : T
+
+  callback: (params: P) => (context: T, params: P) => number;
+>callback : (params: P) => (context: T, params: P) => number
+>params : P
+>context : T
+>params : P
+
+  other?: (arg: string) => void;
+>other : ((arg: string) => void) | undefined
+>arg : string
+
+}): (params: P) => number;
+>params : P
+
+export const result5 = fn4({
+>result5 : <N>(params: N) => number
+>fn4({  context: 1,  callback: <N,>(params: N) => {    return (a, b) => a + 1;  },}) : <N>(params: N) => number
+>fn4 : <T, P>(config: { context: T; callback: (params: P) => (context: T, params: P) => number; other?: (arg: string) => void; }) => (params: P) => number
+>{  context: 1,  callback: <N,>(params: N) => {    return (a, b) => a + 1;  },} : { context: number; callback: <N>(params: N) => (a: unknown, b: unknown) => any; }
+
+  context: 1,
+>context : number
+>1 : 1
+
+  callback: <N,>(params: N) => {
+>callback : <N>(params: N) => (a: unknown, b: unknown) => any
+><N,>(params: N) => {    return (a, b) => a + 1;  } : <N>(params: N) => (a: unknown, b: unknown) => any
+>params : N
+
+    return (a, b) => a + 1;
+>(a, b) => a + 1 : (a: unknown, b: unknown) => any
+>a : unknown
+>b : unknown
+>a + 1 : any
+>a : unknown
+>1 : 1
+
+  },
+});
+
+export const result6 = fn4({
+>result6 : <N>(params: N) => number
+>fn4({  context: 1,  callback: <N,>(params: N) => {    return (a, b) => a + 1;  },  other: (_) => {}, // outer context-sensitive function}) : <N>(params: N) => number
+>fn4 : <T, P>(config: { context: T; callback: (params: P) => (context: T, params: P) => number; other?: (arg: string) => void; }) => (params: P) => number
+>{  context: 1,  callback: <N,>(params: N) => {    return (a, b) => a + 1;  },  other: (_) => {}, // outer context-sensitive function} : { context: number; callback: <N>(params: N) => {}; other: (_: string) => void; }
+
+  context: 1,
+>context : number
+>1 : 1
+
+  callback: <N,>(params: N) => {
+>callback : <N>(params: N) => {}
+><N,>(params: N) => {    return (a, b) => a + 1;  } : <N>(params: N) => {}
+>params : N
+
+    return (a, b) => a + 1;
+>(a, b) => a + 1 : (a: number, b: N) => number
+>a : number
+>b : N
+>a + 1 : number
+>a : number
+>1 : 1
+
+  },
+  other: (_) => {}, // outer context-sensitive function
+>other : (_: string) => void
+>(_) => {} : (_: string) => void
+>_ : string
+
+});
+
+// should error
+export const result7 = fn4({
+>result7 : <N>(params: N) => number
+>fn4({  context: 1,  callback: <N,>(params: N) => {    return (a: boolean, b) => a ? 1 : 2;  },  other: (_) => {}, // outer context-sensitive function}) : <N>(params: N) => number
+>fn4 : <T, P>(config: { context: T; callback: (params: P) => (context: T, params: P) => number; other?: (arg: string) => void; }) => (params: P) => number
+>{  context: 1,  callback: <N,>(params: N) => {    return (a: boolean, b) => a ? 1 : 2;  },  other: (_) => {}, // outer context-sensitive function} : { context: number; callback: <N>(params: N) => {}; other: (_: string) => void; }
+
+  context: 1,
+>context : number
+>1 : 1
+
+  callback: <N,>(params: N) => {
+>callback : <N>(params: N) => {}
+><N,>(params: N) => {    return (a: boolean, b) => a ? 1 : 2;  } : <N>(params: N) => {}
+>params : N
+
+    return (a: boolean, b) => a ? 1 : 2;
+>(a: boolean, b) => a ? 1 : 2 : (a: boolean, b: N) => 1 | 2
+>a : boolean
+>b : N
+>a ? 1 : 2 : 1 | 2
+>a : boolean
+>1 : 1
+>2 : 2
+
+  },
+  other: (_) => {}, // outer context-sensitive function
+>other : (_: string) => void
+>(_) => {} : (_: string) => void
+>_ : string
+
+});
+
+// should error
+export const result8 = fn4({
+>result8 : <N>(params: N) => number
+>fn4({  context: 1,  callback: <N,>(params: N) => {    return (a, b) => true;  },  other: (_) => {}, // outer context-sensitive function}) : <N>(params: N) => number
+>fn4 : <T, P>(config: { context: T; callback: (params: P) => (context: T, params: P) => number; other?: (arg: string) => void; }) => (params: P) => number
+>{  context: 1,  callback: <N,>(params: N) => {    return (a, b) => true;  },  other: (_) => {}, // outer context-sensitive function} : { context: number; callback: <N>(params: N) => {}; other: (_: string) => void; }
+
+  context: 1,
+>context : number
+>1 : 1
+
+  callback: <N,>(params: N) => {
+>callback : <N>(params: N) => {}
+><N,>(params: N) => {    return (a, b) => true;  } : <N>(params: N) => {}
+>params : N
+
+    return (a, b) => true;
+>(a, b) => true : (a: number, b: N) => boolean
+>a : number
+>b : N
+>true : true
+
+  },
+  other: (_) => {}, // outer context-sensitive function
+>other : (_: string) => void
+>(_) => {} : (_: string) => void
+>_ : string
+
+});
+
+declare const fnGen1: <T, Args extends Array<any>, Ret>(
+>fnGen1 : <T, Args extends Array<any>, Ret>(self: T, body: (this: T, ...args: Args) => Generator<any, Ret, never>) => (...args: Args) => Ret
+
+  self: T,
+>self : T
+
+  body: (this: T, ...args: Args) => Generator<any, Ret, never>,
+>body : (this: T, ...args: Args) => Generator<any, Ret, never>
+>this : T
+>args : Args
+
+) => (...args: Args) => Ret;
+>args : Args
+
+export const result9 = fnGen1({ message: "foo" }, function* (n: number) {
+>result9 : (n: number) => void
+>fnGen1({ message: "foo" }, function* (n: number) {  this.message;}) : (n: number) => void
+>fnGen1 : <T, Args extends Array<any>, Ret>(self: T, body: (this: T, ...args: Args) => Generator<any, Ret, never>) => (...args: Args) => Ret
+>{ message: "foo" } : { message: string; }
+>message : string
+>"foo" : "foo"
+>function* (n: number) {  this.message;} : (this: { message: string; }, n: number) => Generator<never, void, never>
+>n : number
+
+  this.message;
+>this.message : string
+>this : { message: string; }
+>message : string
+
+});
+
+export const result10 = fnGen1({ message: "foo" }, function* <N>(n: N) {
+>result10 : <N>(n: N) => void
+>fnGen1({ message: "foo" }, function* <N>(n: N) {  this.message;}) : <N>(n: N) => void
+>fnGen1 : <T, Args extends Array<any>, Ret>(self: T, body: (this: T, ...args: Args) => Generator<any, Ret, never>) => (...args: Args) => Ret
+>{ message: "foo" } : { message: string; }
+>message : string
+>"foo" : "foo"
+>function* <N>(n: N) {  this.message;} : <N>(n: N) => Generator<never, void, never>
+>n : N
+
+  this.message;
+>this.message : any
+>this : any
+>message : any
+
+});
