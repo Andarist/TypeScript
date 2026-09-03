@@ -10578,6 +10578,7 @@ func (c *Checker) assignContextualParameterTypes(sig *Signature, context *Signat
 	if len(context.typeParameters) != 0 && len(sig.typeParameters) != 0 {
 		context = c.instantiateContextualSignature(context, sig)
 		if context == nil {
+			c.assignNonContextualParameterTypes(sig)
 			return
 		}
 	} else if len(context.typeParameters) != 0 {
@@ -10622,8 +10623,16 @@ func (c *Checker) assignContextualParameterTypes(sig *Signature, context *Signat
 }
 
 func (c *Checker) instantiateContextualSignature(context *Signature, sig *Signature) *Signature {
-	if len(context.typeParameters) != len(sig.typeParameters) {
+	if !c.compareTypeParametersIdentical(context.typeParameters, sig.typeParameters) {
 		return nil
+	}
+	// compareTypeParametersIdentical ignores defaults when combining signatures. For contextual
+	// typing we also require matching defaults.
+	mapper := newTypeMapper(context.typeParameters, sig.typeParameters)
+	for i, parameter := range context.typeParameters {
+		if !c.isTypeIdenticalTo(c.instantiateType(c.getDefaultOrUnknownFromTypeParameter(parameter), mapper), c.getDefaultOrUnknownFromTypeParameter(sig.typeParameters[i])) {
+			return nil
+		}
 	}
 	// Bind the contextual signature's type parameters to the corresponding type parameters
 	// declared by the function expression, so contextual parameter types don't escape their binder.

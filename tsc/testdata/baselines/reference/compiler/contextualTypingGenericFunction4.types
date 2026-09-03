@@ -1,0 +1,142 @@
+//// [tests/cases/compiler/contextualTypingGenericFunction4.ts] ////
+
+=== contextualTypingGenericFunction4.ts ===
+// Positional contextual typing requires matching type parameter lists.
+export const matching: <T extends { id: string }, U extends T = T>(first: T, second: U) => U =
+>matching : <T extends { id: string; }, U extends T = T>(first: T, second: U) => U
+>id : string
+>first : T
+>second : U
+
+    <A extends { id: string }, B extends A = A>(first, second) => {
+><A extends { id: string }, B extends A = A>(first, second) => {        const a: A = first;        const b: B = second;        a.id;        return b;    } : <A extends { id: string; }, B extends A = A>(first: A, second: B) => B
+>id : string
+>first : A
+>second : B
+
+        const a: A = first;
+>a : A
+>first : A
+
+        const b: B = second;
+>b : B
+>second : B
+
+        a.id;
+>a.id : string
+>a : A
+>id : string
+
+        return b;
+>b : B
+
+    };
+
+export const recursive: <T extends { next?: T }>(value: T) => T =
+>recursive : <T extends { next?: T; }>(value: T) => T
+>next : T | undefined
+>value : T
+
+    <S extends { next?: S }>(value) => {
+><S extends { next?: S }>(value) => {        const local: S = value;        return local;    } : <S extends { next?: S; }>(value: S) => S
+>next : S | undefined
+>value : S
+
+        const local: S = value;
+>local : S
+>value : S
+
+        return local;
+>local : S
+
+    };
+
+declare function accept(callback: <T extends { id: string }, U extends T = T>(value: U) => U): void;
+>accept : (callback: <T extends { id: string; }, U extends T = T>(value: U) => U) => void
+>callback : <T extends { id: string; }, U extends T = T>(value: U) => U
+>id : string
+>value : U
+
+accept(<A extends { id: string }, B extends A = A>(value) => {
+>accept(<A extends { id: string }, B extends A = A>(value) => {    const local: B = value;    return local;}) : void
+>accept : (callback: <T extends { id: string; }, U extends T = T>(value: U) => U) => void
+><A extends { id: string }, B extends A = A>(value) => {    const local: B = value;    return local;} : <A extends { id: string; }, B extends A = A>(value: B) => B
+>id : string
+>value : B
+
+    const local: B = value;
+>local : B
+>value : B
+
+    return local;
+>local : B
+
+});
+
+// Mismatches don't provide contextual parameter types (implicit any errors).
+export const differentConstraint: <T extends string>(value: T) => void =
+>differentConstraint : <T extends string>(value: T) => void
+>value : T
+
+    <S extends string | number>(value) => {};
+><S extends string | number>(value) => {} : <S extends string | number>(value: any) => void
+>value : any
+
+export const differentDefault: <T = string>(value: T) => void =
+>differentDefault : <T = string>(value: T) => void
+>value : T
+
+    <S = number>(value) => {};
+><S = number>(value) => {} : <S = number>(value: any) => void
+>value : any
+
+export const missingDefault: <T = string>(value: T) => void =
+>missingDefault : <T = string>(value: T) => void
+>value : T
+
+    <S>(value) => {};
+><S>(value) => {} : <S>(value: any) => void
+>value : any
+
+export const differentArity: <T, U>(first: T, second: U) => void =
+>differentArity : <T, U>(first: T, second: U) => void
+>first : T
+>second : U
+
+    <S>(first, second) => {};
+><S>(first, second) => {} : <S>(first: any, second: any) => void
+>first : any
+>second : any
+
+// This is only a contextual typing restriction, not an assignment compatibility restriction.
+export const annotatedConstraint: <T extends string>(value: T) => T =
+>annotatedConstraint : <T extends string>(value: T) => T
+>value : T
+
+    <S extends string | number>(value: S) => value;
+><S extends string | number>(value: S) => value : <S extends string | number>(value: S) => S
+>value : S
+>value : S
+
+export const annotatedDefault: <T = string>(value: T) => T =
+>annotatedDefault : <T = string>(value: T) => T
+>value : T
+
+    <S = number>(value: S) => value;
+><S = number>(value: S) => value : <S = number>(value: S) => S
+>value : S
+>value : S
+
+export const annotatedReordered: <T, U>(first: T, second: U) => [T, U] =
+>annotatedReordered : <T, U>(first: T, second: U) => [T, U]
+>first : T
+>second : U
+
+    <A, B>(first: B, second: A): [B, A] => [first, second];
+><A, B>(first: B, second: A): [B, A] => [first, second] : <A, B>(first: B, second: A) => [B, A]
+>first : B
+>second : A
+>[first, second] : [B, A]
+>first : B
+>second : A
+

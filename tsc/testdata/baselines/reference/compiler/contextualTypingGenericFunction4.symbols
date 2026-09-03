@@ -1,0 +1,197 @@
+//// [tests/cases/compiler/contextualTypingGenericFunction4.ts] ////
+
+=== contextualTypingGenericFunction4.ts ===
+// Positional contextual typing requires matching type parameter lists.
+export const matching: <T extends { id: string }, U extends T = T>(first: T, second: U) => U =
+>matching : Symbol(matching, Decl(contextualTypingGenericFunction4.ts, 1, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 1, 24))
+>id : Symbol(id, Decl(contextualTypingGenericFunction4.ts, 1, 35))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 1, 49))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 1, 24))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 1, 24))
+>first : Symbol(first, Decl(contextualTypingGenericFunction4.ts, 1, 67))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 1, 24))
+>second : Symbol(second, Decl(contextualTypingGenericFunction4.ts, 1, 76))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 1, 49))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 1, 49))
+
+    <A extends { id: string }, B extends A = A>(first, second) => {
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 2, 5))
+>id : Symbol(id, Decl(contextualTypingGenericFunction4.ts, 2, 16))
+>B : Symbol(B, Decl(contextualTypingGenericFunction4.ts, 2, 30))
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 2, 5))
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 2, 5))
+>first : Symbol(first, Decl(contextualTypingGenericFunction4.ts, 2, 48))
+>second : Symbol(second, Decl(contextualTypingGenericFunction4.ts, 2, 54))
+
+        const a: A = first;
+>a : Symbol(a, Decl(contextualTypingGenericFunction4.ts, 3, 13))
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 2, 5))
+>first : Symbol(first, Decl(contextualTypingGenericFunction4.ts, 2, 48))
+
+        const b: B = second;
+>b : Symbol(b, Decl(contextualTypingGenericFunction4.ts, 4, 13))
+>B : Symbol(B, Decl(contextualTypingGenericFunction4.ts, 2, 30))
+>second : Symbol(second, Decl(contextualTypingGenericFunction4.ts, 2, 54))
+
+        a.id;
+>a.id : Symbol(id, Decl(contextualTypingGenericFunction4.ts, 2, 16))
+>a : Symbol(a, Decl(contextualTypingGenericFunction4.ts, 3, 13))
+>id : Symbol(id, Decl(contextualTypingGenericFunction4.ts, 2, 16))
+
+        return b;
+>b : Symbol(b, Decl(contextualTypingGenericFunction4.ts, 4, 13))
+
+    };
+
+export const recursive: <T extends { next?: T }>(value: T) => T =
+>recursive : Symbol(recursive, Decl(contextualTypingGenericFunction4.ts, 9, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 9, 25))
+>next : Symbol(next, Decl(contextualTypingGenericFunction4.ts, 9, 36))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 9, 25))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 9, 49))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 9, 25))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 9, 25))
+
+    <S extends { next?: S }>(value) => {
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 10, 5))
+>next : Symbol(next, Decl(contextualTypingGenericFunction4.ts, 10, 16))
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 10, 5))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 10, 29))
+
+        const local: S = value;
+>local : Symbol(local, Decl(contextualTypingGenericFunction4.ts, 11, 13))
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 10, 5))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 10, 29))
+
+        return local;
+>local : Symbol(local, Decl(contextualTypingGenericFunction4.ts, 11, 13))
+
+    };
+
+declare function accept(callback: <T extends { id: string }, U extends T = T>(value: U) => U): void;
+>accept : Symbol(accept, Decl(contextualTypingGenericFunction4.ts, 13, 6))
+>callback : Symbol(callback, Decl(contextualTypingGenericFunction4.ts, 15, 24))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 15, 35))
+>id : Symbol(id, Decl(contextualTypingGenericFunction4.ts, 15, 46))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 15, 60))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 15, 35))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 15, 35))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 15, 78))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 15, 60))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 15, 60))
+
+accept(<A extends { id: string }, B extends A = A>(value) => {
+>accept : Symbol(accept, Decl(contextualTypingGenericFunction4.ts, 13, 6))
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 17, 8))
+>id : Symbol(id, Decl(contextualTypingGenericFunction4.ts, 17, 19))
+>B : Symbol(B, Decl(contextualTypingGenericFunction4.ts, 17, 33))
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 17, 8))
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 17, 8))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 17, 51))
+
+    const local: B = value;
+>local : Symbol(local, Decl(contextualTypingGenericFunction4.ts, 18, 9))
+>B : Symbol(B, Decl(contextualTypingGenericFunction4.ts, 17, 33))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 17, 51))
+
+    return local;
+>local : Symbol(local, Decl(contextualTypingGenericFunction4.ts, 18, 9))
+
+});
+
+// Mismatches don't provide contextual parameter types (implicit any errors).
+export const differentConstraint: <T extends string>(value: T) => void =
+>differentConstraint : Symbol(differentConstraint, Decl(contextualTypingGenericFunction4.ts, 23, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 23, 35))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 23, 53))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 23, 35))
+
+    <S extends string | number>(value) => {};
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 24, 5))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 24, 32))
+
+export const differentDefault: <T = string>(value: T) => void =
+>differentDefault : Symbol(differentDefault, Decl(contextualTypingGenericFunction4.ts, 26, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 26, 32))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 26, 44))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 26, 32))
+
+    <S = number>(value) => {};
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 27, 5))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 27, 17))
+
+export const missingDefault: <T = string>(value: T) => void =
+>missingDefault : Symbol(missingDefault, Decl(contextualTypingGenericFunction4.ts, 29, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 29, 30))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 29, 42))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 29, 30))
+
+    <S>(value) => {};
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 30, 5))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 30, 8))
+
+export const differentArity: <T, U>(first: T, second: U) => void =
+>differentArity : Symbol(differentArity, Decl(contextualTypingGenericFunction4.ts, 32, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 32, 30))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 32, 32))
+>first : Symbol(first, Decl(contextualTypingGenericFunction4.ts, 32, 36))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 32, 30))
+>second : Symbol(second, Decl(contextualTypingGenericFunction4.ts, 32, 45))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 32, 32))
+
+    <S>(first, second) => {};
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 33, 5))
+>first : Symbol(first, Decl(contextualTypingGenericFunction4.ts, 33, 8))
+>second : Symbol(second, Decl(contextualTypingGenericFunction4.ts, 33, 14))
+
+// This is only a contextual typing restriction, not an assignment compatibility restriction.
+export const annotatedConstraint: <T extends string>(value: T) => T =
+>annotatedConstraint : Symbol(annotatedConstraint, Decl(contextualTypingGenericFunction4.ts, 36, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 36, 35))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 36, 53))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 36, 35))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 36, 35))
+
+    <S extends string | number>(value: S) => value;
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 37, 5))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 37, 32))
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 37, 5))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 37, 32))
+
+export const annotatedDefault: <T = string>(value: T) => T =
+>annotatedDefault : Symbol(annotatedDefault, Decl(contextualTypingGenericFunction4.ts, 39, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 39, 32))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 39, 44))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 39, 32))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 39, 32))
+
+    <S = number>(value: S) => value;
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 40, 5))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 40, 17))
+>S : Symbol(S, Decl(contextualTypingGenericFunction4.ts, 40, 5))
+>value : Symbol(value, Decl(contextualTypingGenericFunction4.ts, 40, 17))
+
+export const annotatedReordered: <T, U>(first: T, second: U) => [T, U] =
+>annotatedReordered : Symbol(annotatedReordered, Decl(contextualTypingGenericFunction4.ts, 42, 12))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 42, 34))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 42, 36))
+>first : Symbol(first, Decl(contextualTypingGenericFunction4.ts, 42, 40))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 42, 34))
+>second : Symbol(second, Decl(contextualTypingGenericFunction4.ts, 42, 49))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 42, 36))
+>T : Symbol(T, Decl(contextualTypingGenericFunction4.ts, 42, 34))
+>U : Symbol(U, Decl(contextualTypingGenericFunction4.ts, 42, 36))
+
+    <A, B>(first: B, second: A): [B, A] => [first, second];
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 43, 5))
+>B : Symbol(B, Decl(contextualTypingGenericFunction4.ts, 43, 7))
+>first : Symbol(first, Decl(contextualTypingGenericFunction4.ts, 43, 11))
+>B : Symbol(B, Decl(contextualTypingGenericFunction4.ts, 43, 7))
+>second : Symbol(second, Decl(contextualTypingGenericFunction4.ts, 43, 20))
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 43, 5))
+>B : Symbol(B, Decl(contextualTypingGenericFunction4.ts, 43, 7))
+>A : Symbol(A, Decl(contextualTypingGenericFunction4.ts, 43, 5))
+>first : Symbol(first, Decl(contextualTypingGenericFunction4.ts, 43, 11))
+>second : Symbol(second, Decl(contextualTypingGenericFunction4.ts, 43, 20))
+

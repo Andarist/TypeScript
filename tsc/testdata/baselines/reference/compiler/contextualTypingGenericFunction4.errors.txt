@@ -1,0 +1,63 @@
+contextualTypingGenericFunction4.ts(25,33): error TS7006: Parameter 'value' implicitly has an 'any' type.
+contextualTypingGenericFunction4.ts(28,18): error TS7006: Parameter 'value' implicitly has an 'any' type.
+contextualTypingGenericFunction4.ts(31,9): error TS7006: Parameter 'value' implicitly has an 'any' type.
+contextualTypingGenericFunction4.ts(34,9): error TS7006: Parameter 'first' implicitly has an 'any' type.
+contextualTypingGenericFunction4.ts(34,16): error TS7006: Parameter 'second' implicitly has an 'any' type.
+
+
+==== contextualTypingGenericFunction4.ts (5 errors) ====
+    // Positional contextual typing requires matching type parameter lists.
+    export const matching: <T extends { id: string }, U extends T = T>(first: T, second: U) => U =
+        <A extends { id: string }, B extends A = A>(first, second) => {
+            const a: A = first;
+            const b: B = second;
+            a.id;
+            return b;
+        };
+    
+    export const recursive: <T extends { next?: T }>(value: T) => T =
+        <S extends { next?: S }>(value) => {
+            const local: S = value;
+            return local;
+        };
+    
+    declare function accept(callback: <T extends { id: string }, U extends T = T>(value: U) => U): void;
+    
+    accept(<A extends { id: string }, B extends A = A>(value) => {
+        const local: B = value;
+        return local;
+    });
+    
+    // Mismatches don't provide contextual parameter types (implicit any errors).
+    export const differentConstraint: <T extends string>(value: T) => void =
+        <S extends string | number>(value) => {};
+                                    ~~~~~
+!!! error TS7006: Parameter 'value' implicitly has an 'any' type.
+    
+    export const differentDefault: <T = string>(value: T) => void =
+        <S = number>(value) => {};
+                     ~~~~~
+!!! error TS7006: Parameter 'value' implicitly has an 'any' type.
+    
+    export const missingDefault: <T = string>(value: T) => void =
+        <S>(value) => {};
+            ~~~~~
+!!! error TS7006: Parameter 'value' implicitly has an 'any' type.
+    
+    export const differentArity: <T, U>(first: T, second: U) => void =
+        <S>(first, second) => {};
+            ~~~~~
+!!! error TS7006: Parameter 'first' implicitly has an 'any' type.
+                   ~~~~~~
+!!! error TS7006: Parameter 'second' implicitly has an 'any' type.
+    
+    // This is only a contextual typing restriction, not an assignment compatibility restriction.
+    export const annotatedConstraint: <T extends string>(value: T) => T =
+        <S extends string | number>(value: S) => value;
+    
+    export const annotatedDefault: <T = string>(value: T) => T =
+        <S = number>(value: S) => value;
+    
+    export const annotatedReordered: <T, U>(first: T, second: U) => [T, U] =
+        <A, B>(first: B, second: A): [B, A] => [first, second];
+    
