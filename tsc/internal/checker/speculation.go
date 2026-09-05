@@ -174,26 +174,23 @@ func (s *speculativeLinkStore[K, V]) Get(key K) *V    { return s.track(key, s.st
 func (s *speculativeLinkStore[K, V]) TryGet(key K) *V { return s.track(key, s.store.TryGet(key)) }
 func (s *speculativeLinkStore[K, V]) Has(key K) bool  { return s.store.Has(key) }
 
+// Save collection copies directly to avoid allocating restore closures on each attempt.
 type savedCheckerState struct {
-	restores    []func()
-	diagnostics ast.DiagnosticsCollectionCheckpoint
-	suggestions ast.DiagnosticsCollectionCheckpoint
-}
-
-func (c *Checker) registerSpeculativeCache(save func() func()) {
-	c.speculativeCaches = append(c.speculativeCaches, save)
+	flowLoopStack               []FlowLoopInfo
+	sharedFlows                 []SharedFlow
+	deferredDiagnosticCallbacks []func()
+	diagnostics                 ast.DiagnosticsCollectionCheckpoint
+	suggestions                 ast.DiagnosticsCollectionCheckpoint
 }
 
 func (c *Checker) snapshotCheckerState() savedCheckerState {
-	state := savedCheckerState{
-		restores:    make([]func(), len(c.speculativeCaches)),
-		diagnostics: c.diagnostics.Checkpoint(),
-		suggestions: c.suggestionDiagnostics.Checkpoint(),
+	return savedCheckerState{
+		diagnostics:                 c.diagnostics.Checkpoint(),
+		suggestions:                 c.suggestionDiagnostics.Checkpoint(),
+		flowLoopStack:               slices.Clone(c.flowLoopStack),
+		sharedFlows:                 slices.Clone(c.sharedFlows),
+		deferredDiagnosticCallbacks: slices.Clone(c.deferredDiagnosticCallbacks),
 	}
-	for i, save := range c.speculativeCaches {
-		state.restores[i] = save()
-	}
-	return state
 }
 
 func (c *Checker) commitCheckerState(state savedCheckerState) {
@@ -208,9 +205,9 @@ func (c *Checker) restoreCheckerState(state savedCheckerState) {
 	for _, diagnostic := range c.permanentDiagnostics.GetDiagnostics() {
 		c.diagnostics.Add(diagnostic)
 	}
-	for _, restore := range state.restores {
-		restore()
-	}
+	c.flowLoopStack = state.flowLoopStack
+	c.sharedFlows = state.sharedFlows
+	c.deferredDiagnosticCallbacks = state.deferredDiagnosticCallbacks
 }
 
 func (c *Checker) initializeSpeculation() {
@@ -221,12 +218,6 @@ func (c *Checker) initializeSpeculation() {
 	c.assertionLinks.host = &c.speculationHost
 	c.switchStatementLinks.host = &c.speculationHost
 	c.valueSymbolLinks.host = &c.speculationHost
-	c.registerSpeculativeCache(func() func() { old := slices.Clone(c.flowLoopStack); return func() { c.flowLoopStack = old } })
-	c.registerSpeculativeCache(func() func() { old := slices.Clone(c.sharedFlows); return func() { c.sharedFlows = old } })
-	c.registerSpeculativeCache(func() func() {
-		old := slices.Clone(c.deferredDiagnosticCallbacks)
-		return func() { c.deferredDiagnosticCallbacks = old }
-	})
 }
 
 func (c *Checker) speculate(cb func() *Signature) (result *Signature) {

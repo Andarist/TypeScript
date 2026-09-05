@@ -584,7 +584,6 @@ var nextCheckerID atomic.Uint32
 
 type Checker struct {
 	speculationHost                             speculationHost
-	speculativeCaches                           []func() func()
 	permanentDiagnostics                        ast.DiagnosticsCollection
 	id                                          uint32
 	program                                     Program
