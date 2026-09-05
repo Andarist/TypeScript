@@ -87,9 +87,9 @@ type speculatableCacheValue interface {
 // Node and map caches keep their current value directly. Before overwriting a
 // value from another frame, save it along with its frame for nested rollback.
 type speculatableCache[V speculatableCacheValue] struct {
-	value      V
 	writeFrame uint64
 	present    bool
+	value      V // Keep small values next to present to avoid extra padding.
 }
 
 func (s *speculatableCache[V]) get(_ *speculatableLinks) V { return s.value }
