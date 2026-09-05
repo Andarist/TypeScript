@@ -174,13 +174,14 @@ type SymbolReferenceLinks struct {
 // Links for value symbols
 
 type ValueSymbolLinks struct {
-	resolvedType                 *Type // Type of value symbol
-	writeType                    *Type
-	target                       *ast.Symbol
-	mapper                       *TypeMapper
-	nameType                     *Type
-	containingType               *Type // Mapped type for mapped type property, containing union or intersection type for synthetic property
-	functionOrConstructorChecked bool
+	speculatableLinks
+	resolvedTypeCache                 speculatableCache[*Type]
+	writeTypeCache                    speculatableCache[*Type]
+	target                            *ast.Symbol
+	mapper                            *TypeMapper
+	nameTypeCache                     speculatableCache[*Type]
+	containingType                    *Type // Mapped type for mapped type property, containing union or intersection type for synthetic property
+	functionOrConstructorCheckedCache speculatableCache[bool]
 }
 
 // Additional links for mapped symbols
@@ -265,11 +266,12 @@ const (
 )
 
 type SwitchStatementLinks struct {
-	exhaustiveState     ExhaustiveState // Switch statement exhaustiveness
-	switchTypesComputed bool
-	witnessesComputed   bool
-	switchTypes         []*Type
-	witnesses           []string
+	speculatableLinks
+	exhaustiveStateCache     speculatableCache[ExhaustiveState]
+	switchTypesComputedCache speculatableCache[bool]
+	witnessesComputedCache   speculatableCache[bool]
+	switchTypesCache         speculatableCache[[]*Type]
+	witnessesCache           speculatableCache[[]string]
 }
 
 type ArrayLiteralLinks struct {
@@ -367,17 +369,21 @@ const (
 // Common links
 
 type NodeLinks struct {
-	flags                                NodeCheckFlags // Set of flags specific to Node
-	declarationRequiresScopeChange       core.Tristate  // Set by `useOuterVariableScopeInParameter` in checker when downlevel emit would change the name resolution scope inside of a parameter.
-	hasReportedStatementInAmbientContext bool           // Cache boolean if we report statements in ambient context
+	speculatableLinks
+	flagsCache                           speculatableCache[NodeCheckFlags]
+	declarationRequiresScopeChange       core.Tristate // Set by `useOuterVariableScopeInParameter` in checker when downlevel emit would change the name resolution scope inside of a parameter.
+	hasReportedStatementInAmbientContext bool          // Cache boolean if we report statements in ambient context
+	contextFreeTypeCache                 speculatableCache[*Type]
 }
 
 type SymbolNodeLinks struct {
-	resolvedSymbol *ast.Symbol // Resolved symbol associated with node
+	speculatableLinks
+	resolvedSymbolCache speculatableCache[*ast.Symbol]
 }
 
 type TypeNodeLinks struct {
-	resolvedType        *Type   // Resolved type associated with node
+	speculatableLinks
+	resolvedTypeCache   speculatableCache[*Type]
 	outerTypeParameters []*Type // Outer type parameters of anonymous object type
 }
 
@@ -395,7 +401,8 @@ type EnumMemberLinks struct {
 // Links for assertion expressions
 
 type AssertionLinks struct {
-	exprType *Type // Assertion expression type
+	speculatableLinks
+	exprTypeCache speculatableCache[*Type]
 }
 
 // SourceFile links
@@ -417,9 +424,10 @@ type SourceFileLinks struct {
 // Signature specific links
 
 type SignatureLinks struct {
-	resolvedSignature  *Signature // Cached signature of signature node or call expression
-	effectsSignature   *Signature // Signature with possible control flow effects
-	decoratorSignature *Signature // Signature for decorator as if invoked by the runtime
+	speculatableLinks
+	resolvedSignatureCache speculatableCache[*Signature]
+	effectsSignatureCache  speculatableCache[*Signature]
+	decoratorSignature     *Signature // Signature for decorator as if invoked by the runtime
 }
 
 type TypeFlags uint32

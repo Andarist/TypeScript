@@ -1,0 +1,35 @@
+//// [tests/cases/compiler/overloadSpeculationPreservesGlobalTypeDiagnostic.ts] ////
+
+=== overloadSpeculationPreservesGlobalTypeDiagnostic.ts ===
+interface Array<T> { length: number; [n: number]: T }
+>length : number
+>n : number
+
+interface Boolean {}
+interface CallableFunction {}
+interface Function {}
+interface IArguments {}
+interface NewableFunction {}
+interface Number {}
+interface Object {}
+interface RegExp {}
+interface String {}
+interface Promise {}
+
+declare function f(cb: (x: number) => number): number;
+>f : { (cb: (x: number) => number): number; (cb: (x: string) => unknown): string; }
+>cb : (x: number) => number
+>x : number
+
+declare function f(cb: (x: string) => unknown): string;
+>f : { (cb: (x: number) => number): number; (cb: (x: string) => unknown): string; }
+>cb : (x: string) => unknown
+>x : string
+
+f(async x => x);
+>f(async x => x) : string
+>f : { (cb: (x: number) => number): number; (cb: (x: string) => unknown): string; }
+>async x => x : (x: string) => unknown
+>x : string
+>x : string
+

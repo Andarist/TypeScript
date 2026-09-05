@@ -1,0 +1,55 @@
+//// [tests/cases/compiler/overloadSpeculationPreservesGlobalTypeDiagnostic.ts] ////
+
+=== overloadSpeculationPreservesGlobalTypeDiagnostic.ts ===
+interface Array<T> { length: number; [n: number]: T }
+>Array : Symbol(Array, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 0, 0))
+>T : Symbol(T, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 0, 16))
+>length : Symbol(Array.length, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 0, 20))
+>n : Symbol(n, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 0, 38))
+>T : Symbol(T, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 0, 16))
+
+interface Boolean {}
+>Boolean : Symbol(Boolean, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 0, 53))
+
+interface CallableFunction {}
+>CallableFunction : Symbol(CallableFunction, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 1, 20))
+
+interface Function {}
+>Function : Symbol(Function, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 2, 29))
+
+interface IArguments {}
+>IArguments : Symbol(IArguments, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 3, 21))
+
+interface NewableFunction {}
+>NewableFunction : Symbol(NewableFunction, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 4, 23))
+
+interface Number {}
+>Number : Symbol(Number, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 5, 28))
+
+interface Object {}
+>Object : Symbol(Object, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 6, 19))
+
+interface RegExp {}
+>RegExp : Symbol(RegExp, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 7, 19))
+
+interface String {}
+>String : Symbol(String, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 8, 19))
+
+interface Promise {}
+>Promise : Symbol(Promise, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 9, 19))
+
+declare function f(cb: (x: number) => number): number;
+>f : Symbol(f, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 10, 20), Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 12, 54))
+>cb : Symbol(cb, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 12, 19))
+>x : Symbol(x, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 12, 24))
+
+declare function f(cb: (x: string) => unknown): string;
+>f : Symbol(f, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 10, 20), Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 12, 54))
+>cb : Symbol(cb, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 13, 19))
+>x : Symbol(x, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 13, 24))
+
+f(async x => x);
+>f : Symbol(f, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 10, 20), Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 12, 54))
+>x : Symbol(x, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 14, 7))
+>x : Symbol(x, Decl(overloadSpeculationPreservesGlobalTypeDiagnostic.ts, 14, 7))
+

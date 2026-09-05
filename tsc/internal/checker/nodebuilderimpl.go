@@ -518,7 +518,7 @@ func (b *NodeBuilderImpl) tryGetResolvedSymbolFromTypeNode(node *ast.Node) *ast.
 	if links == nil {
 		return nil
 	}
-	return links.resolvedSymbol
+	return links.getResolvedSymbol()
 }
 
 func (b *NodeBuilderImpl) existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(existing *ast.TypeNode, t *Type) bool {
@@ -590,7 +590,7 @@ func (b *NodeBuilderImpl) symbolToNode(symbol *ast.Symbol, meaning ast.SymbolFla
 			}
 		}
 		if b.ch.valueSymbolLinks.Has(symbol) {
-			nameType := b.ch.valueSymbolLinks.Get(symbol).nameType
+			nameType := b.ch.valueSymbolLinks.Get(symbol).getNameType()
 			if nameType != nil && nameType.flags&(TypeFlagsEnumLiteral|TypeFlagsUniqueESSymbol) != 0 {
 				oldEnclosing := b.ctx.enclosingDeclaration
 				b.ctx.enclosingDeclaration = nameType.symbol.ValueDeclaration
@@ -930,7 +930,7 @@ func isDefaultBindingContext(location *ast.Node) bool {
 
 func (b *NodeBuilderImpl) getNameOfSymbolFromNameType(symbol *ast.Symbol) string {
 	if b.ch.valueSymbolLinks.Has(symbol) {
-		nameType := b.ch.valueSymbolLinks.Get(symbol).nameType
+		nameType := b.ch.valueSymbolLinks.Get(symbol).getNameType()
 		if nameType == nil {
 			return ""
 		}
@@ -987,7 +987,7 @@ func (b *NodeBuilderImpl) getNameOfSymbolAsWritten(symbol *ast.Symbol) string {
 			// 	return symbol.Name
 			// }
 			if ast.IsComputedPropertyName(name) && symbol.CheckFlags&ast.CheckFlagsLate == 0 {
-				if b.ch.valueSymbolLinks.Has(symbol) && b.ch.valueSymbolLinks.Get(symbol).nameType != nil && b.ch.valueSymbolLinks.Get(symbol).nameType.flags&TypeFlagsStringOrNumberLiteral != 0 {
+				if b.ch.valueSymbolLinks.Has(symbol) && b.ch.valueSymbolLinks.Get(symbol).getNameType() != nil && b.ch.valueSymbolLinks.Get(symbol).getNameType().flags&TypeFlagsStringOrNumberLiteral != 0 {
 					result := b.getNameOfSymbolFromNameType(symbol)
 					if len(result) > 0 {
 						return result
@@ -2044,9 +2044,9 @@ func (c *Checker) getExpandedParameters(sig *Signature, skipUnionExpanding bool)
 				symbol := c.newSymbolEx(ast.SymbolFlagsFunctionScopedVariable, name, checkFlags)
 				links := c.valueSymbolLinks.Get(symbol)
 				if flags&ElementFlagsRest != 0 {
-					links.resolvedType = c.createArrayType(t)
+					links.setResolvedType(c.createArrayType(t))
 				} else {
-					links.resolvedType = t
+					links.setResolvedType(t)
 				}
 				return symbol
 			})
@@ -2523,7 +2523,7 @@ func (b *NodeBuilderImpl) getPropertyNameNodeForSymbolFromNameType(symbol *ast.S
 	if !b.ch.valueSymbolLinks.Has(symbol) {
 		return nil
 	}
-	nameType := b.ch.valueSymbolLinks.TryGet(symbol).nameType
+	nameType := b.ch.valueSymbolLinks.TryGet(symbol).getNameType()
 	if nameType == nil {
 		return nil
 	}
@@ -2646,7 +2646,7 @@ func (b *NodeBuilderImpl) addPropertyToElementList(propertySymbol *ast.Symbol, t
 				typeElements = append(typeElements, fakeGetterDeclaration)
 
 				setterParam := b.ch.newSymbol(ast.SymbolFlagsFunctionScopedVariable, "arg")
-				b.ch.valueSymbolLinks.Get(setterParam).resolvedType = writeType
+				b.ch.valueSymbolLinks.Get(setterParam).setResolvedType(writeType)
 				fakeSetterSignature := b.ch.newSignature(SignatureFlagsNone, nil, nil, nil, []*ast.Symbol{setterParam}, b.ch.voidType, nil, 0)
 				fakeSetterDeclaration := b.signatureToSignatureDeclarationHelper(fakeSetterSignature, ast.KindSetAccessor, &SignatureToSignatureDeclarationOptions{
 					name: propertyName,

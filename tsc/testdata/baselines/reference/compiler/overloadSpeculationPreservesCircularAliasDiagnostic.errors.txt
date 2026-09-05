@@ -1,0 +1,11 @@
+overloadSpeculationPreservesCircularAliasDiagnostic.ts(4,6): error TS2456: Type alias 'A' circularly references itself.
+
+
+==== overloadSpeculationPreservesCircularAliasDiagnostic.ts (1 errors) ====
+    f(() => null as A, 2);
+    declare function f(cb: () => A, tag: 1): void;
+    declare function f(cb: () => A, tag: 2): void;
+    type A = A;
+         ~
+!!! error TS2456: Type alias 'A' circularly references itself.
+    

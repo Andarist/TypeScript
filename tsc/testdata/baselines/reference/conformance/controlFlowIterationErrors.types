@@ -97,13 +97,13 @@ function g1() {
 >x : string | number | boolean
 >foo(x) : never
 >foo : { (x: string): number; (x: number): string; }
->x : string | number
+>x : string
 
         x;
 >x : never
     }
     x;
->x : string | number
+>x : string
 }
 
 function g2() {

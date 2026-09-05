@@ -70,8 +70,8 @@ Promise.try((foo) => "Async result");
 >Promise.try : <T, U extends unknown[]>(callbackFn: (...args: U) => T | PromiseLike<T>, ...args: U) => Promise<Awaited<T>>
 >Promise : PromiseConstructor
 >try : <T, U extends unknown[]>(callbackFn: (...args: U) => T | PromiseLike<T>, ...args: U) => Promise<Awaited<T>>
->(foo) => "Async result" : (foo: U[0]) => string
->foo : U[0]
+>(foo) => "Async result" : (foo: any) => string
+>foo : any
 >"Async result" : "Async result"
 
 Promise.try((foo: string | undefined) => "Async result", undefined);

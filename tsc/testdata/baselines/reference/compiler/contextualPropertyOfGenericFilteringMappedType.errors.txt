@@ -1,4 +1,4 @@
-contextualPropertyOfGenericFilteringMappedType.ts(38,5): error TS2353: Object literal may only specify known properties, and 'foo' does not exist in type '{ bar: (value: string, prop: "bar") => void; }'.
+contextualPropertyOfGenericFilteringMappedType.ts(37,3): error TS2741: Property 'bar' is missing in type '{ foo: {}; }' but required in type '{ bar: (value: string, prop: "bar") => void; }'.
 contextualPropertyOfGenericFilteringMappedType.ts(38,11): error TS7006: Parameter 'value' implicitly has an 'any' type.
 contextualPropertyOfGenericFilteringMappedType.ts(38,18): error TS7006: Parameter 'key' implicitly has an 'any' type.
 
@@ -41,15 +41,20 @@ contextualPropertyOfGenericFilteringMappedType.ts(38,18): error TS7006: Paramete
         bar: "",
       },
       {
+      ~
         foo: (value, key) => {
-        ~~~
-!!! error TS2353: Object literal may only specify known properties, and 'foo' does not exist in type '{ bar: (value: string, prop: "bar") => void; }'.
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
               ~~~~~
 !!! error TS7006: Parameter 'value' implicitly has an 'any' type.
                      ~~~
 !!! error TS7006: Parameter 'key' implicitly has an 'any' type.
           // implicit `any`s
+    ~~~~~~~~~~~~~~~~~~~~~~~~
         },
+    ~~~~~~
       },
+    ~~~
+!!! error TS2741: Property 'bar' is missing in type '{ foo: {}; }' but required in type '{ bar: (value: string, prop: "bar") => void; }'.
+!!! related TS2728 contextualPropertyOfGenericFilteringMappedType.ts:35:5: 'bar' is declared here.
     );
     

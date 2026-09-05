@@ -371,22 +371,22 @@ func runWithoutResolvedSignatureCaching[T any](c *Checker, node *ast.Node, fn fu
 		cachedTypes := make(map[*ValueSymbolLinks]*Type)
 		for ancestorNode != nil {
 			signatureLinks := c.signatureLinks.Get(ancestorNode)
-			cachedResolvedSignatures[signatureLinks] = signatureLinks.resolvedSignature
-			signatureLinks.resolvedSignature = nil
+			cachedResolvedSignatures[signatureLinks] = signatureLinks.getResolvedSignature()
+			signatureLinks.setResolvedSignature(nil)
 			if ast.IsFunctionExpressionOrArrowFunction(ancestorNode) {
 				symbolLinks := c.valueSymbolLinks.Get(c.getSymbolOfDeclaration(ancestorNode))
-				resolvedType := symbolLinks.resolvedType
+				resolvedType := symbolLinks.getResolvedType()
 				cachedTypes[symbolLinks] = resolvedType
-				symbolLinks.resolvedType = nil
+				symbolLinks.setResolvedType(nil)
 			}
 			ancestorNode = ast.FindAncestor(ancestorNode.Parent, ast.IsCallLikeOrFunctionLikeExpression)
 		}
 		result := fn()
 		for signatureLinks, resolvedSignature := range cachedResolvedSignatures {
-			signatureLinks.resolvedSignature = resolvedSignature
+			signatureLinks.setResolvedSignature(resolvedSignature)
 		}
 		for symbolLinks, resolvedType := range cachedTypes {
-			symbolLinks.resolvedType = resolvedType
+			symbolLinks.setResolvedType(resolvedType)
 		}
 		return result
 	}
@@ -872,10 +872,10 @@ func (c *Checker) GetConstantValue(node *ast.Node) any {
 		return c.getEnumMemberValue(node).Value
 	}
 
-	if c.symbolNodeLinks.Get(node).resolvedSymbol == nil {
+	if c.symbolNodeLinks.Get(node).getResolvedSymbol() == nil {
 		c.checkExpressionCached(node) // ensure cached resolved symbol is set
 	}
-	symbol := c.symbolNodeLinks.Get(node).resolvedSymbol
+	symbol := c.symbolNodeLinks.Get(node).getResolvedSymbol()
 	if symbol == nil && ast.IsEntityNameExpression(node) {
 		symbol = c.resolveEntityName(
 			node,

@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"maps"
 	"slices"
 	"strings"
 	"sync"
@@ -524,4 +525,40 @@ func CompareDiagnostics(d1, d2 *Diagnostic) int {
 		return c
 	}
 	return compareRelatedInfo(d1.RelatedInformation(), d2.RelatedInformation())
+}
+
+// DiagnosticsCollectionCheckpoint holds the collection and deduplication state.
+type DiagnosticsCollectionCheckpoint struct{ state *DiagnosticsCollection }
+
+func (c *DiagnosticsCollection) Checkpoint() DiagnosticsCollectionCheckpoint {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	state := &DiagnosticsCollection{
+		count:                    c.count,
+		fileDiagnostics:          maps.Clone(c.fileDiagnostics),
+		fileDiagnosticsSorted:    *c.fileDiagnosticsSorted.Clone(),
+		nonFileDiagnostics:       slices.Clone(c.nonFileDiagnostics),
+		nonFileDiagnosticsSorted: c.nonFileDiagnosticsSorted,
+		diagnosticIndex:          maps.Clone(c.diagnosticIndex),
+		diagnosticCollisions:     maps.Clone(c.diagnosticCollisions),
+	}
+	for key, value := range state.fileDiagnostics {
+		state.fileDiagnostics[key] = slices.Clone(value)
+	}
+	for key, value := range state.diagnosticCollisions {
+		state.diagnosticCollisions[key] = slices.Clone(value)
+	}
+	return DiagnosticsCollectionCheckpoint{state}
+}
+func (c *DiagnosticsCollection) Revert(checkpoint DiagnosticsCollectionCheckpoint) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	state := checkpoint.state
+	c.count = state.count
+	c.fileDiagnostics = state.fileDiagnostics
+	c.fileDiagnosticsSorted = state.fileDiagnosticsSorted
+	c.nonFileDiagnostics = state.nonFileDiagnostics
+	c.nonFileDiagnosticsSorted = state.nonFileDiagnosticsSorted
+	c.diagnosticIndex = state.diagnosticIndex
+	c.diagnosticCollisions = state.diagnosticCollisions
 }

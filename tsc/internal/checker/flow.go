@@ -1932,18 +1932,18 @@ func isCoercibleUnderDoubleEquals(source *Type, target *Type) bool {
 
 func (c *Checker) isExhaustiveSwitchStatement(node *ast.Node) bool {
 	links := c.switchStatementLinks.Get(node)
-	if links.exhaustiveState == ExhaustiveStateUnknown {
+	if links.getExhaustiveState() == ExhaustiveStateUnknown {
 		// Indicate resolution is in process
-		links.exhaustiveState = ExhaustiveStateComputing
+		links.setExhaustiveState(ExhaustiveStateComputing)
 		isExhaustive := c.computeExhaustiveSwitchStatement(node)
-		if links.exhaustiveState == ExhaustiveStateComputing {
-			links.exhaustiveState = core.IfElse(isExhaustive, ExhaustiveStateTrue, ExhaustiveStateFalse)
+		if links.getExhaustiveState() == ExhaustiveStateComputing {
+			links.setExhaustiveState(core.IfElse(isExhaustive, ExhaustiveStateTrue, ExhaustiveStateFalse))
 		}
-	} else if links.exhaustiveState == ExhaustiveStateComputing {
+	} else if links.getExhaustiveState() == ExhaustiveStateComputing {
 		// Resolve circularity to false
-		links.exhaustiveState = ExhaustiveStateFalse
+		links.setExhaustiveState(ExhaustiveStateFalse)
 	}
-	return links.exhaustiveState == ExhaustiveStateTrue
+	return links.getExhaustiveState() == ExhaustiveStateTrue
 }
 
 func (c *Checker) computeExhaustiveSwitchStatement(node *ast.Node) bool {
@@ -1988,7 +1988,7 @@ func (c *Checker) eachTypeContainedIn(source *Type, types []*Type) bool {
 // represented as empty strings. Return nil if one or more case clause expressions are not string literals.
 func (c *Checker) getSwitchClauseTypeOfWitnesses(node *ast.Node) []string {
 	links := c.switchStatementLinks.Get(node)
-	if !links.witnessesComputed {
+	if !links.getWitnessesComputed() {
 		clauses := node.AsSwitchStatement().CaseBlock.AsCaseBlock().Clauses.Nodes
 		witnesses := make([]string, len(clauses))
 		for i, clause := range clauses {
@@ -2002,10 +2002,10 @@ func (c *Checker) getSwitchClauseTypeOfWitnesses(node *ast.Node) []string {
 				}
 			}
 		}
-		links.witnesses = witnesses
-		links.witnessesComputed = true
+		links.setWitnesses(witnesses)
+		links.setWitnessesComputed(true)
 	}
-	return links.witnesses
+	return links.getWitnesses()
 }
 
 // Return the combined not-equal type facts for all cases except those between the start and end indices.
@@ -2025,16 +2025,16 @@ func (c *Checker) getNotEqualFactsFromTypeofSwitch(start int, end int, witnesses
 
 func (c *Checker) getSwitchClauseTypes(node *ast.Node) []*Type {
 	links := c.switchStatementLinks.Get(node)
-	if !links.switchTypesComputed {
+	if !links.getSwitchTypesComputed() {
 		clauses := node.AsSwitchStatement().CaseBlock.AsCaseBlock().Clauses.Nodes
 		types := make([]*Type, len(clauses))
 		for i, clause := range clauses {
 			types[i] = c.getTypeOfSwitchClause(clause)
 		}
-		links.switchTypes = types
-		links.switchTypesComputed = true
+		links.setSwitchTypes(types)
+		links.setSwitchTypesComputed(true)
 	}
-	return links.switchTypes
+	return links.getSwitchTypes()
 }
 
 func (c *Checker) getTypeOfSwitchClause(clause *ast.Node) *Type {
@@ -2046,7 +2046,7 @@ func (c *Checker) getTypeOfSwitchClause(clause *ast.Node) *Type {
 
 func (c *Checker) getEffectsSignature(node *ast.Node) *Signature {
 	links := c.signatureLinks.Get(node)
-	signature := links.effectsSignature
+	signature := links.getEffectsSignature()
 	if signature == nil {
 		// A call expression parented by an expression statement is a potential assertion. Other call
 		// expressions are potential type predicate function calls. In order to avoid triggering
@@ -2079,7 +2079,7 @@ func (c *Checker) getEffectsSignature(node *ast.Node) *Signature {
 		if !(signature != nil && c.hasTypePredicateOrNeverReturnType(signature)) {
 			signature = c.unknownSignature
 		}
-		links.effectsSignature = signature
+		links.setEffectsSignature(signature)
 	}
 	if signature == c.unknownSignature {
 		return nil
@@ -2262,7 +2262,7 @@ func (c *Checker) getTypeOfInitializer(node *ast.Node) *Type {
 	// from its initializer, we'll already have cached the type. Otherwise we compute it now
 	// without caching such that transient types are reflected.
 	if c.typeNodeLinks.Has(node) {
-		t := c.typeNodeLinks.Get(node).resolvedType
+		t := c.typeNodeLinks.Get(node).getResolvedType()
 		if t != nil {
 			return t
 		}
@@ -2677,8 +2677,8 @@ func (c *Checker) ensureAssignmentsMarked(symbol *ast.Symbol) {
 		return
 	}
 	links := c.nodeLinks.Get(parent)
-	if links.flags&NodeCheckFlagsAssignmentsMarked == 0 {
-		links.flags |= NodeCheckFlagsAssignmentsMarked
+	if links.getFlags()&NodeCheckFlagsAssignmentsMarked == 0 {
+		links.setFlags(links.getFlags() | NodeCheckFlagsAssignmentsMarked)
 		if !c.hasParentWithAssignmentsMarked(parent) {
 			c.markNodeAssignments(parent)
 		}
@@ -2687,7 +2687,7 @@ func (c *Checker) ensureAssignmentsMarked(symbol *ast.Symbol) {
 
 func (c *Checker) hasParentWithAssignmentsMarked(node *ast.Node) bool {
 	return ast.FindAncestor(node.Parent, func(node *ast.Node) bool {
-		return ast.IsFunctionOrSourceFile(node) && c.nodeLinks.Get(node).flags&NodeCheckFlagsAssignmentsMarked != 0
+		return ast.IsFunctionOrSourceFile(node) && c.nodeLinks.Get(node).getFlags()&NodeCheckFlagsAssignmentsMarked != 0
 	}) != nil
 }
 

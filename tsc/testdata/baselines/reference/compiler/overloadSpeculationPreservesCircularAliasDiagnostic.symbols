@@ -1,0 +1,23 @@
+//// [tests/cases/compiler/overloadSpeculationPreservesCircularAliasDiagnostic.ts] ////
+
+=== overloadSpeculationPreservesCircularAliasDiagnostic.ts ===
+f(() => null as A, 2);
+>f : Symbol(f, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 0, 22), Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 1, 46))
+>A : Symbol(A, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 2, 46))
+
+declare function f(cb: () => A, tag: 1): void;
+>f : Symbol(f, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 0, 22), Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 1, 46))
+>cb : Symbol(cb, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 1, 19))
+>A : Symbol(A, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 2, 46))
+>tag : Symbol(tag, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 1, 31))
+
+declare function f(cb: () => A, tag: 2): void;
+>f : Symbol(f, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 0, 22), Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 1, 46))
+>cb : Symbol(cb, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 2, 19))
+>A : Symbol(A, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 2, 46))
+>tag : Symbol(tag, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 2, 31))
+
+type A = A;
+>A : Symbol(A, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 2, 46))
+>A : Symbol(A, Decl(overloadSpeculationPreservesCircularAliasDiagnostic.ts, 2, 46))
+

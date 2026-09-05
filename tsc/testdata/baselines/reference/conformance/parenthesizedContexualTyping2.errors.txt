@@ -15,21 +15,29 @@ parenthesizedContexualTyping2.ts(23,79): error TS2345: Argument of type 'undefin
 parenthesizedContexualTyping2.ts(26,14): error TS2345: Argument of type '((x: <T>(p: T) => T) => <T>(p: T) => T) | ((x: <T>(p: T) => T) => undefined)' is not assignable to parameter of type 'FuncType'.
   Type '(x: <T>(p: T) => T) => undefined' is not assignable to type 'FuncType'.
     Type 'undefined' is not assignable to type '<T>(p: T) => T'.
-parenthesizedContexualTyping2.ts(26,53): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
+parenthesizedContexualTyping2.ts(26,36): error TS7006: Parameter 'x' implicitly has an 'any' type.
+parenthesizedContexualTyping2.ts(26,43): error TS2347: Untyped function calls may not accept type arguments.
+parenthesizedContexualTyping2.ts(26,79): error TS7006: Parameter 'x' implicitly has an 'any' type.
 parenthesizedContexualTyping2.ts(27,14): error TS2345: Argument of type '((x: <T>(p: T) => T) => <T>(p: T) => T) | ((x: <T>(p: T) => T) => undefined)' is not assignable to parameter of type 'FuncType'.
   Type '(x: <T>(p: T) => T) => undefined' is not assignable to type 'FuncType'.
     Type 'undefined' is not assignable to type '<T>(p: T) => T'.
-parenthesizedContexualTyping2.ts(27,54): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
+parenthesizedContexualTyping2.ts(27,37): error TS7006: Parameter 'x' implicitly has an 'any' type.
+parenthesizedContexualTyping2.ts(27,44): error TS2347: Untyped function calls may not accept type arguments.
+parenthesizedContexualTyping2.ts(27,82): error TS7006: Parameter 'x' implicitly has an 'any' type.
 parenthesizedContexualTyping2.ts(28,14): error TS2345: Argument of type '((x: <T>(p: T) => T) => <T>(p: T) => T) | ((x: <T>(p: T) => T) => undefined)' is not assignable to parameter of type 'FuncType'.
   Type '(x: <T>(p: T) => T) => undefined' is not assignable to type 'FuncType'.
     Type 'undefined' is not assignable to type '<T>(p: T) => T'.
-parenthesizedContexualTyping2.ts(28,54): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
+parenthesizedContexualTyping2.ts(28,37): error TS7006: Parameter 'x' implicitly has an 'any' type.
+parenthesizedContexualTyping2.ts(28,44): error TS2347: Untyped function calls may not accept type arguments.
+parenthesizedContexualTyping2.ts(28,82): error TS7006: Parameter 'x' implicitly has an 'any' type.
 parenthesizedContexualTyping2.ts(28,100): error TS7006: Parameter 'x' implicitly has an 'any' type.
 parenthesizedContexualTyping2.ts(28,107): error TS2347: Untyped function calls may not accept type arguments.
 parenthesizedContexualTyping2.ts(29,15): error TS2345: Argument of type '((x: <T>(p: T) => T) => <T>(p: T) => T) | ((x: <T>(p: T) => T) => undefined)' is not assignable to parameter of type 'FuncType'.
   Type '(x: <T>(p: T) => T) => undefined' is not assignable to type 'FuncType'.
     Type 'undefined' is not assignable to type '<T>(p: T) => T'.
-parenthesizedContexualTyping2.ts(29,56): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
+parenthesizedContexualTyping2.ts(29,39): error TS7006: Parameter 'x' implicitly has an 'any' type.
+parenthesizedContexualTyping2.ts(29,46): error TS2347: Untyped function calls may not accept type arguments.
+parenthesizedContexualTyping2.ts(29,86): error TS7006: Parameter 'x' implicitly has an 'any' type.
 parenthesizedContexualTyping2.ts(29,107): error TS7006: Parameter 'x' implicitly has an 'any' type.
 parenthesizedContexualTyping2.ts(29,114): error TS2347: Untyped function calls may not accept type arguments.
 parenthesizedContexualTyping2.ts(31,42): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
@@ -44,7 +52,7 @@ parenthesizedContexualTyping2.ts(36,56): error TS2322: Type 'undefined' is not a
 parenthesizedContexualTyping2.ts(36,57): error TS2695: Left side of comma operator is unused and has no side effects.
 
 
-==== parenthesizedContexualTyping2.ts (35 errors) ====
+==== parenthesizedContexualTyping2.ts (43 errors) ====
     // These tests ensure that in cases where it may *appear* that a value has a type,
     // they actually are properly being contextually typed. The way we test this is
     // that we invoke contextually typed arguments with type arguments.
@@ -103,24 +111,36 @@ parenthesizedContexualTyping2.ts(36,57): error TS2695: Left side of comma operat
 !!! error TS2345:   Type '(x: <T>(p: T) => T) => undefined' is not assignable to type 'FuncType'.
 !!! error TS2345:     Type 'undefined' is not assignable to type '<T>(p: T) => T'.
 !!! related TS2793 parenthesizedContexualTyping2.ts:11:10: The call would have succeeded against this implementation, but implementation signatures of overloads are not externally visible.
-                                                        ~~~~~~~~~
-!!! error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
+                                       ~
+!!! error TS7006: Parameter 'x' implicitly has an 'any' type.
+                                              ~~~~~~~~~~~~~~~~~~~~
+!!! error TS2347: Untyped function calls may not accept type arguments.
+                                                                                  ~
+!!! error TS7006: Parameter 'x' implicitly has an 'any' type.
     var j = fun((Math.random() < 0.5 ? (x => { x<number>(undefined); return x; }) : (x => undefined)), 10);
                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !!! error TS2345: Argument of type '((x: <T>(p: T) => T) => <T>(p: T) => T) | ((x: <T>(p: T) => T) => undefined)' is not assignable to parameter of type 'FuncType'.
 !!! error TS2345:   Type '(x: <T>(p: T) => T) => undefined' is not assignable to type 'FuncType'.
 !!! error TS2345:     Type 'undefined' is not assignable to type '<T>(p: T) => T'.
 !!! related TS2793 parenthesizedContexualTyping2.ts:11:10: The call would have succeeded against this implementation, but implementation signatures of overloads are not externally visible.
-                                                         ~~~~~~~~~
-!!! error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
+                                        ~
+!!! error TS7006: Parameter 'x' implicitly has an 'any' type.
+                                               ~~~~~~~~~~~~~~~~~~~~
+!!! error TS2347: Untyped function calls may not accept type arguments.
+                                                                                     ~
+!!! error TS7006: Parameter 'x' implicitly has an 'any' type.
     var k = fun((Math.random() < 0.5 ? (x => { x<number>(undefined); return x; }) : (x => undefined)), x => { x<number>(undefined); return x; }, 10);
                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !!! error TS2345: Argument of type '((x: <T>(p: T) => T) => <T>(p: T) => T) | ((x: <T>(p: T) => T) => undefined)' is not assignable to parameter of type 'FuncType'.
 !!! error TS2345:   Type '(x: <T>(p: T) => T) => undefined' is not assignable to type 'FuncType'.
 !!! error TS2345:     Type 'undefined' is not assignable to type '<T>(p: T) => T'.
 !!! related TS2793 parenthesizedContexualTyping2.ts:11:10: The call would have succeeded against this implementation, but implementation signatures of overloads are not externally visible.
-                                                         ~~~~~~~~~
-!!! error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
+                                        ~
+!!! error TS7006: Parameter 'x' implicitly has an 'any' type.
+                                               ~~~~~~~~~~~~~~~~~~~~
+!!! error TS2347: Untyped function calls may not accept type arguments.
+                                                                                     ~
+!!! error TS7006: Parameter 'x' implicitly has an 'any' type.
                                                                                                        ~
 !!! error TS7006: Parameter 'x' implicitly has an 'any' type.
                                                                                                               ~~~~~~~~~~~~~~~~~~~~
@@ -131,8 +151,12 @@ parenthesizedContexualTyping2.ts(36,57): error TS2695: Left side of comma operat
 !!! error TS2345:   Type '(x: <T>(p: T) => T) => undefined' is not assignable to type 'FuncType'.
 !!! error TS2345:     Type 'undefined' is not assignable to type '<T>(p: T) => T'.
 !!! related TS2793 parenthesizedContexualTyping2.ts:11:10: The call would have succeeded against this implementation, but implementation signatures of overloads are not externally visible.
-                                                           ~~~~~~~~~
-!!! error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
+                                          ~
+!!! error TS7006: Parameter 'x' implicitly has an 'any' type.
+                                                 ~~~~~~~~~~~~~~~~~~~~
+!!! error TS2347: Untyped function calls may not accept type arguments.
+                                                                                         ~
+!!! error TS7006: Parameter 'x' implicitly has an 'any' type.
                                                                                                               ~
 !!! error TS7006: Parameter 'x' implicitly has an 'any' type.
                                                                                                                      ~~~~~~~~~~~~~~~~~~~~

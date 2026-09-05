@@ -100,13 +100,13 @@ async function g1() {
 >await foo(x) : never
 >foo(x) : Promise<number> & Promise<string>
 >foo : { (x: string): Promise<number>; (x: number): Promise<string>; }
->x : string | number
+>x : string
 
         x;
 >x : never
     }
     x;
->x : string | number
+>x : string
 }
 
 async function g2() {

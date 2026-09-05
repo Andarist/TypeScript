@@ -625,7 +625,7 @@ func getExistingNodeTreeVisitor(b *NodeBuilderImpl, bound *recoveryBoundary) *as
 			}
 			if ast.IsInJSFile(node) {
 				// !!! TODO: invalidate node reuse if js fallback logic used in type param list/typeof lookup (but isn't this logic gone?)
-				// s := b.ch.symbolNodeLinks.Get(node).resolvedSymbol
+				// s := b.ch.symbolNodeLinks.Get(node).getResolvedSymbol()
 			}
 			originalSpec := node.AsImportTypeNode().Argument.AsLiteralTypeNode().Literal
 			specifier := b.rewriteModuleSpecifier(node, originalSpec)

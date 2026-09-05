@@ -1,0 +1,22 @@
+overloadSpeculationPreservesGlobalTypeDiagnostic.ts(11,11): error TS2317: Global type 'Promise' must have 1 type parameter(s).
+
+
+==== overloadSpeculationPreservesGlobalTypeDiagnostic.ts (1 errors) ====
+    interface Array<T> { length: number; [n: number]: T }
+    interface Boolean {}
+    interface CallableFunction {}
+    interface Function {}
+    interface IArguments {}
+    interface NewableFunction {}
+    interface Number {}
+    interface Object {}
+    interface RegExp {}
+    interface String {}
+    interface Promise {}
+              ~~~~~~~
+!!! error TS2317: Global type 'Promise' must have 1 type parameter(s).
+    
+    declare function f(cb: (x: number) => number): number;
+    declare function f(cb: (x: string) => unknown): string;
+    f(async x => x);
+    

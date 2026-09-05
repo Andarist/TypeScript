@@ -1,0 +1,23 @@
+//// [tests/cases/compiler/overloadSpeculationPreservesCircularAliasDiagnostic.ts] ////
+
+=== overloadSpeculationPreservesCircularAliasDiagnostic.ts ===
+f(() => null as A, 2);
+>f(() => null as A, 2) : void
+>f : { (cb: () => A, tag: 1): void; (cb: () => A, tag: 2): void; }
+>() => null as A : () => A
+>null as A : any
+>2 : 2
+
+declare function f(cb: () => A, tag: 1): void;
+>f : { (cb: () => A, tag: 1): void; (cb: () => A, tag: 2): void; }
+>cb : () => A
+>tag : 1
+
+declare function f(cb: () => A, tag: 2): void;
+>f : { (cb: () => A, tag: 1): void; (cb: () => A, tag: 2): void; }
+>cb : () => A
+>tag : 2
+
+type A = A;
+>A : any
+

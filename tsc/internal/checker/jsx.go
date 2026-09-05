@@ -748,7 +748,7 @@ func (c *Checker) createJsxAttributesTypeFromAttributesProperty(openingLikeEleme
 					attributeSymbol.ValueDeclaration = member.ValueDeclaration
 				}
 				links := c.valueSymbolLinks.Get(attributeSymbol)
-				links.resolvedType = exprType
+				links.setResolvedType(exprType)
 				links.target = member
 				attributesTable[attributeSymbol.Name] = attributeSymbol
 				if allAttributesTable != nil {
@@ -836,11 +836,11 @@ func (c *Checker) createJsxAttributesTypeFromAttributesProperty(openingLikeEleme
 			links := c.valueSymbolLinks.Get(childrenPropSymbol)
 			switch {
 			case len(childTypes) == 1:
-				links.resolvedType = childTypes[0]
+				links.setResolvedType(childTypes[0])
 			case childrenContextualType != nil && someType(childrenContextualType, c.isTupleLikeType):
-				links.resolvedType = c.createTupleType(childTypes)
+				links.setResolvedType(c.createTupleType(childTypes))
 			default:
-				links.resolvedType = c.createArrayType(c.getUnionType(childTypes))
+				links.setResolvedType(c.createArrayType(c.getUnionType(childTypes)))
 			}
 			// Fake up a property declaration for the children
 			childrenPropSymbol.ValueDeclaration = c.factory.NewPropertySignatureDeclaration(nil, c.factory.NewIdentifier(jsxChildrenPropertyName), nil /*postfixToken*/, nil /*type*/, nil /*initializer*/)
@@ -1178,7 +1178,7 @@ func (c *Checker) createSignatureForJSXIntrinsic(node *ast.Node, result *Type) *
 	// returnNode := typeSymbol && c.nodeBuilder.symbolToEntityName(typeSymbol, ast.SymbolFlagsType, node)
 	// declaration := factory.createFunctionTypeNode(nil, []ParameterDeclaration{factory.createParameterDeclaration(nil, nil /*dotDotDotToken*/, "props", nil /*questionToken*/, c.nodeBuilder.typeToTypeNode(result, node))}, ifElse(returnNode != nil, factory.createTypeReferenceNode(returnNode, nil /*typeArguments*/), factory.createKeywordTypeNode(ast.KindAnyKeyword)))
 	parameterSymbol := c.newSymbol(ast.SymbolFlagsFunctionScopedVariable, "props")
-	c.valueSymbolLinks.Get(parameterSymbol).resolvedType = result
+	c.valueSymbolLinks.Get(parameterSymbol).setResolvedType(result)
 	return c.newSignature(SignatureFlagsNone, nil, nil, nil, []*ast.Symbol{parameterSymbol}, elementType, nil, 1)
 }
 
@@ -1213,8 +1213,8 @@ func (c *Checker) getIntrinsicAttributesTypeFromJsxOpeningLikeElement(node *ast.
 // May also return unknownSymbol if both of these lookups fail.
 func (c *Checker) getIntrinsicTagSymbol(node *ast.Node) *ast.Symbol {
 	links := c.symbolNodeLinks.Get(node)
-	if links.resolvedSymbol != nil {
-		return links.resolvedSymbol
+	if links.getResolvedSymbol() != nil {
+		return links.getResolvedSymbol()
 	}
 	intrinsicElementsType := c.getJsxType(JsxNames.IntrinsicElements, node)
 	if !c.isErrorType(intrinsicElementsType) {
@@ -1227,31 +1227,31 @@ func (c *Checker) getIntrinsicTagSymbol(node *ast.Node) *ast.Symbol {
 		intrinsicProp := c.getPropertyOfType(intrinsicElementsType, propName)
 		if intrinsicProp != nil {
 			c.jsxElementLinks.Get(node).jsxFlags |= JsxFlagsIntrinsicNamedElement
-			links.resolvedSymbol = intrinsicProp
-			return links.resolvedSymbol
+			links.setResolvedSymbol(intrinsicProp)
+			return links.getResolvedSymbol()
 		}
 		// Intrinsic string indexer case
 		indexSymbol := c.getApplicableIndexSymbol(intrinsicElementsType, c.getStringLiteralType(propName))
 		if indexSymbol != nil {
 			c.jsxElementLinks.Get(node).jsxFlags |= JsxFlagsIntrinsicIndexedElement
-			links.resolvedSymbol = indexSymbol
-			return links.resolvedSymbol
+			links.setResolvedSymbol(indexSymbol)
+			return links.getResolvedSymbol()
 		}
 		if c.getTypeOfPropertyOrIndexSignatureOfType(intrinsicElementsType, propName) != nil {
 			c.jsxElementLinks.Get(node).jsxFlags |= JsxFlagsIntrinsicIndexedElement
-			links.resolvedSymbol = intrinsicElementsType.symbol
-			return links.resolvedSymbol
+			links.setResolvedSymbol(intrinsicElementsType.symbol)
+			return links.getResolvedSymbol()
 		}
 		// Wasn't found
 		c.error(node, diagnostics.Property_0_does_not_exist_on_type_1, tagName.Text(), "JSX."+JsxNames.IntrinsicElements)
-		links.resolvedSymbol = c.unknownSymbol
-		return links.resolvedSymbol
+		links.setResolvedSymbol(c.unknownSymbol)
+		return links.getResolvedSymbol()
 	}
 	if c.noImplicitAny {
 		c.error(node, diagnostics.JSX_element_implicitly_has_type_any_because_no_interface_JSX_0_exists, JsxNames.IntrinsicElements)
 	}
-	links.resolvedSymbol = c.unknownSymbol
-	return links.resolvedSymbol
+	links.setResolvedSymbol(c.unknownSymbol)
+	return links.getResolvedSymbol()
 }
 
 func (c *Checker) getJsxStatelessElementTypeAt(location *ast.Node) *Type {

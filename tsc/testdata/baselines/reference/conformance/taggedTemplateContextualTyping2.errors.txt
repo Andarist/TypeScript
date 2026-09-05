@@ -1,11 +1,12 @@
 taggedTemplateContextualTyping2.ts(14,31): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.
 taggedTemplateContextualTyping2.ts(15,39): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'string'.
 taggedTemplateContextualTyping2.ts(15,92): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number'.
-taggedTemplateContextualTyping2.ts(16,39): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'string'.
+taggedTemplateContextualTyping2.ts(16,14): error TS7006: Parameter 'x' implicitly has an 'any' type.
+taggedTemplateContextualTyping2.ts(16,21): error TS2347: Untyped function calls may not accept type arguments.
 taggedTemplateContextualTyping2.ts(16,67): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'FuncType2'.
 
 
-==== taggedTemplateContextualTyping2.ts (5 errors) ====
+==== taggedTemplateContextualTyping2.ts (6 errors) ====
     type FuncType1 = (x: <T>(p: T) => T) => typeof x;
     type FuncType2 = (x: <S, T>(p: T) => T) => typeof x;
     
@@ -28,8 +29,10 @@ taggedTemplateContextualTyping2.ts(16,67): error TS2345: Argument of type 'undef
                                                                                                ~~~~
 !!! error TS2345: Argument of type 'null' is not assignable to parameter of type 'number'.
     tempTag2 `${ x => { x<number, string>(undefined); return x; } }${ undefined }${ "hello" }`;
-                                          ~~~~~~~~~
-!!! error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'string'.
+                 ~
+!!! error TS7006: Parameter 'x' implicitly has an 'any' type.
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2347: Untyped function calls may not accept type arguments.
                                                                       ~~~~~~~~~
 !!! error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'FuncType2'.
 !!! related TS2793 taggedTemplateContextualTyping2.ts:6:10: The call would have succeeded against this implementation, but implementation signatures of overloads are not externally visible.

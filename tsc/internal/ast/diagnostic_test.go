@@ -97,3 +97,24 @@ func TestExternalDiagnosticIdentity(t *testing.T) {
 	}
 	assert.Equal(t, len(collection.GetDiagnostics()), len(diagnostics))
 }
+
+func TestDiagnosticsCollectionCheckpointRestoresDeduplication(t *testing.T) {
+	t.Parallel()
+	var collection DiagnosticsCollection
+	file := &SourceFile{}
+	original := NewDiagnostic(file, core.TextRange{}, diagnostics.Cannot_find_name_0, "original")
+	collision := NewDiagnostic(file, core.TextRange{}, diagnostics.Cannot_find_name_0, "collision")
+	global := NewCompilerDiagnostic(diagnostics.Cannot_find_global_type_0, "Awaited")
+	collection.Add(original)
+	checkpoint := collection.Checkpoint()
+	collection.Add(collision)
+	collection.Add(global)
+	// Sorting must not mutate the checkpoint's saved slices or sorted-file set.
+	assert.Equal(t, len(collection.GetDiagnostics()), 3)
+	collection.Revert(checkpoint)
+	assert.Equal(t, len(collection.GetDiagnostics()), 1)
+	assert.Equal(t, collection.Add(original), original)
+	assert.Equal(t, collection.Add(collision), collision)
+	assert.Equal(t, collection.Add(global), global)
+	assert.Equal(t, len(collection.GetDiagnostics()), 3)
+}

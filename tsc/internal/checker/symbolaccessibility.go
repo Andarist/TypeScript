@@ -312,7 +312,7 @@ func (c *Checker) getContainersOfSymbol(symbol *ast.Symbol, enclosingDeclaration
 				continue
 			}
 			c.checkExpressionCached(d.Parent.AsBinaryExpression().Left.Expression())
-			sym := c.symbolNodeLinks.Get(d.Parent.AsBinaryExpression().Left.Expression()).resolvedSymbol
+			sym := c.symbolNodeLinks.Get(d.Parent.AsBinaryExpression().Left.Expression()).getResolvedSymbol()
 			if sym != nil && !slices.Contains(candidates, sym) {
 				candidates = append(candidates, sym)
 			}
