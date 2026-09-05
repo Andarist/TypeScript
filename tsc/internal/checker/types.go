@@ -175,13 +175,13 @@ type SymbolReferenceLinks struct {
 
 type ValueSymbolLinks struct {
 	speculatableLinks
-	resolvedTypeCache                 speculatableCache[*Type]
-	writeTypeCache                    speculatableCache[*Type]
+	resolvedTypeCache                 speculatableSymbolCache[*Type]
+	writeTypeCache                    speculatableSymbolCache[*Type]
 	target                            *ast.Symbol
 	mapper                            *TypeMapper
-	nameTypeCache                     speculatableCache[*Type]
+	nameTypeCache                     speculatableSymbolCache[*Type]
 	containingType                    *Type // Mapped type for mapped type property, containing union or intersection type for synthetic property
-	functionOrConstructorCheckedCache speculatableCache[bool]
+	functionOrConstructorCheckedCache speculatableSymbolCache[bool]
 }
 
 // Additional links for mapped symbols
