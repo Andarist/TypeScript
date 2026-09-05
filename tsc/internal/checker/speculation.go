@@ -21,7 +21,7 @@ type speculationHost struct {
 	relations    cacheUndoLog[RelationComparisonResult]
 
 	currentSpeculativeEpoch    uint64
-	discardedSpeculativeEpochs map[uint64]bool
+	discardedSpeculativeEpochs []uint64
 }
 
 type speculatableLinks struct {
@@ -48,8 +48,8 @@ type speculatableSymbolCache[V any] struct {
 type cacheHistory[V any] struct{ values []epochValue[V] }
 
 func (s *speculatableSymbolCache[V]) get(links *speculatableLinks) V {
-	if links.host != nil && !links.host.discardedSpeculativeEpochs[links.symbolEpoch] {
-		for s.current.epoch != 0 && links.host.discardedSpeculativeEpochs[s.current.epoch-1] {
+	if links.host != nil && !links.host.isDiscardedEpoch(links.symbolEpoch) {
+		for s.current.epoch != 0 && links.host.isDiscardedEpoch(s.current.epoch-1) {
 			if s.history == nil || len(s.history.values) == 0 {
 				s.current = epochValue[V]{}
 				break
@@ -232,12 +232,7 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 		c.speculationHost.activeFrame = previousFrame
 		c.speculationHost.currentSpeculativeEpoch++
 		if result == nil {
-			if c.speculationHost.discardedSpeculativeEpochs == nil {
-				c.speculationHost.discardedSpeculativeEpochs = make(map[uint64]bool)
-			}
-			for epoch := startEpoch; epoch <= endEpoch; epoch++ {
-				c.speculationHost.discardedSpeculativeEpochs[epoch] = true
-			}
+			c.speculationHost.discardEpochs(startEpoch, endEpoch)
 			c.speculationHost.revertCaches(caches)
 			c.restoreCheckerState(initialState)
 		} else {
@@ -360,5 +355,21 @@ func (h *speculationHost) recordCache(cache any) {
 		h.relations.record(cache)
 	default:
 		panic("unhandled speculative cache type")
+	}
+}
+
+// Epochs are sequential; a bitset avoids hashing on symbol-cache reads.
+func (h *speculationHost) isDiscardedEpoch(epoch uint64) bool {
+	word := epoch >> 6
+	return word < uint64(len(h.discardedSpeculativeEpochs)) && h.discardedSpeculativeEpochs[word]&(uint64(1)<<(epoch&63)) != 0
+}
+
+func (h *speculationHost) discardEpochs(start, end uint64) {
+	count := int(end>>6) + 1
+	if count > len(h.discardedSpeculativeEpochs) {
+		h.discardedSpeculativeEpochs = slices.Grow(h.discardedSpeculativeEpochs, count-len(h.discardedSpeculativeEpochs))[:count]
+	}
+	for epoch := start; epoch <= end; epoch++ {
+		h.discardedSpeculativeEpochs[epoch>>6] |= uint64(1) << (epoch & 63)
 	}
 }

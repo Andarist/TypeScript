@@ -335,3 +335,23 @@ func TestSpeculationMapRecreatesDiscardedEntry(t *testing.T) {
 	assert.Equal(t, cache.get("new"), RelationComparisonResult(0))
 	assert.Equal(t, cache.size(), 0)
 }
+
+func TestDiscardedEpochBitsetBoundaries(t *testing.T) {
+	t.Parallel()
+	host := &speculationHost{}
+	assert.Assert(t, !host.isDiscardedEpoch(0))
+	assert.Assert(t, !host.isDiscardedEpoch(1<<20))
+	host.discardEpochs(63, 65)
+	host.discardEpochs(127, 130)
+	for epoch := uint64(0); epoch < 192; epoch++ {
+		want := epoch >= 63 && epoch <= 65 || epoch >= 127 && epoch <= 130
+		assert.Equal(t, host.isDiscardedEpoch(epoch), want)
+	}
+	// An enclosing rollback may overlap an earlier rollback and span several words.
+	host.discardEpochs(64, 128)
+	host.discardEpochs(511, 511)
+	for epoch := uint64(0); epoch <= 512; epoch++ {
+		want := epoch >= 63 && epoch <= 130 || epoch == 511
+		assert.Equal(t, host.isDiscardedEpoch(epoch), want)
+	}
+}
