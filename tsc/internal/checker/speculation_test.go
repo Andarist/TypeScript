@@ -355,3 +355,136 @@ func TestDiscardedEpochBitsetBoundaries(t *testing.T) {
 		assert.Equal(t, host.isDiscardedEpoch(epoch), want)
 	}
 }
+
+// Compare observable reads with the original epoch-version stack. Keep reads
+// explicit: reading a rejected version changes future escaped-symbol behavior.
+func TestSymbolCacheReferenceEquivalence(t *testing.T) {
+	t.Parallel()
+	for seed := uint64(1); seed <= 32; seed++ {
+		c := &Checker{}
+		c.initializeSpeculation()
+		random := seed
+		next := func(n uint64) int {
+			random ^= random << 13
+			random ^= random >> 7
+			random ^= random << 17
+			return int(random % n)
+		}
+		type referenceValue struct {
+			epoch uint64
+			value *Type
+		}
+		type pair struct {
+			links     speculatableSymbolLinks
+			actual    speculatableSymbolCache[*Type]
+			reference []referenceValue
+		}
+		pairs := []*pair{}
+		values := []*Type{nil, {}, {}, {}, {}}
+		read := func(p *pair) {
+			var want *Type
+			for len(p.reference) > 0 {
+				v := p.reference[len(p.reference)-1]
+				if !c.speculationHost.isDiscardedEpoch(p.links.symbolEpoch) && c.speculationHost.isDiscardedEpoch(v.epoch) {
+					p.reference = p.reference[:len(p.reference)-1]
+					continue
+				}
+				want = v.value
+				break
+			}
+			assert.Equal(t, p.actual.get(&p.links), want, "seed %d", seed)
+		}
+		var run func(int)
+		run = func(depth int) {
+			for step := 0; step < 40; step++ {
+				if len(pairs) == 0 || next(8) == 0 {
+					pairs = append(pairs, &pair{links: speculatableSymbolLinks{speculatableLinks: speculatableLinks{host: &c.speculationHost}, symbolEpoch: c.speculationHost.currentSpeculativeEpoch}})
+				}
+				p := pairs[next(uint64(len(pairs)))]
+				switch next(5) {
+				case 0:
+					if depth < 3 {
+						c.speculate(func() *Signature {
+							run(depth + 1)
+							if next(2) == 0 {
+								return nil
+							}
+							return &Signature{}
+						})
+					}
+				case 1, 2:
+					value := values[next(5)]
+					p.actual.set(&p.links, value)
+					epoch := c.speculationHost.currentSpeculativeEpoch
+					if len(p.reference) > 0 && p.reference[len(p.reference)-1].epoch == epoch {
+						p.reference[len(p.reference)-1].value = value
+					} else {
+						p.reference = append(p.reference, referenceValue{epoch: epoch, value: value})
+					}
+				default:
+					read(p)
+				}
+			}
+		}
+		run(0)
+		for _, p := range pairs {
+			read(p)
+		}
+	}
+}
+
+func TestSpeculatableMapPreservesZeroValues(t *testing.T) {
+	t.Parallel()
+	c := &Checker{}
+	c.initializeSpeculation()
+	cache := speculatableMap[string, RelationComparisonResult]{host: &c.speculationHost}
+	cache.set("existing", 0)
+	assert.Equal(t, cache.get("existing"), RelationComparisonResult(0))
+	assert.Equal(t, cache.size(), 1)
+	c.speculate(func() *Signature {
+		cache.set("existing", RelationComparisonResultSucceeded)
+		cache.set("rejected", 0)
+		return nil
+	})
+	assert.Equal(t, cache.get("existing"), RelationComparisonResult(0))
+	assert.Equal(t, cache.get("rejected"), RelationComparisonResult(0))
+	assert.Equal(t, cache.size(), 1)
+	c.speculate(func() *Signature { cache.set("committed", 0); return &Signature{} })
+	assert.Equal(t, cache.get("committed"), RelationComparisonResult(0))
+	assert.Equal(t, cache.size(), 2)
+}
+
+func TestSpeculationSettlesNewSymbolOnCommit(t *testing.T) {
+	t.Parallel()
+	c := &Checker{}
+	c.initializeSpeculation()
+	var symbol *ast.Symbol
+	original := &Type{}
+	c.speculate(func() *Signature {
+		symbol = c.newSymbol(ast.SymbolFlagsFunctionScopedVariable, "value")
+		links := c.valueSymbolLinks.Get(symbol)
+		links.setResolvedType(original)
+		links.setFunctionOrConstructorChecked(true)
+		c.speculate(func() *Signature {
+			links.setResolvedType(&Type{})
+			links.setFunctionOrConstructorChecked(false)
+			return nil
+		})
+		// Do not read the rejected values before the owning attempt commits.
+		return &Signature{}
+	})
+	links := c.valueSymbolLinks.Get(symbol)
+	assert.Equal(t, links.getResolvedType(), original)
+	assert.Assert(t, links.getFunctionOrConstructorChecked())
+	assert.Equal(t, c.speculationHost.rootEpoch, uint64(0))
+	assert.Equal(t, len(c.speculationHost.lazySymbolTypes.entries), 0)
+	assert.Equal(t, len(c.speculationHost.lazySymbolBools.entries), 0)
+	// The symbol is now stable and must participate in a later rollback.
+	c.speculate(func() *Signature {
+		links.setResolvedType(&Type{})
+		links.setFunctionOrConstructorChecked(false)
+		return nil
+	})
+	assert.Equal(t, links.getResolvedType(), original)
+	assert.Assert(t, links.getFunctionOrConstructorChecked())
+}

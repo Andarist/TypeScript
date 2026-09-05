@@ -9,72 +9,179 @@ import (
 
 // This follows the speculation helpers in microsoft/TypeScript#57421.
 type speculationHost struct {
-	activeFrame  uint64
-	types        cacheUndoLog[*Type]
-	signatures   cacheUndoLog[*Signature]
-	symbols      cacheUndoLog[*ast.Symbol]
-	flags        cacheUndoLog[NodeCheckFlags]
-	bools        cacheUndoLog[bool]
-	exhaustive   cacheUndoLog[ExhaustiveState]
-	typeSlices   cacheUndoLog[[]*Type]
-	stringSlices cacheUndoLog[[]string]
-	relations    cacheUndoLog[RelationComparisonResult]
+	rootEpoch       uint64 // Zero outside speculation; otherwise the outermost start epoch.
+	symbolTypes     symbolUndoLog[*Type]
+	symbolBools     symbolUndoLog[bool]
+	lazySymbolTypes lazySymbolCaches[*Type]
+	lazySymbolBools lazySymbolCaches[bool]
+	activeFrame     uint64
+	types           cacheUndoLog[*Type]
+	signatures      cacheUndoLog[*Signature]
+	symbols         cacheUndoLog[*ast.Symbol]
+	flags           cacheUndoLog[NodeCheckFlags]
+	bools           cacheUndoLog[bool]
+	exhaustive      cacheUndoLog[ExhaustiveState]
+	typeSlices      cacheUndoLog[[]*Type]
+	stringSlices    cacheUndoLog[[]string]
+	relations       cacheUndoLog[RelationComparisonResult]
 
 	currentSpeculativeEpoch    uint64
 	discardedSpeculativeEpochs []uint64
 }
 
 type speculatableLinks struct {
-	host        *speculationHost
+	host *speculationHost
+}
+
+// Only symbols need a birth epoch: node caches always participate in rollback.
+type speculatableSymbolLinks struct {
+	speculatableLinks
 	symbolEpoch uint64
 }
 
 func (l *speculatableLinks) setSpeculationHost(host *speculationHost) { l.host = host }
 
-type epochValue[V any] struct {
-	epoch uint64
-	value V
+// Symbols predating the root attempt cannot acquire a discarded birth epoch
+// later, so eager undo is safe. New symbols need lazy history until the root
+// outcome settles whether their current values must survive.
+type (
+	symbolCacheValue                            interface{ *Type | bool }
+	speculatableSymbolCache[V symbolCacheValue] struct{ value V }
+)
+
+func (s *speculatableSymbolCache[V]) get(links *speculatableSymbolLinks) V {
+	h := links.host
+	if h != nil && h.rootEpoch != 0 && links.symbolEpoch >= h.rootEpoch && links.symbolEpoch != h.currentSpeculativeEpoch && !h.isDiscardedEpoch(links.symbolEpoch) {
+		h.readLazySymbolCache(s)
+	}
+	return s.value
 }
 
-// Symbol caches must invalidate lazily: a symbol born in a discarded epoch
-// retains its cached values, including unread writes from a discarded inner
-// speculation. Eager rollback would lose those values before the symbol escapes.
-// Inline the newest version and allocate history only on a second epoch write.
-// Epochs are encoded plus one so zero means an unwritten cache.
-type speculatableSymbolCache[V any] struct {
-	current epochValue[V]
-	history *cacheHistory[V]
-}
-type cacheHistory[V any] struct{ values []epochValue[V] }
-
-func (s *speculatableSymbolCache[V]) get(links *speculatableLinks) V {
-	if links.host != nil && !links.host.isDiscardedEpoch(links.symbolEpoch) {
-		for s.current.epoch != 0 && links.host.isDiscardedEpoch(s.current.epoch-1) {
-			if s.history == nil || len(s.history.values) == 0 {
-				s.current = epochValue[V]{}
-				break
+func (s *speculatableSymbolCache[V]) set(links *speculatableSymbolLinks, value V) {
+	h := links.host
+	if h != nil && h.activeFrame != 0 && links.symbolEpoch != h.currentSpeculativeEpoch && !h.isDiscardedEpoch(links.symbolEpoch) {
+		if links.symbolEpoch < h.rootEpoch {
+			// Only stable symbols can skip an equal write: an equal write to a
+			// new symbol may make a previously discarded value valid again.
+			if s.value != value {
+				h.recordStableSymbolCache(s)
 			}
-			last := len(s.history.values) - 1
-			s.current = s.history.values[last]
-			s.history.values[last] = epochValue[V]{}
-			s.history.values = s.history.values[:last]
+		} else {
+			h.recordLazySymbolCache(s, links.symbolEpoch)
 		}
 	}
-	return s.current.value
+	s.value = value
 }
 
-func (s *speculatableSymbolCache[V]) set(links *speculatableLinks, value V) {
-	epoch := uint64(1)
-	if links.host != nil {
-		epoch = links.host.currentSpeculativeEpoch + 1
+type (
+	symbolUndo[V symbolCacheValue] struct {
+		cache    *speculatableSymbolCache[V]
+		previous V
 	}
-	if s.current.epoch != 0 && s.current.epoch != epoch {
-		if s.history == nil {
-			s.history = &cacheHistory[V]{}
+	symbolUndoLog[V symbolCacheValue] struct{ entries []symbolUndo[V] }
+)
+
+func (l *symbolUndoLog[V]) record(cache *speculatableSymbolCache[V]) {
+	l.entries = append(l.entries, symbolUndo[V]{cache, cache.value})
+}
+
+func (l *symbolUndoLog[V]) revert(position int) {
+	for i := len(l.entries) - 1; i >= position; i-- {
+		r := l.entries[i]
+		r.cache.value = r.previous
+	}
+	clear(l.entries[position:])
+	l.entries = l.entries[:position]
+}
+
+func (l *symbolUndoLog[V]) commit() {
+	clear(l.entries)
+	l.entries = l.entries[:0]
+}
+
+type (
+	lazySymbolHistory[V symbolCacheValue] struct {
+		epoch         uint64
+		birthEpoch    uint64
+		previousValue V
+		previous      *lazySymbolHistory[V]
+	}
+	lazySymbolCaches[V symbolCacheValue] struct {
+		entries map[*speculatableSymbolCache[V]]*lazySymbolHistory[V]
+	}
+)
+
+func (l *lazySymbolCaches[V]) record(cache *speculatableSymbolCache[V], birth, epoch uint64) {
+	previous := l.entries[cache]
+	if previous == nil || previous.epoch != epoch {
+		if l.entries == nil {
+			l.entries = make(map[*speculatableSymbolCache[V]]*lazySymbolHistory[V])
 		}
-		s.history.values = append(s.history.values, s.current)
+		l.entries[cache] = &lazySymbolHistory[V]{epoch: epoch, birthEpoch: birth, previousValue: cache.value, previous: previous}
 	}
-	s.current = epochValue[V]{epoch, value}
+}
+
+func (l *lazySymbolCaches[V]) read(cache *speculatableSymbolCache[V], h *speculationHost) {
+	state := l.entries[cache]
+	if state == nil || !h.isDiscardedEpoch(state.epoch) {
+		return
+	}
+	for state != nil && h.isDiscardedEpoch(state.epoch) {
+		cache.value = state.previousValue
+		state = state.previous
+	}
+	if state == nil {
+		delete(l.entries, cache)
+	} else {
+		l.entries[cache] = state
+	}
+}
+
+// At root commit, surviving symbols can discard rejected versions eagerly:
+// their birth epoch can no longer be rolled back. Root failure preserves the
+// latest value of every newly born symbol, including unread rejected writes.
+func (l *lazySymbolCaches[V]) finish(h *speculationHost, committed bool) {
+	if committed {
+		for cache, state := range l.entries {
+			if !h.isDiscardedEpoch(state.birthEpoch) {
+				l.read(cache, h)
+			}
+		}
+	}
+	clear(l.entries)
+}
+
+func (h *speculationHost) recordStableSymbolCache(cache any) {
+	switch c := cache.(type) {
+	case *speculatableSymbolCache[*Type]:
+		h.symbolTypes.record(c)
+	case *speculatableSymbolCache[bool]:
+		h.symbolBools.record(c)
+	default:
+		panic("unsupported symbol cache")
+	}
+}
+
+func (h *speculationHost) recordLazySymbolCache(cache any, birth uint64) {
+	switch c := cache.(type) {
+	case *speculatableSymbolCache[*Type]:
+		h.lazySymbolTypes.record(c, birth, h.currentSpeculativeEpoch)
+	case *speculatableSymbolCache[bool]:
+		h.lazySymbolBools.record(c, birth, h.currentSpeculativeEpoch)
+	default:
+		panic("unsupported symbol cache")
+	}
+}
+
+func (h *speculationHost) readLazySymbolCache(cache any) {
+	switch c := cache.(type) {
+	case *speculatableSymbolCache[*Type]:
+		h.lazySymbolTypes.read(c, h)
+	case *speculatableSymbolCache[bool]:
+		h.lazySymbolBools.read(c, h)
+	default:
+		panic("unsupported symbol cache")
+	}
 }
 
 // Keep this constraint and recordCache in sync when adding a cache value type.
@@ -88,18 +195,22 @@ type speculatableCacheValue interface {
 // value from another frame, save it along with its frame for nested rollback.
 type speculatableCache[V speculatableCacheValue] struct {
 	writeFrame uint64
-	present    bool
-	value      V // Keep small values next to present to avoid extra padding.
+	value      V
 }
 
 func (s *speculatableCache[V]) get(_ *speculatableLinks) V { return s.value }
+
+// Zero is absent; one is a non-speculative write; active frames are encoded +1.
 func (s *speculatableCache[V]) set(links *speculatableLinks, value V) {
-	if links.host != nil && links.host.activeFrame != 0 && s.writeFrame != links.host.activeFrame {
-		links.host.recordCache(s)
-		s.writeFrame = links.host.activeFrame
+	frame := uint64(1)
+	if links.host != nil && links.host.activeFrame != 0 {
+		frame = links.host.activeFrame + 1
+		if s.writeFrame != frame {
+			links.host.recordCache(s)
+		}
 	}
+	s.writeFrame = frame
 	s.value = value
-	s.present = true
 }
 
 type cacheUndo[V speculatableCacheValue] struct {
@@ -135,7 +246,7 @@ type speculatableMap[K comparable, V speculatableCacheValue] struct {
 func (s *speculatableMap[K, V]) get(key K) V {
 	if cache := s.innerMap[key]; cache != nil {
 		value := cache.value
-		if !cache.present {
+		if cache.writeFrame == 0 {
 			delete(s.innerMap, key)
 		}
 		return value
@@ -225,6 +336,9 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 	startEpoch := c.speculationHost.currentSpeculativeEpoch
 	initialState := c.snapshotCheckerState()
 	previousFrame := c.speculationHost.activeFrame
+	if previousFrame == 0 {
+		c.speculationHost.rootEpoch = startEpoch
+	}
 	c.speculationHost.activeFrame = startEpoch
 	caches := c.speculationHost.checkpointCaches()
 	defer func() {
@@ -241,6 +355,11 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 			if previousFrame == 0 {
 				c.speculationHost.commitCaches()
 			}
+		}
+		if previousFrame == 0 {
+			c.speculationHost.lazySymbolTypes.finish(&c.speculationHost, result != nil)
+			c.speculationHost.lazySymbolBools.finish(&c.speculationHost, result != nil)
+			c.speculationHost.rootEpoch = 0
 		}
 	}()
 	return cb()
@@ -283,6 +402,8 @@ func (s *speculativeSymbolArenaLinkStore[V]) Has(symbol *ast.Symbol) bool {
 }
 
 type cacheCheckpoint struct {
+	symbolTypes  int
+	symbolBools  int
 	types        int
 	signatures   int
 	symbols      int
@@ -296,6 +417,8 @@ type cacheCheckpoint struct {
 
 func (h *speculationHost) checkpointCaches() cacheCheckpoint {
 	return cacheCheckpoint{
+		symbolTypes:  len(h.symbolTypes.entries),
+		symbolBools:  len(h.symbolBools.entries),
 		types:        len(h.types.entries),
 		signatures:   len(h.signatures.entries),
 		symbols:      len(h.symbols.entries),
@@ -309,6 +432,8 @@ func (h *speculationHost) checkpointCaches() cacheCheckpoint {
 }
 
 func (h *speculationHost) revertCaches(c cacheCheckpoint) {
+	h.symbolTypes.revert(c.symbolTypes)
+	h.symbolBools.revert(c.symbolBools)
 	h.types.revert(c.types)
 	h.signatures.revert(c.signatures)
 	h.symbols.revert(c.symbols)
@@ -321,6 +446,8 @@ func (h *speculationHost) revertCaches(c cacheCheckpoint) {
 }
 
 func (h *speculationHost) commitCaches() {
+	h.symbolTypes.commit()
+	h.symbolBools.commit()
 	h.types.commit()
 	h.signatures.commit()
 	h.symbols.commit()
