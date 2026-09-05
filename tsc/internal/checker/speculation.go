@@ -276,14 +276,21 @@ type speculativeLinkStore[K comparable, V any] struct {
 	host  *speculationHost
 }
 
-func (s *speculativeLinkStore[K, V]) track(_ K, value *V) *V {
+func (s *speculativeLinkStore[K, V]) initialize(value *V) *V {
 	if value != nil {
 		any(value).(interface{ setSpeculationHost(*speculationHost) }).setSpeculationHost(s.host)
 	}
 	return value
 }
-func (s *speculativeLinkStore[K, V]) Get(key K) *V    { return s.track(key, s.store.Get(key)) }
-func (s *speculativeLinkStore[K, V]) TryGet(key K) *V { return s.track(key, s.store.TryGet(key)) }
+
+// Hosts belong to the store and do not change after a link is created.
+func (s *speculativeLinkStore[K, V]) Get(key K) *V {
+	if value := s.store.TryGet(key); value != nil {
+		return value
+	}
+	return s.initialize(s.store.Get(key))
+}
+func (s *speculativeLinkStore[K, V]) TryGet(key K) *V { return s.store.TryGet(key) }
 func (s *speculativeLinkStore[K, V]) Has(key K) bool  { return s.store.Has(key) }
 
 // Each length protects elements visible through a saved slice. Appending beyond
@@ -389,12 +396,14 @@ type speculativeNodeLinkStore[V any] struct {
 	backing nodeLinkStore[V]
 }
 
+func (s *speculativeNodeLinkStore[V]) initializeLink(value *V) { s.initialize(value) }
+
 func (s *speculativeNodeLinkStore[V]) Get(node *ast.Node) *V {
-	return s.track(node, s.backing.Get(node))
+	return s.backing.store.GetWithInitializer(uint64(ast.GetNodeId(node)), s.initializeLink)
 }
 
 func (s *speculativeNodeLinkStore[V]) TryGet(node *ast.Node) *V {
-	return s.track(node, s.backing.TryGet(node))
+	return s.backing.TryGet(node)
 }
 
 func (s *speculativeNodeLinkStore[V]) Has(node *ast.Node) bool { return s.backing.Has(node) }
@@ -406,13 +415,13 @@ type speculativeSymbolArenaLinkStore[V any] struct {
 
 func (s *speculativeSymbolArenaLinkStore[V]) Get(symbol *ast.Symbol) *V {
 	if value := s.backing.TryGet(symbol); value != nil {
-		return s.track(symbol, value)
+		return value
 	}
-	return s.track(symbol, s.backing.Get(symbol))
+	return s.initialize(s.backing.Get(symbol))
 }
 
 func (s *speculativeSymbolArenaLinkStore[V]) TryGet(symbol *ast.Symbol) *V {
-	return s.track(symbol, s.backing.TryGet(symbol))
+	return s.backing.TryGet(symbol)
 }
 
 func (s *speculativeSymbolArenaLinkStore[V]) Has(symbol *ast.Symbol) bool {
