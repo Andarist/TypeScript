@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"maps"
 	"slices"
 	"strings"
 	"sync"
@@ -265,6 +264,9 @@ type DiagnosticsCollection struct {
 	nonFileDiagnosticsSorted bool
 	diagnosticIndex          map[diagnosticLocationKey]*Diagnostic
 	diagnosticCollisions     map[diagnosticLocationKey][]*Diagnostic
+	checkpointID             uint64
+	nextCheckpointID         uint64
+	undo                     []diagnosticCollectionUndo
 }
 
 func (c *DiagnosticsCollection) Add(diagnostic *Diagnostic) *Diagnostic {
@@ -282,6 +284,14 @@ func (c *DiagnosticsCollection) Add(diagnostic *Diagnostic) *Diagnostic {
 			}
 		}
 	}
+	if c.checkpointID != 0 {
+		wasSorted := c.nonFileDiagnosticsSorted
+		if diagnostic.File() != nil {
+			wasSorted = c.fileDiagnosticsSorted.Has(key.path)
+		}
+		c.undo = append(c.undo, diagnosticCollectionUndo{key: key, isFile: diagnostic.File() != nil, wasSorted: wasSorted})
+	}
+
 	if c.diagnosticIndex == nil {
 		c.diagnosticIndex = make(map[diagnosticLocationKey]*Diagnostic)
 	}
@@ -352,6 +362,14 @@ func (c *DiagnosticsCollection) GetGlobalDiagnostics() []*Diagnostic {
 }
 
 func (c *DiagnosticsCollection) getGlobalDiagnosticsLocked() []*Diagnostic {
+	// Keep appended diagnostics at the end while rollback can remove them.
+	if c.checkpointID != 0 {
+		result := slices.Clone(c.nonFileDiagnostics)
+		if !c.nonFileDiagnosticsSorted {
+			slices.SortStableFunc(result, CompareDiagnostics)
+		}
+		return result
+	}
 	if !c.nonFileDiagnosticsSorted {
 		slices.SortStableFunc(c.nonFileDiagnostics, CompareDiagnostics)
 		c.nonFileDiagnosticsSorted = true
@@ -368,6 +386,13 @@ func (c *DiagnosticsCollection) GetDiagnosticsForFile(file *SourceFile) []*Diagn
 
 func (c *DiagnosticsCollection) getDiagnosticsForFileLocked(file *SourceFile) []*Diagnostic {
 	path := file.Path()
+	if c.checkpointID != 0 {
+		result := slices.Clone(c.fileDiagnostics[path])
+		if !c.fileDiagnosticsSorted.Has(path) {
+			slices.SortStableFunc(result, CompareDiagnostics)
+		}
+		return result
+	}
 	if !c.fileDiagnosticsSorted.Has(path) {
 		slices.SortStableFunc(c.fileDiagnostics[path], CompareDiagnostics)
 		c.fileDiagnosticsSorted.Add(path)
@@ -527,38 +552,93 @@ func CompareDiagnostics(d1, d2 *Diagnostic) int {
 	return compareRelatedInfo(d1.RelatedInformation(), d2.RelatedInformation())
 }
 
-// DiagnosticsCollectionCheckpoint holds the collection and deduplication state.
-type DiagnosticsCollectionCheckpoint struct{ state *DiagnosticsCollection }
+// DiagnosticsCollectionCheckpoint marks additions to an existing collection.
+// Checkpoints must be closed exactly once, in reverse order, with Commit or Revert.
+type DiagnosticsCollectionCheckpoint struct {
+	collection *DiagnosticsCollection
+	position   int
+	id         uint64
+	parentID   uint64
+}
 
+type diagnosticCollectionUndo struct {
+	key       diagnosticLocationKey
+	isFile    bool
+	wasSorted bool
+}
+
+// Checkpoint does not copy diagnostics or indexes. Only subsequent additions are logged.
 func (c *DiagnosticsCollection) Checkpoint() DiagnosticsCollectionCheckpoint {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	state := &DiagnosticsCollection{
-		count:                    c.count,
-		fileDiagnostics:          maps.Clone(c.fileDiagnostics),
-		fileDiagnosticsSorted:    *c.fileDiagnosticsSorted.Clone(),
-		nonFileDiagnostics:       slices.Clone(c.nonFileDiagnostics),
-		nonFileDiagnosticsSorted: c.nonFileDiagnosticsSorted,
-		diagnosticIndex:          maps.Clone(c.diagnosticIndex),
-		diagnosticCollisions:     maps.Clone(c.diagnosticCollisions),
+	c.nextCheckpointID++
+	checkpoint := DiagnosticsCollectionCheckpoint{
+		collection: c, position: len(c.undo), id: c.nextCheckpointID, parentID: c.checkpointID,
 	}
-	for key, value := range state.fileDiagnostics {
-		state.fileDiagnostics[key] = slices.Clone(value)
-	}
-	for key, value := range state.diagnosticCollisions {
-		state.diagnosticCollisions[key] = slices.Clone(value)
-	}
-	return DiagnosticsCollectionCheckpoint{state}
+	c.checkpointID = checkpoint.id
+	return checkpoint
 }
+
+// Commit retains inner additions in the log until the outermost checkpoint closes.
+func (c *DiagnosticsCollection) Commit(checkpoint DiagnosticsCollectionCheckpoint) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.validateCheckpoint(checkpoint)
+	c.checkpointID = checkpoint.parentID
+	if c.checkpointID == 0 {
+		clear(c.undo)
+		c.undo = c.undo[:0]
+	}
+}
+
 func (c *DiagnosticsCollection) Revert(checkpoint DiagnosticsCollectionCheckpoint) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	state := checkpoint.state
-	c.count = state.count
-	c.fileDiagnostics = state.fileDiagnostics
-	c.fileDiagnosticsSorted = state.fileDiagnosticsSorted
-	c.nonFileDiagnostics = state.nonFileDiagnostics
-	c.nonFileDiagnosticsSorted = state.nonFileDiagnosticsSorted
-	c.diagnosticIndex = state.diagnosticIndex
-	c.diagnosticCollisions = state.diagnosticCollisions
+	c.validateCheckpoint(checkpoint)
+	for i := len(c.undo) - 1; i >= checkpoint.position; i-- {
+		entry := c.undo[i]
+		var removed *Diagnostic
+		if entry.isFile {
+			list := c.fileDiagnostics[entry.key.path]
+			removed = list[len(list)-1]
+			list[len(list)-1] = nil
+			if len(list) == 1 {
+				delete(c.fileDiagnostics, entry.key.path)
+			} else {
+				c.fileDiagnostics[entry.key.path] = list[:len(list)-1]
+			}
+			if entry.wasSorted {
+				c.fileDiagnosticsSorted.Add(entry.key.path)
+			} else {
+				c.fileDiagnosticsSorted.Delete(entry.key.path)
+			}
+		} else {
+			removed = c.nonFileDiagnostics[len(c.nonFileDiagnostics)-1]
+			c.nonFileDiagnostics[len(c.nonFileDiagnostics)-1] = nil
+			c.nonFileDiagnostics = c.nonFileDiagnostics[:len(c.nonFileDiagnostics)-1]
+			c.nonFileDiagnosticsSorted = entry.wasSorted
+		}
+		if c.diagnosticIndex[entry.key] == removed {
+			delete(c.diagnosticIndex, entry.key)
+		} else {
+			list := c.diagnosticCollisions[entry.key]
+			list[len(list)-1] = nil
+			if len(list) == 1 {
+				delete(c.diagnosticCollisions, entry.key)
+			} else {
+				c.diagnosticCollisions[entry.key] = list[:len(list)-1]
+			}
+		}
+		c.count--
+	}
+	clear(c.undo[checkpoint.position:])
+	c.undo = c.undo[:checkpoint.position]
+	c.checkpointID = checkpoint.parentID
+}
+
+// The caller holds c.mu.
+func (c *DiagnosticsCollection) validateCheckpoint(checkpoint DiagnosticsCollectionCheckpoint) {
+	if checkpoint.collection != c || checkpoint.id == 0 || checkpoint.id != c.checkpointID {
+		panic("diagnostic checkpoints must be closed in reverse order")
+	}
 }

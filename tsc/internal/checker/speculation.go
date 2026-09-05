@@ -103,19 +103,37 @@ func (s *speculativeLinkStore[K, V]) Get(key K) *V    { return s.track(key, s.st
 func (s *speculativeLinkStore[K, V]) TryGet(key K) *V { return s.track(key, s.store.TryGet(key)) }
 func (s *speculativeLinkStore[K, V]) Has(key K) bool  { return s.store.Has(key) }
 
-type savedCheckerState struct{ restores []func() }
+type savedCheckerState struct {
+	restores    []func()
+	diagnostics ast.DiagnosticsCollectionCheckpoint
+	suggestions ast.DiagnosticsCollectionCheckpoint
+}
 
 func (c *Checker) registerSpeculativeCache(save func() func()) {
 	c.speculativeCaches = append(c.speculativeCaches, save)
 }
 func (c *Checker) snapshotCheckerState() savedCheckerState {
-	state := savedCheckerState{}
-	for _, save := range c.speculativeCaches {
-		state.restores = append(state.restores, save())
+	state := savedCheckerState{
+		restores:    make([]func(), len(c.speculativeCaches)),
+		diagnostics: c.diagnostics.Checkpoint(),
+		suggestions: c.suggestionDiagnostics.Checkpoint(),
+	}
+	for i, save := range c.speculativeCaches {
+		state.restores[i] = save()
 	}
 	return state
 }
+func (c *Checker) commitCheckerState(state savedCheckerState) {
+	c.diagnostics.Commit(state.diagnostics)
+	c.suggestionDiagnostics.Commit(state.suggestions)
+}
 func (c *Checker) restoreCheckerState(state savedCheckerState) {
+	c.diagnostics.Revert(state.diagnostics)
+	c.suggestionDiagnostics.Revert(state.suggestions)
+	// Go's permanent type caches retain resolution errors across speculation.
+	for _, diagnostic := range c.permanentDiagnostics.GetDiagnostics() {
+		c.diagnostics.Add(diagnostic)
+	}
 	for _, restore := range state.restores {
 		restore()
 	}
@@ -134,20 +152,6 @@ func (c *Checker) initializeSpeculation() {
 		old := slices.Clone(c.deferredDiagnosticCallbacks)
 		return func() { c.deferredDiagnosticCallbacks = old }
 	})
-	c.registerSpeculativeCache(func() func() {
-		old := c.diagnostics.Checkpoint()
-		return func() {
-			c.diagnostics.Revert(old)
-			// Go's permanent type caches retain resolution errors across speculation.
-			for _, diagnostic := range c.permanentDiagnostics.GetDiagnostics() {
-				c.diagnostics.Add(diagnostic)
-			}
-		}
-	})
-	c.registerSpeculativeCache(func() func() {
-		old := c.suggestionDiagnostics.Checkpoint()
-		return func() { c.suggestionDiagnostics.Revert(old) }
-	})
 }
 
 func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
@@ -165,6 +169,8 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 				c.speculationHost.discardedSpeculativeEpochs[epoch] = true
 			}
 			c.restoreCheckerState(initialState)
+		} else {
+			c.commitCheckerState(initialState)
 		}
 	}()
 	return cb()

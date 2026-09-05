@@ -204,3 +204,21 @@ func TestSpeculationRestoresRegisteredCollections(t *testing.T) {
 	assert.Equal(t, len(c.deferredDiagnosticCallbacks), 1)
 	assert.Equal(t, len(c.suggestionDiagnostics.GetDiagnostics()), 0)
 }
+
+func TestSpeculationPanicRevertsDiagnostics(t *testing.T) {
+	t.Parallel()
+	c := &Checker{}
+	c.initializeSpeculation()
+	diagnostic := ast.NewDiagnostic(&ast.SourceFile{}, core.TextRange{}, diagnostics.No_overload_matches_this_call)
+	func() {
+		defer func() { assert.Equal(t, recover(), "stop") }()
+		c.speculate(func() *Signature {
+			c.addDiagnostic(diagnostic)
+			panic("stop")
+		})
+	}()
+	assert.Equal(t, len(c.diagnostics.GetDiagnostics()), 0)
+	// A successful subsequent attempt proves both diagnostic checkpoints closed.
+	c.speculate(func() *Signature { c.addDiagnostic(diagnostic); return &Signature{} })
+	assert.Equal(t, len(c.diagnostics.GetDiagnostics()), 1)
+}
