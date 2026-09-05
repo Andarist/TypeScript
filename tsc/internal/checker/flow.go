@@ -198,7 +198,7 @@ func (c *Checker) getTypeAtFlowNode(f *FlowState, flow *ast.FlowNode) FlowType {
 		}
 		if sharedFlow != nil {
 			// Record visited node and the associated type in the cache.
-			c.sharedFlows = append(c.sharedFlows, SharedFlow{flow: sharedFlow, flowType: t})
+			c.sharedFlows = appendToSpeculativeSlice(c.sharedFlows, SharedFlow{flow: sharedFlow, flowType: t}, &c.speculationHost.protectedLengths.sharedFlows)
 		}
 		f.depth--
 		return t
@@ -1364,7 +1364,7 @@ func (c *Checker) getTypeAtFlowLoopLabel(f *FlowState, flow *ast.FlowNode) FlowT
 		} else {
 			// All but the first antecedent are the looping control flow paths that lead
 			// back to the loop junction. We track these on the flow loop stack.
-			c.flowLoopStack = append(c.flowLoopStack, FlowLoopInfo{key: key, types: antecedentTypes})
+			c.flowLoopStack = appendToSpeculativeSlice(c.flowLoopStack, FlowLoopInfo{key: key, types: antecedentTypes}, &c.speculationHost.protectedLengths.flowLoopStack)
 			saveFlowTypeCache := c.flowTypeCache
 			c.flowTypeCache = nil
 			flowType = c.getTypeAtFlowNode(f, list.Flow)

@@ -7695,12 +7695,15 @@ func (c *Checker) checkExpressionCachedEx(node *ast.Node, checkMode CheckMode) *
 		// analysis because variables may have transient types in indeterminable states. Moving flowLoopStart
 		// to the top of the stack ensures all transient types are computed from a known point.
 		saveFlowLoopStack := c.flowLoopStack
+		saveFlowLoopProtection := c.speculationHost.protectedLengths.flowLoopStack
 		saveFlowTypeCache := c.flowTypeCache
 		c.flowLoopStack = nil
+		c.speculationHost.protectedLengths.flowLoopStack = 0
 		c.flowTypeCache = nil
 		links.setResolvedType(c.checkExpressionEx(node, checkMode))
 		c.flowTypeCache = saveFlowTypeCache
 		c.flowLoopStack = saveFlowLoopStack
+		c.speculationHost.protectedLengths.flowLoopStack = saveFlowLoopProtection
 	}
 	return links.getResolvedType()
 }
@@ -14237,7 +14240,7 @@ func (c *Checker) GetGlobalDiagnostics() []*ast.Diagnostic {
 }
 
 func (c *Checker) addDeferredDiagnostic(callback func()) {
-	c.deferredDiagnosticCallbacks = append(c.deferredDiagnosticCallbacks, callback)
+	c.deferredDiagnosticCallbacks = appendToSpeculativeSlice(c.deferredDiagnosticCallbacks, callback, &c.speculationHost.protectedLengths.deferredDiagnosticCallbacks)
 }
 
 func (c *Checker) produceDeferredDiagnostics() {

@@ -9,21 +9,22 @@ import (
 
 // This follows the speculation helpers in microsoft/TypeScript#57421.
 type speculationHost struct {
-	rootEpoch       uint64 // Zero outside speculation; otherwise the outermost start epoch.
-	symbolTypes     symbolUndoLog[*Type]
-	symbolBools     symbolUndoLog[bool]
-	lazySymbolTypes lazySymbolCaches[*Type]
-	lazySymbolBools lazySymbolCaches[bool]
-	activeFrame     uint64
-	types           cacheUndoLog[*Type]
-	signatures      cacheUndoLog[*Signature]
-	symbols         cacheUndoLog[*ast.Symbol]
-	flags           cacheUndoLog[NodeCheckFlags]
-	bools           cacheUndoLog[bool]
-	exhaustive      cacheUndoLog[ExhaustiveState]
-	typeSlices      cacheUndoLog[[]*Type]
-	stringSlices    cacheUndoLog[[]string]
-	relations       cacheUndoLog[RelationComparisonResult]
+	protectedLengths speculativeSliceProtection
+	rootEpoch        uint64 // Zero outside speculation; otherwise the outermost start epoch.
+	symbolTypes      symbolUndoLog[*Type]
+	symbolBools      symbolUndoLog[bool]
+	lazySymbolTypes  lazySymbolCaches[*Type]
+	lazySymbolBools  lazySymbolCaches[bool]
+	activeFrame      uint64
+	types            cacheUndoLog[*Type]
+	signatures       cacheUndoLog[*Signature]
+	symbols          cacheUndoLog[*ast.Symbol]
+	flags            cacheUndoLog[NodeCheckFlags]
+	bools            cacheUndoLog[bool]
+	exhaustive       cacheUndoLog[ExhaustiveState]
+	typeSlices       cacheUndoLog[[]*Type]
+	stringSlices     cacheUndoLog[[]string]
+	relations        cacheUndoLog[RelationComparisonResult]
 
 	currentSpeculativeEpoch    uint64
 	discardedSpeculativeEpochs []uint64
@@ -285,8 +286,18 @@ func (s *speculativeLinkStore[K, V]) Get(key K) *V    { return s.track(key, s.st
 func (s *speculativeLinkStore[K, V]) TryGet(key K) *V { return s.track(key, s.store.TryGet(key)) }
 func (s *speculativeLinkStore[K, V]) Has(key K) bool  { return s.store.Has(key) }
 
-// Save collection copies directly to avoid allocating restore closures on each attempt.
+// Each length protects elements visible through a saved slice. Appending beyond
+// it is safe; overwriting a protected element first allocates a new backing array.
+// Bounds may conservatively include snapshots that have already committed.
+type speculativeSliceProtection struct {
+	flowLoopStack               int
+	sharedFlows                 int
+	deferredDiagnosticCallbacks int
+}
+
+// Save slice headers; appendToSpeculativeSlice protects their existing elements.
 type savedCheckerState struct {
+	protectedLengths            speculativeSliceProtection
 	flowLoopStack               []FlowLoopInfo
 	sharedFlows                 []SharedFlow
 	deferredDiagnosticCallbacks []func()
@@ -295,13 +306,18 @@ type savedCheckerState struct {
 }
 
 func (c *Checker) snapshotCheckerState() savedCheckerState {
-	return savedCheckerState{
+	state := savedCheckerState{
+		protectedLengths:            c.speculationHost.protectedLengths,
 		diagnostics:                 c.diagnostics.Checkpoint(),
 		suggestions:                 c.suggestionDiagnostics.Checkpoint(),
-		flowLoopStack:               slices.Clone(c.flowLoopStack),
-		sharedFlows:                 slices.Clone(c.sharedFlows),
-		deferredDiagnosticCallbacks: slices.Clone(c.deferredDiagnosticCallbacks),
+		flowLoopStack:               c.flowLoopStack,
+		sharedFlows:                 c.sharedFlows,
+		deferredDiagnosticCallbacks: c.deferredDiagnosticCallbacks,
 	}
+	c.speculationHost.protectedLengths.flowLoopStack = max(c.speculationHost.protectedLengths.flowLoopStack, len(c.flowLoopStack))
+	c.speculationHost.protectedLengths.sharedFlows = max(c.speculationHost.protectedLengths.sharedFlows, len(c.sharedFlows))
+	c.speculationHost.protectedLengths.deferredDiagnosticCallbacks = max(c.speculationHost.protectedLengths.deferredDiagnosticCallbacks, len(c.deferredDiagnosticCallbacks))
+	return state
 }
 
 func (c *Checker) commitCheckerState(state savedCheckerState) {
@@ -310,6 +326,7 @@ func (c *Checker) commitCheckerState(state savedCheckerState) {
 }
 
 func (c *Checker) restoreCheckerState(state savedCheckerState) {
+	c.speculationHost.protectedLengths = state.protectedLengths
 	c.diagnostics.Revert(state.diagnostics)
 	c.suggestionDiagnostics.Revert(state.suggestions)
 	// Go's permanent type caches retain resolution errors across speculation.
@@ -360,6 +377,7 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 			c.speculationHost.lazySymbolTypes.finish(&c.speculationHost, result != nil)
 			c.speculationHost.lazySymbolBools.finish(&c.speculationHost, result != nil)
 			c.speculationHost.rootEpoch = 0
+			c.speculationHost.protectedLengths = speculativeSliceProtection{}
 		}
 	}()
 	return cb()
@@ -499,4 +517,15 @@ func (h *speculationHost) discardEpochs(start, end uint64) {
 	for epoch := start; epoch <= end; epoch++ {
 		h.discardedSpeculativeEpochs[epoch>>6] |= uint64(1) << (epoch & 63)
 	}
+}
+
+// All appends to the three snapshotted collections must use this helper.
+// Truncation and nil assignments do not overwrite elements and need no copy.
+func appendToSpeculativeSlice[T any](values []T, value T, protectedLength *int) []T {
+	if len(values) < *protectedLength {
+		// Force append to allocate. The new array is not shared with any snapshot.
+		values = slices.Clip(values)
+		*protectedLength = 0
+	}
+	return append(values, value)
 }
