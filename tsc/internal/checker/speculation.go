@@ -1,7 +1,6 @@
 package checker
 
 import (
-	"maps"
 	"slices"
 
 	"github.com/microsoft/TypeScript/tsc/internal/ast"
@@ -129,7 +128,6 @@ func (c *Checker) initializeSpeculation() {
 	c.assertionLinks.host = &c.speculationHost
 	c.switchStatementLinks.host = &c.speculationHost
 	c.valueSymbolLinks.host = &c.speculationHost
-	c.registerSpeculativeCache(func() func() { old := maps.Clone(c.flowLoopCache); return func() { c.flowLoopCache = old } })
 	c.registerSpeculativeCache(func() func() { old := slices.Clone(c.flowLoopStack); return func() { c.flowLoopStack = old } })
 	c.registerSpeculativeCache(func() func() { old := slices.Clone(c.sharedFlows); return func() { c.sharedFlows = old } })
 	c.registerSpeculativeCache(func() func() {

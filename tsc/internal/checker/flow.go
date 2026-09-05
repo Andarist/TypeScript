@@ -1333,7 +1333,7 @@ func (c *Checker) getTypeAtFlowLoopLabel(f *FlowState, flow *ast.FlowNode) FlowT
 	key := FlowLoopKey{flowNode: flow, refKey: f.refKey}
 	// If we have previously computed the control flow type for the reference at
 	// this flow loop junction, return the cached type.
-	if cached := c.flowLoopCache[key]; cached != nil {
+	if cached := c.flowLoopCache.get(key); cached != nil {
 		return FlowType{t: cached}
 	}
 	// If this flow loop junction and reference are already being processed, return
@@ -1373,7 +1373,7 @@ func (c *Checker) getTypeAtFlowLoopLabel(f *FlowState, flow *ast.FlowNode) FlowT
 			// If we see a value appear in the cache it is a sign that control flow analysis
 			// was restarted and completed by checkExpressionCached. We can simply pick up
 			// the resulting type and bail out.
-			if cached := c.flowLoopCache[key]; cached != nil {
+			if cached := c.flowLoopCache.get(key); cached != nil {
 				return FlowType{t: cached}
 			}
 		}
@@ -1397,7 +1397,7 @@ func (c *Checker) getTypeAtFlowLoopLabel(f *FlowState, flow *ast.FlowNode) FlowT
 	if firstAntecedentType.incomplete {
 		return c.newFlowType(result, true /*incomplete*/)
 	}
-	c.flowLoopCache[key] = result
+	c.flowLoopCache.set(key, result)
 	return FlowType{t: result}
 }
 

@@ -191,15 +191,16 @@ func TestSpeculationRestoresRegisteredCollections(t *testing.T) {
 	c.initializeSpeculation()
 	key := FlowLoopKey{}
 	original := &Type{}
-	c.flowLoopCache = map[FlowLoopKey]*Type{key: original}
+	c.flowLoopCache = speculatableMap[FlowLoopKey, *Type]{host: &c.speculationHost}
+	c.flowLoopCache.set(key, original)
 	c.deferredDiagnosticCallbacks = []func(){func() {}}
 	c.speculate(func() *Signature {
-		c.flowLoopCache[key] = &Type{}
+		c.flowLoopCache.set(key, &Type{})
 		c.deferredDiagnosticCallbacks = append(c.deferredDiagnosticCallbacks, func() {})
 		c.addSuggestionDiagnostic(ast.NewDiagnostic(&ast.SourceFile{}, core.TextRange{}, diagnostics.No_overload_matches_this_call))
 		return nil
 	})
-	assert.Equal(t, c.flowLoopCache[key], original)
+	assert.Equal(t, c.flowLoopCache.get(key), original)
 	assert.Equal(t, len(c.deferredDiagnosticCallbacks), 1)
 	assert.Equal(t, len(c.suggestionDiagnostics.GetDiagnostics()), 0)
 }

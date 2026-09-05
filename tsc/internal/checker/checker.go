@@ -804,7 +804,7 @@ type Checker struct {
 	lastGetCombinedModifierFlagsResult          ast.ModifierFlags
 	freeinferenceState                          *InferenceState
 	freeFlowState                               *FlowState
-	flowLoopCache                               map[FlowLoopKey]*Type
+	flowLoopCache                               speculatableMap[FlowLoopKey, *Type]
 	flowLoopStack                               []FlowLoopInfo
 	sharedFlows                                 []SharedFlow
 	antecedentTypes                             []*Type
@@ -1060,7 +1060,7 @@ func NewChecker(program Program, tracer *Tracer) (*Checker, *sync.Mutex) {
 	c.zeroType = c.getNumberLiteralType(0)
 	c.zeroBigIntType = c.getBigIntLiteralType(jsnum.PseudoBigInt{})
 	c.typeofType = c.getUnionType(core.Map(slices.Sorted(maps.Keys(typeofNEFacts)), c.getStringLiteralType))
-	c.flowLoopCache = make(map[FlowLoopKey]*Type)
+	c.flowLoopCache = speculatableMap[FlowLoopKey, *Type]{host: &c.speculationHost}
 	c.flowNodeReachable = make(map[*ast.FlowNode]bool)
 	c.flowNodePostSuper = make(map[*ast.FlowNode]bool)
 	c.subtypeRelation = &Relation{speculatableMap: speculatableMap[CacheHashKey, RelationComparisonResult]{host: &c.speculationHost}}
