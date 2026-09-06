@@ -304,6 +304,7 @@ type speculativeSliceProtection struct {
 
 // Save slice headers; appendToSpeculativeSlice protects their existing elements.
 type savedCheckerState struct {
+	permanentDiagnostics        int
 	protectedLengths            speculativeSliceProtection
 	flowLoopStack               []FlowLoopInfo
 	sharedFlows                 []SharedFlow
@@ -314,6 +315,7 @@ type savedCheckerState struct {
 
 func (c *Checker) snapshotCheckerState() savedCheckerState {
 	state := savedCheckerState{
+		permanentDiagnostics:        len(c.permanentDiagnosticLog),
 		protectedLengths:            c.speculationHost.protectedLengths,
 		diagnostics:                 c.diagnostics.Checkpoint(),
 		suggestions:                 c.suggestionDiagnostics.Checkpoint(),
@@ -336,8 +338,9 @@ func (c *Checker) restoreCheckerState(state savedCheckerState) {
 	c.speculationHost.protectedLengths = state.protectedLengths
 	c.diagnostics.Revert(state.diagnostics)
 	c.suggestionDiagnostics.Revert(state.suggestions)
-	// Go's permanent type caches retain resolution errors across speculation.
-	for _, diagnostic := range c.permanentDiagnostics.GetDiagnostics() {
+	// Permanent type caches retain resolution errors. Replay only errors first
+	// reported since this snapshot; enclosing attempts keep their own log prefix.
+	for _, diagnostic := range c.permanentDiagnosticLog[state.permanentDiagnostics:] {
 		c.diagnostics.Add(diagnostic)
 	}
 	c.flowLoopStack = state.flowLoopStack
@@ -384,6 +387,8 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 			c.speculationHost.lazySymbolTypes.finish(&c.speculationHost, result != nil)
 			c.speculationHost.lazySymbolBools.finish(&c.speculationHost, result != nil)
 			c.speculationHost.rootEpoch = 0
+			clear(c.permanentDiagnosticLog)
+			c.permanentDiagnosticLog = c.permanentDiagnosticLog[:0]
 			c.speculationHost.protectedLengths = speculativeSliceProtection{}
 		}
 	}()

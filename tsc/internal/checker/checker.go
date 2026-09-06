@@ -584,7 +584,7 @@ var nextCheckerID atomic.Uint32
 
 type Checker struct {
 	speculationHost                             speculationHost
-	permanentDiagnostics                        ast.DiagnosticsCollection
+	permanentDiagnosticLog                      []*ast.Diagnostic
 	id                                          uint32
 	program                                     Program
 	compilerOptions                             *core.CompilerOptions
@@ -14256,7 +14256,7 @@ func (c *Checker) addDiagnostic(diagnostic *ast.Diagnostic) *ast.Diagnostic {
 		// Global type resolution is cached permanently, so its errors must survive
 		// even when the overload that first requested the global type is discarded.
 		if diagnostic.File() == nil {
-			c.permanentDiagnostics.Add(diagnostic)
+			return c.addPermanentDiagnostic(diagnostic)
 		}
 		return c.diagnostics.Add(diagnostic)
 	}
@@ -14273,11 +14273,19 @@ func (c *Checker) addSuggestionDiagnostic(diagnostic *ast.Diagnostic) *ast.Diagn
 
 // Use for diagnostics whose resolution result is stored in a permanent cache.
 // Such errors must outlive the speculative attempt that first resolved the type.
+// Only additions made inside speculation need replay. Earlier permanent errors
+// already belong to the saved collection; root outcomes release the replay log.
+func (c *Checker) addPermanentDiagnostic(diagnostic *ast.Diagnostic) *ast.Diagnostic {
+	if c.speculationHost.activeFrame != 0 {
+		c.permanentDiagnosticLog = append(c.permanentDiagnosticLog, diagnostic)
+	}
+	return c.diagnostics.Add(diagnostic)
+}
+
 func (c *Checker) errorPermanent(location *ast.Node, message *diagnostics.Message, args ...any) *ast.Diagnostic {
 	diagnostic := NewDiagnosticForNode(location, message, args...)
 	if c.serializationLevel < maxSerializationLevel {
-		c.permanentDiagnostics.Add(diagnostic)
-		return c.diagnostics.Add(diagnostic)
+		return c.addPermanentDiagnostic(diagnostic)
 	}
 	return diagnostic
 }
