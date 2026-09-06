@@ -26170,10 +26170,6 @@ func (c *Checker) getUnionTypeFromSortedList(types []*Type, precomputedObjectFla
 		return types[0]
 	}
 	key := getUnionKey(types, origin, alias)
-	return c.getUnionTypeFromSortedListWithKey(types, precomputedObjectFlags, alias, origin, key)
-}
-
-func (c *Checker) getUnionTypeFromSortedListWithKey(types []*Type, precomputedObjectFlags ObjectFlags, alias *TypeAlias, origin *Type, key CacheHashKey) *Type {
 	t := c.unionTypes[key]
 	if t == nil {
 		t = c.newUnionType(precomputedObjectFlags|c.getPropagatingFlagsOfTypes(types, TypeFlagsNullable), types)
@@ -27039,27 +27035,9 @@ func (c *Checker) removeType(t *Type, targetType *Type) *Type {
 		if len(types) == 2 {
 			return types[1-i]
 		}
-		// Look up the canonical union before allocating its constituent slice.
-		var b keyBuilder
-		b.writeInt(len(types) - 1)
-		for _, u := range types[:i] {
-			b.writeType(u)
-		}
-		for _, u := range types[i+1:] {
-			b.writeType(u)
-		}
-		b.writeAlias(nil)
-		key := b.hash()
-		if cached := c.unionTypes[key]; cached != nil {
-			return cached
-		}
-		var filtered []*Type
-		if i == 0 {
-			filtered = types[1:len(types):len(types)]
-		} else {
-			filtered = append(types[:i:i], types[i+1:]...)
-		}
-		return c.getUnionTypeFromSortedListWithKey(filtered, t.AsUnionType().objectFlags&(ObjectFlagsPrimitiveUnion|ObjectFlagsContainsIntersections), nil, nil, key)
+		// Remove the target type from the slice.
+		filtered := append(types[:i:i], types[i+1:]...)
+		return c.getUnionTypeFromSortedList(filtered, t.AsUnionType().objectFlags&(ObjectFlagsPrimitiveUnion|ObjectFlagsContainsIntersections), nil /*alias*/, nil /*origin*/)
 	}
 	return t
 }
