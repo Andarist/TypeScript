@@ -379,12 +379,7 @@ func (c *Checker) restoreCheckerState(state savedCheckerState) {
 func (c *Checker) initializeSpeculation() {
 	c.valueSymbolLinks.host = &c.speculationHost
 	c.flowLoopCache.host = &c.speculationHost
-	c.enumRelation.host = &c.speculationHost
 	c.contextFreeTypes.host = &c.speculationHost
-}
-
-func (c *Checker) newRelation() *Relation {
-	return &Relation{speculatableMap: speculatableMap[CacheHashKey, RelationComparisonResult]{host: &c.speculationHost}}
 }
 
 func (c *Checker) speculate(cb func() *Signature) (result *Signature) {

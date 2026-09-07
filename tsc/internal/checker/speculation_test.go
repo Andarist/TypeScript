@@ -19,7 +19,7 @@ func TestSpeculationNestedRollback(t *testing.T) {
 	outer := &Type{}
 	inner := &Type{}
 	c.typeNodeLinks.Get(node).setResolvedType(c, original)
-	relation := &Relation{speculatableMap: speculatableMap[CacheHashKey, RelationComparisonResult]{host: &c.speculationHost}}
+	relation := &speculatableMap[CacheHashKey, RelationComparisonResult]{host: &c.speculationHost}
 	key := CacheHashKey{}
 	relation.set(key, RelationComparisonResultSucceeded)
 	diagnostic := ast.NewDiagnostic(&ast.SourceFile{}, core.TextRange{}, diagnostics.No_overload_matches_this_call)

@@ -829,7 +829,7 @@ type Checker struct {
 	assignableRelation                          *Relation
 	comparableRelation                          *Relation
 	identityRelation                            *Relation
-	enumRelation                                speculatableMap[EnumRelationKey, RelationComparisonResult]
+	enumRelation                                map[EnumRelationKey]RelationComparisonResult // Like Relation, not journaled.
 	getGlobalESSymbolType                       func() *Type
 	getGlobalBigIntType                         func() *Type
 	getGlobalImportMetaType                     func() *Type
@@ -1063,11 +1063,12 @@ func NewChecker(program Program, tracer *Tracer) (*Checker, *sync.Mutex) {
 	c.typeofType = c.getUnionType(core.Map(slices.Sorted(maps.Keys(typeofNEFacts)), c.getStringLiteralType))
 	c.flowNodeReachable = make(map[*ast.FlowNode]bool)
 	c.flowNodePostSuper = make(map[*ast.FlowNode]bool)
-	c.subtypeRelation = c.newRelation()
-	c.strictSubtypeRelation = c.newRelation()
-	c.assignableRelation = c.newRelation()
-	c.comparableRelation = c.newRelation()
-	c.identityRelation = c.newRelation()
+	c.subtypeRelation = &Relation{}
+	c.strictSubtypeRelation = &Relation{}
+	c.assignableRelation = &Relation{}
+	c.comparableRelation = &Relation{}
+	c.identityRelation = &Relation{}
+	c.enumRelation = make(map[EnumRelationKey]RelationComparisonResult)
 	c.moduleImportAttributesTypes = make(map[*ast.Symbol]*Type)
 	c.getGlobalESSymbolType = c.getGlobalTypeResolver("Symbol", 0 /*arity*/, false /*reportErrors*/)
 	c.getGlobalBigIntType = c.getGlobalTypeResolver("BigInt", 0 /*arity*/, false /*reportErrors*/)
