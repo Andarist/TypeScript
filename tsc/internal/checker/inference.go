@@ -1121,7 +1121,7 @@ func (c *Checker) resolveReverseMappedTypeMembers(t *Type) {
 		checkFlags := ast.CheckFlagsReverseMapped | core.IfElse(readonlyMask && c.isReadonlySymbol(prop), ast.CheckFlagsReadonly, 0)
 		inferredProp := c.newSymbolEx(ast.SymbolFlagsProperty|prop.Flags&optionalMask, prop.Name, checkFlags)
 		inferredProp.Declarations = prop.Declarations
-		c.valueSymbolLinks.Get(inferredProp).setNameType(c.valueSymbolLinks.Get(prop).getNameType())
+		c.valueSymbolLinks.Get(inferredProp).setNameType(c, c.valueSymbolLinks.Get(prop).getNameType(c))
 		links := c.ReverseMappedSymbolLinks.Get(inferredProp)
 		links.propertyType = c.getTypeOfSymbol(prop)
 		constraintTarget := r.constraintType.AsIndexType().target
@@ -1144,11 +1144,11 @@ func (c *Checker) resolveReverseMappedTypeMembers(t *Type) {
 
 func (c *Checker) getTypeOfReverseMappedSymbol(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getResolvedType() == nil {
+	if links.getResolvedType(c) == nil {
 		reverseLinks := c.ReverseMappedSymbolLinks.Get(symbol)
-		links.setResolvedType(core.OrElse(c.inferReverseMappedType(reverseLinks.propertyType, reverseLinks.mappedType, reverseLinks.constraintType), c.unknownType))
+		links.setResolvedType(c, core.OrElse(c.inferReverseMappedType(reverseLinks.propertyType, reverseLinks.mappedType, reverseLinks.constraintType), c.unknownType))
 	}
-	return links.getResolvedType()
+	return links.getResolvedType(c)
 }
 
 // If the original mapped type had an intersection constraint we extract its components,
@@ -1234,7 +1234,7 @@ func (c *Checker) createEmptyObjectTypeFromStringLiteral(t *Type) *Type {
 		}
 		name := getStringLiteralValue(t)
 		literalProp := c.newSymbol(ast.SymbolFlagsProperty, name)
-		c.valueSymbolLinks.Get(literalProp).setResolvedType(c.anyType)
+		c.valueSymbolLinks.Get(literalProp).setResolvedType(c, c.anyType)
 		if t.symbol != nil {
 			literalProp.Declarations = t.symbol.Declarations
 			literalProp.ValueDeclaration = t.symbol.ValueDeclaration

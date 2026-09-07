@@ -77,16 +77,16 @@ func TestSpeculationPreservesSyntheticSymbols(t *testing.T) {
 	original := &Type{}
 	c.speculate(func() *Signature {
 		symbol = c.newSymbol(ast.SymbolFlagsFunctionScopedVariable, "value")
-		c.valueSymbolLinks.Get(symbol).setResolvedType(original)
+		c.valueSymbolLinks.Get(symbol).setResolvedType(c, original)
 		return nil
 	})
-	assert.Equal(t, c.valueSymbolLinks.Get(symbol).getResolvedType(), original)
+	assert.Equal(t, c.valueSymbolLinks.Get(symbol).getResolvedType(c), original)
 	updated := &Type{}
 	c.speculate(func() *Signature {
-		c.valueSymbolLinks.Get(symbol).setResolvedType(updated)
+		c.valueSymbolLinks.Get(symbol).setResolvedType(c, updated)
 		return nil
 	})
-	assert.Equal(t, c.valueSymbolLinks.Get(symbol).getResolvedType(), updated)
+	assert.Equal(t, c.valueSymbolLinks.Get(symbol).getResolvedType(c), updated)
 }
 
 func TestSpeculationPreservesGlobalDiagnostics(t *testing.T) {
@@ -107,10 +107,10 @@ func TestSpeculationRewindsUnresolvedExistingSymbol(t *testing.T) {
 	c.initializeSpeculation()
 	symbol := c.newSymbol(ast.SymbolFlagsFunctionScopedVariable, "value")
 	c.speculate(func() *Signature {
-		c.valueSymbolLinks.Get(symbol).setResolvedType(&Type{})
+		c.valueSymbolLinks.Get(symbol).setResolvedType(c, &Type{})
 		return nil
 	})
-	assert.Assert(t, c.valueSymbolLinks.Get(symbol).getResolvedType() == nil)
+	assert.Assert(t, c.valueSymbolLinks.Get(symbol).getResolvedType(c) == nil)
 }
 
 func TestSpeculationRestoresRetainedLinks(t *testing.T) {
@@ -143,14 +143,14 @@ func TestSpeculationRestoresRetainedPagedLinks(t *testing.T) {
 	symbol := c.newSymbol(ast.SymbolFlagsFunctionScopedVariable, "value")
 	valueLinks := c.valueSymbolLinks.Get(symbol)
 	original, updated := &Type{}, &Type{}
-	valueLinks.setResolvedType(original)
+	valueLinks.setResolvedType(c, original)
 	c.speculate(func() *Signature {
 		nodeLinks.setResolvedSymbol(c, symbol)
-		valueLinks.setResolvedType(updated)
+		valueLinks.setResolvedType(c, updated)
 		return nil
 	})
 	assert.Assert(t, nodeLinks.getResolvedSymbol() == nil)
-	assert.Equal(t, valueLinks.getResolvedType(), original)
+	assert.Equal(t, valueLinks.getResolvedType(c), original)
 }
 
 func TestSpeculatableCacheRewindsRejectedValues(t *testing.T) {
@@ -240,10 +240,10 @@ func TestSpeculationEscapedSymbolUnreadDiscardedWrites(t *testing.T) {
 		c.speculate(func() *Signature {
 			symbol = c.newSymbol(ast.SymbolFlagsFunctionScopedVariable, "escape")
 			links := c.valueSymbolLinks.Get(symbol)
-			links.setResolvedType(original)
-			c.speculate(func() *Signature { links.setResolvedType(inner); return nil })
+			links.setResolvedType(c, original)
+			c.speculate(func() *Signature { links.setResolvedType(c, inner); return nil })
 			if readBeforeOuterFailure {
-				assert.Equal(t, links.getResolvedType(), original)
+				assert.Equal(t, links.getResolvedType(c), original)
 			}
 			return nil
 		})
@@ -251,7 +251,7 @@ func TestSpeculationEscapedSymbolUnreadDiscardedWrites(t *testing.T) {
 		if readBeforeOuterFailure {
 			want = original
 		}
-		assert.Equal(t, c.valueSymbolLinks.Get(symbol).getResolvedType(), want)
+		assert.Equal(t, c.valueSymbolLinks.Get(symbol).getResolvedType(c), want)
 	}
 }
 
@@ -394,7 +394,7 @@ func TestSymbolCacheReferenceEquivalence(t *testing.T) {
 			return want
 		}
 		read := func(p *pair) {
-			assert.Equal(t, p.actual.get(&p.links), expected(p), "seed %d", seed)
+			assert.Equal(t, p.actual.get(&c.speculationHost, &p.links), expected(p), "seed %d", seed)
 		}
 		// Once the root attempt ends, every symbol keeps its settled value. Symbols
 		// born in a committed attempt then behave like stable symbols; symbols born
@@ -409,7 +409,7 @@ func TestSymbolCacheReferenceEquivalence(t *testing.T) {
 		run = func(depth int) {
 			for step := 0; step < 40; step++ {
 				if len(pairs) == 0 || next(8) == 0 {
-					p := &pair{links: ValueSymbolLinks{host: &c.speculationHost}, birth: c.speculationHost.currentSpeculativeEpoch}
+					p := &pair{links: ValueSymbolLinks{}, birth: c.speculationHost.currentSpeculativeEpoch}
 					if c.speculationHost.activeFrame != 0 {
 						c.speculationHost.adoptSymbolBirth(&p.links, p.birth)
 					}
@@ -434,7 +434,7 @@ func TestSymbolCacheReferenceEquivalence(t *testing.T) {
 					}
 				case 1, 2:
 					value := values[next(5)]
-					p.actual.set(&p.links, value)
+					p.actual.set(&c.speculationHost, &p.links, value)
 					epoch := c.speculationHost.currentSpeculativeEpoch
 					if len(p.reference) > 0 && p.reference[len(p.reference)-1].epoch == epoch {
 						p.reference[len(p.reference)-1].value = value
@@ -483,28 +483,28 @@ func TestSpeculationSettlesNewSymbolOnCommit(t *testing.T) {
 	c.speculate(func() *Signature {
 		symbol = c.newSymbol(ast.SymbolFlagsFunctionScopedVariable, "value")
 		links := c.valueSymbolLinks.Get(symbol)
-		links.setResolvedType(original)
-		links.setFunctionOrConstructorChecked(true)
+		links.setResolvedType(c, original)
+		links.setFunctionOrConstructorChecked(c, true)
 		c.speculate(func() *Signature {
-			links.setResolvedType(&Type{})
-			links.setFunctionOrConstructorChecked(false)
+			links.setResolvedType(c, &Type{})
+			links.setFunctionOrConstructorChecked(c, false)
 			return nil
 		})
 		// Do not read the rejected values before the owning attempt commits.
 		return &Signature{}
 	})
 	links := c.valueSymbolLinks.Get(symbol)
-	assert.Equal(t, links.getResolvedType(), original)
-	assert.Assert(t, links.getFunctionOrConstructorChecked())
+	assert.Equal(t, links.getResolvedType(c), original)
+	assert.Assert(t, links.getFunctionOrConstructorChecked(c))
 	assert.Equal(t, c.speculationHost.rootEpoch, uint64(0))
 	assert.Equal(t, len(c.speculationHost.lazySymbolTypes.entries), 0)
 	assert.Equal(t, len(c.speculationHost.lazySymbolBools.entries), 0)
 	// The symbol is now stable and must participate in a later rollback.
 	c.speculate(func() *Signature {
-		links.setResolvedType(&Type{})
-		links.setFunctionOrConstructorChecked(false)
+		links.setResolvedType(c, &Type{})
+		links.setFunctionOrConstructorChecked(c, false)
 		return nil
 	})
-	assert.Equal(t, links.getResolvedType(), original)
-	assert.Assert(t, links.getFunctionOrConstructorChecked())
+	assert.Equal(t, links.getResolvedType(c), original)
+	assert.Assert(t, links.getFunctionOrConstructorChecked(c))
 }

@@ -174,7 +174,6 @@ type SymbolReferenceLinks struct {
 // Links for value symbols
 
 type ValueSymbolLinks struct {
-	host              *speculationHost
 	resolvedTypeCache speculatableSymbolCache[*Type] // Type of value symbol
 	writeTypeCache    speculatableSymbolCache[*Type]
 	target            *ast.Symbol

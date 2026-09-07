@@ -748,7 +748,7 @@ func (c *Checker) createJsxAttributesTypeFromAttributesProperty(openingLikeEleme
 					attributeSymbol.ValueDeclaration = member.ValueDeclaration
 				}
 				links := c.valueSymbolLinks.Get(attributeSymbol)
-				links.setResolvedType(exprType)
+				links.setResolvedType(c, exprType)
 				links.target = member
 				attributesTable[attributeSymbol.Name] = attributeSymbol
 				if allAttributesTable != nil {
@@ -836,11 +836,11 @@ func (c *Checker) createJsxAttributesTypeFromAttributesProperty(openingLikeEleme
 			links := c.valueSymbolLinks.Get(childrenPropSymbol)
 			switch {
 			case len(childTypes) == 1:
-				links.setResolvedType(childTypes[0])
+				links.setResolvedType(c, childTypes[0])
 			case childrenContextualType != nil && someType(childrenContextualType, c.isTupleLikeType):
-				links.setResolvedType(c.createTupleType(childTypes))
+				links.setResolvedType(c, c.createTupleType(childTypes))
 			default:
-				links.setResolvedType(c.createArrayType(c.getUnionType(childTypes)))
+				links.setResolvedType(c, c.createArrayType(c.getUnionType(childTypes)))
 			}
 			// Fake up a property declaration for the children
 			childrenPropSymbol.ValueDeclaration = c.factory.NewPropertySignatureDeclaration(nil, c.factory.NewIdentifier(jsxChildrenPropertyName), nil /*postfixToken*/, nil /*type*/, nil /*initializer*/)
@@ -1178,7 +1178,7 @@ func (c *Checker) createSignatureForJSXIntrinsic(node *ast.Node, result *Type) *
 	// returnNode := typeSymbol && c.nodeBuilder.symbolToEntityName(typeSymbol, ast.SymbolFlagsType, node)
 	// declaration := factory.createFunctionTypeNode(nil, []ParameterDeclaration{factory.createParameterDeclaration(nil, nil /*dotDotDotToken*/, "props", nil /*questionToken*/, c.nodeBuilder.typeToTypeNode(result, node))}, ifElse(returnNode != nil, factory.createTypeReferenceNode(returnNode, nil /*typeArguments*/), factory.createKeywordTypeNode(ast.KindAnyKeyword)))
 	parameterSymbol := c.newSymbol(ast.SymbolFlagsFunctionScopedVariable, "props")
-	c.valueSymbolLinks.Get(parameterSymbol).setResolvedType(result)
+	c.valueSymbolLinks.Get(parameterSymbol).setResolvedType(c, result)
 	return c.newSignature(SignatureFlagsNone, nil, nil, nil, []*ast.Symbol{parameterSymbol}, elementType, nil, 1)
 }
 

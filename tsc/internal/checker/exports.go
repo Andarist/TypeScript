@@ -85,7 +85,7 @@ func (c *Checker) GetNameTypeOfSymbol(symbol *ast.Symbol) *Type {
 	if !c.valueSymbolLinks.Has(symbol) {
 		return nil
 	}
-	return c.valueSymbolLinks.TryGet(symbol).getNameType()
+	return c.valueSymbolLinks.TryGet(symbol).getNameType(c)
 }
 
 func IsTypeUsableAsPropertyName(t *Type) bool {

@@ -31,10 +31,6 @@ type speculationHost struct {
 	discardedSpeculativeEpochs []uint64
 }
 
-// Symbol links carry their host because reads of newly born symbols must
-// consult the lazy history below. Node links pass the checker to their setters
-// instead, keeping the hot node link structs free of pointers.
-//
 // Birth epochs only matter while the root attempt that created the symbol is
 // active. They are stored in the links relative to the root attempt and cleared
 // when it ends, so reads of the many stable symbols need only a single field test.
@@ -71,9 +67,8 @@ type (
 	speculatableSymbolCache[V symbolCacheValue] struct{ value V }
 )
 
-func (s *speculatableSymbolCache[V]) get(links *ValueSymbolLinks) V {
+func (s *speculatableSymbolCache[V]) get(h *speculationHost, links *ValueSymbolLinks) V {
 	if links.birthOffset != 0 && links.birthOffset != orphanBirthOffset {
-		h := links.host
 		if birth := h.birthEpoch(links); birth != h.currentSpeculativeEpoch && !h.isDiscardedEpoch(birth) {
 			h.readLazySymbolCache(s)
 		}
@@ -81,8 +76,8 @@ func (s *speculatableSymbolCache[V]) get(links *ValueSymbolLinks) V {
 	return s.value
 }
 
-func (s *speculatableSymbolCache[V]) set(links *ValueSymbolLinks, value V) {
-	if h := links.host; h.activeFrame != 0 {
+func (s *speculatableSymbolCache[V]) set(h *speculationHost, links *ValueSymbolLinks, value V) {
+	if h.activeFrame != 0 {
 		switch links.birthOffset {
 		case 0:
 			// Only stable symbols can skip an equal write: an equal write to a
@@ -377,7 +372,6 @@ func (c *Checker) restoreCheckerState(state savedCheckerState) {
 }
 
 func (c *Checker) initializeSpeculation() {
-	c.valueSymbolLinks.host = &c.speculationHost
 	c.flowLoopCache.host = &c.speculationHost
 	c.contextFreeTypes.host = &c.speculationHost
 }
@@ -418,23 +412,6 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 		}
 	}()
 	return cb()
-}
-
-// Value symbol links learn their host when created so their accessors can
-// consult the lazy symbol history without a checker in hand.
-type valueSymbolLinkStore struct {
-	symbolArenaLinkStore[ValueSymbolLinks]
-	host *speculationHost
-}
-
-func (s *valueSymbolLinkStore) Get(symbol *ast.Symbol) *ValueSymbolLinks {
-	link := s.store.Get(uint64(ast.GetSymbolId(symbol)))
-	if *link == nil {
-		links := s.arena.New()
-		links.host = s.host
-		*link = links
-	}
-	return *link
 }
 
 type cacheCheckpoint struct {

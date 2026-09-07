@@ -685,7 +685,7 @@ type Checker struct {
 	jsxElementLinks                             core.LinkStore[*ast.Node, JsxElementLinks]
 	computedNameLinks                           core.LinkStore[*ast.Node, ComputedNameNodeLinks]
 	symbolReferenceLinks                        core.LinkStore[*ast.Symbol, SymbolReferenceLinks]
-	valueSymbolLinks                            valueSymbolLinkStore
+	valueSymbolLinks                            symbolArenaLinkStore[ValueSymbolLinks]
 	mappedSymbolLinks                           core.LinkStore[*ast.Symbol, MappedSymbolLinks]
 	deferredSymbolLinks                         core.LinkStore[*ast.Symbol, DeferredSymbolLinks]
 	aliasSymbolLinks                            core.LinkStore[*ast.Symbol, AliasSymbolLinks]
@@ -1353,10 +1353,10 @@ func (c *Checker) initializeChecker() {
 		}
 	}
 	c.addUndefinedToGlobalsOrErrorOnRedeclaration()
-	c.valueSymbolLinks.Get(c.undefinedSymbol).setResolvedType(c.undefinedWideningType)
-	c.valueSymbolLinks.Get(c.argumentsSymbol).setResolvedType(c.getGlobalType("IArguments", 0 /*arity*/, true /*reportErrors*/))
-	c.valueSymbolLinks.Get(c.unknownSymbol).setResolvedType(c.errorType)
-	c.valueSymbolLinks.Get(c.globalThisSymbol).setResolvedType(c.newObjectType(ObjectFlagsAnonymous, c.globalThisSymbol))
+	c.valueSymbolLinks.Get(c.undefinedSymbol).setResolvedType(c, c.undefinedWideningType)
+	c.valueSymbolLinks.Get(c.argumentsSymbol).setResolvedType(c, c.getGlobalType("IArguments", 0 /*arity*/, true /*reportErrors*/))
+	c.valueSymbolLinks.Get(c.unknownSymbol).setResolvedType(c, c.errorType)
+	c.valueSymbolLinks.Get(c.globalThisSymbol).setResolvedType(c, c.newObjectType(ObjectFlagsAnonymous, c.globalThisSymbol))
 	// Initialize special types
 	c.globalArrayType = c.getGlobalType("Array", 1 /*arity*/, true /*reportErrors*/)
 	c.globalObjectType = c.getGlobalType("Object", 0 /*arity*/, true /*reportErrors*/)
@@ -3485,8 +3485,8 @@ func (c *Checker) checkFunctionOrMethodDeclaration(node *ast.Node) {
 
 func (c *Checker) checkFunctionOrConstructorSymbol(symbol *ast.Symbol) {
 	// Only check the symbol once
-	if links := c.valueSymbolLinks.Get(symbol); !links.getFunctionOrConstructorChecked() {
-		links.setFunctionOrConstructorChecked(true)
+	if links := c.valueSymbolLinks.Get(symbol); !links.getFunctionOrConstructorChecked(c) {
+		links.setFunctionOrConstructorChecked(c, true)
 		c.checkFunctionOrConstructorSymbolWorker(symbol)
 	}
 }
@@ -5585,7 +5585,7 @@ func (c *Checker) checkImportAttributesExpression(node *ast.Node) *Type {
 		members := make(ast.SymbolTable)
 		for _, attribute := range node.AsImportAttributes().Attributes.Nodes {
 			member := c.newSymbol(ast.SymbolFlagsProperty, attribute.Name().Text())
-			c.valueSymbolLinks.Get(member).setResolvedType(c.getRegularTypeOfLiteralType(c.checkExpressionCached(attribute.AsImportAttribute().Value)))
+			c.valueSymbolLinks.Get(member).setResolvedType(c, c.getRegularTypeOfLiteralType(c.checkExpressionCached(attribute.AsImportAttribute().Value)))
 			members[member.Name] = member
 		}
 		t := c.newAnonymousType(symbol, members, nil, nil, nil)
@@ -10708,7 +10708,7 @@ func (c *Checker) assignNonContextualParameterTypes(signature *Signature) {
 
 func (c *Checker) assignParameterType(parameter *ast.Symbol, contextualType *Type) {
 	links := c.valueSymbolLinks.Get(parameter)
-	if links.getResolvedType() != nil {
+	if links.getResolvedType(c) != nil {
 		return
 	}
 	declaration := parameter.ValueDeclaration
@@ -10720,13 +10720,13 @@ func (c *Checker) assignParameterType(parameter *ast.Symbol, contextualType *Typ
 			t = c.getTypeOfSymbol(parameter)
 		}
 	}
-	links.setResolvedType(c.addOptionalityEx(t, false, declaration != nil && declaration.Initializer() == nil && isOptionalDeclaration(declaration)))
+	links.setResolvedType(c, c.addOptionalityEx(t, false, declaration != nil && declaration.Initializer() == nil && isOptionalDeclaration(declaration)))
 	if declaration != nil && !ast.IsIdentifier(declaration.Name()) {
 		// if inference didn't come up with anything but unknown, fall back to the binding pattern if present.
-		if links.getResolvedType() == c.unknownType {
-			links.setResolvedType(c.getTypeFromBindingPattern(declaration.Name(), false, false))
+		if links.getResolvedType(c) == c.unknownType {
+			links.setResolvedType(c, c.getTypeFromBindingPattern(declaration.Name(), false, false))
 		}
-		c.assignBindingElementTypes(declaration.Name(), links.getResolvedType())
+		c.assignBindingElementTypes(declaration.Name(), links.getResolvedType(c))
 	}
 }
 
@@ -10738,7 +10738,7 @@ func (c *Checker) assignBindingElementTypes(pattern *ast.Node, parentType *Type)
 		if name != nil {
 			t := c.getBindingElementTypeFromParentType(element, parentType, false /*noTupleBoundsCheck*/)
 			if ast.IsIdentifier(name) {
-				c.valueSymbolLinks.Get(c.getSymbolOfDeclaration(element)).setResolvedType(t)
+				c.valueSymbolLinks.Get(c.getSymbolOfDeclaration(element)).setResolvedType(c, t)
 			} else {
 				c.assignBindingElementTypes(name, t)
 			}
@@ -13559,7 +13559,7 @@ func (c *Checker) checkObjectLiteral(node *ast.Node, checkMode CheckMode) *Type 
 			}
 			links := c.valueSymbolLinks.Get(prop)
 			if nameType != nil {
-				links.setNameType(nameType)
+				links.setNameType(c, nameType)
 			}
 			if inDestructuringPattern && c.hasDefaultValue(memberDecl) {
 				// If object literal is an assignment pattern and if the assignment pattern specifies a default value
@@ -13578,7 +13578,7 @@ func (c *Checker) checkObjectLiteral(node *ast.Node, checkMode CheckMode) *Type 
 			prop.Declarations = member.Declarations
 			prop.Parent = member.Parent
 			prop.ValueDeclaration = member.ValueDeclaration
-			links.setResolvedType(t)
+			links.setResolvedType(c, t)
 			links.target = member
 			member = prop
 			if allPropertiesTable != nil {
@@ -13797,14 +13797,14 @@ func (c *Checker) getSpreadType(left *Type, right *Type, symbol *ast.Symbol, obj
 				leftTypeWithoutUndefined := c.removeMissingOrUndefinedType(leftType)
 				rightTypeWithoutUndefined := c.removeMissingOrUndefinedType(rightType)
 				if leftTypeWithoutUndefined == rightTypeWithoutUndefined {
-					links.setResolvedType(leftType)
+					links.setResolvedType(c, leftType)
 				} else {
-					links.setResolvedType(c.getUnionTypeEx([]*Type{leftType, rightTypeWithoutUndefined}, UnionReductionSubtype, nil, nil))
+					links.setResolvedType(c, c.getUnionTypeEx([]*Type{leftType, rightTypeWithoutUndefined}, UnionReductionSubtype, nil, nil))
 				}
 				c.spreadLinks.Get(result).leftSpread = leftProp
 				c.spreadLinks.Get(result).rightSpread = rightProp
 				result.Declarations = declarations
-				links.setNameType(c.valueSymbolLinks.Get(leftProp).getNameType())
+				links.setNameType(c, c.valueSymbolLinks.Get(leftProp).getNameType(c))
 				members[leftProp.Name] = result
 			}
 		} else {
@@ -13886,12 +13886,12 @@ func (c *Checker) tryMergeUnionOfObjectTypeAndEmptyObject(t *Type, readonly bool
 			result := c.newSymbolEx(flags, prop.Name, prop.CheckFlags&ast.CheckFlagsLate|core.IfElse(readonly, ast.CheckFlagsReadonly, 0))
 			links := c.valueSymbolLinks.Get(result)
 			if isSetonlyAccessor {
-				links.setResolvedType(c.undefinedType)
+				links.setResolvedType(c, c.undefinedType)
 			} else {
-				links.setResolvedType(c.addOptionalityEx(c.getTypeOfSymbol(prop), true /*isProperty*/, true /*isOptional*/))
+				links.setResolvedType(c, c.addOptionalityEx(c.getTypeOfSymbol(prop), true /*isProperty*/, true /*isOptional*/))
 			}
 			result.Declarations = prop.Declarations
-			links.setNameType(c.valueSymbolLinks.Get(prop).getNameType())
+			links.setNameType(c, c.valueSymbolLinks.Get(prop).getNameType(c))
 			c.mappedSymbolLinks.Get(result).syntheticOrigin = prop
 			members[prop.Name] = result
 		}
@@ -13916,12 +13916,12 @@ func (c *Checker) getSpreadSymbol(prop *ast.Symbol, readonly bool) *ast.Symbol {
 	result := c.newSymbolEx(flags, prop.Name, prop.CheckFlags&ast.CheckFlagsLate|core.IfElse(readonly, ast.CheckFlagsReadonly, 0))
 	links := c.valueSymbolLinks.Get(result)
 	if isSetonlyAccessor {
-		links.setResolvedType(c.undefinedType)
+		links.setResolvedType(c, c.undefinedType)
 	} else {
-		links.setResolvedType(c.getTypeOfSymbol(prop))
+		links.setResolvedType(c, c.getTypeOfSymbol(prop))
 	}
 	result.Declarations = prop.Declarations
-	links.setNameType(c.valueSymbolLinks.Get(prop).getNameType())
+	links.setNameType(c, c.valueSymbolLinks.Get(prop).getNameType(c))
 	c.mappedSymbolLinks.Get(result).syntheticOrigin = prop
 	return result
 }
@@ -14457,13 +14457,13 @@ func (c *Checker) newSymbolEx(flags ast.SymbolFlags, name string, checkFlags ast
 
 func (c *Checker) newParameter(name string, t *Type) *ast.Symbol {
 	symbol := c.newSymbol(ast.SymbolFlagsFunctionScopedVariable, name)
-	c.valueSymbolLinks.Get(symbol).setResolvedType(t)
+	c.valueSymbolLinks.Get(symbol).setResolvedType(c, t)
 	return symbol
 }
 
 func (c *Checker) newProperty(name string, t *Type) *ast.Symbol {
 	symbol := c.newSymbol(ast.SymbolFlagsProperty, name)
-	c.valueSymbolLinks.Get(symbol).setResolvedType(t)
+	c.valueSymbolLinks.Get(symbol).setResolvedType(c, t)
 	return symbol
 }
 
@@ -16115,7 +16115,7 @@ func (c *Checker) getTypeWithSyntheticDefaultImportType(t *Type, symbol *ast.Sym
 			anonymousSymbol := c.newSymbol(ast.SymbolFlagsTypeLiteral, ast.InternalSymbolNameType)
 			anonymousSymbol.Declarations = originalSymbol.Declarations
 			defaultContainingObject := c.createDefaultPropertyWrapperForModule(symbol, originalSymbol, anonymousSymbol)
-			c.valueSymbolLinks.Get(anonymousSymbol).setResolvedType(defaultContainingObject)
+			c.valueSymbolLinks.Get(anonymousSymbol).setResolvedType(c, defaultContainingObject)
 			if c.isValidSpreadType(t) {
 				syntheticType = c.getSpreadType(t, defaultContainingObject, anonymousSymbol, 0 /*objectFlags*/, false /*readonly*/)
 			} else {
@@ -16167,7 +16167,7 @@ func (c *Checker) createDefaultPropertyWrapperForModule(symbol *ast.Symbol, orig
 	memberTable := make(ast.SymbolTable)
 	newSymbol := c.newSymbol(ast.SymbolFlagsAlias, ast.InternalSymbolNameDefault)
 	newSymbol.Parent = originalSymbol
-	c.valueSymbolLinks.Get(newSymbol).setNameType(c.getStringLiteralType("default"))
+	c.valueSymbolLinks.Get(newSymbol).setNameType(c, c.getStringLiteralType("default"))
 	c.aliasSymbolLinks.Get(newSymbol).aliasTarget = c.resolveSymbol(symbol)
 	memberTable[ast.InternalSymbolNameDefault] = newSymbol
 	if anonymousSymbol == nil && originalSymbol != nil {
@@ -16188,7 +16188,7 @@ func (c *Checker) cloneTypeAsModuleType(symbol *ast.Symbol, moduleType *Type, re
 	links.target = symbol
 	links.originatingImport = referenceParent
 	resolvedModuleType := c.resolveStructuredTypeMembers(moduleType)
-	c.valueSymbolLinks.Get(result).setResolvedType(c.newAnonymousType(result, resolvedModuleType.members, nil, nil, resolvedModuleType.indexInfos))
+	c.valueSymbolLinks.Get(result).setResolvedType(c, c.newAnonymousType(result, resolvedModuleType.members, nil, nil, resolvedModuleType.indexInfos))
 	return result
 }
 
@@ -16513,7 +16513,7 @@ func (c *Checker) lateBindMember(parent *ast.Symbol, earlySymbols ast.SymbolTabl
 				}
 				lateSymbol = c.newSymbolEx(ast.SymbolFlagsNone, memberName, ast.CheckFlagsLate)
 			}
-			c.valueSymbolLinks.Get(lateSymbol).setNameType(t)
+			c.valueSymbolLinks.Get(lateSymbol).setNameType(c, t)
 			c.addDeclarationToLateBoundSymbol(lateSymbol, decl, symbolFlags)
 			if lateSymbol.Parent == nil {
 				lateSymbol.Parent = parent
@@ -16859,32 +16859,32 @@ func (c *Checker) getDeclarationOfAliasSymbol(symbol *ast.Symbol) *ast.Node {
 
 func (c *Checker) getTypeOfSymbolWithDeferredType(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getResolvedType() == nil {
+	if links.getResolvedType(c) == nil {
 		deferred := c.deferredSymbolLinks.Get(symbol)
 		if deferred.parent.flags&TypeFlagsUnion != 0 {
-			links.setResolvedType(c.getUnionType(deferred.constituents))
+			links.setResolvedType(c, c.getUnionType(deferred.constituents))
 		} else {
-			links.setResolvedType(c.getIntersectionType(deferred.constituents))
+			links.setResolvedType(c, c.getIntersectionType(deferred.constituents))
 		}
 	}
-	return links.getResolvedType()
+	return links.getResolvedType(c)
 }
 
 func (c *Checker) getWriteTypeOfSymbolWithDeferredType(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getWriteType() == nil {
+	if links.getWriteType(c) == nil {
 		deferred := c.deferredSymbolLinks.Get(symbol)
 		if len(deferred.writeConstituents) != 0 {
 			if deferred.parent.flags&TypeFlagsUnion != 0 {
-				links.setWriteType(c.getUnionType(deferred.writeConstituents))
+				links.setWriteType(c, c.getUnionType(deferred.writeConstituents))
 			} else {
-				links.setWriteType(c.getIntersectionType(deferred.writeConstituents))
+				links.setWriteType(c, c.getIntersectionType(deferred.writeConstituents))
 			}
 		} else {
-			links.setWriteType(c.getTypeOfSymbolWithDeferredType(symbol))
+			links.setWriteType(c, c.getTypeOfSymbolWithDeferredType(symbol))
 		}
 	}
-	return links.getWriteType()
+	return links.getWriteType(c)
 }
 
 // Distinct write types come only from set accessors, but synthetic union and intersection
@@ -16896,7 +16896,7 @@ func (c *Checker) getWriteTypeOfSymbol(symbol *ast.Symbol) *Type {
 			return c.getWriteTypeOfSymbolWithDeferredType(symbol)
 		}
 		links := c.valueSymbolLinks.Get(symbol)
-		return core.OrElse(links.getWriteType(), links.getResolvedType())
+		return core.OrElse(links.getWriteType(c), links.getResolvedType(c))
 	}
 	if symbol.Flags&ast.SymbolFlagsProperty != 0 {
 		return c.removeMissingType(c.getTypeOfSymbol(symbol), symbol.Flags&ast.SymbolFlagsOptional != 0)
@@ -16986,23 +16986,23 @@ func (c *Checker) getNonMissingTypeOfSymbol(symbol *ast.Symbol) *Type {
 
 func (c *Checker) getTypeOfInstantiatedSymbol(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getResolvedType() == nil {
-		links.setResolvedType(c.instantiateType(c.getTypeOfSymbol(links.target), links.mapper))
+	if links.getResolvedType(c) == nil {
+		links.setResolvedType(c, c.instantiateType(c.getTypeOfSymbol(links.target), links.mapper))
 	}
-	return links.getResolvedType()
+	return links.getResolvedType(c)
 }
 
 func (c *Checker) getWriteTypeOfInstantiatedSymbol(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getWriteType() == nil {
-		links.setWriteType(c.instantiateType(c.getWriteTypeOfSymbol(links.target), links.mapper))
+	if links.getWriteType(c) == nil {
+		links.setWriteType(c, c.instantiateType(c.getWriteTypeOfSymbol(links.target), links.mapper))
 	}
-	return links.getWriteType()
+	return links.getWriteType(c)
 }
 
 func (c *Checker) getTypeOfVariableOrParameterOrProperty(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getResolvedType() == nil {
+	if links.getResolvedType(c) == nil {
 		t := c.getTypeOfVariableOrParameterOrPropertyWorker(symbol)
 		if t == nil {
 			panic("Unexpected nil type")
@@ -17012,12 +17012,12 @@ func (c *Checker) getTypeOfVariableOrParameterOrProperty(symbol *ast.Symbol) *Ty
 		// to preserve this type. In fact, we need to _prefer_ that type, but it won't
 		// be assigned until contextual typing is complete, so we need to defer in
 		// cases where contextual typing may take place.
-		if links.getResolvedType() == nil && !c.isParameterOfContextSensitiveSignature(symbol) {
-			links.setResolvedType(t)
+		if links.getResolvedType(c) == nil && !c.isParameterOfContextSensitiveSignature(symbol) {
+			links.setResolvedType(c, t)
 		}
 		return t
 	}
-	return links.getResolvedType()
+	return links.getResolvedType(c)
 }
 
 func (c *Checker) isParameterOfContextSensitiveSignature(symbol *ast.Symbol) bool {
@@ -17298,7 +17298,7 @@ func (c *Checker) padObjectLiteralType(t *Type, pattern *ast.Node) *Type {
 	}
 	for _, e := range missingElements {
 		symbol := c.newSymbol(ast.SymbolFlagsProperty|ast.SymbolFlagsOptional, c.getPropertyNameFromBindingElement(e))
-		c.valueSymbolLinks.Get(symbol).setResolvedType(c.getTypeFromBindingElement(e, false /*includePatternInType*/, false /*reportErrors*/))
+		c.valueSymbolLinks.Get(symbol).setResolvedType(c, c.getTypeFromBindingElement(e, false /*includePatternInType*/, false /*reportErrors*/))
 		members[symbol.Name] = symbol
 	}
 	result := c.newAnonymousType(t.symbol, members, nil, nil, c.getIndexInfosOfType(t))
@@ -17362,10 +17362,10 @@ func (c *Checker) getWidenedLiteralTypeForInitializer(declaration *ast.Node, t *
 
 func (c *Checker) getTypeOfFuncClassEnumModule(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getResolvedType() == nil {
-		links.setResolvedType(c.getTypeOfFuncClassEnumModuleWorker(symbol))
+	if links.getResolvedType(c) == nil {
+		links.setResolvedType(c, c.getTypeOfFuncClassEnumModuleWorker(symbol))
 	}
-	return links.getResolvedType()
+	return links.getResolvedType(c)
 }
 
 func (c *Checker) getTypeOfFuncClassEnumModuleWorker(symbol *ast.Symbol) *Type {
@@ -18171,7 +18171,7 @@ func (c *Checker) getTypeForBindingElementParent(node *ast.Node, checkMode Check
 	if checkMode == CheckModeNormal {
 		// We can use a cached resolved type if no optionality was included in that type.
 		if symbol := c.getSymbolOfDeclaration(node); symbol != nil {
-			if resolvedType := c.valueSymbolLinks.Get(symbol).getResolvedType(); resolvedType != nil && !(c.strictNullChecks && isOptionalDeclaration(node)) {
+			if resolvedType := c.valueSymbolLinks.Get(symbol).getResolvedType(c); resolvedType != nil && !(c.strictNullChecks && isOptionalDeclaration(node)) {
 				return resolvedType
 			}
 		}
@@ -18412,7 +18412,7 @@ func (c *Checker) getTypeFromObjectBindingPattern(pattern *ast.Node, includePatt
 		text := getPropertyNameFromType(exprType)
 		flags := ast.SymbolFlagsProperty | core.IfElse(e.Initializer() != nil, ast.SymbolFlagsOptional, 0)
 		symbol := c.newSymbol(flags, text)
-		c.valueSymbolLinks.Get(symbol).setResolvedType(c.getTypeFromBindingElement(e, includePatternInType, reportErrors))
+		c.valueSymbolLinks.Get(symbol).setResolvedType(c, c.getTypeFromBindingElement(e, includePatternInType, reportErrors))
 		members[symbol.Name] = symbol
 	}
 	var indexInfos []*IndexInfo
@@ -18981,15 +18981,15 @@ func (c *Checker) getUndefinedProperty(prop *ast.Symbol) *ast.Symbol {
 
 func (c *Checker) getTypeOfEnumMember(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getResolvedType() == nil {
-		links.setResolvedType(c.getDeclaredTypeOfEnumMember(symbol))
+	if links.getResolvedType(c) == nil {
+		links.setResolvedType(c, c.getDeclaredTypeOfEnumMember(symbol))
 	}
-	return links.getResolvedType()
+	return links.getResolvedType(c)
 }
 
 func (c *Checker) getTypeOfAccessors(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getResolvedType() == nil {
+	if links.getResolvedType(c) == nil {
 		if !c.pushTypeResolution(symbol, TypeSystemPropertyNameType) {
 			return c.errorType
 		}
@@ -19035,16 +19035,16 @@ func (c *Checker) getTypeOfAccessors(symbol *ast.Symbol) *Type {
 			}
 			t = c.anyType
 		}
-		if links.getResolvedType() == nil {
-			links.setResolvedType(t)
+		if links.getResolvedType(c) == nil {
+			links.setResolvedType(c, t)
 		}
 	}
-	return links.getResolvedType()
+	return links.getResolvedType(c)
 }
 
 func (c *Checker) getWriteTypeOfAccessors(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getWriteType() == nil {
+	if links.getWriteType(c) == nil {
 		if !c.pushTypeResolution(symbol, TypeSystemPropertyNameWriteType) {
 			return c.errorType
 		}
@@ -19063,20 +19063,20 @@ func (c *Checker) getWriteTypeOfAccessors(symbol *ast.Symbol) *Type {
 			writeType = c.anyType
 		}
 		// Absent an explicit setter type annotation we use the read type of the accessor.
-		if links.getWriteType() == nil {
+		if links.getWriteType(c) == nil {
 			if writeType != nil {
-				links.setWriteType(writeType)
+				links.setWriteType(c, writeType)
 			} else {
-				links.setWriteType(c.getTypeOfAccessors(symbol))
+				links.setWriteType(c, c.getTypeOfAccessors(symbol))
 			}
 		}
 	}
-	return links.getWriteType()
+	return links.getWriteType(c)
 }
 
 func (c *Checker) getTypeOfAlias(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getResolvedType() == nil {
+	if links.getResolvedType(c) == nil {
 		if !c.pushTypeResolution(symbol, TypeSystemPropertyNameType) {
 			return c.errorType
 		}
@@ -19087,22 +19087,22 @@ func (c *Checker) getTypeOfAlias(symbol *ast.Symbol) *Type {
 		// type symbol, call getDeclaredTypeOfSymbol.
 		// This check is important because without it, a call to getTypeOfSymbol could end
 		// up recursively calling getTypeOfAlias, causing a stack overflow.
-		if links.getResolvedType() == nil {
+		if links.getResolvedType(c) == nil {
 			if c.getSymbolFlags(targetSymbol)&ast.SymbolFlagsValue != 0 {
-				links.setResolvedType(c.getTypeOfSymbol(targetSymbol))
+				links.setResolvedType(c, c.getTypeOfSymbol(targetSymbol))
 			} else {
-				links.setResolvedType(c.errorType)
+				links.setResolvedType(c, c.errorType)
 			}
 		}
 		if !c.popTypeResolution() {
 			c.reportCircularityError(core.OrElse(exportSymbol, symbol))
-			if links.getResolvedType() == nil {
-				links.setResolvedType(c.errorType)
+			if links.getResolvedType(c) == nil {
+				links.setResolvedType(c, c.errorType)
 			}
-			return links.getResolvedType()
+			return links.getResolvedType(c)
 		}
 	}
-	return links.getResolvedType()
+	return links.getResolvedType(c)
 }
 
 func (c *Checker) addOptionality(t *Type) *Type {
@@ -19275,7 +19275,7 @@ func (c *Checker) findResolutionCycleStartIndex(target TypeSystemEntity, propert
 func (c *Checker) typeResolutionHasProperty(r *TypeResolution) bool {
 	switch r.propertyName {
 	case TypeSystemPropertyNameType:
-		return c.valueSymbolLinks.Get(r.target.(*ast.Symbol)).getResolvedType() != nil
+		return c.valueSymbolLinks.Get(r.target.(*ast.Symbol)).getResolvedType(c) != nil
 	case TypeSystemPropertyNameDeclaredType:
 		return c.typeAliasLinks.Get(r.target.(*ast.Symbol)).declaredType != nil
 	case TypeSystemPropertyNameResolvedTypeArguments:
@@ -19291,7 +19291,7 @@ func (c *Checker) typeResolutionHasProperty(r *TypeResolution) bool {
 	case TypeSystemPropertyNameInitializerIsUndefined:
 		return c.nodeLinks.Get(r.target.(*ast.Node)).getFlags()&NodeCheckFlagsInitializerIsUndefinedComputed != 0
 	case TypeSystemPropertyNameWriteType:
-		return c.valueSymbolLinks.Get(r.target.(*ast.Symbol)).getWriteType() != nil
+		return c.valueSymbolLinks.Get(r.target.(*ast.Symbol)).getWriteType(c) != nil
 	case TypeSystemPropertyNameAliasTarget:
 		return c.aliasSymbolLinks.Get(r.target.(*ast.Symbol)).aliasTarget != nil
 	}
@@ -21239,12 +21239,12 @@ func (c *Checker) instantiateSymbol(symbol *ast.Symbol, m *TypeMapper) *ast.Symb
 	}
 	// If the type of the symbol is already resolved, and if that type could not possibly
 	// be affected by instantiation, simply return the symbol itself.
-	if links.getResolvedType() != nil && !c.couldContainTypeVariables(links.getResolvedType()) {
+	if links.getResolvedType(c) != nil && !c.couldContainTypeVariables(links.getResolvedType(c)) {
 		if symbol.Flags&ast.SymbolFlagsSetAccessor == 0 {
 			return symbol
 		}
 		// If we're a setter, check writeType.
-		if links.getWriteType() != nil && !c.couldContainTypeVariables(links.getWriteType()) {
+		if links.getWriteType(c) != nil && !c.couldContainTypeVariables(links.getWriteType(c)) {
 			return symbol
 		}
 	}
@@ -21265,7 +21265,7 @@ func (c *Checker) instantiateSymbol(symbol *ast.Symbol, m *TypeMapper) *ast.Symb
 	resultLinks := c.valueSymbolLinks.Get(result)
 	resultLinks.target = symbol
 	resultLinks.mapper = m
-	resultLinks.setNameType(links.getNameType())
+	resultLinks.setNameType(c, links.getNameType(c))
 	return result
 }
 
@@ -21397,7 +21397,7 @@ func (c *Checker) resolveMappedTypeMembers(t *Type) {
 			// property symbol's name type be the union of those enum member types.
 			if existingProp := members[propName]; existingProp != nil {
 				valueLinks := c.valueSymbolLinks.Get(existingProp)
-				valueLinks.setNameType(c.getUnionType([]*Type{valueLinks.getNameType(), propNameType}))
+				valueLinks.setNameType(c, c.getUnionType([]*Type{valueLinks.getNameType(c), propNameType}))
 				mappedLinks := c.mappedSymbolLinks.Get(existingProp)
 				mappedLinks.keyType = c.getUnionType([]*Type{mappedLinks.keyType, keyType})
 			} else {
@@ -21416,7 +21416,7 @@ func (c *Checker) resolveMappedTypeMembers(t *Type) {
 				prop.CheckFlags = lateFlag | ast.CheckFlagsMapped | core.IfElse(isReadonly, ast.CheckFlagsReadonly, 0) | core.IfElse(stripOptional, ast.CheckFlagsStripOptional, 0)
 				valueLinks := c.valueSymbolLinks.Get(prop)
 				valueLinks.containingType = t
-				valueLinks.setNameType(propNameType)
+				valueLinks.setNameType(c, propNameType)
 				mappedLinks := c.mappedSymbolLinks.Get(prop)
 				mappedLinks.keyType = keyType
 				if modifiersProp != nil {
@@ -21462,7 +21462,7 @@ func (c *Checker) resolveMappedTypeMembers(t *Type) {
 
 func (c *Checker) getTypeOfMappedSymbol(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.getResolvedType() == nil {
+	if links.getResolvedType(c) == nil {
 		mappedType := links.containingType
 		if !c.pushTypeResolution(symbol, TypeSystemPropertyNameType) {
 			mappedType.AsMappedType().containsError = true
@@ -21481,17 +21481,17 @@ func (c *Checker) getTypeOfMappedSymbol(symbol *ast.Symbol) *Type {
 			propType = c.removeMissingOrUndefinedType(propType)
 		}
 		if c.popTypeResolution() {
-			if links.getResolvedType() == nil {
-				links.setResolvedType(propType)
+			if links.getResolvedType(c) == nil {
+				links.setResolvedType(c, propType)
 			}
 		} else {
-			if links.getResolvedType() == nil {
-				links.setResolvedType(c.errorType)
+			if links.getResolvedType(c) == nil {
+				links.setResolvedType(c, c.errorType)
 			}
 			c.error(c.currentNode, diagnostics.Type_of_property_0_circularly_references_itself_in_mapped_type_1, c.symbolToString(symbol), c.TypeToString(mappedType))
 		}
 	}
-	return links.getResolvedType()
+	return links.getResolvedType(c)
 }
 
 // Return the lower bound of the key type in a mapped type. Intuitively, the lower
@@ -21746,18 +21746,18 @@ func (c *Checker) combineUnionOrIntersectionParameters(left *Signature, right *S
 			core.IfElse(isRestParam, ast.CheckFlagsRestParameter, core.IfElse(isOptional, ast.CheckFlagsOptionalParameter, 0)))
 		links := c.valueSymbolLinks.Get(paramSymbol)
 		if isRestParam {
-			links.setResolvedType(c.createArrayType(combinedParamType))
+			links.setResolvedType(c, c.createArrayType(combinedParamType))
 		} else {
-			links.setResolvedType(combinedParamType)
+			links.setResolvedType(c, combinedParamType)
 		}
 		params[i] = paramSymbol
 	}
 	if needsExtraRestElement {
 		restParamSymbol := c.newSymbolEx(ast.SymbolFlagsFunctionScopedVariable, "args", ast.CheckFlagsRestParameter)
 		links := c.valueSymbolLinks.Get(restParamSymbol)
-		links.setResolvedType(c.createArrayType(c.getTypeAtPosition(shorter, longestCount)))
+		links.setResolvedType(c, c.createArrayType(c.getTypeAtPosition(shorter, longestCount)))
 		if shorter == right {
-			links.setResolvedType(c.instantiateType(links.getResolvedType(), mapper))
+			links.setResolvedType(c, c.instantiateType(links.getResolvedType(c), mapper))
 		}
 		params[longestCount] = restParamSymbol
 	}
@@ -22069,7 +22069,7 @@ func (c *Checker) createUnionOrIntersectionProperty(containingType *Type, name s
 		var singlePropMapper *TypeMapper
 		if singleProp.Flags&ast.SymbolFlagsTransient != 0 {
 			links := c.valueSymbolLinks.Get(singleProp)
-			singlePropType = links.getResolvedType()
+			singlePropType = links.getResolvedType(c)
 			singlePropMapper = links.mapper
 		}
 		clone := c.createSymbolWithType(singleProp, singlePropType)
@@ -22079,7 +22079,7 @@ func (c *Checker) createUnionOrIntersectionProperty(containingType *Type, name s
 		links := c.valueSymbolLinks.Get(clone)
 		links.containingType = containingType
 		links.mapper = singlePropMapper
-		links.setWriteType(c.getWriteTypeOfSymbol(singleProp))
+		links.setWriteType(c, c.getWriteTypeOfSymbol(singleProp))
 		return clone
 	}
 	if propSet.Size() == 0 {
@@ -22104,7 +22104,7 @@ func (c *Checker) createUnionOrIntersectionProperty(containingType *Type, name s
 		t := c.getTypeOfSymbol(prop)
 		if firstType == nil {
 			firstType = t
-			nameType = c.valueSymbolLinks.Get(prop).getNameType()
+			nameType = c.valueSymbolLinks.Get(prop).getNameType(c)
 		}
 		writeType := c.getWriteTypeOfSymbol(prop)
 		if writeTypes != nil || writeType != t {
@@ -22134,7 +22134,7 @@ func (c *Checker) createUnionOrIntersectionProperty(containingType *Type, name s
 	}
 	links := c.valueSymbolLinks.Get(result)
 	links.containingType = containingType
-	links.setNameType(nameType)
+	links.setNameType(c, nameType)
 	if len(propTypes) > 2 {
 		// When `propTypes` has the potential to explode in size when normalized, defer normalization until absolutely needed
 		result.CheckFlags |= ast.CheckFlagsDeferredType
@@ -22145,15 +22145,15 @@ func (c *Checker) createUnionOrIntersectionProperty(containingType *Type, name s
 		return result
 	}
 	if isUnion {
-		links.setResolvedType(c.getUnionType(propTypes))
+		links.setResolvedType(c, c.getUnionType(propTypes))
 	} else {
-		links.setResolvedType(c.getIntersectionType(propTypes))
+		links.setResolvedType(c, c.getIntersectionType(propTypes))
 	}
 	if writeTypes != nil {
 		if isUnion {
-			links.setWriteType(c.getUnionType(writeTypes))
+			links.setWriteType(c, c.getUnionType(writeTypes))
 		} else {
-			links.setWriteType(c.getIntersectionType(writeTypes))
+			links.setWriteType(c, c.getIntersectionType(writeTypes))
 		}
 	}
 	return result
@@ -22206,9 +22206,9 @@ func (c *Checker) createSymbolWithType(source *ast.Symbol, t *Type) *ast.Symbol 
 	symbol.Parent = source.Parent
 	symbol.ValueDeclaration = source.ValueDeclaration
 	links := c.valueSymbolLinks.Get(symbol)
-	links.setResolvedType(t)
+	links.setResolvedType(c, t)
 	links.target = source
-	links.setNameType(c.valueSymbolLinks.Get(source).getNameType())
+	links.setNameType(c, c.valueSymbolLinks.Get(source).getNameType(c))
 	return symbol
 }
 
@@ -25195,7 +25195,7 @@ func (c *Checker) getGlobalImportMetaExpressionType() *Type {
 		importMetaType := c.getGlobalImportMetaType()
 		metaPropertySymbol := c.newSymbolEx(ast.SymbolFlagsProperty, "meta", ast.CheckFlagsReadonly)
 		metaPropertySymbol.Parent = symbol
-		c.valueSymbolLinks.Get(metaPropertySymbol).setResolvedType(importMetaType)
+		c.valueSymbolLinks.Get(metaPropertySymbol).setResolvedType(c, importMetaType)
 		members := createSymbolTable([]*ast.Symbol{metaPropertySymbol})
 		symbol.Members = members
 		c.deferredGlobalImportMetaExpressionType = c.newAnonymousType(symbol, members, nil, nil, nil)
@@ -25298,7 +25298,7 @@ func (c *Checker) createTupleTargetType(elementInfos []TupleElementInfo, readonl
 			combinedFlags |= flags
 			if combinedFlags&ElementFlagsVariable == 0 {
 				property := c.newSymbolEx(ast.SymbolFlagsProperty|core.IfElse(flags&ElementFlagsOptional != 0, ast.SymbolFlagsOptional, 0), strconv.Itoa(i), core.IfElse(readonly, ast.CheckFlagsReadonly, 0))
-				c.valueSymbolLinks.Get(property).setResolvedType(typeParameter)
+				c.valueSymbolLinks.Get(property).setResolvedType(c, typeParameter)
 				// c.valueSymbolLinks.get(property).tupleLabelDeclaration = elementInfos[i].labeledDeclaration
 				members[property.Name] = property
 			}
@@ -25307,13 +25307,13 @@ func (c *Checker) createTupleTargetType(elementInfos []TupleElementInfo, readonl
 	fixedLength := len(members)
 	lengthSymbol := c.newSymbolEx(ast.SymbolFlagsProperty, "length", core.IfElse(readonly, ast.CheckFlagsReadonly, 0))
 	if combinedFlags&ElementFlagsVariable != 0 {
-		c.valueSymbolLinks.Get(lengthSymbol).setResolvedType(c.numberType)
+		c.valueSymbolLinks.Get(lengthSymbol).setResolvedType(c, c.numberType)
 	} else {
 		var literalTypes []*Type
 		for i := minLength; i <= arity; i++ {
 			literalTypes = append(literalTypes, c.getNumberLiteralType(jsnum.Number(i)))
 		}
-		c.valueSymbolLinks.Get(lengthSymbol).setResolvedType(c.getUnionType(literalTypes))
+		c.valueSymbolLinks.Get(lengthSymbol).setResolvedType(c, c.getUnionType(literalTypes))
 	}
 	members[lengthSymbol.Name] = lengthSymbol
 	t := c.newObjectType(ObjectFlagsTuple|ObjectFlagsReference, nil)
@@ -27254,7 +27254,7 @@ func (c *Checker) getLiteralTypeFromProperties(t *Type, include TypeFlags, inclu
 
 func (c *Checker) getLiteralTypeFromProperty(prop *ast.Symbol, include TypeFlags, includeNonPublic bool) *Type {
 	if includeNonPublic || getDeclarationModifierFlagsFromSymbol(prop)&ast.ModifierFlagsNonPublicAccessibilityModifier == 0 {
-		t := c.valueSymbolLinks.Get(c.getLateBoundSymbol(prop)).getNameType()
+		t := c.valueSymbolLinks.Get(c.getLateBoundSymbol(prop)).getNameType(c)
 		if t == nil {
 			if prop.Name == ast.InternalSymbolNameDefault {
 				t = c.getStringLiteralType("default")
@@ -28255,9 +28255,9 @@ func (c *Checker) expandSignatureParametersWithTupleMembers(signature *Signature
 		symbol := c.newSymbolEx(ast.SymbolFlagsFunctionScopedVariable, associatedNames[i], checkFlags)
 		links := c.valueSymbolLinks.Get(symbol)
 		if flags&ElementFlagsRest != 0 {
-			links.setResolvedType(c.createArrayType(t))
+			links.setResolvedType(c, c.createArrayType(t))
 		} else {
-			links.setResolvedType(t)
+			links.setResolvedType(c, t)
 		}
 		expanded = append(expanded, symbol)
 	}
@@ -30438,7 +30438,7 @@ func (c *Checker) getContextualTypeForObjectLiteralElement(element *ast.Node, co
 			// in the type. It will just be "__computed", which does not appear in any
 			// SymbolTable.
 			symbol := c.getSymbolOfDeclaration(element)
-			return c.getTypeOfPropertyOfContextualTypeEx(t, symbol.Name, c.valueSymbolLinks.Get(symbol).getNameType())
+			return c.getTypeOfPropertyOfContextualTypeEx(t, symbol.Name, c.valueSymbolLinks.Get(symbol).getNameType(c))
 		}
 		if ast.HasDynamicName(element) {
 			name := ast.GetNameOfDeclaration(element)
@@ -31172,7 +31172,7 @@ func (c *Checker) getTypeFromIndexInfosOfContextualType(t *Type, name string, na
 func (c *Checker) isCircularMappedProperty(symbol *ast.Symbol) bool {
 	if symbol.CheckFlags&ast.CheckFlagsMapped != 0 {
 		links := c.valueSymbolLinks.Get(symbol)
-		return links.getResolvedType() == nil && c.findResolutionCycleStartIndex(symbol, TypeSystemPropertyNameType) >= 0
+		return links.getResolvedType(c) == nil && c.findResolutionCycleStartIndex(symbol, TypeSystemPropertyNameType) >= 0
 	}
 	return false
 }
@@ -32614,7 +32614,7 @@ func (c *Checker) getApplicableIndexSymbol(t *Type, keyType *Type) *ast.Symbol {
 				symbol.ValueDeclaration = declarations[0]
 				symbol.Parent = t.symbol
 				links := c.valueSymbolLinks.Get(symbol)
-				links.setResolvedType(info.valueType)
+				links.setResolvedType(c, info.valueType)
 				info.indexSymbol = symbol
 			}
 		}

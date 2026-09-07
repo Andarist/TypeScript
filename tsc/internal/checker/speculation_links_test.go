@@ -6,7 +6,7 @@ import (
 	"github.com/microsoft/TypeScript/tsc/internal/ast"
 )
 
-func TestValueSymbolLinksInitializeOnce(t *testing.T) {
+func TestValueSymbolLinksIdentity(t *testing.T) {
 	t.Parallel()
 	c := &Checker{}
 	c.initializeSpeculation()
@@ -15,9 +15,6 @@ func TestValueSymbolLinksInitializeOnce(t *testing.T) {
 		t.Fatal("TryGet created a link")
 	}
 	links := c.valueSymbolLinks.Get(symbol)
-	if links.host != &c.speculationHost {
-		t.Fatal("new links have no host")
-	}
 	for range 3 {
 		if c.valueSymbolLinks.Get(symbol) != links || c.valueSymbolLinks.TryGet(symbol) != links {
 			t.Fatal("link identity changed")

@@ -2,8 +2,8 @@ package checker
 
 import "github.com/microsoft/TypeScript/tsc/internal/ast"
 
-// Node link setters take the checker so the structs themselves stay pointer
-// free; symbol links carry their host because their reads need it too.
+// Link accessors that touch speculative state take the checker, so the link
+// structs themselves carry no pointer to it.
 
 func (l *NodeLinks) getFlags() NodeCheckFlags { return l.flagsCache.get() }
 func (l *NodeLinks) setFlags(c *Checker, value NodeCheckFlags) {
@@ -26,36 +26,36 @@ func (l *SymbolNodeLinks) setResolvedSymbolPermanently(value *ast.Symbol) {
 	l.resolvedSymbolCache.value = value
 }
 
-func (l *ValueSymbolLinks) getResolvedType() *Type {
-	return l.resolvedTypeCache.get(l)
+func (l *ValueSymbolLinks) getResolvedType(c *Checker) *Type {
+	return l.resolvedTypeCache.get(&c.speculationHost, l)
 }
 
-func (l *ValueSymbolLinks) setResolvedType(value *Type) {
-	l.resolvedTypeCache.set(l, value)
+func (l *ValueSymbolLinks) setResolvedType(c *Checker, value *Type) {
+	l.resolvedTypeCache.set(&c.speculationHost, l, value)
 }
 
-func (l *ValueSymbolLinks) getWriteType() *Type {
-	return l.writeTypeCache.get(l)
+func (l *ValueSymbolLinks) getWriteType(c *Checker) *Type {
+	return l.writeTypeCache.get(&c.speculationHost, l)
 }
 
-func (l *ValueSymbolLinks) setWriteType(value *Type) {
-	l.writeTypeCache.set(l, value)
+func (l *ValueSymbolLinks) setWriteType(c *Checker, value *Type) {
+	l.writeTypeCache.set(&c.speculationHost, l, value)
 }
 
-func (l *ValueSymbolLinks) getNameType() *Type {
-	return l.nameTypeCache.get(l)
+func (l *ValueSymbolLinks) getNameType(c *Checker) *Type {
+	return l.nameTypeCache.get(&c.speculationHost, l)
 }
 
-func (l *ValueSymbolLinks) setNameType(value *Type) {
-	l.nameTypeCache.set(l, value)
+func (l *ValueSymbolLinks) setNameType(c *Checker, value *Type) {
+	l.nameTypeCache.set(&c.speculationHost, l, value)
 }
 
-func (l *ValueSymbolLinks) getFunctionOrConstructorChecked() bool {
-	return l.functionOrConstructorCheckedCache.get(l)
+func (l *ValueSymbolLinks) getFunctionOrConstructorChecked(c *Checker) bool {
+	return l.functionOrConstructorCheckedCache.get(&c.speculationHost, l)
 }
 
-func (l *ValueSymbolLinks) setFunctionOrConstructorChecked(value bool) {
-	l.functionOrConstructorCheckedCache.set(l, value)
+func (l *ValueSymbolLinks) setFunctionOrConstructorChecked(c *Checker, value bool) {
+	l.functionOrConstructorCheckedCache.set(&c.speculationHost, l, value)
 }
 
 func (l *SignatureLinks) getResolvedSignature() *Signature { return l.resolvedSignatureCache.get() }
