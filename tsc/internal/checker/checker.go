@@ -585,6 +585,7 @@ var nextCheckerID atomic.Uint32
 type Checker struct {
 	speculationHost                             speculationHost
 	permanentDiagnosticLog                      []*ast.Diagnostic
+	permanentSuggestionLog                      []*ast.Diagnostic
 	permanentDiagnosticDepth                    int // Nonzero while computing a cache that survives speculative rollback.
 	id                                          uint32
 	program                                     Program
@@ -14344,6 +14345,11 @@ func (c *Checker) addDiagnostic(diagnostic *ast.Diagnostic) *ast.Diagnostic {
 func (c *Checker) addSuggestionDiagnostic(diagnostic *ast.Diagnostic) *ast.Diagnostic {
 	// Discard diagnostics created while at the maximum number of recursive TypeToString invocations.
 	if c.serializationLevel < maxSerializationLevel {
+		// Suggestions belonging to a permanent cache, such as an unresolved name in
+		// a JS file, must survive rollback along with it.
+		if c.permanentDiagnosticDepth != 0 && c.speculationHost.activeFrame != 0 {
+			c.permanentSuggestionLog = append(c.permanentSuggestionLog, diagnostic)
+		}
 		return c.suggestionDiagnostics.Add(diagnostic)
 	}
 	return diagnostic

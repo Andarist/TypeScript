@@ -328,6 +328,7 @@ type speculativeSliceProtection struct {
 // Save slice headers; appendToSpeculativeSlice protects their existing elements.
 type savedCheckerState struct {
 	permanentDiagnostics        int
+	permanentSuggestions        int
 	protectedLengths            speculativeSliceProtection
 	flowLoopStack               []FlowLoopInfo
 	sharedFlows                 []SharedFlow
@@ -339,6 +340,7 @@ type savedCheckerState struct {
 func (c *Checker) snapshotCheckerState() savedCheckerState {
 	state := savedCheckerState{
 		permanentDiagnostics:        len(c.permanentDiagnosticLog),
+		permanentSuggestions:        len(c.permanentSuggestionLog),
 		protectedLengths:            c.speculationHost.protectedLengths,
 		diagnostics:                 c.diagnostics.Checkpoint(),
 		suggestions:                 c.suggestionDiagnostics.Checkpoint(),
@@ -365,6 +367,9 @@ func (c *Checker) restoreCheckerState(state savedCheckerState) {
 	// reported since this snapshot; enclosing attempts keep their own log prefix.
 	for _, diagnostic := range c.permanentDiagnosticLog[state.permanentDiagnostics:] {
 		c.diagnostics.Add(diagnostic)
+	}
+	for _, diagnostic := range c.permanentSuggestionLog[state.permanentSuggestions:] {
+		c.suggestionDiagnostics.Add(diagnostic)
 	}
 	c.flowLoopStack = state.flowLoopStack
 	c.sharedFlows = state.sharedFlows
@@ -408,6 +413,8 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 			c.speculationHost.rootEpoch = 0
 			clear(c.permanentDiagnosticLog)
 			c.permanentDiagnosticLog = c.permanentDiagnosticLog[:0]
+			clear(c.permanentSuggestionLog)
+			c.permanentSuggestionLog = c.permanentSuggestionLog[:0]
 			c.speculationHost.protectedLengths = speculativeSliceProtection{}
 		}
 	}()
