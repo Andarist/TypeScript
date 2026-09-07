@@ -1,0 +1,37 @@
+//// [tests/cases/compiler/overloadSpeculationKeepsNameResolutionDiagnostic.ts] ////
+
+=== overloadSpeculationKeepsNameResolutionDiagnostic.ts ===
+// Name resolution is kept across rolled-back overload attempts, and so are its
+// diagnostics. Each unresolved name must be reported exactly once.
+declare function f(a: number, cb: (x: number) => void): void;
+>f : Symbol(f, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 0, 0), Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 2, 61))
+>a : Symbol(a, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 2, 19))
+>cb : Symbol(cb, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 2, 29))
+>x : Symbol(x, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 2, 35))
+
+declare function f(a: string, cb: (x: string) => void): void;
+>f : Symbol(f, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 0, 0), Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 2, 61))
+>a : Symbol(a, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 3, 19))
+>cb : Symbol(cb, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 3, 29))
+>x : Symbol(x, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 3, 35))
+
+f("s", (x) => { missing1; x.toUpperCase(); });
+>f : Symbol(f, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 0, 0), Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 2, 61))
+>x : Symbol(x, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 5, 8))
+>x.toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+>x : Symbol(x, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 5, 8))
+>toUpperCase : Symbol(String.toUpperCase, Decl(lib.es5.d.ts, --, --))
+
+f(1, (x) => { missing2; x.toFixed(); });
+>f : Symbol(f, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 0, 0), Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 2, 61))
+>x : Symbol(x, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 6, 6))
+>x.toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+>x : Symbol(x, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 6, 6))
+>toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+
+f(1, missing3);
+>f : Symbol(f, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 0, 0), Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 2, 61))
+
+f("s", missing4 + "");
+>f : Symbol(f, Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 0, 0), Decl(overloadSpeculationKeepsNameResolutionDiagnostic.ts, 2, 61))
+

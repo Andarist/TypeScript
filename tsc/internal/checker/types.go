@@ -174,13 +174,16 @@ type SymbolReferenceLinks struct {
 // Links for value symbols
 
 type ValueSymbolLinks struct {
-	speculatableSymbolLinks
-	resolvedTypeCache                 speculatableSymbolCache[*Type]
-	writeTypeCache                    speculatableSymbolCache[*Type]
-	target                            *ast.Symbol
-	mapper                            *TypeMapper
-	nameTypeCache                     speculatableSymbolCache[*Type]
-	containingType                    *Type // Mapped type for mapped type property, containing union or intersection type for synthetic property
+	host              *speculationHost
+	resolvedTypeCache speculatableSymbolCache[*Type] // Type of value symbol
+	writeTypeCache    speculatableSymbolCache[*Type]
+	target            *ast.Symbol
+	mapper            *TypeMapper
+	nameTypeCache     speculatableSymbolCache[*Type]
+	containingType    *Type // Mapped type for mapped type property, containing union or intersection type for synthetic property
+	// Nonzero only while the root speculative attempt that created the symbol is
+	// active: the birth epoch relative to that attempt's start epoch, plus one.
+	birthOffset                       uint32
 	functionOrConstructorCheckedCache speculatableSymbolCache[bool]
 }
 
@@ -266,7 +269,6 @@ const (
 )
 
 type SwitchStatementLinks struct {
-	speculatableLinks
 	exhaustiveStateCache     speculatableCache[ExhaustiveState]
 	switchTypesComputedCache speculatableCache[bool]
 	witnessesComputedCache   speculatableCache[bool]
@@ -369,20 +371,16 @@ const (
 // Common links
 
 type NodeLinks struct {
-	speculatableLinks
 	flagsCache                           speculatableCache[NodeCheckFlags]
 	declarationRequiresScopeChange       core.Tristate // Set by `useOuterVariableScopeInParameter` in checker when downlevel emit would change the name resolution scope inside of a parameter.
 	hasReportedStatementInAmbientContext bool          // Cache boolean if we report statements in ambient context
-	contextFreeTypeCache                 speculatableCache[*Type]
 }
 
 type SymbolNodeLinks struct {
-	speculatableLinks
 	resolvedSymbolCache speculatableCache[*ast.Symbol]
 }
 
 type TypeNodeLinks struct {
-	speculatableLinks
 	resolvedTypeCache   speculatableCache[*Type]
 	outerTypeParameters []*Type // Outer type parameters of anonymous object type
 }
@@ -401,7 +399,6 @@ type EnumMemberLinks struct {
 // Links for assertion expressions
 
 type AssertionLinks struct {
-	speculatableLinks
 	exprTypeCache speculatableCache[*Type]
 }
 
@@ -424,7 +421,6 @@ type SourceFileLinks struct {
 // Signature specific links
 
 type SignatureLinks struct {
-	speculatableLinks
 	resolvedSignatureCache speculatableCache[*Signature]
 	effectsSignatureCache  speculatableCache[*Signature]
 	decoratorSignature     *Signature // Signature for decorator as if invoked by the runtime

@@ -1,0 +1,55 @@
+//// [tests/cases/compiler/overloadSpeculationKeepsNameResolutionDiagnostic.ts] ////
+
+=== overloadSpeculationKeepsNameResolutionDiagnostic.ts ===
+// Name resolution is kept across rolled-back overload attempts, and so are its
+// diagnostics. Each unresolved name must be reported exactly once.
+declare function f(a: number, cb: (x: number) => void): void;
+>f : { (a: number, cb: (x: number) => void): void; (a: string, cb: (x: string) => void): void; }
+>a : number
+>cb : (x: number) => void
+>x : number
+
+declare function f(a: string, cb: (x: string) => void): void;
+>f : { (a: number, cb: (x: number) => void): void; (a: string, cb: (x: string) => void): void; }
+>a : string
+>cb : (x: string) => void
+>x : string
+
+f("s", (x) => { missing1; x.toUpperCase(); });
+>f("s", (x) => { missing1; x.toUpperCase(); }) : void
+>f : { (a: number, cb: (x: number) => void): void; (a: string, cb: (x: string) => void): void; }
+>"s" : "s"
+>(x) => { missing1; x.toUpperCase(); } : (x: string) => void
+>x : string
+>missing1 : any
+>x.toUpperCase() : string
+>x.toUpperCase : () => string
+>x : string
+>toUpperCase : () => string
+
+f(1, (x) => { missing2; x.toFixed(); });
+>f(1, (x) => { missing2; x.toFixed(); }) : void
+>f : { (a: number, cb: (x: number) => void): void; (a: string, cb: (x: string) => void): void; }
+>1 : 1
+>(x) => { missing2; x.toFixed(); } : (x: number) => void
+>x : number
+>missing2 : any
+>x.toFixed() : string
+>x.toFixed : (fractionDigits?: number) => string
+>x : number
+>toFixed : (fractionDigits?: number) => string
+
+f(1, missing3);
+>f(1, missing3) : void
+>f : { (a: number, cb: (x: number) => void): void; (a: string, cb: (x: string) => void): void; }
+>1 : 1
+>missing3 : any
+
+f("s", missing4 + "");
+>f("s", missing4 + "") : void
+>f : { (a: number, cb: (x: number) => void): void; (a: string, cb: (x: string) => void): void; }
+>"s" : "s"
+>missing4 + "" : string
+>missing4 : any
+>"" : ""
+

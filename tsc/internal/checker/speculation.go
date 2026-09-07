@@ -1,10 +1,10 @@
 package checker
 
 import (
+	"math"
 	"slices"
 
 	"github.com/microsoft/TypeScript/tsc/internal/ast"
-	"github.com/microsoft/TypeScript/tsc/internal/core"
 )
 
 // This follows the speculation helpers in microsoft/TypeScript#57421.
@@ -24,23 +24,44 @@ type speculationHost struct {
 	exhaustive       cacheUndoLog[ExhaustiveState]
 	typeSlices       cacheUndoLog[[]*Type]
 	stringSlices     cacheUndoLog[[]string]
-	relations        cacheUndoLog[RelationComparisonResult]
+	maps             []speculatableMapJournal // Registered on first write, in a fixed order.
+	bornLinks        []*ValueSymbolLinks      // Links of symbols created in the current root attempt.
 
 	currentSpeculativeEpoch    uint64
 	discardedSpeculativeEpochs []uint64
 }
 
-type speculatableLinks struct {
-	host *speculationHost
+// Symbol links carry their host because reads of newly born symbols must
+// consult the lazy history below. Node links pass the checker to their setters
+// instead, keeping the hot node link structs free of pointers.
+//
+// Birth epochs only matter while the root attempt that created the symbol is
+// active. They are stored in the links relative to the root attempt and cleared
+// when it ends, so reads of the many stable symbols need only a single field test.
+func (h *speculationHost) adoptSymbolBirth(links *ValueSymbolLinks, epoch uint64) {
+	links.birthOffset = uint32(epoch - h.rootEpoch + 1)
+	h.bornLinks = append(h.bornLinks, links)
 }
 
-// Only symbols need a birth epoch: node caches always participate in rollback.
-type speculatableSymbolLinks struct {
-	speculatableLinks
-	symbolEpoch uint64
+func (h *speculationHost) birthEpoch(links *ValueSymbolLinks) uint64 {
+	return h.rootEpoch + uint64(links.birthOffset) - 1
 }
 
-func (l *speculatableLinks) setSpeculationHost(host *speculationHost) { l.host = host }
+// Symbols born in a discarded attempt may have escaped into permanent state,
+// such as the members of an interned union type, and are never rolled back.
+const orphanBirthOffset = math.MaxUint32
+
+func (h *speculationHost) finishSymbolBirths() {
+	for _, links := range h.bornLinks {
+		if h.isDiscardedEpoch(h.birthEpoch(links)) {
+			links.birthOffset = orphanBirthOffset
+		} else {
+			links.birthOffset = 0
+		}
+	}
+	clear(h.bornLinks)
+	h.bornLinks = h.bornLinks[:0]
+}
 
 // Symbols predating the root attempt cannot acquire a discarded birth epoch
 // later, so eager undo is safe. New symbols need lazy history until the root
@@ -50,25 +71,30 @@ type (
 	speculatableSymbolCache[V symbolCacheValue] struct{ value V }
 )
 
-func (s *speculatableSymbolCache[V]) get(links *speculatableSymbolLinks) V {
-	h := links.host
-	if h != nil && h.rootEpoch != 0 && links.symbolEpoch >= h.rootEpoch && links.symbolEpoch != h.currentSpeculativeEpoch && !h.isDiscardedEpoch(links.symbolEpoch) {
-		h.readLazySymbolCache(s)
+func (s *speculatableSymbolCache[V]) get(links *ValueSymbolLinks) V {
+	if links.birthOffset != 0 && links.birthOffset != orphanBirthOffset {
+		h := links.host
+		if birth := h.birthEpoch(links); birth != h.currentSpeculativeEpoch && !h.isDiscardedEpoch(birth) {
+			h.readLazySymbolCache(s)
+		}
 	}
 	return s.value
 }
 
-func (s *speculatableSymbolCache[V]) set(links *speculatableSymbolLinks, value V) {
-	h := links.host
-	if h != nil && h.activeFrame != 0 && links.symbolEpoch != h.currentSpeculativeEpoch && !h.isDiscardedEpoch(links.symbolEpoch) {
-		if links.symbolEpoch < h.rootEpoch {
+func (s *speculatableSymbolCache[V]) set(links *ValueSymbolLinks, value V) {
+	if h := links.host; h.activeFrame != 0 {
+		switch links.birthOffset {
+		case 0:
 			// Only stable symbols can skip an equal write: an equal write to a
 			// new symbol may make a previously discarded value valid again.
 			if s.value != value {
 				h.recordStableSymbolCache(s)
 			}
-		} else {
-			h.recordLazySymbolCache(s, links.symbolEpoch)
+		case orphanBirthOffset:
+		default:
+			if birth := h.birthEpoch(links); birth != h.currentSpeculativeEpoch && !h.isDiscardedEpoch(birth) {
+				h.recordLazySymbolCache(s, birth)
+			}
 		}
 	}
 	s.value = value
@@ -188,46 +214,37 @@ func (h *speculationHost) readLazySymbolCache(cache any) {
 // Keep this constraint and recordCache in sync when adding a cache value type.
 // Exact types prevent an unsupported cache from silently skipping rollback.
 type speculatableCacheValue interface {
-	*Type | *Signature | *ast.Symbol | NodeCheckFlags | bool | ExhaustiveState |
-		[]*Type | []string | RelationComparisonResult
+	*Type | *Signature | *ast.Symbol | NodeCheckFlags | bool | ExhaustiveState | []*Type | []string
 }
 
-// Node and map caches keep their current value directly. Before overwriting a
-// value from another frame, save it along with its frame for nested rollback.
-type speculatableCache[V speculatableCacheValue] struct {
-	writeFrame uint64
-	value      V
-}
+// Node caches hold only their value, so the link structs stay as small as plain
+// fields. Every speculative write is journaled; undoing in reverse order makes
+// repeated writes within one frame harmless.
+type speculatableCache[V speculatableCacheValue] struct{ value V }
 
-func (s *speculatableCache[V]) get(_ *speculatableLinks) V { return s.value }
+func (s *speculatableCache[V]) get() V { return s.value }
 
-// Zero is absent; one is a non-speculative write; active frames are encoded +1.
-func (s *speculatableCache[V]) set(links *speculatableLinks, value V) {
-	frame := uint64(1)
-	if links.host != nil && links.host.activeFrame != 0 {
-		frame = links.host.activeFrame + 1
-		if s.writeFrame != frame {
-			links.host.recordCache(s)
-		}
+func (s *speculatableCache[V]) set(h *speculationHost, value V) {
+	if h.activeFrame != 0 {
+		h.recordCache(s)
 	}
-	s.writeFrame = frame
 	s.value = value
 }
 
 type cacheUndo[V speculatableCacheValue] struct {
 	cache    *speculatableCache[V]
-	previous speculatableCache[V]
+	previous V
 }
 type cacheUndoLog[V speculatableCacheValue] struct{ entries []cacheUndo[V] }
 
 func (l *cacheUndoLog[V]) record(cache *speculatableCache[V]) {
-	l.entries = append(l.entries, cacheUndo[V]{cache, *cache})
+	l.entries = append(l.entries, cacheUndo[V]{cache, cache.value})
 }
 
 func (l *cacheUndoLog[V]) revert(position int) {
 	for i := len(l.entries) - 1; i >= position; i-- {
 		record := l.entries[i]
-		*record.cache = record.previous
+		record.cache.value = record.previous
 	}
 	clear(l.entries[position:])
 	l.entries = l.entries[:position]
@@ -239,59 +256,70 @@ func (l *cacheUndoLog[V]) commit() {
 	l.entries = l.entries[:0]
 }
 
-type speculatableMap[K comparable, V speculatableCacheValue] struct {
+// Maps keep plain values so the runtime need not scan per-entry objects; each
+// map journals its own overwrites and registers with the host on first write.
+type speculatableMap[K comparable, V any] struct {
 	host     *speculationHost
-	innerMap map[K]*speculatableCache[V]
+	innerMap map[K]V
+	undo     []mapUndo[K, V]
 }
 
-func (s *speculatableMap[K, V]) get(key K) V {
-	if cache := s.innerMap[key]; cache != nil {
-		value := cache.value
-		if cache.writeFrame == 0 {
-			delete(s.innerMap, key)
-		}
-		return value
-	}
-	var zero V
-	return zero
+type mapUndo[K comparable, V any] struct {
+	key      K
+	previous V
+	existed  bool
 }
+
+type speculatableMapJournal interface {
+	mark() int
+	revert(position int)
+	commit()
+}
+
+const maxSpeculatableMaps = 16
+
+func (s *speculatableMap[K, V]) get(key K) V { return s.innerMap[key] }
 
 func (s *speculatableMap[K, V]) set(key K, value V) {
 	if s.innerMap == nil {
-		s.innerMap = make(map[K]*speculatableCache[V])
+		s.innerMap = make(map[K]V)
+		s.host.registerMap(s)
 	}
-	cache := s.innerMap[key]
-	if cache == nil {
-		cache = &speculatableCache[V]{}
-		s.innerMap[key] = cache
+	if s.host.activeFrame != 0 {
+		previous, existed := s.innerMap[key]
+		s.undo = append(s.undo, mapUndo[K, V]{key, previous, existed})
 	}
-	cache.set(&speculatableLinks{host: s.host}, value)
+	s.innerMap[key] = value
 }
 
-// Approximate, matching upstream: discarded entries are removed on access.
 func (s *speculatableMap[K, V]) size() int { return len(s.innerMap) }
 
-type speculativeLinkStore[K comparable, V any] struct {
-	store core.LinkStore[K, V]
-	host  *speculationHost
+func (s *speculatableMap[K, V]) mark() int { return len(s.undo) }
+
+func (s *speculatableMap[K, V]) revert(position int) {
+	for i := len(s.undo) - 1; i >= position; i-- {
+		record := s.undo[i]
+		if record.existed {
+			s.innerMap[record.key] = record.previous
+		} else {
+			delete(s.innerMap, record.key)
+		}
+	}
+	clear(s.undo[position:])
+	s.undo = s.undo[:position]
 }
 
-func (s *speculativeLinkStore[K, V]) initialize(value *V) *V {
-	if value != nil {
-		any(value).(interface{ setSpeculationHost(*speculationHost) }).setSpeculationHost(s.host)
-	}
-	return value
+func (s *speculatableMap[K, V]) commit() {
+	clear(s.undo)
+	s.undo = s.undo[:0]
 }
 
-// Hosts belong to the store and do not change after a link is created.
-func (s *speculativeLinkStore[K, V]) Get(key K) *V {
-	if value := s.store.TryGet(key); value != nil {
-		return value
+func (h *speculationHost) registerMap(m speculatableMapJournal) {
+	if len(h.maps) == maxSpeculatableMaps {
+		panic("too many speculatable maps")
 	}
-	return s.initialize(s.store.Get(key))
+	h.maps = append(h.maps, m)
 }
-func (s *speculativeLinkStore[K, V]) TryGet(key K) *V { return s.store.TryGet(key) }
-func (s *speculativeLinkStore[K, V]) Has(key K) bool  { return s.store.Has(key) }
 
 // Each length protects elements visible through a saved slice. Appending beyond
 // it is safe; overwriting a protected element first allocates a new backing array.
@@ -349,13 +377,14 @@ func (c *Checker) restoreCheckerState(state savedCheckerState) {
 }
 
 func (c *Checker) initializeSpeculation() {
-	c.nodeLinks.host = &c.speculationHost
-	c.signatureLinks.host = &c.speculationHost
-	c.symbolNodeLinks.host = &c.speculationHost
-	c.typeNodeLinks.host = &c.speculationHost
-	c.assertionLinks.host = &c.speculationHost
-	c.switchStatementLinks.host = &c.speculationHost
 	c.valueSymbolLinks.host = &c.speculationHost
+	c.flowLoopCache.host = &c.speculationHost
+	c.enumRelation.host = &c.speculationHost
+	c.contextFreeTypes.host = &c.speculationHost
+}
+
+func (c *Checker) newRelation() *Relation {
+	return &Relation{speculatableMap: speculatableMap[CacheHashKey, RelationComparisonResult]{host: &c.speculationHost}}
 }
 
 func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
@@ -386,6 +415,7 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 		if previousFrame == 0 {
 			c.speculationHost.lazySymbolTypes.finish(&c.speculationHost, result != nil)
 			c.speculationHost.lazySymbolBools.finish(&c.speculationHost, result != nil)
+			c.speculationHost.finishSymbolBirths()
 			c.speculationHost.rootEpoch = 0
 			clear(c.permanentDiagnosticLog)
 			c.permanentDiagnosticLog = c.permanentDiagnosticLog[:0]
@@ -395,42 +425,21 @@ func (c *Checker) speculate(cb func() *Signature) (result *Signature) {
 	return cb()
 }
 
-// Retain the paged backing stores used for dense node and symbol IDs.
-type speculativeNodeLinkStore[V any] struct {
-	speculativeLinkStore[*ast.Node, V]
-	backing nodeLinkStore[V]
+// Value symbol links learn their host when created so their accessors can
+// consult the lazy symbol history without a checker in hand.
+type valueSymbolLinkStore struct {
+	symbolArenaLinkStore[ValueSymbolLinks]
+	host *speculationHost
 }
 
-func (s *speculativeNodeLinkStore[V]) initializeLink(value *V) { s.initialize(value) }
-
-func (s *speculativeNodeLinkStore[V]) Get(node *ast.Node) *V {
-	return s.backing.store.GetWithInitializer(uint64(ast.GetNodeId(node)), s.initializeLink)
-}
-
-func (s *speculativeNodeLinkStore[V]) TryGet(node *ast.Node) *V {
-	return s.backing.TryGet(node)
-}
-
-func (s *speculativeNodeLinkStore[V]) Has(node *ast.Node) bool { return s.backing.Has(node) }
-
-type speculativeSymbolArenaLinkStore[V any] struct {
-	speculativeLinkStore[*ast.Symbol, V]
-	backing symbolArenaLinkStore[V]
-}
-
-func (s *speculativeSymbolArenaLinkStore[V]) Get(symbol *ast.Symbol) *V {
-	if value := s.backing.TryGet(symbol); value != nil {
-		return value
+func (s *valueSymbolLinkStore) Get(symbol *ast.Symbol) *ValueSymbolLinks {
+	link := s.store.Get(uint64(ast.GetSymbolId(symbol)))
+	if *link == nil {
+		links := s.arena.New()
+		links.host = s.host
+		*link = links
 	}
-	return s.initialize(s.backing.Get(symbol))
-}
-
-func (s *speculativeSymbolArenaLinkStore[V]) TryGet(symbol *ast.Symbol) *V {
-	return s.backing.TryGet(symbol)
-}
-
-func (s *speculativeSymbolArenaLinkStore[V]) Has(symbol *ast.Symbol) bool {
-	return s.backing.Has(symbol)
+	return *link
 }
 
 type cacheCheckpoint struct {
@@ -444,11 +453,11 @@ type cacheCheckpoint struct {
 	exhaustive   int
 	typeSlices   int
 	stringSlices int
-	relations    int
+	maps         [maxSpeculatableMaps]int
 }
 
 func (h *speculationHost) checkpointCaches() cacheCheckpoint {
-	return cacheCheckpoint{
+	checkpoint := cacheCheckpoint{
 		symbolTypes:  len(h.symbolTypes.entries),
 		symbolBools:  len(h.symbolBools.entries),
 		types:        len(h.types.entries),
@@ -459,8 +468,11 @@ func (h *speculationHost) checkpointCaches() cacheCheckpoint {
 		exhaustive:   len(h.exhaustive.entries),
 		typeSlices:   len(h.typeSlices.entries),
 		stringSlices: len(h.stringSlices.entries),
-		relations:    len(h.relations.entries),
 	}
+	for i, m := range h.maps {
+		checkpoint.maps[i] = m.mark()
+	}
+	return checkpoint
 }
 
 func (h *speculationHost) revertCaches(c cacheCheckpoint) {
@@ -474,7 +486,10 @@ func (h *speculationHost) revertCaches(c cacheCheckpoint) {
 	h.exhaustive.revert(c.exhaustive)
 	h.typeSlices.revert(c.typeSlices)
 	h.stringSlices.revert(c.stringSlices)
-	h.relations.revert(c.relations)
+	// Maps registered after the checkpoint have a zero mark and revert entirely.
+	for i, m := range h.maps {
+		m.revert(c.maps[i])
+	}
 }
 
 func (h *speculationHost) commitCaches() {
@@ -488,7 +503,9 @@ func (h *speculationHost) commitCaches() {
 	h.exhaustive.commit()
 	h.typeSlices.commit()
 	h.stringSlices.commit()
-	h.relations.commit()
+	for _, m := range h.maps {
+		m.commit()
+	}
 }
 
 // Typed journals store records by value, avoiding a heap allocation per write.
@@ -510,8 +527,6 @@ func (h *speculationHost) recordCache(cache any) {
 		h.typeSlices.record(cache)
 	case *speculatableCache[[]string]:
 		h.stringSlices.record(cache)
-	case *speculatableCache[RelationComparisonResult]:
-		h.relations.record(cache)
 	default:
 		panic("unhandled speculative cache type")
 	}

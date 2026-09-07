@@ -1227,30 +1227,30 @@ func (c *Checker) getIntrinsicTagSymbol(node *ast.Node) *ast.Symbol {
 		intrinsicProp := c.getPropertyOfType(intrinsicElementsType, propName)
 		if intrinsicProp != nil {
 			c.jsxElementLinks.Get(node).jsxFlags |= JsxFlagsIntrinsicNamedElement
-			links.setResolvedSymbol(intrinsicProp)
+			links.setResolvedSymbol(c, intrinsicProp)
 			return links.getResolvedSymbol()
 		}
 		// Intrinsic string indexer case
 		indexSymbol := c.getApplicableIndexSymbol(intrinsicElementsType, c.getStringLiteralType(propName))
 		if indexSymbol != nil {
 			c.jsxElementLinks.Get(node).jsxFlags |= JsxFlagsIntrinsicIndexedElement
-			links.setResolvedSymbol(indexSymbol)
+			links.setResolvedSymbol(c, indexSymbol)
 			return links.getResolvedSymbol()
 		}
 		if c.getTypeOfPropertyOrIndexSignatureOfType(intrinsicElementsType, propName) != nil {
 			c.jsxElementLinks.Get(node).jsxFlags |= JsxFlagsIntrinsicIndexedElement
-			links.setResolvedSymbol(intrinsicElementsType.symbol)
+			links.setResolvedSymbol(c, intrinsicElementsType.symbol)
 			return links.getResolvedSymbol()
 		}
 		// Wasn't found
 		c.error(node, diagnostics.Property_0_does_not_exist_on_type_1, tagName.Text(), "JSX."+JsxNames.IntrinsicElements)
-		links.setResolvedSymbol(c.unknownSymbol)
+		links.setResolvedSymbol(c, c.unknownSymbol)
 		return links.getResolvedSymbol()
 	}
 	if c.noImplicitAny {
 		c.error(node, diagnostics.JSX_element_implicitly_has_type_any_because_no_interface_JSX_0_exists, JsxNames.IntrinsicElements)
 	}
-	links.setResolvedSymbol(c.unknownSymbol)
+	links.setResolvedSymbol(c, c.unknownSymbol)
 	return links.getResolvedSymbol()
 }
 

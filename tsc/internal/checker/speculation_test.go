@@ -18,16 +18,16 @@ func TestSpeculationNestedRollback(t *testing.T) {
 	original := &Type{}
 	outer := &Type{}
 	inner := &Type{}
-	c.typeNodeLinks.Get(node).setResolvedType(original)
+	c.typeNodeLinks.Get(node).setResolvedType(c, original)
 	relation := &Relation{speculatableMap: speculatableMap[CacheHashKey, RelationComparisonResult]{host: &c.speculationHost}}
 	key := CacheHashKey{}
 	relation.set(key, RelationComparisonResultSucceeded)
 	diagnostic := ast.NewDiagnostic(&ast.SourceFile{}, core.TextRange{}, diagnostics.No_overload_matches_this_call)
 	success := &Signature{}
 	c.speculate(func() *Signature {
-		c.typeNodeLinks.Get(node).setResolvedType(outer)
+		c.typeNodeLinks.Get(node).setResolvedType(c, outer)
 		c.speculate(func() *Signature {
-			c.typeNodeLinks.Get(node).setResolvedType(inner)
+			c.typeNodeLinks.Get(node).setResolvedType(c, inner)
 			relation.set(key, RelationComparisonResultFailed)
 			c.addDiagnostic(diagnostic)
 			return success
@@ -54,11 +54,11 @@ func TestSpeculationInnerFailureOuterSuccess(t *testing.T) {
 	success := &Signature{}
 	diagnostic := ast.NewDiagnostic(&ast.SourceFile{}, core.TextRange{}, diagnostics.No_overload_matches_this_call)
 	c.speculate(func() *Signature {
-		c.typeNodeLinks.Get(node).setResolvedType(outer)
+		c.typeNodeLinks.Get(node).setResolvedType(c, outer)
 		c.addDiagnostic(diagnostic)
 		c.speculate(func() *Signature {
-			c.typeNodeLinks.Get(node).setResolvedType(inner)
-			c.nodeLinks.Get(node).setFlags(NodeCheckFlagsContextChecked)
+			c.typeNodeLinks.Get(node).setResolvedType(c, inner)
+			c.nodeLinks.Get(node).setFlags(c, NodeCheckFlagsContextChecked)
 			return nil
 		})
 		assert.Equal(t, c.typeNodeLinks.Get(node).getResolvedType(), outer)
@@ -120,11 +120,11 @@ func TestSpeculationRestoresRetainedLinks(t *testing.T) {
 	node := &ast.Node{}
 	links := c.typeNodeLinks.Get(node)
 	original, outer, inner := &Type{}, &Type{}, &Type{}
-	links.setResolvedType(original)
+	links.setResolvedType(c, original)
 	c.speculate(func() *Signature {
-		links.setResolvedType(outer)
+		links.setResolvedType(c, outer)
 		c.speculate(func() *Signature {
-			links.setResolvedType(inner)
+			links.setResolvedType(c, inner)
 			return nil
 		})
 		assert.Equal(t, links.getResolvedType(), outer)
@@ -145,7 +145,7 @@ func TestSpeculationRestoresRetainedPagedLinks(t *testing.T) {
 	original, updated := &Type{}, &Type{}
 	valueLinks.setResolvedType(original)
 	c.speculate(func() *Signature {
-		nodeLinks.setResolvedSymbol(symbol)
+		nodeLinks.setResolvedSymbol(c, symbol)
 		valueLinks.setResolvedType(updated)
 		return nil
 	})
@@ -159,8 +159,8 @@ func TestSpeculatableCacheRewindsRejectedValues(t *testing.T) {
 	c.initializeSpeculation()
 	links := c.typeNodeLinks.Get(&ast.Node{})
 	original, rejected := &Type{}, &Type{}
-	links.setResolvedType(original)
-	c.speculate(func() *Signature { links.setResolvedType(rejected); return nil })
+	links.setResolvedType(c, original)
+	c.speculate(func() *Signature { links.setResolvedType(c, rejected); return nil })
 	assert.Equal(t, links.getResolvedType(), original)
 	assert.Equal(t, c.speculationHost.currentSpeculativeEpoch, uint64(2))
 }
@@ -176,10 +176,9 @@ func TestSpeculatableMapRestoresAndRemovesEntries(t *testing.T) {
 		cache.set("new", 3)
 		return nil
 	})
-	assert.Equal(t, cache.size(), 2)
+	assert.Equal(t, cache.size(), 1)
 	assert.Equal(t, cache.get("existing"), RelationComparisonResult(1))
 	assert.Equal(t, cache.get("new"), RelationComparisonResult(0))
-	assert.Equal(t, cache.size(), 1)
 	c.speculate(func() *Signature { cache.set("existing", 4); return &Signature{} })
 	assert.Equal(t, cache.get("existing"), RelationComparisonResult(4))
 }
@@ -210,12 +209,12 @@ func TestSpeculationPanicRevertsState(t *testing.T) {
 	c.initializeSpeculation()
 	links := c.typeNodeLinks.Get(&ast.Node{})
 	original := &Type{}
-	links.setResolvedType(original)
+	links.setResolvedType(c, original)
 	diagnostic := ast.NewDiagnostic(&ast.SourceFile{}, core.TextRange{}, diagnostics.No_overload_matches_this_call)
 	func() {
 		defer func() { assert.Equal(t, recover(), "stop") }()
 		c.speculate(func() *Signature {
-			links.setResolvedType(&Type{})
+			links.setResolvedType(c, &Type{})
 			c.addDiagnostic(diagnostic)
 			panic("stop")
 		})
@@ -266,7 +265,6 @@ func TestSpeculationCacheUndoLifecycle(t *testing.T) {
 	testCacheUndoLifecycle(t, "exhaustive", ExhaustiveState(0), ExhaustiveState(1), ExhaustiveState(2))
 	testCacheUndoLifecycle(t, "typeSlices", []*Type{{}}, []*Type{{}, {}}, []*Type{})
 	testCacheUndoLifecycle(t, "stringSlices", []string{"original"}, []string{"outer"}, []string{"inner"})
-	testCacheUndoLifecycle(t, "relations", RelationComparisonResult(1), RelationComparisonResult(2), RelationComparisonResult(3))
 }
 
 func testCacheUndoLifecycle[V speculatableCacheValue](t *testing.T, name string, original, outer, inner V) {
@@ -280,38 +278,38 @@ func testCacheUndoLifecycle[V speculatableCacheValue](t *testing.T, name string,
 		t.Parallel()
 		c := &Checker{}
 		c.initializeSpeculation()
-		links := &speculatableLinks{host: &c.speculationHost}
+		host := &c.speculationHost
 		cache := &speculatableCache[V]{}
-		cache.set(links, original)
+		cache.set(host, original)
 		c.speculate(func() *Signature {
-			cache.set(links, outer)
+			cache.set(host, outer)
 			c.speculate(func() *Signature {
-				cache.set(links, inner)
+				cache.set(host, inner)
 				return &Signature{}
 			})
-			assert.DeepEqual(t, cache.get(links), inner, identity)
+			assert.DeepEqual(t, cache.get(), inner, identity)
 			// A parent write after an inner commit must not lose the parent's
 			// original undo record, even when it writes the same cache again.
-			cache.set(links, outer)
+			cache.set(host, outer)
 			c.speculate(func() *Signature {
-				cache.set(links, inner)
+				cache.set(host, inner)
 				return nil
 			})
-			assert.DeepEqual(t, cache.get(links), outer, identity)
+			assert.DeepEqual(t, cache.get(), outer, identity)
 			return nil
 		})
-		assert.DeepEqual(t, cache.get(links), original, identity)
+		assert.DeepEqual(t, cache.get(), original, identity)
 		assert.Equal(t, c.speculationHost.activeFrame, uint64(0))
 		assert.Equal(t, c.speculationHost.checkpointCaches(), cacheCheckpoint{})
 		c.speculate(func() *Signature {
-			cache.set(links, outer)
+			cache.set(host, outer)
 			return &Signature{}
 		})
-		assert.DeepEqual(t, cache.get(links), outer, identity)
+		assert.DeepEqual(t, cache.get(), outer, identity)
 		assert.Equal(t, c.speculationHost.checkpointCaches(), cacheCheckpoint{})
 		// Reusing the journals after a root commit must restore the committed value.
-		c.speculate(func() *Signature { cache.set(links, inner); return nil })
-		assert.DeepEqual(t, cache.get(links), outer, identity)
+		c.speculate(func() *Signature { cache.set(host, inner); return nil })
+		assert.DeepEqual(t, cache.get(), outer, identity)
 	})
 }
 
@@ -325,7 +323,7 @@ func TestSpeculationMapRecreatesDiscardedEntry(t *testing.T) {
 			cache.set("new", RelationComparisonResultSucceeded)
 			return nil
 		})
-		// Reading removes the discarded entry. The parent's write creates a
+		// The discarded entry is removed. The parent's write creates a
 		// different entry that must still be undone by the outer rollback.
 		assert.Equal(t, cache.get("new"), RelationComparisonResult(0))
 		assert.Equal(t, cache.size(), 0)
@@ -375,30 +373,47 @@ func TestSymbolCacheReferenceEquivalence(t *testing.T) {
 			value *Type
 		}
 		type pair struct {
-			links     speculatableSymbolLinks
+			links     ValueSymbolLinks
+			birth     uint64 // Epoch of the frame that created the symbol.
 			actual    speculatableSymbolCache[*Type]
 			reference []referenceValue
 		}
 		pairs := []*pair{}
 		values := []*Type{nil, {}, {}, {}, {}}
-		read := func(p *pair) {
+		expected := func(p *pair) *Type {
 			var want *Type
 			for len(p.reference) > 0 {
 				v := p.reference[len(p.reference)-1]
-				if !c.speculationHost.isDiscardedEpoch(p.links.symbolEpoch) && c.speculationHost.isDiscardedEpoch(v.epoch) {
+				if !c.speculationHost.isDiscardedEpoch(p.birth) && c.speculationHost.isDiscardedEpoch(v.epoch) {
 					p.reference = p.reference[:len(p.reference)-1]
 					continue
 				}
 				want = v.value
 				break
 			}
-			assert.Equal(t, p.actual.get(&p.links), want, "seed %d", seed)
+			return want
+		}
+		read := func(p *pair) {
+			assert.Equal(t, p.actual.get(&p.links), expected(p), "seed %d", seed)
+		}
+		// Once the root attempt ends, every symbol keeps its settled value. Symbols
+		// born in a committed attempt then behave like stable symbols; symbols born
+		// in a discarded attempt are never rolled back again.
+		settle := func(p *pair) {
+			p.reference = []referenceValue{{value: expected(p)}}
+			if !c.speculationHost.isDiscardedEpoch(p.birth) {
+				p.birth = 0
+			}
 		}
 		var run func(int)
 		run = func(depth int) {
 			for step := 0; step < 40; step++ {
 				if len(pairs) == 0 || next(8) == 0 {
-					pairs = append(pairs, &pair{links: speculatableSymbolLinks{speculatableLinks: speculatableLinks{host: &c.speculationHost}, symbolEpoch: c.speculationHost.currentSpeculativeEpoch}})
+					p := &pair{links: ValueSymbolLinks{host: &c.speculationHost}, birth: c.speculationHost.currentSpeculativeEpoch}
+					if c.speculationHost.activeFrame != 0 {
+						c.speculationHost.adoptSymbolBirth(&p.links, p.birth)
+					}
+					pairs = append(pairs, p)
 				}
 				p := pairs[next(uint64(len(pairs)))]
 				switch next(5) {
@@ -411,6 +426,11 @@ func TestSymbolCacheReferenceEquivalence(t *testing.T) {
 							}
 							return &Signature{}
 						})
+						if depth == 0 {
+							for _, p := range pairs {
+								settle(p)
+							}
+						}
 					}
 				case 1, 2:
 					value := values[next(5)]

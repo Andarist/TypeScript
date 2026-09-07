@@ -91,39 +91,3 @@ func (s *PagedLinkStore[V]) TryGet(key uint64) *V {
 	}
 	return nil
 }
-
-// GetWithInitializer initializes every entry when allocating a page. Use it
-// consistently with the same initializer for a store; TryGet can expose sibling
-// entries in an allocated page before their first Get. The initializer must not
-// access this store recursively.
-func (s *PagedLinkStore[V]) GetWithInitializer(key uint64, initialize func(*V)) *V {
-	var page *[pageSize]V
-	pageIndex := key >> pageShift
-	if pageIndex < maxPageCount {
-		if int(pageIndex) >= len(s.pageList) {
-			// Grow the length of the list to pageIndex+1
-			s.pageList = slices.Grow(s.pageList, int(pageIndex)-len(s.pageList)+1)[:pageIndex+1]
-		}
-		page = s.pageList[pageIndex]
-		if page == nil {
-			page = new([pageSize]V)
-			for i := range page {
-				initialize(&page[i])
-			}
-			s.pageList[pageIndex] = page
-		}
-	} else {
-		page = s.pageMap[pageIndex]
-		if page == nil {
-			page = new([pageSize]V)
-			for i := range page {
-				initialize(&page[i])
-			}
-			if s.pageMap == nil {
-				s.pageMap = make(map[uint64]*[pageSize]V)
-			}
-			s.pageMap[pageIndex] = page
-		}
-	}
-	return &page[key&pageMask]
-}

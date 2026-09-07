@@ -1,0 +1,36 @@
+overloadSpeculationKeepsNameResolutionDiagnostic.ts(6,17): error TS2304: Cannot find name 'missing1'.
+overloadSpeculationKeepsNameResolutionDiagnostic.ts(7,15): error TS2304: Cannot find name 'missing2'.
+overloadSpeculationKeepsNameResolutionDiagnostic.ts(8,6): error TS2304: Cannot find name 'missing3'.
+overloadSpeculationKeepsNameResolutionDiagnostic.ts(9,1): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(a: number, cb: (x: number) => void): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'number'.
+  Overload 2 of 2, '(a: string, cb: (x: string) => void): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type '(x: string) => void'.
+overloadSpeculationKeepsNameResolutionDiagnostic.ts(9,8): error TS2304: Cannot find name 'missing4'.
+
+
+==== overloadSpeculationKeepsNameResolutionDiagnostic.ts (5 errors) ====
+    // Name resolution is kept across rolled-back overload attempts, and so are its
+    // diagnostics. Each unresolved name must be reported exactly once.
+    declare function f(a: number, cb: (x: number) => void): void;
+    declare function f(a: string, cb: (x: string) => void): void;
+    
+    f("s", (x) => { missing1; x.toUpperCase(); });
+                    ~~~~~~~~
+!!! error TS2304: Cannot find name 'missing1'.
+    f(1, (x) => { missing2; x.toFixed(); });
+                  ~~~~~~~~
+!!! error TS2304: Cannot find name 'missing2'.
+    f(1, missing3);
+         ~~~~~~~~
+!!! error TS2304: Cannot find name 'missing3'.
+    f("s", missing4 + "");
+    ~
+!!! error TS2769: No overload matches this call.
+!!! error TS2769:   Overload 1 of 2, '(a: number, cb: (x: number) => void): void', gave the following error.
+!!! error TS2769:     Argument of type 'string' is not assignable to parameter of type 'number'.
+!!! error TS2769:   Overload 2 of 2, '(a: string, cb: (x: string) => void): void', gave the following error.
+!!! error TS2769:     Argument of type 'string' is not assignable to parameter of type '(x: string) => void'.
+           ~~~~~~~~
+!!! error TS2304: Cannot find name 'missing4'.
+    

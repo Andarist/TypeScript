@@ -372,7 +372,7 @@ func runWithoutResolvedSignatureCaching[T any](c *Checker, node *ast.Node, fn fu
 		for ancestorNode != nil {
 			signatureLinks := c.signatureLinks.Get(ancestorNode)
 			cachedResolvedSignatures[signatureLinks] = signatureLinks.getResolvedSignature()
-			signatureLinks.setResolvedSignature(nil)
+			signatureLinks.setResolvedSignature(c, nil)
 			if ast.IsFunctionExpressionOrArrowFunction(ancestorNode) {
 				symbolLinks := c.valueSymbolLinks.Get(c.getSymbolOfDeclaration(ancestorNode))
 				resolvedType := symbolLinks.getResolvedType()
@@ -383,7 +383,7 @@ func runWithoutResolvedSignatureCaching[T any](c *Checker, node *ast.Node, fn fu
 		}
 		result := fn()
 		for signatureLinks, resolvedSignature := range cachedResolvedSignatures {
-			signatureLinks.setResolvedSignature(resolvedSignature)
+			signatureLinks.setResolvedSignature(c, resolvedSignature)
 		}
 		for symbolLinks, resolvedType := range cachedTypes {
 			symbolLinks.setResolvedType(resolvedType)

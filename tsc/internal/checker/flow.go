@@ -1934,14 +1934,14 @@ func (c *Checker) isExhaustiveSwitchStatement(node *ast.Node) bool {
 	links := c.switchStatementLinks.Get(node)
 	if links.getExhaustiveState() == ExhaustiveStateUnknown {
 		// Indicate resolution is in process
-		links.setExhaustiveState(ExhaustiveStateComputing)
+		links.setExhaustiveState(c, ExhaustiveStateComputing)
 		isExhaustive := c.computeExhaustiveSwitchStatement(node)
 		if links.getExhaustiveState() == ExhaustiveStateComputing {
-			links.setExhaustiveState(core.IfElse(isExhaustive, ExhaustiveStateTrue, ExhaustiveStateFalse))
+			links.setExhaustiveState(c, core.IfElse(isExhaustive, ExhaustiveStateTrue, ExhaustiveStateFalse))
 		}
 	} else if links.getExhaustiveState() == ExhaustiveStateComputing {
 		// Resolve circularity to false
-		links.setExhaustiveState(ExhaustiveStateFalse)
+		links.setExhaustiveState(c, ExhaustiveStateFalse)
 	}
 	return links.getExhaustiveState() == ExhaustiveStateTrue
 }
@@ -2002,8 +2002,8 @@ func (c *Checker) getSwitchClauseTypeOfWitnesses(node *ast.Node) []string {
 				}
 			}
 		}
-		links.setWitnesses(witnesses)
-		links.setWitnessesComputed(true)
+		links.setWitnesses(c, witnesses)
+		links.setWitnessesComputed(c, true)
 	}
 	return links.getWitnesses()
 }
@@ -2031,8 +2031,8 @@ func (c *Checker) getSwitchClauseTypes(node *ast.Node) []*Type {
 		for i, clause := range clauses {
 			types[i] = c.getTypeOfSwitchClause(clause)
 		}
-		links.setSwitchTypes(types)
-		links.setSwitchTypesComputed(true)
+		links.setSwitchTypes(c, types)
+		links.setSwitchTypesComputed(c, true)
 	}
 	return links.getSwitchTypes()
 }
@@ -2079,7 +2079,7 @@ func (c *Checker) getEffectsSignature(node *ast.Node) *Signature {
 		if !(signature != nil && c.hasTypePredicateOrNeverReturnType(signature)) {
 			signature = c.unknownSignature
 		}
-		links.setEffectsSignature(signature)
+		links.setEffectsSignature(c, signature)
 	}
 	if signature == c.unknownSignature {
 		return nil
@@ -2678,7 +2678,7 @@ func (c *Checker) ensureAssignmentsMarked(symbol *ast.Symbol) {
 	}
 	links := c.nodeLinks.Get(parent)
 	if links.getFlags()&NodeCheckFlagsAssignmentsMarked == 0 {
-		links.setFlags(links.getFlags() | NodeCheckFlagsAssignmentsMarked)
+		links.setFlags(c, links.getFlags()|NodeCheckFlagsAssignmentsMarked)
 		if !c.hasParentWithAssignmentsMarked(parent) {
 			c.markNodeAssignments(parent)
 		}
