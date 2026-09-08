@@ -2658,15 +2658,12 @@ func (r *Relater) isRelatedToEx(originalSource *Type, originalTarget *Type, recu
 	// If the inherited members of the source or target are still being resolved, we're relating a type in the
 	// middle of its own member resolution (for example when an accessor whose type is needed to instantiate a
 	// base type refers back to the type in its body). Only the declared members are known at this point, so a
-	// structural comparison would produce spurious results. We mark the circularity, which is reported by the
-	// resolutions that depend on it, and consider the types related without recording the result.
-	if hasUnresolvedMembers(source) || hasUnresolvedMembers(target) {
-		if hasUnresolvedMembers(source) {
-			r.c.markCircularMemberResolution(source)
-		}
-		if hasUnresolvedMembers(target) {
-			r.c.markCircularMemberResolution(target)
-		}
+	// structural comparison would produce spurious results. We mark the circularity and, when it is going to be
+	// reported by a dependent resolution (whose result is then discarded anyway), consider the types related
+	// without recording the result. Otherwise we fall back to relating the declared members.
+	sourceIsCircular := hasUnresolvedMembers(source) && r.c.markCircularMemberResolution(source)
+	targetIsCircular := hasUnresolvedMembers(target) && r.c.markCircularMemberResolution(target)
+	if sourceIsCircular || targetIsCircular {
 		return TernaryUnknown
 	}
 	if r.relation == r.c.identityRelation {

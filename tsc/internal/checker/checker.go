@@ -19419,20 +19419,22 @@ func hasUnresolvedMembers(t *Type) bool {
 
 // Marks as circular all type resolutions started since the resolution of the inherited members of the given type
 // began, for example the return type of an accessor that is needed to instantiate a base type of the type and
-// whose body refers back to the type. Unlike findResolutionCycleStartIndex, the search isn't bounded by
-// resolutionStart: member resolution can't be retried in a nested context (the members remain partial until the
-// outer resolution completes), so a dependency on the partial members is circular regardless of any temporary
-// reset of the resolution stack.
-func (c *Checker) markCircularMemberResolution(t *Type) {
+// whose body refers back to the type. Returns true if at least one such resolution exists, i.e. if the circularity
+// will be reported (and its result discarded) by a dependent resolution. Unlike findResolutionCycleStartIndex,
+// the search isn't bounded by resolutionStart: member resolution can't be retried in a nested context (the
+// members remain partial until the outer resolution completes), so a dependency on the partial members is
+// circular regardless of any temporary reset of the resolution stack.
+func (c *Checker) markCircularMemberResolution(t *Type) bool {
 	for i := len(c.typeResolutions) - 1; i >= 0; i-- {
 		resolution := &c.typeResolutions[i]
 		if resolution.target == t && resolution.propertyName == TypeSystemPropertyNameResolvedMembers {
-			for j := i; j < len(c.typeResolutions); j++ {
+			for j := i + 1; j < len(c.typeResolutions); j++ {
 				c.typeResolutions[j].result = false
 			}
-			return
+			return i < len(c.typeResolutions)-1
 		}
 	}
+	return false
 }
 
 func (c *Checker) resolveClassOrInterfaceMembers(t *Type) {
