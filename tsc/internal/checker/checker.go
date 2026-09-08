@@ -64,6 +64,7 @@ const (
 	TypeSystemPropertyNameWriteType
 	TypeSystemPropertyNameInitializerIsUndefined
 	TypeSystemPropertyNameAliasTarget
+	TypeSystemPropertyNameResolvedMembers
 )
 
 type TypeResolution struct {
@@ -19135,6 +19136,8 @@ func (c *Checker) typeResolutionHasProperty(r *TypeResolution) bool {
 		return c.valueSymbolLinks.Get(r.target.(*ast.Symbol)).writeType != nil
 	case TypeSystemPropertyNameAliasTarget:
 		return c.aliasSymbolLinks.Get(r.target.(*ast.Symbol)).aliasTarget != nil
+	case TypeSystemPropertyNameResolvedMembers:
+		return !hasUnresolvedMembers(r.target.(*Type))
 	}
 	panic("Unhandled case in typeResolutionHasProperty")
 }
@@ -19404,8 +19407,41 @@ func (c *Checker) resolveStructuredTypeMembers(t *Type) *StructuredType {
 		default:
 			panic("Unhandled case in resolveStructuredTypeMembers")
 		}
+	} else if hasUnresolvedMembers(t) && c.countMemberResolutions(t) == 1 {
+		// The members of the type are being observed while its inherited members are still being resolved,
+		// so only the declared members are available. This happens when instantiating a base type requires
+		// the type itself, for example through the return type of an accessor whose body refers back to the
+		// type. Rather than handing out the partial set of members, we resolve the members again in the
+		// nested context. The nested resolution typically completes because the computation that led back
+		// here (such as the reduction of an intersection type) is already in progress and won't be redone.
+		// We do this only once per type: a further observation during the nested resolution sees the
+		// partial members, which bounds the recursion.
+		if t.objectFlags&ObjectFlagsReference != 0 {
+			c.resolveTypeReferenceMembers(t)
+		} else {
+			c.resolveClassOrInterfaceMembers(t)
+		}
 	}
 	return t.AsStructuredType()
+}
+
+// Returns true if the inherited members of the given type are in the process of being resolved, in which case
+// only its declared members are available (see resolveObjectTypeMembers).
+func hasUnresolvedMembers(t *Type) bool {
+	return t.flags&TypeFlagsObject != 0 && t.objectFlags&ObjectFlagsUnresolvedMembers != 0
+}
+
+// Returns the number of resolutions of the inherited members of the given type that are in progress. The search
+// isn't bounded by resolutionStart because member resolution isn't subject to retries in a nested context.
+func (c *Checker) countMemberResolutions(t *Type) int {
+	count := 0
+	for i := len(c.typeResolutions) - 1; i >= 0; i-- {
+		resolution := &c.typeResolutions[i]
+		if resolution.target == t && resolution.propertyName == TypeSystemPropertyNameResolvedMembers {
+			count++
+		}
+	}
+	return count
 }
 
 func (c *Checker) resolveClassOrInterfaceMembers(t *Type) {
@@ -19451,6 +19487,11 @@ func (c *Checker) resolveObjectTypeMembers(t *Type, source *Type, typeParameters
 		}
 		c.setStructuredTypeMembers(t, members, callSignatures, constructSignatures, indexInfos)
 		thisArgument := core.LastOrNil(typeArguments)
+		// Until the inherited members have been added, the type has only its declared members. We record the
+		// member resolution in the type resolution stack such that a nested resolution can be performed when
+		// the members are observed in the meantime (see resolveStructuredTypeMembers). We push directly
+		// because a nested resolution of the same type is intentional and not a circularity.
+		c.typeResolutions = append(c.typeResolutions, TypeResolution{target: t, propertyName: TypeSystemPropertyNameResolvedMembers, result: true})
 		t.objectFlags |= ObjectFlagsUnresolvedMembers
 		for _, baseType := range baseTypes {
 			instantiatedBaseType := baseType
@@ -19471,6 +19512,7 @@ func (c *Checker) resolveObjectTypeMembers(t *Type, source *Type, typeParameters
 			}))
 		}
 		t.objectFlags &^= ObjectFlagsUnresolvedMembers
+		c.popTypeResolution()
 	}
 	c.setStructuredTypeMembers(t, members, callSignatures, constructSignatures, indexInfos)
 }
