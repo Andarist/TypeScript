@@ -64,6 +64,7 @@ const (
 	TypeSystemPropertyNameWriteType
 	TypeSystemPropertyNameInitializerIsUndefined
 	TypeSystemPropertyNameAliasTarget
+	TypeSystemPropertyNameResolvedMembers
 )
 
 type TypeResolution struct {
@@ -19135,6 +19136,8 @@ func (c *Checker) typeResolutionHasProperty(r *TypeResolution) bool {
 		return c.valueSymbolLinks.Get(r.target.(*ast.Symbol)).writeType != nil
 	case TypeSystemPropertyNameAliasTarget:
 		return c.aliasSymbolLinks.Get(r.target.(*ast.Symbol)).aliasTarget != nil
+	case TypeSystemPropertyNameResolvedMembers:
+		return !hasUnresolvedMembers(r.target.(*Type))
 	}
 	panic("Unhandled case in typeResolutionHasProperty")
 }
@@ -19408,6 +19411,30 @@ func (c *Checker) resolveStructuredTypeMembers(t *Type) *StructuredType {
 	return t.AsStructuredType()
 }
 
+// Returns true if the inherited members of the given type are in the process of being resolved, in which case
+// only its declared members are available (see resolveObjectTypeMembers).
+func hasUnresolvedMembers(t *Type) bool {
+	return t.flags&TypeFlagsObject != 0 && t.objectFlags&ObjectFlagsUnresolvedMembers != 0
+}
+
+// Marks as circular all type resolutions started since the resolution of the inherited members of the given type
+// began, for example the return type of an accessor that is needed to instantiate a base type of the type and
+// whose body refers back to the type. Unlike findResolutionCycleStartIndex, the search isn't bounded by
+// resolutionStart: member resolution can't be retried in a nested context (the members remain partial until the
+// outer resolution completes), so a dependency on the partial members is circular regardless of any temporary
+// reset of the resolution stack.
+func (c *Checker) markCircularMemberResolution(t *Type) {
+	for i := len(c.typeResolutions) - 1; i >= 0; i-- {
+		resolution := &c.typeResolutions[i]
+		if resolution.target == t && resolution.propertyName == TypeSystemPropertyNameResolvedMembers {
+			for j := i; j < len(c.typeResolutions); j++ {
+				c.typeResolutions[j].result = false
+			}
+			return
+		}
+	}
+}
+
 func (c *Checker) resolveClassOrInterfaceMembers(t *Type) {
 	c.resolveObjectTypeMembers(t, t, nil, nil)
 }
@@ -19451,6 +19478,11 @@ func (c *Checker) resolveObjectTypeMembers(t *Type, source *Type, typeParameters
 		}
 		c.setStructuredTypeMembers(t, members, callSignatures, constructSignatures, indexInfos)
 		thisArgument := core.LastOrNil(typeArguments)
+		// Until the inherited members have been added, the type has only its declared members. We record the
+		// member resolution in the type resolution stack such that relating the type to another type in the
+		// meantime can be treated as a circularity (see isRelatedToEx). The push can't fail because we never
+		// get here while the members of the type are already being resolved.
+		c.pushTypeResolution(t, TypeSystemPropertyNameResolvedMembers)
 		t.objectFlags |= ObjectFlagsUnresolvedMembers
 		for _, baseType := range baseTypes {
 			instantiatedBaseType := baseType
@@ -19471,6 +19503,8 @@ func (c *Checker) resolveObjectTypeMembers(t *Type, source *Type, typeParameters
 			}))
 		}
 		t.objectFlags &^= ObjectFlagsUnresolvedMembers
+		// Circularities are reported by the resolutions that observed the partial members, not here.
+		c.popTypeResolution()
 	}
 	c.setStructuredTypeMembers(t, members, callSignatures, constructSignatures, indexInfos)
 }
