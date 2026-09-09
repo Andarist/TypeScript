@@ -19453,19 +19453,47 @@ func (c *Checker) resolveObjectTypeMembers(t *Type, source *Type, typeParameters
 		thisArgument := core.LastOrNil(typeArguments)
 		t.objectFlags |= ObjectFlagsUnresolvedMembers
 		for _, baseType := range baseTypes {
-			instantiatedBaseType := baseType
-			if thisArgument != nil {
-				instantiatedBaseType = c.getTypeWithThisArgument(c.instantiateType(baseType, mapper), thisArgument, false /*needsApparentType*/)
-			}
-			members = c.addInheritedMembers(members, c.getPropertiesOfType(instantiatedBaseType))
-			callSignatures = core.Concatenate(callSignatures, c.getSignaturesOfType(instantiatedBaseType, SignatureKindCall))
-			constructSignatures = core.Concatenate(constructSignatures, c.getSignaturesOfType(instantiatedBaseType, SignatureKindConstruct))
+			var inheritedMembers []*ast.Symbol
+			var inheritedCallSignatures []*Signature
+			var inheritedConstructSignatures []*Signature
 			var inheritedIndexInfos []*IndexInfo
-			if instantiatedBaseType != c.anyType {
-				inheritedIndexInfos = c.getIndexInfosOfType(instantiatedBaseType)
-			} else {
-				inheritedIndexInfos = []*IndexInfo{c.anyBaseTypeIndexInfo}
+			// Instantiating a base type eagerly instantiates its type arguments, which may in turn require the
+			// members of the type being resolved (for example through an accessor whose body refers back to the
+			// type). For base types that are type references we instead obtain the members of the base type as
+			// seen from the generic declaration, with 'this' bound to the declaration's this type, and instantiate
+			// those members with the mapper. Instantiation of the base type's type arguments is thereby deferred
+			// until the types of the inherited members are needed. Synthetic properties (originating in
+			// intersection base types further up the hierarchy) can't be instantiated individually, so we fall
+			// back to instantiating the base type when we encounter them.
+			lazy := false
+			if thisArgument != nil && mapper != nil && baseType.objectFlags&ObjectFlagsReference != 0 {
+				genericBaseType := c.getTypeWithThisArgument(baseType, source.AsInterfaceType().thisType, false /*needsApparentType*/)
+				props := c.getPropertiesOfType(genericBaseType)
+				if !core.Some(props, func(s *ast.Symbol) bool { return s.CheckFlags&ast.CheckFlagsSynthetic != 0 }) {
+					lazy = true
+					inheritedMembers = core.Map(props, func(s *ast.Symbol) *ast.Symbol { return c.instantiateSymbol(s, mapper) })
+					inheritedCallSignatures = c.instantiateSignatures(c.getSignaturesOfType(genericBaseType, SignatureKindCall), mapper)
+					inheritedConstructSignatures = c.instantiateSignatures(c.getSignaturesOfType(genericBaseType, SignatureKindConstruct), mapper)
+					inheritedIndexInfos = c.instantiateIndexInfos(c.getIndexInfosOfType(genericBaseType), mapper)
+				}
 			}
+			if !lazy {
+				instantiatedBaseType := baseType
+				if thisArgument != nil {
+					instantiatedBaseType = c.getTypeWithThisArgument(c.instantiateType(baseType, mapper), thisArgument, false /*needsApparentType*/)
+				}
+				inheritedMembers = c.getPropertiesOfType(instantiatedBaseType)
+				inheritedCallSignatures = c.getSignaturesOfType(instantiatedBaseType, SignatureKindCall)
+				inheritedConstructSignatures = c.getSignaturesOfType(instantiatedBaseType, SignatureKindConstruct)
+				if instantiatedBaseType != c.anyType {
+					inheritedIndexInfos = c.getIndexInfosOfType(instantiatedBaseType)
+				} else {
+					inheritedIndexInfos = []*IndexInfo{c.anyBaseTypeIndexInfo}
+				}
+			}
+			members = c.addInheritedMembers(members, inheritedMembers)
+			callSignatures = core.Concatenate(callSignatures, inheritedCallSignatures)
+			constructSignatures = core.Concatenate(constructSignatures, inheritedConstructSignatures)
 			indexInfos = core.Concatenate(indexInfos, core.Filter(inheritedIndexInfos, func(info *IndexInfo) bool {
 				return findIndexInfo(indexInfos, info.keyType) == nil
 			}))

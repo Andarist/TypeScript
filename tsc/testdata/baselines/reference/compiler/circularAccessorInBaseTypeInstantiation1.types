@@ -1,0 +1,96 @@
+//// [tests/cases/compiler/circularAccessorInBaseTypeInstantiation1.ts] ////
+
+=== circularAccessorInBaseTypeInstantiation1.ts ===
+// https://github.com/microsoft/TypeScript/issues/62180
+// https://github.com/microsoft/TypeScript/issues/62181
+
+// Resolving the members of ZodObject<T> instantiates the base type ZodType<InferObjectType<T>>, which
+// requires the type of the 'parent' accessor, whose body refers back to the type through 'Category'.
+// This is a circularity in the type of 'parent' and must not produce ghost errors on the call to
+// 'optional' based on the partially resolved members of ZodObject<T>.
+
+interface ZodType<T> {
+  optional: "true" | "false";
+>optional : "false" | "true"
+
+  output: T;
+>output : T
+}
+
+interface ZodString extends ZodType<string> {
+  optional: "false";
+>optional : "false"
+}
+
+type ZodShape = Record<string, any>;
+>ZodShape : ZodShape
+
+type Prettify<T> = { [K in keyof T]: T[K] } & {};
+>Prettify : { [K in keyof T]: T[K]; }
+
+type InferObjectType<Shape extends ZodShape> = Prettify<
+>InferObjectType : { [k in keyof Shape as Shape[k] extends { optional: "true"; } ? k : never]?: Shape[k]["output"] | undefined; } & { [k in keyof Shape as Shape[k] extends { optional: "true"; } ? never : k]: Shape[k]["output"]; } extends infer T ? { [K in keyof T]: T[K]; } : never
+  {
+    [k in keyof Shape as Shape[k] extends { optional: "true" }
+>optional : "true"
+
+      ? k
+      : never]?: Shape[k]["output"];
+  } & {
+    [k in keyof Shape as Shape[k] extends { optional: "true" }
+>optional : "true"
+
+      ? never
+      : k]: Shape[k]["output"];
+  }
+>;
+interface ZodObject<T extends ZodShape> extends ZodType<InferObjectType<T>> {
+  optional: "false";
+>optional : "false"
+}
+
+interface ZodOptional<T extends ZodType<any>>
+  extends ZodType<T["output"] | undefined> {
+  optional: "true";
+>optional : "true"
+}
+
+declare function object<T extends ZodShape>(shape: T): ZodObject<T>;
+>object : <T extends ZodShape>(shape: T) => ZodObject<T>
+>shape : T
+
+declare function string(): ZodString;
+>string : () => ZodString
+
+declare function optional<T extends ZodType<any>>(schema: T): ZodOptional<T>;
+>optional : <T extends ZodType<any>>(schema: T) => ZodOptional<T>
+>schema : T
+
+const Category = object({
+>Category : ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>
+>object({  name: string(),  get parent() {    return optional(Category);  },}) : ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>
+>object : <T extends ZodShape>(shape: T) => ZodObject<T>
+>{  name: string(),  get parent() {    return optional(Category);  },} : { name: ZodString; readonly parent: ZodOptional<ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>>; }
+
+  name: string(),
+>name : ZodString
+>string() : ZodString
+>string : () => ZodString
+
+  get parent() {
+>parent : ZodOptional<ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>>
+
+    return optional(Category);
+>optional(Category) : ZodOptional<ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>>
+>optional : <T extends ZodType<any>>(schema: T) => ZodOptional<T>
+>Category : ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>
+
+  },
+});
+
+export const output = Category.output;
+>output : { name: string; readonly parent?: any | undefined; }
+>Category.output : { name: string; readonly parent?: any | undefined; }
+>Category : ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>
+>output : { name: string; readonly parent?: any | undefined; }
+
