@@ -1,0 +1,132 @@
+//// [tests/cases/compiler/circularAccessorInBaseTypeInstantiation5.ts] ////
+
+=== circularAccessorInBaseTypeInstantiation5.ts ===
+// Same as circularAccessorInBaseTypeInstantiation4.ts, but the base type is an intersection produced by a mixin
+// constructor, so the inherited members come from an intersection type rather than a type reference.
+
+declare class ZodType<T> {
+>ZodType : ZodType<T>
+
+  optional: "true" | "false";
+>optional : "false" | "true"
+
+  output: T;
+>output : T
+}
+
+declare class ZodString extends ZodType<string> {
+>ZodString : ZodString
+>ZodType : ZodType<string>
+
+  optional: "false";
+>optional : "false"
+}
+
+type ZodShape = Record<string, any>;
+>ZodShape : ZodShape
+
+type Prettify<T> = { [K in keyof T]: T[K] } & {};
+>Prettify : { [K in keyof T]: T[K]; }
+
+type InferObjectType<Shape extends ZodShape> = Prettify<
+>InferObjectType : { [k in keyof Shape as Shape[k] extends { optional: "true"; } ? k : never]?: Shape[k]["output"] | undefined; } & { [k in keyof Shape as Shape[k] extends { optional: "true"; } ? never : k]: Shape[k]["output"]; } extends infer T ? { [K in keyof T]: T[K]; } : never
+  {
+    [k in keyof Shape as Shape[k] extends { optional: "true" }
+>optional : "true"
+
+      ? k
+      : never]?: Shape[k]["output"];
+  } & {
+    [k in keyof Shape as Shape[k] extends { optional: "true" }
+>optional : "true"
+
+      ? never
+      : k]: Shape[k]["output"];
+  }
+>;
+interface Extra { extra: string }
+>extra : string
+
+declare const MixedBase: new <U>() => ZodType<U> & Extra;
+>MixedBase : new <U>() => ZodType<U> & Extra
+
+declare class ZodObject<T extends ZodShape> extends MixedBase<InferObjectType<T>> {
+>ZodObject : ZodObject<T>
+>MixedBase : ZodType<{ [k in keyof T as T[k] extends { optional: "true"; } ? k : never]?: T[k]["output"] | undefined; } & { [k in keyof T as T[k] extends { optional: "true"; } ? never : k]: T[k]["output"]; } extends infer T_1 ? { [K in keyof T_1]: T_1[K]; } : never> & Extra
+
+  optional: "false";
+>optional : "false"
+}
+
+declare class ZodOptional<T extends ZodType<any>>
+>ZodOptional : ZodOptional<T>
+
+  extends ZodType<T["output"] | undefined> {
+>ZodType : ZodType<T["output"] | undefined>
+
+  optional: "true";
+>optional : "true"
+}
+
+declare function object<T extends ZodShape>(shape: T): ZodObject<T>;
+>object : <T extends ZodShape>(shape: T) => ZodObject<T>
+>shape : T
+
+declare function string(): ZodString;
+>string : () => ZodString
+
+declare function optional<T extends ZodType<any>>(schema: T): ZodOptional<T>;
+>optional : { <T extends ZodType<any>>(schema: T): ZodOptional<T>; <T_1 extends ZodType<any>>(schema: T_1, flag: boolean): ZodOptional<T_1>; }
+>schema : T
+
+declare function optional<T extends ZodType<any>>(schema: T, flag: boolean): ZodOptional<T>;
+>optional : { <T_1 extends ZodType<any>>(schema: T_1): ZodOptional<T_1>; <T extends ZodType<any>>(schema: T, flag: boolean): ZodOptional<T>; }
+>schema : T
+>flag : boolean
+
+const Category = object({
+>Category : ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>
+>object({  name: string(),  get parent() {    return optional(Category);  },}) : ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>
+>object : <T extends ZodShape>(shape: T) => ZodObject<T>
+>{  name: string(),  get parent() {    return optional(Category);  },} : { name: ZodString; readonly parent: ZodOptional<ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>>; }
+
+  name: string(),
+>name : ZodString
+>string() : ZodString
+>string : () => ZodString
+
+  get parent() {
+>parent : ZodOptional<ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>>
+
+    return optional(Category);
+>optional(Category) : ZodOptional<ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>>
+>optional : { <T extends ZodType<any>>(schema: T): ZodOptional<T>; <T extends ZodType<any>>(schema: T, flag: boolean): ZodOptional<T>; }
+>Category : ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>
+
+  },
+});
+
+export const output = Category.output;
+>output : { name: string; readonly parent?: any | undefined; }
+>Category.output : { name: string; readonly parent?: any | undefined; }
+>Category : ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>
+>output : { name: string; readonly parent?: any | undefined; }
+
+const nested: string = output.parent!.parent!.name;
+>nested : string
+>output.parent!.parent!.name : string
+>output.parent!.parent! : { name: string; readonly parent?: any | undefined; }
+>output.parent!.parent : { name: string; readonly parent?: any | undefined; } | undefined
+>output.parent! : { name: string; readonly parent?: any | undefined; }
+>output.parent : { name: string; readonly parent?: any | undefined; } | undefined
+>output : { name: string; readonly parent?: any | undefined; }
+>parent : { name: string; readonly parent?: any | undefined; } | undefined
+>parent : { name: string; readonly parent?: any | undefined; } | undefined
+>name : string
+
+const extra: string = Category.extra;
+>extra : string
+>Category.extra : string
+>Category : ZodObject<{ name: ZodString; readonly parent: ZodOptional<ZodObject<any>>; }>
+>extra : string
+

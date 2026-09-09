@@ -19459,14 +19459,14 @@ func (c *Checker) resolveObjectTypeMembers(t *Type, source *Type, typeParameters
 			var inheritedIndexInfos []*IndexInfo
 			// Instantiating a base type eagerly instantiates its type arguments, which may in turn require the
 			// members of the type being resolved (for example through an accessor whose body refers back to the
-			// type). For base types that are type references we instead obtain the members of the base type as
-			// seen from the generic declaration, with 'this' bound to the declaration's this type, and instantiate
-			// those members with the mapper. Instantiation of the base type's type arguments is thereby deferred
-			// until the types of the inherited members are needed. Synthetic properties (originating in
-			// intersection base types further up the hierarchy) can't be instantiated individually, so we fall
-			// back to instantiating the base type when we encounter them.
+			// type). We instead obtain the members of the base type as seen from the generic declaration, with
+			// 'this' bound to the declaration's this type, and instantiate those members with the mapper.
+			// Instantiation of the base type's type arguments is thereby deferred until the types of the
+			// inherited members are needed. Synthetic properties (a name declared by several constituents of an
+			// intersection base type) can't be instantiated individually, so we fall back to instantiating the
+			// base type when we encounter them.
 			lazy := false
-			if thisArgument != nil && mapper != nil && baseType.objectFlags&ObjectFlagsReference != 0 {
+			if thisArgument != nil && mapper != nil && baseType != c.anyType {
 				genericBaseType := c.getTypeWithThisArgument(baseType, source.AsInterfaceType().thisType, false /*needsApparentType*/)
 				props := c.getPropertiesOfType(genericBaseType)
 				if !core.Some(props, func(s *ast.Symbol) bool { return s.CheckFlags&ast.CheckFlagsSynthetic != 0 }) {
