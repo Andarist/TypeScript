@@ -4678,6 +4678,11 @@ func (r *Relater) membersRelatedToIndexInfo(source *Type, targetInfo *IndexInfo,
 			continue
 		}
 		if r.c.isApplicableIndexType(r.c.getLiteralTypeFromProperty(prop, TypeFlagsStringOrNumberLiteralOrUnique, false), keyType) {
+			// As in isPropertySymbolTypeRelated, don't resolve the source property (which may be an accessor whose
+			// type is inferred from its body) when the target type can't affect the result.
+			if targetInfo.valueType.flags&core.IfElse(r.relation == r.c.strictSubtypeRelation, TypeFlagsAny, TypeFlagsAnyOrUnknown) != 0 {
+				continue
+			}
 			propType := r.c.getNonMissingTypeOfSymbol(prop)
 			var t *Type
 			if r.c.exactOptionalPropertyTypes || propType.flags&TypeFlagsUndefined != 0 || keyType == r.c.numberType || prop.Flags&ast.SymbolFlagsOptional == 0 {
