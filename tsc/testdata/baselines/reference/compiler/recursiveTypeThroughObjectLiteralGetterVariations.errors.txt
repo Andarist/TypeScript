@@ -1,0 +1,131 @@
+recursiveTypeThroughObjectLiteralGetterVariations.ts(15,21): error TS7022: 'schema' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(17,13): error TS7023: 'self' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(25,7): error TS7022: 'nested' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(27,9): error TS7023: 'inner' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(34,7): error TS7022: 'viaCall' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(36,9): error TS7023: 'items' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(43,7): error TS7022: 'annotated' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(45,9): error TS2502: 'self' is referenced directly or indirectly in its own type annotation.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(53,7): error TS7022: 'first' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(53,37): error TS7023: 'me' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(54,7): error TS7022: 'second' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(54,38): error TS7023: 'me' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(62,1): error TS2578: Unused '@ts-expect-error' directive.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(64,1): error TS2578: Unused '@ts-expect-error' directive.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(66,1): error TS2578: Unused '@ts-expect-error' directive.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(68,1): error TS2578: Unused '@ts-expect-error' directive.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(70,1): error TS2578: Unused '@ts-expect-error' directive.
+recursiveTypeThroughObjectLiteralGetterVariations.ts(72,1): error TS2578: Unused '@ts-expect-error' directive.
+
+
+==== recursiveTypeThroughObjectLiteralGetterVariations.ts (18 errors) ====
+    // The recursive getter written the several ways it comes up: as a class's static, nested inside
+    // another object literal, through an intermediate call, spelled out with an annotation, and twice
+    // over in one file. main reports TS7022/TS7023 on every one of these, and TS2502 on the annotated
+    // one.
+    
+    interface Schema<O> {
+        readonly out: O;
+    }
+    type Shape = Record<string, Schema<any>>;
+    declare function object<S extends Shape>(shape: S): Schema<{ [K in keyof S]: S[K]["out"] }> & { shape: S };
+    declare function arr<T extends Schema<any>>(t: T): Schema<T["out"][]>;
+    declare const leaf: Schema<string>;
+    
+    class Holder {
+        static readonly schema = object({
+                        ~~~~~~
+!!! error TS7022: 'schema' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+            name: leaf,
+            get self() {
+                ~~~~
+!!! error TS7023: 'self' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+                return Holder.schema;
+            },
+        });
+    }
+    declare const fromClass: typeof Holder.schema.out;
+    const className: string = fromClass.name;
+    
+    const nested = object({
+          ~~~~~~
+!!! error TS7022: 'nested' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+        name: leaf,
+        get inner() {
+            ~~~~~
+!!! error TS7023: 'inner' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+            return object({ deeper: nested });
+        },
+    });
+    declare const fromNested: typeof nested.out;
+    const nestedName: string = fromNested.inner.deeper.name;
+    
+    const viaCall = object({
+          ~~~~~~~
+!!! error TS7022: 'viaCall' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+        name: leaf,
+        get items() {
+            ~~~~~
+!!! error TS7023: 'items' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+            return arr(viaCall);
+        },
+    });
+    declare const fromCall: typeof viaCall.out;
+    const callName: string = fromCall.items[0].items[0].name;
+    
+    const annotated = object({
+          ~~~~~~~~~
+!!! error TS7022: 'annotated' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+        name: leaf,
+        get self(): typeof annotated {
+            ~~~~
+!!! error TS2502: 'self' is referenced directly or indirectly in its own type annotation.
+            return annotated;
+        },
+    });
+    declare const fromAnnotated: typeof annotated.out;
+    const annotatedName: string = fromAnnotated.self.self.name;
+    
+    // Two independent recursive schemas must not contaminate each other.
+    const first = object({ a: leaf, get me() { return first; } });
+          ~~~~~
+!!! error TS7022: 'first' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+                                        ~~
+!!! error TS7023: 'me' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+    const second = object({ b: leaf, get me() { return second; } });
+          ~~~~~~
+!!! error TS7022: 'second' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+                                         ~~
+!!! error TS7023: 'me' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+    declare const fromFirst: typeof first.out;
+    declare const fromSecond: typeof second.out;
+    const firstA: string = fromFirst.me.a;
+    const secondB: string = fromSecond.me.b;
+    
+    // Every assertion above still passes if the type degraded to `any`. These do not; each names a key the
+    // schema does not have.
+    // @ts-expect-error
+    ~~~~~~~~~~~~~~~~~~~
+!!! error TS2578: Unused '@ts-expect-error' directive.
+    fromClass.self.missing;
+    // @ts-expect-error
+    ~~~~~~~~~~~~~~~~~~~
+!!! error TS2578: Unused '@ts-expect-error' directive.
+    fromNested.inner.deeper.missing;
+    // @ts-expect-error
+    ~~~~~~~~~~~~~~~~~~~
+!!! error TS2578: Unused '@ts-expect-error' directive.
+    fromCall.items[0].missing;
+    // @ts-expect-error
+    ~~~~~~~~~~~~~~~~~~~
+!!! error TS2578: Unused '@ts-expect-error' directive.
+    fromAnnotated.self.missing;
+    // @ts-expect-error
+    ~~~~~~~~~~~~~~~~~~~
+!!! error TS2578: Unused '@ts-expect-error' directive.
+    fromFirst.me.missing;
+    // @ts-expect-error
+    ~~~~~~~~~~~~~~~~~~~
+!!! error TS2578: Unused '@ts-expect-error' directive.
+    fromSecond.me.missing;
+    

@@ -1,0 +1,41 @@
+//// [tests/cases/compiler/recursiveTypeThroughObjectLiteralGetterCrossFile.ts] ////
+
+=== schema.ts ===
+export interface Schema<O> {
+    readonly out: O;
+>out : O
+}
+export type Shape = Record<string, Schema<any>>;
+>Shape : Shape
+
+export declare function object<S extends Shape>(shape: S): Schema<{ [K in keyof S]: S[K]["out"] }> & { shape: S };
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>shape : S
+>shape : S
+
+export const tree = object({
+>tree : any
+>object({    get bad() {        return [tree];    },}) : Schema<{ readonly bad: any; }> & { shape: { readonly bad: any; }; }
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>{    get bad() {        return [tree];    },} : { readonly bad: any; }
+
+    get bad() {
+>bad : any
+
+        return [tree];
+>[tree] : any[]
+>tree : any
+
+    },
+});
+
+=== consumer.ts ===
+import { tree } from "./schema.js";
+>tree : any
+
+export const out = tree.out;
+>out : any
+>tree.out : any
+>tree : any
+>out : any
+

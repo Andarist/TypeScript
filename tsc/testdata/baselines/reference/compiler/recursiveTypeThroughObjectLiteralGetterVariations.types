@@ -1,0 +1,281 @@
+//// [tests/cases/compiler/recursiveTypeThroughObjectLiteralGetterVariations.ts] ////
+
+=== recursiveTypeThroughObjectLiteralGetterVariations.ts ===
+// The recursive getter written the several ways it comes up: as a class's static, nested inside
+// another object literal, through an intermediate call, spelled out with an annotation, and twice
+// over in one file. main reports TS7022/TS7023 on every one of these, and TS2502 on the annotated
+// one.
+
+interface Schema<O> {
+    readonly out: O;
+>out : O
+}
+type Shape = Record<string, Schema<any>>;
+>Shape : Shape
+
+declare function object<S extends Shape>(shape: S): Schema<{ [K in keyof S]: S[K]["out"] }> & { shape: S };
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>shape : S
+>shape : S
+
+declare function arr<T extends Schema<any>>(t: T): Schema<T["out"][]>;
+>arr : <T extends Schema<any>>(t: T) => Schema<T["out"][]>
+>t : T
+
+declare const leaf: Schema<string>;
+>leaf : Schema<string>
+
+class Holder {
+>Holder : Holder
+
+    static readonly schema = object({
+>schema : any
+>object({        name: leaf,        get self() {            return Holder.schema;        },    }) : Schema<{ name: string; readonly self: any; }> & { shape: { name: Schema<string>; readonly self: any; }; }
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>{        name: leaf,        get self() {            return Holder.schema;        },    } : { name: Schema<string>; readonly self: any; }
+
+        name: leaf,
+>name : Schema<string>
+>leaf : Schema<string>
+
+        get self() {
+>self : any
+
+            return Holder.schema;
+>Holder.schema : any
+>Holder : typeof Holder
+>schema : any
+
+        },
+    });
+}
+declare const fromClass: typeof Holder.schema.out;
+>fromClass : any
+>Holder.schema.out : any
+>Holder.schema : any
+>Holder : typeof Holder
+>schema : any
+>out : any
+
+const className: string = fromClass.name;
+>className : string
+>fromClass.name : any
+>fromClass : any
+>name : any
+
+const nested = object({
+>nested : any
+>object({    name: leaf,    get inner() {        return object({ deeper: nested });    },}) : Schema<{ name: string; readonly inner: any; }> & { shape: { name: Schema<string>; readonly inner: any; }; }
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>{    name: leaf,    get inner() {        return object({ deeper: nested });    },} : { name: Schema<string>; readonly inner: any; }
+
+    name: leaf,
+>name : Schema<string>
+>leaf : Schema<string>
+
+    get inner() {
+>inner : any
+
+        return object({ deeper: nested });
+>object({ deeper: nested }) : Schema<{ deeper: any; }> & { shape: { deeper: any; }; }
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>{ deeper: nested } : { deeper: any; }
+>deeper : any
+>nested : any
+
+    },
+});
+declare const fromNested: typeof nested.out;
+>fromNested : any
+>nested.out : any
+>nested : any
+>out : any
+
+const nestedName: string = fromNested.inner.deeper.name;
+>nestedName : string
+>fromNested.inner.deeper.name : any
+>fromNested.inner.deeper : any
+>fromNested.inner : any
+>fromNested : any
+>inner : any
+>deeper : any
+>name : any
+
+const viaCall = object({
+>viaCall : any
+>object({    name: leaf,    get items() {        return arr(viaCall);    },}) : Schema<{ name: string; readonly items: any; }> & { shape: { name: Schema<string>; readonly items: any; }; }
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>{    name: leaf,    get items() {        return arr(viaCall);    },} : { name: Schema<string>; readonly items: any; }
+
+    name: leaf,
+>name : Schema<string>
+>leaf : Schema<string>
+
+    get items() {
+>items : any
+
+        return arr(viaCall);
+>arr(viaCall) : Schema<any[]>
+>arr : <T extends Schema<any>>(t: T) => Schema<T["out"][]>
+>viaCall : any
+
+    },
+});
+declare const fromCall: typeof viaCall.out;
+>fromCall : any
+>viaCall.out : any
+>viaCall : any
+>out : any
+
+const callName: string = fromCall.items[0].items[0].name;
+>callName : string
+>fromCall.items[0].items[0].name : any
+>fromCall.items[0].items[0] : any
+>fromCall.items[0].items : any
+>fromCall.items[0] : any
+>fromCall.items : any
+>fromCall : any
+>items : any
+>0 : 0
+>items : any
+>0 : 0
+>name : any
+
+const annotated = object({
+>annotated : any
+>object({    name: leaf,    get self(): typeof annotated {        return annotated;    },}) : Schema<{ name: string; readonly self: typeof annotated; }> & { shape: { name: Schema<string>; readonly self: typeof annotated; }; }
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>{    name: leaf,    get self(): typeof annotated {        return annotated;    },} : { name: Schema<string>; readonly self: typeof annotated; }
+
+    name: leaf,
+>name : Schema<string>
+>leaf : Schema<string>
+
+    get self(): typeof annotated {
+>self : any
+>annotated : any
+
+        return annotated;
+>annotated : any
+
+    },
+});
+declare const fromAnnotated: typeof annotated.out;
+>fromAnnotated : any
+>annotated.out : any
+>annotated : any
+>out : any
+
+const annotatedName: string = fromAnnotated.self.self.name;
+>annotatedName : string
+>fromAnnotated.self.self.name : any
+>fromAnnotated.self.self : any
+>fromAnnotated.self : any
+>fromAnnotated : any
+>self : any
+>self : any
+>name : any
+
+// Two independent recursive schemas must not contaminate each other.
+const first = object({ a: leaf, get me() { return first; } });
+>first : any
+>object({ a: leaf, get me() { return first; } }) : Schema<{ a: string; readonly me: any; }> & { shape: { a: Schema<string>; readonly me: any; }; }
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>{ a: leaf, get me() { return first; } } : { a: Schema<string>; readonly me: any; }
+>a : Schema<string>
+>leaf : Schema<string>
+>me : any
+>first : any
+
+const second = object({ b: leaf, get me() { return second; } });
+>second : any
+>object({ b: leaf, get me() { return second; } }) : Schema<{ b: string; readonly me: any; }> & { shape: { b: Schema<string>; readonly me: any; }; }
+>object : <S extends Shape>(shape: S) => Schema<{ [K in keyof S]: S[K]["out"]; }> & { shape: S; }
+>{ b: leaf, get me() { return second; } } : { b: Schema<string>; readonly me: any; }
+>b : Schema<string>
+>leaf : Schema<string>
+>me : any
+>second : any
+
+declare const fromFirst: typeof first.out;
+>fromFirst : any
+>first.out : any
+>first : any
+>out : any
+
+declare const fromSecond: typeof second.out;
+>fromSecond : any
+>second.out : any
+>second : any
+>out : any
+
+const firstA: string = fromFirst.me.a;
+>firstA : string
+>fromFirst.me.a : any
+>fromFirst.me : any
+>fromFirst : any
+>me : any
+>a : any
+
+const secondB: string = fromSecond.me.b;
+>secondB : string
+>fromSecond.me.b : any
+>fromSecond.me : any
+>fromSecond : any
+>me : any
+>b : any
+
+// Every assertion above still passes if the type degraded to `any`. These do not; each names a key the
+// schema does not have.
+// @ts-expect-error
+fromClass.self.missing;
+>fromClass.self.missing : any
+>fromClass.self : any
+>fromClass : any
+>self : any
+>missing : any
+
+// @ts-expect-error
+fromNested.inner.deeper.missing;
+>fromNested.inner.deeper.missing : any
+>fromNested.inner.deeper : any
+>fromNested.inner : any
+>fromNested : any
+>inner : any
+>deeper : any
+>missing : any
+
+// @ts-expect-error
+fromCall.items[0].missing;
+>fromCall.items[0].missing : any
+>fromCall.items[0] : any
+>fromCall.items : any
+>fromCall : any
+>items : any
+>0 : 0
+>missing : any
+
+// @ts-expect-error
+fromAnnotated.self.missing;
+>fromAnnotated.self.missing : any
+>fromAnnotated.self : any
+>fromAnnotated : any
+>self : any
+>missing : any
+
+// @ts-expect-error
+fromFirst.me.missing;
+>fromFirst.me.missing : any
+>fromFirst.me : any
+>fromFirst : any
+>me : any
+>missing : any
+
+// @ts-expect-error
+fromSecond.me.missing;
+>fromSecond.me.missing : any
+>fromSecond.me : any
+>fromSecond : any
+>me : any
+>missing : any
+
