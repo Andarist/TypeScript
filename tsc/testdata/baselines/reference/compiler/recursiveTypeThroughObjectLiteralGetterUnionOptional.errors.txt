@@ -1,0 +1,67 @@
+recursiveTypeThroughObjectLiteralGetterUnionOptional.ts(37,7): error TS7022: 'variantA' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+recursiveTypeThroughObjectLiteralGetterUnionOptional.ts(39,9): error TS7023: 'child' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+recursiveTypeThroughObjectLiteralGetterUnionOptional.ts(43,7): error TS7022: 'tree' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+recursiveTypeThroughObjectLiteralGetterUnionOptional.ts(50,1): error TS2578: Unused '@ts-expect-error' directive.
+
+
+==== recursiveTypeThroughObjectLiteralGetterUnionOptional.ts (4 errors) ====
+    // Recursion through a union, with the recursive member optional. This is the companion to
+    // recursiveTypeThroughObjectLiteralGetterUnion.ts, which is the same shape with the member left
+    // required. main fails on both, with an implicit-any on every declaration involved.
+    
+    interface Internals<out O = unknown> {
+        readonly out: O;
+    }
+    interface Schema {
+        readonly internals: Internals;
+    }
+    type Out<T extends Schema> = T["internals"]["out"];
+    
+    interface OptionalInternals<T extends Schema> extends Internals<Out<T> | undefined> {}
+    interface OptionalSchema<T extends Schema = Schema> extends Schema {
+        readonly internals: OptionalInternals<T>;
+    }
+    interface StringInternals extends Internals<string> {}
+    interface StringSchema extends Schema {
+        readonly internals: StringInternals;
+    }
+    
+    type Shape = Readonly<{ [k: string]: Schema }>;
+    interface ObjectInternals<S extends Shape> extends Internals<{ [K in keyof S]: Out<S[K]> }> {}
+    interface ObjectSchema<S extends Shape = Shape> extends Schema {
+        readonly internals: ObjectInternals<S>;
+    }
+    interface UnionInternals<T extends readonly Schema[]> extends Internals<Out<T[number]>> {}
+    interface UnionSchema<T extends readonly Schema[] = Schema[]> extends Schema {
+        readonly internals: UnionInternals<T>;
+    }
+    
+    declare function object<S extends Shape>(shape: S): ObjectSchema<S>;
+    declare function union<T extends readonly Schema[]>(options: T): UnionSchema<T>;
+    declare function optional<T extends Schema>(t: T): OptionalSchema<T>;
+    declare function text(): StringSchema;
+    
+    const variantA = object({
+          ~~~~~~~~
+!!! error TS7022: 'variantA' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+        name: text(),
+        get child() {
+            ~~~~~
+!!! error TS7023: 'child' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+            return optional(tree);
+        },
+    });
+    const tree = union([variantA]);
+          ~~~~
+!!! error TS7022: 'tree' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+    
+    declare const sample: Out<typeof tree>;
+    // The recursive member resolves: two levels in, `name` is still a string.
+    const topName: string = sample.name;
+    const nestedName: string | undefined = sample.child?.name;
+    // An `any` would swallow this; the expected error shows the member is a real object.
+    // @ts-expect-error
+    ~~~~~~~~~~~~~~~~~~~
+!!! error TS2578: Unused '@ts-expect-error' directive.
+    sample.child?.missing;
+    
