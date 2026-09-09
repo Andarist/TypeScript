@@ -1,0 +1,26 @@
+recursiveTypeThroughObjectLiteralGetterPostponedConstraint.ts(11,7): error TS7022: 'tree' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+recursiveTypeThroughObjectLiteralGetterPostponedConstraint.ts(12,9): error TS7023: 'bad' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+
+
+==== recursiveTypeThroughObjectLiteralGetterPostponedConstraint.ts (2 errors) ====
+    // Skipping a member that genuinely cannot be worked out yet postpones the constraint check; it does
+    // not waive it. The getter names the declaration being resolved, so the skip is right, but what it
+    // returns still violates the constraint and that has to surface once the declaration has a type.
+    
+    interface Schema<O> {
+        readonly out: O;
+    }
+    type Shape = Record<string, Schema<any>>;
+    declare function object<S extends Shape>(shape: S): Schema<{ [K in keyof S]: S[K]["out"] }> & { shape: S };
+    
+    const tree = object({
+          ~~~~
+!!! error TS7022: 'tree' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+        get bad() {
+            ~~~
+!!! error TS7023: 'bad' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+            return [tree];
+        },
+    });
+    export const out = tree.out;
+    
