@@ -1,0 +1,141 @@
+//// [tests/cases/compiler/circularAccessorInBaseTypeInstantiation3.ts] ////
+
+=== circularAccessorInBaseTypeInstantiation3.ts ===
+// Same as circularAccessorInBaseTypeInstantiation1.ts, but nothing outside the object literal accesses the members
+// of the resulting ZodObject type, so the type of the 'parent' accessor is first needed when its body is checked.
+
+
+
+interface ZodType<T> {
+>ZodType : Symbol(ZodType, Decl(circularAccessorInBaseTypeInstantiation3.ts, 0, 0))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 5, 18))
+
+  optional: "true" | "false";
+>optional : Symbol(ZodType.optional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 5, 22))
+
+  output: T;
+>output : Symbol(ZodType.output, Decl(circularAccessorInBaseTypeInstantiation3.ts, 6, 29))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 5, 18))
+}
+
+interface ZodString extends ZodType<string> {
+>ZodString : Symbol(ZodString, Decl(circularAccessorInBaseTypeInstantiation3.ts, 8, 1))
+>ZodType : Symbol(ZodType, Decl(circularAccessorInBaseTypeInstantiation3.ts, 0, 0))
+
+  optional: "false";
+>optional : Symbol(ZodString.optional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 10, 45))
+}
+
+type ZodShape = Record<string, any>;
+>ZodShape : Symbol(ZodShape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 12, 1))
+>Record : Symbol(Record, Decl(lib.es5.d.ts, --, --))
+
+type Prettify<T> = { [K in keyof T]: T[K] } & {};
+>Prettify : Symbol(Prettify, Decl(circularAccessorInBaseTypeInstantiation3.ts, 14, 36))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 15, 14))
+>K : Symbol(K, Decl(circularAccessorInBaseTypeInstantiation3.ts, 15, 22))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 15, 14))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 15, 14))
+>K : Symbol(K, Decl(circularAccessorInBaseTypeInstantiation3.ts, 15, 22))
+
+type InferObjectType<Shape extends ZodShape> = Prettify<
+>InferObjectType : Symbol(InferObjectType, Decl(circularAccessorInBaseTypeInstantiation3.ts, 15, 49))
+>Shape : Symbol(Shape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 16, 21))
+>ZodShape : Symbol(ZodShape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 12, 1))
+>Prettify : Symbol(Prettify, Decl(circularAccessorInBaseTypeInstantiation3.ts, 14, 36))
+  {
+    [k in keyof Shape as Shape[k] extends { optional: "true" }
+>k : Symbol(k, Decl(circularAccessorInBaseTypeInstantiation3.ts, 18, 5))
+>Shape : Symbol(Shape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 16, 21))
+>Shape : Symbol(Shape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 16, 21))
+>k : Symbol(k, Decl(circularAccessorInBaseTypeInstantiation3.ts, 18, 5))
+>optional : Symbol(optional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 18, 43))
+
+      ? k
+>k : Symbol(k, Decl(circularAccessorInBaseTypeInstantiation3.ts, 18, 5))
+
+      : never]?: Shape[k]["output"];
+>Shape : Symbol(Shape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 16, 21))
+>k : Symbol(k, Decl(circularAccessorInBaseTypeInstantiation3.ts, 18, 5))
+
+  } & {
+    [k in keyof Shape as Shape[k] extends { optional: "true" }
+>k : Symbol(k, Decl(circularAccessorInBaseTypeInstantiation3.ts, 22, 5))
+>Shape : Symbol(Shape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 16, 21))
+>Shape : Symbol(Shape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 16, 21))
+>k : Symbol(k, Decl(circularAccessorInBaseTypeInstantiation3.ts, 22, 5))
+>optional : Symbol(optional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 22, 43))
+
+      ? never
+      : k]: Shape[k]["output"];
+>k : Symbol(k, Decl(circularAccessorInBaseTypeInstantiation3.ts, 22, 5))
+>Shape : Symbol(Shape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 16, 21))
+>k : Symbol(k, Decl(circularAccessorInBaseTypeInstantiation3.ts, 22, 5))
+  }
+>;
+interface ZodObject<T extends ZodShape> extends ZodType<InferObjectType<T>> {
+>ZodObject : Symbol(ZodObject, Decl(circularAccessorInBaseTypeInstantiation3.ts, 26, 2))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 27, 20))
+>ZodShape : Symbol(ZodShape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 12, 1))
+>ZodType : Symbol(ZodType, Decl(circularAccessorInBaseTypeInstantiation3.ts, 0, 0))
+>InferObjectType : Symbol(InferObjectType, Decl(circularAccessorInBaseTypeInstantiation3.ts, 15, 49))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 27, 20))
+
+  optional: "false";
+>optional : Symbol(ZodObject.optional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 27, 77))
+}
+
+interface ZodOptional<T extends ZodType<any>>
+>ZodOptional : Symbol(ZodOptional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 29, 1))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 31, 22))
+>ZodType : Symbol(ZodType, Decl(circularAccessorInBaseTypeInstantiation3.ts, 0, 0))
+
+  extends ZodType<T["output"] | undefined> {
+>ZodType : Symbol(ZodType, Decl(circularAccessorInBaseTypeInstantiation3.ts, 0, 0))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 31, 22))
+
+  optional: "true";
+>optional : Symbol(ZodOptional.optional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 32, 44))
+}
+
+declare function object<T extends ZodShape>(shape: T): ZodObject<T>;
+>object : Symbol(object, Decl(circularAccessorInBaseTypeInstantiation3.ts, 34, 1))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 36, 24))
+>ZodShape : Symbol(ZodShape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 12, 1))
+>shape : Symbol(shape, Decl(circularAccessorInBaseTypeInstantiation3.ts, 36, 44))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 36, 24))
+>ZodObject : Symbol(ZodObject, Decl(circularAccessorInBaseTypeInstantiation3.ts, 26, 2))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 36, 24))
+
+declare function string(): ZodString;
+>string : Symbol(string, Decl(circularAccessorInBaseTypeInstantiation3.ts, 36, 68))
+>ZodString : Symbol(ZodString, Decl(circularAccessorInBaseTypeInstantiation3.ts, 8, 1))
+
+declare function optional<T extends ZodType<any>>(schema: T): ZodOptional<T>;
+>optional : Symbol(optional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 37, 37))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 38, 26))
+>ZodType : Symbol(ZodType, Decl(circularAccessorInBaseTypeInstantiation3.ts, 0, 0))
+>schema : Symbol(schema, Decl(circularAccessorInBaseTypeInstantiation3.ts, 38, 50))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 38, 26))
+>ZodOptional : Symbol(ZodOptional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 29, 1))
+>T : Symbol(T, Decl(circularAccessorInBaseTypeInstantiation3.ts, 38, 26))
+
+const Category = object({
+>Category : Symbol(Category, Decl(circularAccessorInBaseTypeInstantiation3.ts, 40, 5))
+>object : Symbol(object, Decl(circularAccessorInBaseTypeInstantiation3.ts, 34, 1))
+
+  name: string(),
+>name : Symbol(name, Decl(circularAccessorInBaseTypeInstantiation3.ts, 40, 25))
+>string : Symbol(string, Decl(circularAccessorInBaseTypeInstantiation3.ts, 36, 68))
+
+  get parent() {
+>parent : Symbol(parent, Decl(circularAccessorInBaseTypeInstantiation3.ts, 41, 17))
+
+    return optional(Category);
+>optional : Symbol(optional, Decl(circularAccessorInBaseTypeInstantiation3.ts, 37, 37))
+>Category : Symbol(Category, Decl(circularAccessorInBaseTypeInstantiation3.ts, 40, 5))
+
+  },
+});
+
+
