@@ -7,31 +7,41 @@ import (
 	"github.com/microsoft/TypeScript/tsc/internal/testutil"
 )
 
-// Regression test for https://github.com/microsoft/TypeScript/issues/62181
-//
-// A getter naming the declaration being resolved used to report as `any`, and asking for that hover
-// before pulling diagnostics changed how many errors came back, because the hover fixed the getter at
-// `any` for everything that followed. The hover has to report the recursive type it actually has, and
-// the diagnostics have to be the same whether or not anything asked for it first.
+// https://github.com/microsoft/TypeScript/issues/62180
+// https://github.com/microsoft/TypeScript/issues/62181
 func TestHoverThenDiagnosticsRecursiveGetter(t *testing.T) {
 	t.Parallel()
-	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
-	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, recursiveGetterContent)
-	defer done()
-	f.VerifyQuickInfoAt(t, "1", `(accessor) parent: ZodOptional<ZodObject<{
+	for _, test := range []struct {
+		name         string
+		hoverFirst   bool
+		accessOutput bool
+	}{
+		{name: "diagnostics"},
+		{name: "hover", hoverFirst: true},
+		{name: "diagnosticsWithOutput", accessOutput: true},
+		{name: "hoverWithOutput", hoverFirst: true, accessOutput: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+			content := recursiveGetterContent
+			if test.accessOutput {
+				content += "\nexport const output = Category.output;"
+			}
+			f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+			defer done()
+			const hover = `(accessor) parent: ZodOptional<ZodObject<{
     name: ZodString;
     readonly parent: ZodOptional<ZodObject<...>>;
-}>>`, "")
-	f.VerifyNoErrors(t)
-}
-
-// The same file with nothing asked of it first, so the two can be compared.
-func TestDiagnosticsOnlyRecursiveGetter(t *testing.T) {
-	t.Parallel()
-	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
-	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, recursiveGetterContent)
-	defer done()
-	f.VerifyNoErrors(t)
+}>>`
+			if test.hoverFirst {
+				f.VerifyQuickInfoAt(t, "1", hover, "")
+			}
+			f.VerifyNoErrors(t)
+			f.VerifyQuickInfoAt(t, "1", hover, "")
+			f.VerifyNoErrors(t)
+		})
+	}
 }
 
 const recursiveGetterContent = `// @Filename: /tsconfig.json
@@ -77,6 +87,4 @@ const Category = object({
   get parent/*1*/() {
     return optional(Category);
   },
-});
-
-export const output = Category.output;`
+});`
