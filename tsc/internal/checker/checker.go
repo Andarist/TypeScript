@@ -23369,6 +23369,15 @@ func (c *Checker) getDistributedTypeParameter(node *ast.Node, t *Type) *Type {
 					// return the distributed form of the type parameter.
 					return c.getDistributedTypeFromTypeParameter(t)
 				}
+			} else if ast.IsMappedTypeNode(n) {
+				constraint := n.AsMappedTypeNode().TypeParameter.AsTypeParameterDeclaration().Constraint
+				typeNode := constraint.Type()
+				if ast.IsTypeOperatorNode(constraint) && constraint.AsTypeOperatorNode().Operator == ast.KindKeyOfKeyword &&
+					isSimpleIdentifierTypeReference(typeNode) && c.getSymbolFromTypeReference(typeNode) == t.symbol {
+					// If node is contained in a homomorphic mapped type for the given type parameter,
+					// return the distributed form of the type parameter.
+					return c.getDistributedTypeFromTypeParameter(t)
+				}
 			}
 		}
 	}
