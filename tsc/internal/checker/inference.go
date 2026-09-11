@@ -958,7 +958,7 @@ func (c *Checker) inferToMappedType(n *InferenceState, source *Type, target *Typ
 		// where T is a type variable. Use inferTypeForHomomorphicMappedType to infer a suitable source
 		// type and then make a secondary inference from that type to T. We make a secondary inference
 		// such that direct inferences to T get priority over inferences to Partial<T>, for example.
-		inference := getInferenceInfoForType(n, constraintType.AsIndexType().target)
+		inference := getInferenceInfoForType(n, c.getActualTypeVariable(constraintType.AsIndexType().target))
 		if inference != nil && !inference.isFixed && !c.isFromInferenceBlockedSource(source) {
 			inferredType := c.inferTypeForHomomorphicMappedType(source, target, constraintType)
 			if inferredType != nil {
@@ -1089,7 +1089,7 @@ func (c *Checker) inferReverseMappedType(source *Type, target *Type, constraint 
 }
 
 func (c *Checker) inferReverseMappedTypeWorker(source *Type, target *Type, constraint *Type) *Type {
-	typeParameter := c.getIndexedAccessType(constraint.AsIndexType().target, c.getTypeParameterFromMappedType(target))
+	typeParameter := c.getIndexedAccessType(c.getActualTypeVariable(constraint.AsIndexType().target), c.getTypeParameterFromMappedType(target))
 	templateType := c.getTemplateTypeFromMappedType(target)
 	inference := newInferenceInfo(typeParameter)
 	c.inferTypes([]*InferenceInfo{inference}, source, templateType, InferencePriorityNone, false)
