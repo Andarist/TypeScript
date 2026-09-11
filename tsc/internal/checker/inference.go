@@ -551,12 +551,23 @@ func (c *Checker) inferToMultipleTypesWithPriority(n *InferenceState, source *Ty
 	n.priority = savePriority
 }
 
+func newNonDistributedTypeParameterMapper(t *Type) *TypeMapper {
+	nonDistributedTypeParameter := getNonDistributedTypeParameter(t)
+	if nonDistributedTypeParameter != t {
+		// Type mapping normalizes distributed type parameters before applying the mapper,
+		// so this identity mapping replaces distributed occurrences at any nesting depth.
+		return newSimpleTypeMapper(nonDistributedTypeParameter, nonDistributedTypeParameter)
+	}
+	return nil
+}
+
 func (c *Checker) inferToConditionalType(n *InferenceState, source *Type, target *Type) {
 	if source.flags&TypeFlagsConditional != 0 {
-		c.inferFromTypes(n, getNonDistributedTypeParameter(source.AsConditionalType().checkType), target.AsConditionalType().checkType)
-		c.inferFromTypes(n, getNonDistributedTypeParameter(source.AsConditionalType().extendsType), target.AsConditionalType().extendsType)
-		c.inferFromTypes(n, getNonDistributedTypeParameter(c.getTrueTypeFromConditionalType(source)), c.getTrueTypeFromConditionalType(target))
-		c.inferFromTypes(n, getNonDistributedTypeParameter(c.getFalseTypeFromConditionalType(source)), c.getFalseTypeFromConditionalType(target))
+		mapper := newNonDistributedTypeParameterMapper(source.AsConditionalType().checkType)
+		c.inferFromTypes(n, c.instantiateType(source.AsConditionalType().checkType, mapper), target.AsConditionalType().checkType)
+		c.inferFromTypes(n, c.instantiateType(source.AsConditionalType().extendsType, mapper), target.AsConditionalType().extendsType)
+		c.inferFromTypes(n, c.instantiateType(c.getTrueTypeFromConditionalType(source), mapper), c.getTrueTypeFromConditionalType(target))
+		c.inferFromTypes(n, c.instantiateType(c.getFalseTypeFromConditionalType(source), mapper), c.getFalseTypeFromConditionalType(target))
 	} else {
 		targetTypes := []*Type{c.getTrueTypeFromConditionalType(target), c.getFalseTypeFromConditionalType(target)}
 		c.inferToMultipleTypesWithPriority(n, source, targetTypes, target.flags, core.IfElse(n.contravariant, InferencePriorityContravariantConditional, 0))
@@ -687,12 +698,17 @@ func (c *Checker) inferToTemplateLiteralType(n *InferenceState, source *Type, ta
 func (c *Checker) inferFromGenericMappedTypes(n *InferenceState, source *Type, target *Type) {
 	// The source and target types are generic types { [P in S]: X } and { [P in T]: Y }, so we infer
 	// from S to T and from X to Y.
-	c.inferFromTypes(n, c.getConstraintTypeFromMappedType(source), c.getConstraintTypeFromMappedType(target))
-	c.inferFromTypes(n, c.getTemplateTypeFromMappedType(source), c.getTemplateTypeFromMappedType(target))
+	sourceConstraint := c.getConstraintTypeFromMappedType(source)
+	var mapper *TypeMapper
+	if sourceConstraint.flags&TypeFlagsIndex != 0 {
+		mapper = newNonDistributedTypeParameterMapper(sourceConstraint.AsIndexType().target)
+	}
+	c.inferFromTypes(n, c.instantiateType(sourceConstraint, mapper), c.getConstraintTypeFromMappedType(target))
+	c.inferFromTypes(n, c.instantiateType(c.getTemplateTypeFromMappedType(source), mapper), c.getTemplateTypeFromMappedType(target))
 	sourceNameType := c.getNameTypeFromMappedType(source)
 	targetNameType := c.getNameTypeFromMappedType(target)
 	if sourceNameType != nil && targetNameType != nil {
-		c.inferFromTypes(n, sourceNameType, targetNameType)
+		c.inferFromTypes(n, c.instantiateType(sourceNameType, mapper), targetNameType)
 	}
 }
 
@@ -958,7 +974,7 @@ func (c *Checker) inferToMappedType(n *InferenceState, source *Type, target *Typ
 		// where T is a type variable. Use inferTypeForHomomorphicMappedType to infer a suitable source
 		// type and then make a secondary inference from that type to T. We make a secondary inference
 		// such that direct inferences to T get priority over inferences to Partial<T>, for example.
-		inference := getInferenceInfoForType(n, constraintType.AsIndexType().target)
+		inference := getInferenceInfoForType(n, c.getActualTypeVariable(constraintType.AsIndexType().target))
 		if inference != nil && !inference.isFixed && !c.isFromInferenceBlockedSource(source) {
 			inferredType := c.inferTypeForHomomorphicMappedType(source, target, constraintType)
 			if inferredType != nil {
@@ -1089,7 +1105,7 @@ func (c *Checker) inferReverseMappedType(source *Type, target *Type, constraint 
 }
 
 func (c *Checker) inferReverseMappedTypeWorker(source *Type, target *Type, constraint *Type) *Type {
-	typeParameter := c.getIndexedAccessType(constraint.AsIndexType().target, c.getTypeParameterFromMappedType(target))
+	typeParameter := c.getIndexedAccessType(c.getActualTypeVariable(constraint.AsIndexType().target), c.getTypeParameterFromMappedType(target))
 	templateType := c.getTemplateTypeFromMappedType(target)
 	inference := newInferenceInfo(typeParameter)
 	c.inferTypes([]*InferenceInfo{inference}, source, templateType, InferencePriorityNone, false)
