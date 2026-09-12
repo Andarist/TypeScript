@@ -288,3 +288,119 @@ const res15 = f9({
     consume: (x) => x.v.toLowerCase(),
   },
 });
+
+// A previously checked completely non-inferable property can be resolved while a later
+// property's inference scope is active, before the complete source type has been linked
+// to the partial reverse-mapped type.
+declare function f10<T>(arg: {
+  [K in keyof T]: {
+    seed?: T[K];
+    produce?: (n: string) => T[K];
+    consume?: (x: T[K]) => void;
+    consumeAll?: (x: T) => void;
+  };
+}): T;
+
+const res16 = f10({
+  earlierNonInferable: {
+    produce: (n) => ({ value: n }),
+  },
+  laterNonInferable: {
+    produce: (n) => n,
+    consumeAll: (x) => x.earlierNonInferable.value.toLowerCase(),
+  },
+  partiallyInferable: {
+    seed: { value: "known" },
+    consume: (x) => x.value.toLowerCase(),
+  },
+  fullyInferable: {
+    seed: 123,
+  },
+});
+
+res16.earlierNonInferable.value.toLowerCase();
+res16.laterNonInferable.toLowerCase();
+res16.partiallyInferable.value.toLowerCase();
+res16.fullyInferable.toFixed();
+
+// The same linking window can be exposed by a direct indexed access instead of a
+// callback that consumes the complete inferred object.
+declare function f11<T extends { earlier: unknown }>(arg: {
+  [K in keyof T]: {
+    produce?: (n: string) => T[K];
+    consumeEarlier?: (x: T["earlier"]) => void;
+  };
+}): T;
+
+const res17 = f11({
+  earlier: {
+    produce: (n) => ({ value: n }),
+  },
+  later: {
+    produce: (n) => n,
+    consumeEarlier: (x) => x.value.toLowerCase(),
+  },
+});
+
+res17.earlier.value.toLowerCase();
+res17.later.toLowerCase();
+
+declare function setup<TAction extends { first?: unknown } = {}>(arg: {
+  actions?: {
+    [K in keyof TAction]: (
+      params: TAction[K],
+      exec: (arg: TAction) => void,
+    ) => void;
+  };
+  other?: (first: TAction["first"]) => void;
+}): TAction;
+
+const result1 = setup({
+  actions: {
+    first: (params: { count: number }, enqueue) => {},
+    second: (params: { foo: string }, enqueue) => {},
+  },
+  other: () => {},
+});
+
+// The earlier producer has already been checked, but its scope has been discarded and
+// the later scope is still empty when it tries to resolve the earlier property.
+declare function f12<T>(arg: {
+  [K in keyof T]: {
+    produce?: (n: string) => T[K];
+    consumeAll?: (x: T) => void;
+  };
+}): T;
+
+const res18 = f12({
+  earlier: {
+    produce: (n) => ({ value: n }),
+  },
+  later: {
+    consumeAll: (x) => x.earlier.value.toLowerCase(),
+  },
+});
+
+res18.earlier.value.toLowerCase();
+
+// The same sibling scope association issue occurs when the mapped properties are tuples.
+declare function f13<T>(arg: {
+  [K in keyof T]: [
+    (n: string) => T[K],
+    (x: T) => void,
+  ];
+}): T;
+
+const res19 = f13({
+  earlier: [
+    (n) => ({ value: n }),
+    (x) => {},
+  ],
+  later: [
+    (n) => n,
+    (x) => x.earlier.value.toLowerCase(),
+  ],
+});
+
+res19.earlier.value.toLowerCase();
+res19.later.toLowerCase();

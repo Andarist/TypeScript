@@ -4,9 +4,28 @@ intraExpressionInferencesReverseMappedTypes.ts(79,15): error TS7006: Parameter '
 intraExpressionInferencesReverseMappedTypes.ts(85,15): error TS7006: Parameter 'x' implicitly has an 'any' type.
 intraExpressionInferencesReverseMappedTypes.ts(94,15): error TS7006: Parameter 'x' implicitly has an 'any' type.
 intraExpressionInferencesReverseMappedTypes.ts(100,15): error TS7006: Parameter 'x' implicitly has an 'any' type.
+intraExpressionInferencesReverseMappedTypes.ts(303,5): error TS2322: Type '(n: string) => { value: string; }' is not assignable to type '(n: string) => string'.
+  Type '{ value: string; }' is not assignable to type 'string'.
+intraExpressionInferencesReverseMappedTypes.ts(307,46): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+intraExpressionInferencesReverseMappedTypes.ts(318,1): error TS18046: 'res16.earlierNonInferable' is of type 'unknown'.
+intraExpressionInferencesReverseMappedTypes.ts(319,1): error TS18046: 'res16.laterNonInferable' is of type 'unknown'.
+intraExpressionInferencesReverseMappedTypes.ts(334,5): error TS2322: Type '(n: string) => { value: string; }' is not assignable to type '(n: string) => string'.
+  Type '{ value: string; }' is not assignable to type 'string'.
+intraExpressionInferencesReverseMappedTypes.ts(338,30): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+intraExpressionInferencesReverseMappedTypes.ts(342,1): error TS18046: 'res17.earlier' is of type 'unknown'.
+intraExpressionInferencesReverseMappedTypes.ts(343,1): error TS18046: 'res17.later' is of type 'unknown'.
+intraExpressionInferencesReverseMappedTypes.ts(357,5): error TS2322: Type '(params: { count: number; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void' is not assignable to type '(params: unknown, exec: (arg: { first: unknown; second: { foo: string; }; }) => void) => void'.
+  Types of parameters 'params' and 'params' are incompatible.
+    Type 'unknown' is not assignable to type '{ count: number; }'.
+intraExpressionInferencesReverseMappedTypes.ts(377,24): error TS18046: 'x.earlier' is of type 'unknown'.
+intraExpressionInferencesReverseMappedTypes.ts(381,1): error TS18046: 'res18.earlier' is of type 'unknown'.
+intraExpressionInferencesReverseMappedTypes.ts(393,12): error TS2322: Type '{ value: string; }' is not assignable to type 'string'.
+intraExpressionInferencesReverseMappedTypes.ts(398,22): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+intraExpressionInferencesReverseMappedTypes.ts(402,15): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+intraExpressionInferencesReverseMappedTypes.ts(403,1): error TS18046: 'res19.later' is of type 'unknown'.
 
 
-==== intraExpressionInferencesReverseMappedTypes.ts (6 errors) ====
+==== intraExpressionInferencesReverseMappedTypes.ts (21 errors) ====
     // repro cases based on https://github.com/microsoft/TypeScript/issues/53018
     
     declare function f<T>(
@@ -306,4 +325,161 @@ intraExpressionInferencesReverseMappedTypes.ts(100,15): error TS7006: Parameter 
         consume: (x) => x.v.toLowerCase(),
       },
     });
+    
+    // A previously checked completely non-inferable property can be resolved while a later
+    // property's inference scope is active, before the complete source type has been linked
+    // to the partial reverse-mapped type.
+    declare function f10<T>(arg: {
+      [K in keyof T]: {
+        seed?: T[K];
+        produce?: (n: string) => T[K];
+        consume?: (x: T[K]) => void;
+        consumeAll?: (x: T) => void;
+      };
+    }): T;
+    
+    const res16 = f10({
+      earlierNonInferable: {
+        produce: (n) => ({ value: n }),
+        ~~~~~~~
+!!! error TS2322: Type '(n: string) => { value: string; }' is not assignable to type '(n: string) => string'.
+!!! error TS2322:   Type '{ value: string; }' is not assignable to type 'string'.
+!!! related TS6500 intraExpressionInferencesReverseMappedTypes.ts:295:5: The expected type comes from property 'produce' which is declared here on type '{ seed?: string | undefined; produce?: ((n: string) => string) | undefined; consume?: ((x: string) => void) | undefined; consumeAll?: ((x: { earlierNonInferable: string; laterNonInferable: string; partiallyInferable: { value: string; }; fullyInferable: number; }) => void) | undefined; }'
+      },
+      laterNonInferable: {
+        produce: (n) => n,
+        consumeAll: (x) => x.earlierNonInferable.value.toLowerCase(),
+                                                 ~~~~~
+!!! error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+!!! related TS2728 lib.es5.d.ts:--:--: 'valueOf' is declared here.
+      },
+      partiallyInferable: {
+        seed: { value: "known" },
+        consume: (x) => x.value.toLowerCase(),
+      },
+      fullyInferable: {
+        seed: 123,
+      },
+    });
+    
+    res16.earlierNonInferable.value.toLowerCase();
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS18046: 'res16.earlierNonInferable' is of type 'unknown'.
+    res16.laterNonInferable.toLowerCase();
+    ~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS18046: 'res16.laterNonInferable' is of type 'unknown'.
+    res16.partiallyInferable.value.toLowerCase();
+    res16.fullyInferable.toFixed();
+    
+    // The same linking window can be exposed by a direct indexed access instead of a
+    // callback that consumes the complete inferred object.
+    declare function f11<T extends { earlier: unknown }>(arg: {
+      [K in keyof T]: {
+        produce?: (n: string) => T[K];
+        consumeEarlier?: (x: T["earlier"]) => void;
+      };
+    }): T;
+    
+    const res17 = f11({
+      earlier: {
+        produce: (n) => ({ value: n }),
+        ~~~~~~~
+!!! error TS2322: Type '(n: string) => { value: string; }' is not assignable to type '(n: string) => string'.
+!!! error TS2322:   Type '{ value: string; }' is not assignable to type 'string'.
+!!! related TS6500 intraExpressionInferencesReverseMappedTypes.ts:327:5: The expected type comes from property 'produce' which is declared here on type '{ produce?: ((n: string) => string) | undefined; consumeEarlier?: ((x: string) => void) | undefined; }'
+      },
+      later: {
+        produce: (n) => n,
+        consumeEarlier: (x) => x.value.toLowerCase(),
+                                 ~~~~~
+!!! error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+!!! related TS2728 lib.es5.d.ts:--:--: 'valueOf' is declared here.
+      },
+    });
+    
+    res17.earlier.value.toLowerCase();
+    ~~~~~~~~~~~~~
+!!! error TS18046: 'res17.earlier' is of type 'unknown'.
+    res17.later.toLowerCase();
+    ~~~~~~~~~~~
+!!! error TS18046: 'res17.later' is of type 'unknown'.
+    
+    declare function setup<TAction extends { first?: unknown } = {}>(arg: {
+      actions?: {
+        [K in keyof TAction]: (
+          params: TAction[K],
+          exec: (arg: TAction) => void,
+        ) => void;
+      };
+      other?: (first: TAction["first"]) => void;
+    }): TAction;
+    
+    const result1 = setup({
+      actions: {
+        first: (params: { count: number }, enqueue) => {},
+        ~~~~~
+!!! error TS2322: Type '(params: { count: number; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void' is not assignable to type '(params: unknown, exec: (arg: { first: unknown; second: { foo: string; }; }) => void) => void'.
+!!! error TS2322:   Types of parameters 'params' and 'params' are incompatible.
+!!! error TS2322:     Type 'unknown' is not assignable to type '{ count: number; }'.
+        second: (params: { foo: string }, enqueue) => {},
+      },
+      other: () => {},
+    });
+    
+    // The earlier producer has already been checked, but its scope has been discarded and
+    // the later scope is still empty when it tries to resolve the earlier property.
+    declare function f12<T>(arg: {
+      [K in keyof T]: {
+        produce?: (n: string) => T[K];
+        consumeAll?: (x: T) => void;
+      };
+    }): T;
+    
+    const res18 = f12({
+      earlier: {
+        produce: (n) => ({ value: n }),
+      },
+      later: {
+        consumeAll: (x) => x.earlier.value.toLowerCase(),
+                           ~~~~~~~~~
+!!! error TS18046: 'x.earlier' is of type 'unknown'.
+      },
+    });
+    
+    res18.earlier.value.toLowerCase();
+    ~~~~~~~~~~~~~
+!!! error TS18046: 'res18.earlier' is of type 'unknown'.
+    
+    // The same sibling scope association issue occurs when the mapped properties are tuples.
+    declare function f13<T>(arg: {
+      [K in keyof T]: [
+        (n: string) => T[K],
+        (x: T) => void,
+      ];
+    }): T;
+    
+    const res19 = f13({
+      earlier: [
+        (n) => ({ value: n }),
+               ~~~~~~~~~~~~~~
+!!! error TS2322: Type '{ value: string; }' is not assignable to type 'string'.
+!!! related TS6502 intraExpressionInferencesReverseMappedTypes.ts:386:5: The expected type comes from the return type of this signature.
+        (x) => {},
+      ],
+      later: [
+        (n) => n,
+        (x) => x.earlier.value.toLowerCase(),
+                         ~~~~~
+!!! error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+!!! related TS2728 lib.es5.d.ts:--:--: 'valueOf' is declared here.
+      ],
+    });
+    
+    res19.earlier.value.toLowerCase();
+                  ~~~~~
+!!! error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+!!! related TS2728 lib.es5.d.ts:--:--: 'valueOf' is declared here.
+    res19.later.toLowerCase();
+    ~~~~~~~~~~~
+!!! error TS18046: 'res19.later' is of type 'unknown'.
     

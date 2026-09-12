@@ -1064,3 +1064,426 @@ const res15 = f9({
   },
 });
 
+// A previously checked completely non-inferable property can be resolved while a later
+// property's inference scope is active, before the complete source type has been linked
+// to the partial reverse-mapped type.
+declare function f10<T>(arg: {
+>f10 : <T>(arg: { [K in keyof T]: { seed?: T[K]; produce?: (n: string) => T[K]; consume?: (x: T[K]) => void; consumeAll?: (x: T) => void; }; }) => T
+>arg : { [K in keyof T]: { seed?: T[K]; produce?: (n: string) => T[K]; consume?: (x: T[K]) => void; consumeAll?: (x: T) => void; }; }
+
+  [K in keyof T]: {
+    seed?: T[K];
+>seed : T[K] | undefined
+
+    produce?: (n: string) => T[K];
+>produce : ((n: string) => T[K]) | undefined
+>n : string
+
+    consume?: (x: T[K]) => void;
+>consume : ((x: T[K]) => void) | undefined
+>x : T[K]
+
+    consumeAll?: (x: T) => void;
+>consumeAll : ((x: T) => void) | undefined
+>x : T
+
+  };
+}): T;
+
+const res16 = f10({
+>res16 : { earlierNonInferable: unknown; laterNonInferable: unknown; partiallyInferable: { value: string; }; fullyInferable: number; }
+>f10({  earlierNonInferable: {    produce: (n) => ({ value: n }),  },  laterNonInferable: {    produce: (n) => n,    consumeAll: (x) => x.earlierNonInferable.value.toLowerCase(),  },  partiallyInferable: {    seed: { value: "known" },    consume: (x) => x.value.toLowerCase(),  },  fullyInferable: {    seed: 123,  },}) : { earlierNonInferable: unknown; laterNonInferable: unknown; partiallyInferable: { value: string; }; fullyInferable: number; }
+>f10 : <T>(arg: { [K in keyof T]: { seed?: T[K]; produce?: (n: string) => T[K]; consume?: (x: T[K]) => void; consumeAll?: (x: T) => void; }; }) => T
+>{  earlierNonInferable: {    produce: (n) => ({ value: n }),  },  laterNonInferable: {    produce: (n) => n,    consumeAll: (x) => x.earlierNonInferable.value.toLowerCase(),  },  partiallyInferable: {    seed: { value: "known" },    consume: (x) => x.value.toLowerCase(),  },  fullyInferable: {    seed: 123,  },} : { earlierNonInferable: { produce: (n: string) => { value: string; }; }; laterNonInferable: { produce: (n: string) => string; consumeAll: (x: { earlierNonInferable: string; laterNonInferable: string; partiallyInferable: { value: string; }; fullyInferable: number; }) => any; }; partiallyInferable: { seed: { value: string; }; consume: (x: { value: string; }) => string; }; fullyInferable: { seed: number; }; }
+
+  earlierNonInferable: {
+>earlierNonInferable : { produce: (n: string) => { value: string; }; }
+>{    produce: (n) => ({ value: n }),  } : { produce: (n: string) => { value: string; }; }
+
+    produce: (n) => ({ value: n }),
+>produce : (n: string) => { value: string; }
+>(n) => ({ value: n }) : (n: string) => { value: string; }
+>n : string
+>({ value: n }) : { value: string; }
+>{ value: n } : { value: string; }
+>value : string
+>n : string
+
+  },
+  laterNonInferable: {
+>laterNonInferable : { produce: (n: string) => string; consumeAll: (x: { earlierNonInferable: string; laterNonInferable: string; partiallyInferable: { value: string; }; fullyInferable: number; }) => any; }
+>{    produce: (n) => n,    consumeAll: (x) => x.earlierNonInferable.value.toLowerCase(),  } : { produce: (n: string) => string; consumeAll: (x: { earlierNonInferable: string; laterNonInferable: string; partiallyInferable: { value: string; }; fullyInferable: number; }) => any; }
+
+    produce: (n) => n,
+>produce : (n: string) => string
+>(n) => n : (n: string) => string
+>n : string
+>n : string
+
+    consumeAll: (x) => x.earlierNonInferable.value.toLowerCase(),
+>consumeAll : (x: { earlierNonInferable: string; laterNonInferable: string; partiallyInferable: { value: string; }; fullyInferable: number; }) => any
+>(x) => x.earlierNonInferable.value.toLowerCase() : (x: { earlierNonInferable: string; laterNonInferable: string; partiallyInferable: { value: string; }; fullyInferable: number; }) => any
+>x : { earlierNonInferable: string; laterNonInferable: string; partiallyInferable: { value: string; }; fullyInferable: number; }
+>x.earlierNonInferable.value.toLowerCase() : any
+>x.earlierNonInferable.value.toLowerCase : any
+>x.earlierNonInferable.value : any
+>x.earlierNonInferable : string
+>x : { earlierNonInferable: string; laterNonInferable: string; partiallyInferable: { value: string; }; fullyInferable: number; }
+>earlierNonInferable : string
+>value : any
+>toLowerCase : any
+
+  },
+  partiallyInferable: {
+>partiallyInferable : { seed: { value: string; }; consume: (x: { value: string; }) => string; }
+>{    seed: { value: "known" },    consume: (x) => x.value.toLowerCase(),  } : { seed: { value: string; }; consume: (x: { value: string; }) => string; }
+
+    seed: { value: "known" },
+>seed : { value: string; }
+>{ value: "known" } : { value: string; }
+>value : string
+>"known" : "known"
+
+    consume: (x) => x.value.toLowerCase(),
+>consume : (x: { value: string; }) => string
+>(x) => x.value.toLowerCase() : (x: { value: string; }) => string
+>x : { value: string; }
+>x.value.toLowerCase() : string
+>x.value.toLowerCase : () => string
+>x.value : string
+>x : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+  },
+  fullyInferable: {
+>fullyInferable : { seed: number; }
+>{    seed: 123,  } : { seed: number; }
+
+    seed: 123,
+>seed : number
+>123 : 123
+
+  },
+});
+
+res16.earlierNonInferable.value.toLowerCase();
+>res16.earlierNonInferable.value.toLowerCase() : any
+>res16.earlierNonInferable.value.toLowerCase : any
+>res16.earlierNonInferable.value : any
+>res16.earlierNonInferable : unknown
+>res16 : { earlierNonInferable: unknown; laterNonInferable: unknown; partiallyInferable: { value: string; }; fullyInferable: number; }
+>earlierNonInferable : unknown
+>value : any
+>toLowerCase : any
+
+res16.laterNonInferable.toLowerCase();
+>res16.laterNonInferable.toLowerCase() : any
+>res16.laterNonInferable.toLowerCase : any
+>res16.laterNonInferable : unknown
+>res16 : { earlierNonInferable: unknown; laterNonInferable: unknown; partiallyInferable: { value: string; }; fullyInferable: number; }
+>laterNonInferable : unknown
+>toLowerCase : any
+
+res16.partiallyInferable.value.toLowerCase();
+>res16.partiallyInferable.value.toLowerCase() : string
+>res16.partiallyInferable.value.toLowerCase : () => string
+>res16.partiallyInferable.value : string
+>res16.partiallyInferable : { value: string; }
+>res16 : { earlierNonInferable: unknown; laterNonInferable: unknown; partiallyInferable: { value: string; }; fullyInferable: number; }
+>partiallyInferable : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+res16.fullyInferable.toFixed();
+>res16.fullyInferable.toFixed() : string
+>res16.fullyInferable.toFixed : (fractionDigits?: number) => string
+>res16.fullyInferable : number
+>res16 : { earlierNonInferable: unknown; laterNonInferable: unknown; partiallyInferable: { value: string; }; fullyInferable: number; }
+>fullyInferable : number
+>toFixed : (fractionDigits?: number) => string
+
+// The same linking window can be exposed by a direct indexed access instead of a
+// callback that consumes the complete inferred object.
+declare function f11<T extends { earlier: unknown }>(arg: {
+>f11 : <T extends { earlier: unknown; }>(arg: { [K in keyof T]: { produce?: (n: string) => T[K]; consumeEarlier?: (x: T["earlier"]) => void; }; }) => T
+>earlier : unknown
+>arg : { [K in keyof T]: { produce?: (n: string) => T[K]; consumeEarlier?: (x: T["earlier"]) => void; }; }
+
+  [K in keyof T]: {
+    produce?: (n: string) => T[K];
+>produce : ((n: string) => T[K]) | undefined
+>n : string
+
+    consumeEarlier?: (x: T["earlier"]) => void;
+>consumeEarlier : ((x: T["earlier"]) => void) | undefined
+>x : T["earlier"]
+
+  };
+}): T;
+
+const res17 = f11({
+>res17 : { earlier: unknown; later: unknown; }
+>f11({  earlier: {    produce: (n) => ({ value: n }),  },  later: {    produce: (n) => n,    consumeEarlier: (x) => x.value.toLowerCase(),  },}) : { earlier: unknown; later: unknown; }
+>f11 : <T extends { earlier: unknown; }>(arg: { [K in keyof T]: { produce?: (n: string) => T[K]; consumeEarlier?: (x: T["earlier"]) => void; }; }) => T
+>{  earlier: {    produce: (n) => ({ value: n }),  },  later: {    produce: (n) => n,    consumeEarlier: (x) => x.value.toLowerCase(),  },} : { earlier: { produce: (n: string) => { value: string; }; }; later: { produce: (n: string) => string; consumeEarlier: (x: string) => any; }; }
+
+  earlier: {
+>earlier : { produce: (n: string) => { value: string; }; }
+>{    produce: (n) => ({ value: n }),  } : { produce: (n: string) => { value: string; }; }
+
+    produce: (n) => ({ value: n }),
+>produce : (n: string) => { value: string; }
+>(n) => ({ value: n }) : (n: string) => { value: string; }
+>n : string
+>({ value: n }) : { value: string; }
+>{ value: n } : { value: string; }
+>value : string
+>n : string
+
+  },
+  later: {
+>later : { produce: (n: string) => string; consumeEarlier: (x: string) => any; }
+>{    produce: (n) => n,    consumeEarlier: (x) => x.value.toLowerCase(),  } : { produce: (n: string) => string; consumeEarlier: (x: string) => any; }
+
+    produce: (n) => n,
+>produce : (n: string) => string
+>(n) => n : (n: string) => string
+>n : string
+>n : string
+
+    consumeEarlier: (x) => x.value.toLowerCase(),
+>consumeEarlier : (x: string) => any
+>(x) => x.value.toLowerCase() : (x: string) => any
+>x : string
+>x.value.toLowerCase() : any
+>x.value.toLowerCase : any
+>x.value : any
+>x : string
+>value : any
+>toLowerCase : any
+
+  },
+});
+
+res17.earlier.value.toLowerCase();
+>res17.earlier.value.toLowerCase() : any
+>res17.earlier.value.toLowerCase : any
+>res17.earlier.value : any
+>res17.earlier : unknown
+>res17 : { earlier: unknown; later: unknown; }
+>earlier : unknown
+>value : any
+>toLowerCase : any
+
+res17.later.toLowerCase();
+>res17.later.toLowerCase() : any
+>res17.later.toLowerCase : any
+>res17.later : unknown
+>res17 : { earlier: unknown; later: unknown; }
+>later : unknown
+>toLowerCase : any
+
+declare function setup<TAction extends { first?: unknown } = {}>(arg: {
+>setup : <TAction extends { first?: unknown; } = {}>(arg: { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; other?: (first: TAction["first"]) => void; }) => TAction
+>first : unknown
+>arg : { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; other?: (first: TAction["first"]) => void; }
+
+  actions?: {
+>actions : { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; } | undefined
+
+    [K in keyof TAction]: (
+      params: TAction[K],
+>params : TAction[K]
+
+      exec: (arg: TAction) => void,
+>exec : (arg: TAction) => void
+>arg : TAction
+
+    ) => void;
+  };
+  other?: (first: TAction["first"]) => void;
+>other : ((first: TAction["first"]) => void) | undefined
+>first : TAction["first"]
+
+}): TAction;
+
+const result1 = setup({
+>result1 : { first: unknown; second: unknown; }
+>setup({  actions: {    first: (params: { count: number }, enqueue) => {},    second: (params: { foo: string }, enqueue) => {},  },  other: () => {},}) : { first: unknown; second: unknown; }
+>setup : <TAction extends { first?: unknown; } = {}>(arg: { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; other?: (first: TAction["first"]) => void; }) => TAction
+>{  actions: {    first: (params: { count: number }, enqueue) => {},    second: (params: { foo: string }, enqueue) => {},  },  other: () => {},} : { actions: { first: (params: { count: number; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void; }; other: () => void; }
+
+  actions: {
+>actions : { first: (params: { count: number; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void; }
+>{    first: (params: { count: number }, enqueue) => {},    second: (params: { foo: string }, enqueue) => {},  } : { first: (params: { count: number; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void; }
+
+    first: (params: { count: number }, enqueue) => {},
+>first : (params: { count: number; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void
+>(params: { count: number }, enqueue) => {} : (params: { count: number; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void
+>params : { count: number; }
+>count : number
+>enqueue : (arg: { first: unknown; second: { foo: string; }; }) => void
+
+    second: (params: { foo: string }, enqueue) => {},
+>second : (params: { foo: string; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void
+>(params: { foo: string }, enqueue) => {} : (params: { foo: string; }, enqueue: (arg: { first: unknown; second: { foo: string; }; }) => void) => void
+>params : { foo: string; }
+>foo : string
+>enqueue : (arg: { first: unknown; second: { foo: string; }; }) => void
+
+  },
+  other: () => {},
+>other : () => void
+>() => {} : () => void
+
+});
+
+// The earlier producer has already been checked, but its scope has been discarded and
+// the later scope is still empty when it tries to resolve the earlier property.
+declare function f12<T>(arg: {
+>f12 : <T>(arg: { [K in keyof T]: { produce?: (n: string) => T[K]; consumeAll?: (x: T) => void; }; }) => T
+>arg : { [K in keyof T]: { produce?: (n: string) => T[K]; consumeAll?: (x: T) => void; }; }
+
+  [K in keyof T]: {
+    produce?: (n: string) => T[K];
+>produce : ((n: string) => T[K]) | undefined
+>n : string
+
+    consumeAll?: (x: T) => void;
+>consumeAll : ((x: T) => void) | undefined
+>x : T
+
+  };
+}): T;
+
+const res18 = f12({
+>res18 : { earlier: unknown; later: unknown; }
+>f12({  earlier: {    produce: (n) => ({ value: n }),  },  later: {    consumeAll: (x) => x.earlier.value.toLowerCase(),  },}) : { earlier: unknown; later: unknown; }
+>f12 : <T>(arg: { [K in keyof T]: { produce?: (n: string) => T[K]; consumeAll?: (x: T) => void; }; }) => T
+>{  earlier: {    produce: (n) => ({ value: n }),  },  later: {    consumeAll: (x) => x.earlier.value.toLowerCase(),  },} : { earlier: { produce: (n: string) => { value: string; }; }; later: { consumeAll: (x: { earlier: unknown; later: unknown; }) => any; }; }
+
+  earlier: {
+>earlier : { produce: (n: string) => { value: string; }; }
+>{    produce: (n) => ({ value: n }),  } : { produce: (n: string) => { value: string; }; }
+
+    produce: (n) => ({ value: n }),
+>produce : (n: string) => { value: string; }
+>(n) => ({ value: n }) : (n: string) => { value: string; }
+>n : string
+>({ value: n }) : { value: string; }
+>{ value: n } : { value: string; }
+>value : string
+>n : string
+
+  },
+  later: {
+>later : { consumeAll: (x: { earlier: unknown; later: unknown; }) => any; }
+>{    consumeAll: (x) => x.earlier.value.toLowerCase(),  } : { consumeAll: (x: { earlier: unknown; later: unknown; }) => any; }
+
+    consumeAll: (x) => x.earlier.value.toLowerCase(),
+>consumeAll : (x: { earlier: unknown; later: unknown; }) => any
+>(x) => x.earlier.value.toLowerCase() : (x: { earlier: unknown; later: unknown; }) => any
+>x : { earlier: unknown; later: unknown; }
+>x.earlier.value.toLowerCase() : any
+>x.earlier.value.toLowerCase : any
+>x.earlier.value : any
+>x.earlier : unknown
+>x : { earlier: unknown; later: unknown; }
+>earlier : unknown
+>value : any
+>toLowerCase : any
+
+  },
+});
+
+res18.earlier.value.toLowerCase();
+>res18.earlier.value.toLowerCase() : any
+>res18.earlier.value.toLowerCase : any
+>res18.earlier.value : any
+>res18.earlier : unknown
+>res18 : { earlier: unknown; later: unknown; }
+>earlier : unknown
+>value : any
+>toLowerCase : any
+
+// The same sibling scope association issue occurs when the mapped properties are tuples.
+declare function f13<T>(arg: {
+>f13 : <T>(arg: { [K in keyof T]: [(n: string) => T[K], (x: T) => void]; }) => T
+>arg : { [K in keyof T]: [(n: string) => T[K], (x: T) => void]; }
+
+  [K in keyof T]: [
+    (n: string) => T[K],
+>n : string
+
+    (x: T) => void,
+>x : T
+
+  ];
+}): T;
+
+const res19 = f13({
+>res19 : { earlier: string; later: unknown; }
+>f13({  earlier: [    (n) => ({ value: n }),    (x) => {},  ],  later: [    (n) => n,    (x) => x.earlier.value.toLowerCase(),  ],}) : { earlier: string; later: unknown; }
+>f13 : <T>(arg: { [K in keyof T]: [(n: string) => T[K], (x: T) => void]; }) => T
+>{  earlier: [    (n) => ({ value: n }),    (x) => {},  ],  later: [    (n) => n,    (x) => x.earlier.value.toLowerCase(),  ],} : { earlier: [(n: string) => { value: string; }, (x: { earlier: string; later: string; }) => void]; later: [(n: string) => string, (x: { earlier: string; later: string; }) => any]; }
+
+  earlier: [
+>earlier : [(n: string) => { value: string; }, (x: { earlier: string; later: string; }) => void]
+>[    (n) => ({ value: n }),    (x) => {},  ] : [(n: string) => { value: string; }, (x: { earlier: string; later: string; }) => void]
+
+    (n) => ({ value: n }),
+>(n) => ({ value: n }) : (n: string) => { value: string; }
+>n : string
+>({ value: n }) : { value: string; }
+>{ value: n } : { value: string; }
+>value : string
+>n : string
+
+    (x) => {},
+>(x) => {} : (x: { earlier: string; later: string; }) => void
+>x : { earlier: string; later: string; }
+
+  ],
+  later: [
+>later : [(n: string) => string, (x: { earlier: string; later: string; }) => any]
+>[    (n) => n,    (x) => x.earlier.value.toLowerCase(),  ] : [(n: string) => string, (x: { earlier: string; later: string; }) => any]
+
+    (n) => n,
+>(n) => n : (n: string) => string
+>n : string
+>n : string
+
+    (x) => x.earlier.value.toLowerCase(),
+>(x) => x.earlier.value.toLowerCase() : (x: { earlier: string; later: string; }) => any
+>x : { earlier: string; later: string; }
+>x.earlier.value.toLowerCase() : any
+>x.earlier.value.toLowerCase : any
+>x.earlier.value : any
+>x.earlier : string
+>x : { earlier: string; later: string; }
+>earlier : string
+>value : any
+>toLowerCase : any
+
+  ],
+});
+
+res19.earlier.value.toLowerCase();
+>res19.earlier.value.toLowerCase() : any
+>res19.earlier.value.toLowerCase : any
+>res19.earlier.value : any
+>res19.earlier : string
+>res19 : { earlier: string; later: unknown; }
+>earlier : string
+>value : any
+>toLowerCase : any
+
+res19.later.toLowerCase();
+>res19.later.toLowerCase() : any
+>res19.later.toLowerCase : any
+>res19.later : unknown
+>res19 : { earlier: string; later: unknown; }
+>later : unknown
+>toLowerCase : any
+
