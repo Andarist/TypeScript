@@ -1102,7 +1102,8 @@ func (c *Checker) inferReverseMappedTypeWorker(source *Type, target *Type, const
 		inferenceContext := c.getInferenceContext(scopeNode)
 		index := c.findReverseMappedTypeIntraExpressionInferenceScope(inferenceContext, scopeNode)
 		if index != -1 {
-			intraExpressionSites := inferenceContext.reverseMappedIntraExpressionInferenceSites[index]
+			start := inferenceContext.reverseMappedIntraExpressionInferenceScopeStarts[index]
+			intraExpressionSites := inferenceContext.reverseMappedIntraExpressionInferenceSites[start:]
 			recordSymbol := c.getGlobalRecordSymbol()
 			if len(intraExpressionSites) != 0 && recordSymbol != nil {
 				// Intra-expression inference infers from collected sites into their contextual types.
@@ -1326,19 +1327,22 @@ func (c *Checker) newInferenceContextWorker(inferences []*InferenceInfo, signatu
 func (c *Checker) addIntraExpressionInferenceSite(n *InferenceContext, node *ast.Node, t *Type) {
 	site := IntraExpressionInferenceSite{node: node, t: t}
 	n.intraExpressionInferenceSites = append(n.intraExpressionInferenceSites, site)
-	for i := range n.reverseMappedIntraExpressionInferenceSites {
-		n.reverseMappedIntraExpressionInferenceSites[i] = append(n.reverseMappedIntraExpressionInferenceSites[i], site)
+	if len(n.reverseMappedIntraExpressionInferenceScopeNodes) != 0 {
+		n.reverseMappedIntraExpressionInferenceSites = append(n.reverseMappedIntraExpressionInferenceSites, site)
 	}
 }
 
 func (c *Checker) pushReverseMappedTypeIntraExpressionInferenceScope(n *InferenceContext, node *ast.Node) {
 	n.reverseMappedIntraExpressionInferenceScopeNodes = append(n.reverseMappedIntraExpressionInferenceScopeNodes, node)
-	n.reverseMappedIntraExpressionInferenceSites = append(n.reverseMappedIntraExpressionInferenceSites, nil)
+	n.reverseMappedIntraExpressionInferenceScopeStarts = append(n.reverseMappedIntraExpressionInferenceScopeStarts, len(n.reverseMappedIntraExpressionInferenceSites))
 }
 
 func (c *Checker) popReverseMappedTypeIntraExpressionInferenceScope(n *InferenceContext) {
 	n.reverseMappedIntraExpressionInferenceScopeNodes = n.reverseMappedIntraExpressionInferenceScopeNodes[:len(n.reverseMappedIntraExpressionInferenceScopeNodes)-1]
-	n.reverseMappedIntraExpressionInferenceSites = n.reverseMappedIntraExpressionInferenceSites[:len(n.reverseMappedIntraExpressionInferenceSites)-1]
+	n.reverseMappedIntraExpressionInferenceScopeStarts = n.reverseMappedIntraExpressionInferenceScopeStarts[:len(n.reverseMappedIntraExpressionInferenceScopeStarts)-1]
+	if len(n.reverseMappedIntraExpressionInferenceScopeNodes) == 0 {
+		n.reverseMappedIntraExpressionInferenceSites = nil
+	}
 }
 
 func (c *Checker) findReverseMappedTypeIntraExpressionInferenceScope(n *InferenceContext, node *ast.Node) int {

@@ -275,18 +275,19 @@ const (
 // InferenceContext
 
 type InferenceContext struct {
-	inferences                                      []*InferenceInfo // Inferences made for each type parameter
-	signature                                       *Signature       // Generic signature for which inferences are made (if any)
-	flags                                           InferenceFlags   // Inference flags
-	compareTypes                                    TypeComparer     // Type comparer function
-	mapper                                          *TypeMapper      // Mapper that fixes inferences
-	nonFixingMapper                                 *TypeMapper      // Mapper that doesn't fix inferences
-	returnMapper                                    *TypeMapper      // Type mapper for inferences from return types (if any)
-	outerReturnMapper                               *TypeMapper      // Type mapper for inferences from return types of outer function (if any)
-	inferredTypeParameters                          []*Type          // Inferred type parameters for function result
-	intraExpressionInferenceSites                   []IntraExpressionInferenceSite
-	reverseMappedIntraExpressionInferenceScopeNodes []*ast.Node
-	reverseMappedIntraExpressionInferenceSites      [][]IntraExpressionInferenceSite
+	inferences                                       []*InferenceInfo // Inferences made for each type parameter
+	signature                                        *Signature       // Generic signature for which inferences are made (if any)
+	flags                                            InferenceFlags   // Inference flags
+	compareTypes                                     TypeComparer     // Type comparer function
+	mapper                                           *TypeMapper      // Mapper that fixes inferences
+	nonFixingMapper                                  *TypeMapper      // Mapper that doesn't fix inferences
+	returnMapper                                     *TypeMapper      // Type mapper for inferences from return types (if any)
+	outerReturnMapper                                *TypeMapper      // Type mapper for inferences from return types of outer function (if any)
+	inferredTypeParameters                           []*Type          // Inferred type parameters for function result
+	intraExpressionInferenceSites                    []IntraExpressionInferenceSite
+	reverseMappedIntraExpressionInferenceScopeNodes  []*ast.Node
+	reverseMappedIntraExpressionInferenceScopeStarts []int
+	reverseMappedIntraExpressionInferenceSites       []IntraExpressionInferenceSite
 }
 
 type InferenceInfo struct {
