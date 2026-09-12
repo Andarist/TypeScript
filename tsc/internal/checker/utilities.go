@@ -746,7 +746,7 @@ func getDeclarationModifierFlagsFromSymbolEx(s *ast.Symbol, isWrite bool) ast.Mo
 		}
 		return accessModifier
 	}
-	if s.ValueDeclaration != nil {
+	if s.CheckFlags&ast.CheckFlagsReverseMapped == 0 && s.ValueDeclaration != nil {
 		var declaration *ast.Node
 		if isWrite {
 			declaration = core.Find(s.Declarations, ast.IsSetAccessorDeclaration)

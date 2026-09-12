@@ -959,7 +959,14 @@ func (c *Checker) inferToMappedType(n *InferenceState, source *Type, target *Typ
 		// type and then make a secondary inference from that type to T. We make a secondary inference
 		// such that direct inferences to T get priority over inferences to Partial<T>, for example.
 		inference := getInferenceInfoForType(n, constraintType.AsIndexType().target)
-		if inference != nil && !inference.isFixed && !c.isFromInferenceBlockedSource(source) {
+		if inference != nil && (!inference.isFixed || c.isPartialHomomorphicReverseMappedType(inference.inferredType)) && !c.isFromInferenceBlockedSource(source) {
+			if inference.isFixed {
+				reverseMapped := inference.inferredType.AsReverseMappedType()
+				if reverseMapped.source.symbol != nil && source.symbol != nil && reverseMapped.source.symbol.ValueDeclaration == source.symbol.ValueDeclaration {
+					c.reversePartialHomomorphicInferrableTypes[inference.inferredType.id] = source
+				}
+				return true
+			}
 			inferredType := c.inferTypeForHomomorphicMappedType(source, target, constraintType)
 			if inferredType != nil {
 				// We assign a lower priority to inferences made from types containing non-inferrable
@@ -1011,16 +1018,20 @@ func (c *Checker) inferTypeForHomomorphicMappedType(source *Type, target *Type, 
 	return t
 }
 
+func (c *Checker) isPartialHomomorphicReverseMappedType(t *Type) bool {
+	return t != nil && t.objectFlags&ObjectFlagsReverseMapped != 0 && t.AsReverseMappedType().source.objectFlags&ObjectFlagsNonInferrableType != 0
+}
+
 func (c *Checker) createReverseMappedType(source *Type, target *Type, constraint *Type) *Type {
-	// We consider a source type reverse mappable if it has a string index signature or if
-	// it has one or more properties and is of a partially inferable type.
-	if !(c.getIndexInfoOfType(source, c.stringType) != nil || len(c.getPropertiesOfType(source)) != 0 && c.isPartiallyInferableType(source)) {
+	// We consider a source type reverse mappable if it has a string index signature or
+	// it has one or more properties.
+	if c.getIndexInfoOfType(source, c.stringType) == nil && len(c.getPropertiesOfType(source)) == 0 {
 		return nil
 	}
 	// For arrays and tuples we infer new arrays and tuples where the reverse mapping has been
 	// applied to the element type(s).
 	if c.isArrayType(source) {
-		elementType := c.inferReverseMappedType(c.getTypeArguments(source)[0], target, constraint)
+		elementType := c.inferReverseMappedType(c.getTypeArguments(source)[0], target, constraint, nil /*sourceValueDeclaration*/)
 		if elementType == nil {
 			return nil
 		}
@@ -1028,7 +1039,7 @@ func (c *Checker) createReverseMappedType(source *Type, target *Type, constraint
 	}
 	if isTupleType(source) {
 		elementTypes := core.Map(c.getElementTypes(source), func(t *Type) *Type {
-			return c.inferReverseMappedType(t, target, constraint)
+			return c.inferReverseMappedType(t, target, constraint, nil /*sourceValueDeclaration*/)
 		})
 		if !core.Every(elementTypes, func(t *Type) bool { return t != nil }) {
 			return nil
@@ -1053,18 +1064,11 @@ func (c *Checker) createReverseMappedType(source *Type, target *Type, constraint
 	return reversed
 }
 
-// We consider a type to be partially inferable if it isn't marked non-inferable or if it is
-// an object literal type with at least one property of an inferable type. For example, an object
-// literal { a: 123, b: x => true } is marked non-inferable because it contains a context sensitive
-// arrow function, but is considered partially inferable because property 'a' has an inferable type.
-func (c *Checker) isPartiallyInferableType(t *Type) bool {
-	return t.objectFlags&ObjectFlagsNonInferrableType == 0 || isObjectLiteralType(t) && core.Some(c.getPropertiesOfType(t), func(prop *ast.Symbol) bool {
-		return c.isPartiallyInferableType(c.getTypeOfSymbol(prop))
-	}) || isTupleType(t) && core.Some(c.getElementTypes(t), c.isPartiallyInferableType)
-}
-
-func (c *Checker) inferReverseMappedType(source *Type, target *Type, constraint *Type) *Type {
+func (c *Checker) inferReverseMappedType(source *Type, target *Type, constraint *Type, sourceValueDeclaration *ast.Node) *Type {
 	key := ReverseMappedTypeKey{sourceId: source.id, targetId: target.id, constraintId: constraint.id}
+	if sourceValueDeclaration != nil && source.objectFlags&ObjectFlagsNonInferrableType != 0 {
+		key.declarationId = ast.GetNodeId(sourceValueDeclaration)
+	}
 	if cached, ok := c.reverseMappedCache[key]; ok {
 		return core.OrElse(cached, c.unknownType)
 	}
@@ -1079,7 +1083,7 @@ func (c *Checker) inferReverseMappedType(source *Type, target *Type, constraint 
 	}
 	var t *Type
 	if c.reverseExpandingFlags != ExpandingFlagsBoth {
-		t = c.inferReverseMappedTypeWorker(source, target, constraint)
+		t = c.inferReverseMappedTypeWorker(source, target, constraint, sourceValueDeclaration)
 	}
 	c.reverseMappedSourceStack = c.reverseMappedSourceStack[:len(c.reverseMappedSourceStack)-1]
 	c.reverseMappedTargetStack = c.reverseMappedTargetStack[:len(c.reverseMappedTargetStack)-1]
@@ -1088,11 +1092,32 @@ func (c *Checker) inferReverseMappedType(source *Type, target *Type, constraint 
 	return t
 }
 
-func (c *Checker) inferReverseMappedTypeWorker(source *Type, target *Type, constraint *Type) *Type {
+func (c *Checker) inferReverseMappedTypeWorker(source *Type, target *Type, constraint *Type, sourceValueDeclaration *ast.Node) *Type {
 	typeParameter := c.getIndexedAccessType(constraint.AsIndexType().target, c.getTypeParameterFromMappedType(target))
 	templateType := c.getTemplateTypeFromMappedType(target)
 	inference := newInferenceInfo(typeParameter)
 	c.inferTypes([]*InferenceInfo{inference}, source, templateType, InferencePriorityNone, false)
+	if sourceValueDeclaration != nil && source.objectFlags&ObjectFlagsNonInferrableType != 0 {
+		scopeNode := sourceValueDeclaration.Parent
+		inferenceContext := c.getInferenceContext(scopeNode)
+		index := c.findReverseMappedTypeIntraExpressionInferenceScope(inferenceContext, scopeNode)
+		if index != -1 {
+			intraExpressionSites := inferenceContext.reverseMappedIntraExpressionInferenceSites[index]
+			recordSymbol := c.getGlobalRecordSymbol()
+			if len(intraExpressionSites) != 0 && recordSymbol != nil {
+				// Intra-expression inference infers from collected sites into their contextual types.
+				// The scope node is the object literal expression being the source of this whole
+				// reverse mapped type, and its regular contextual type is replaced here (it shadows
+				// earlier stack entries). This prevents contextual types for expressions inside it
+				// from being computed from the mapped type substitution. T[K] therefore stays T[K]
+				// instead of being instantiated as T["prop"], keeping it viable as an inference target
+				// for the type of this reverse mapped type property.
+				c.pushContextualType(scopeNode, c.getTypeAliasInstantiation(recordSymbol, []*Type{c.stringNumberSymbolType, templateType}, nil), false /*isCache*/)
+				c.inferFromIntraExpressionSites([]*InferenceInfo{inference}, intraExpressionSites)
+				c.popContextualType()
+			}
+		}
+	}
 	return c.getWidenedType(core.OrElse(c.getTypeFromInference(inference), c.unknownType))
 }
 
@@ -1104,7 +1129,7 @@ func (c *Checker) resolveReverseMappedTypeMembers(t *Type) {
 	optionalMask := core.IfElse(modifiers&MappedTypeModifiersIncludeOptional != 0, 0, ast.SymbolFlagsOptional)
 	var indexInfos []*IndexInfo
 	if indexInfo != nil {
-		indexInfos = []*IndexInfo{c.newIndexInfo(c.stringType, core.OrElse(c.inferReverseMappedType(indexInfo.valueType, r.mappedType, r.constraintType), c.unknownType), readonlyMask && indexInfo.isReadonly, nil, nil)}
+		indexInfos = []*IndexInfo{c.newIndexInfo(c.stringType, core.OrElse(c.inferReverseMappedType(indexInfo.valueType, r.mappedType, r.constraintType, nil /*sourceValueDeclaration*/), c.unknownType), readonlyMask && indexInfo.isReadonly, nil, nil)}
 	}
 	members := make(ast.SymbolTable)
 	limitedConstraint := c.getLimitedConstraint(t)
@@ -1121,8 +1146,10 @@ func (c *Checker) resolveReverseMappedTypeMembers(t *Type) {
 		checkFlags := ast.CheckFlagsReverseMapped | core.IfElse(readonlyMask && c.isReadonlySymbol(prop), ast.CheckFlagsReadonly, 0)
 		inferredProp := c.newSymbolEx(ast.SymbolFlagsProperty|prop.Flags&optionalMask, prop.Name, checkFlags)
 		inferredProp.Declarations = prop.Declarations
+		inferredProp.ValueDeclaration = prop.ValueDeclaration
 		c.valueSymbolLinks.Get(inferredProp).nameType = c.valueSymbolLinks.Get(prop).nameType
 		links := c.ReverseMappedSymbolLinks.Get(inferredProp)
+		links.reverseMappedType = t
 		links.propertyType = c.getTypeOfSymbol(prop)
 		constraintTarget := r.constraintType.AsIndexType().target
 		if constraintTarget.flags&TypeFlagsIndexedAccess != 0 && constraintTarget.AsIndexedAccessType().objectType.flags&TypeFlagsTypeParameter != 0 && constraintTarget.AsIndexedAccessType().indexType.flags&TypeFlagsTypeParameter != 0 {
@@ -1146,7 +1173,21 @@ func (c *Checker) getTypeOfReverseMappedSymbol(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
 	if links.resolvedType == nil {
 		reverseLinks := c.ReverseMappedSymbolLinks.Get(symbol)
-		links.resolvedType = core.OrElse(c.inferReverseMappedType(reverseLinks.propertyType, reverseLinks.mappedType, reverseLinks.constraintType), c.unknownType)
+		declaration := symbol.ValueDeclaration
+		source := reverseLinks.propertyType
+		if declaration != nil && source.objectFlags&ObjectFlagsNonInferrableType != 0 {
+			inferrableSource := c.reversePartialHomomorphicInferrableTypes[reverseLinks.reverseMappedType.id]
+			if inferrableSource != nil {
+				declarationSymbol := c.getSymbolOfDeclaration(declaration)
+				if declarationSymbol != nil {
+					prop := c.getPropertyOfType(inferrableSource, declarationSymbol.Name)
+					if prop != nil {
+						source = c.getTypeOfSymbol(prop)
+					}
+				}
+			}
+		}
+		links.resolvedType = core.OrElse(c.inferReverseMappedType(source, reverseLinks.mappedType, reverseLinks.constraintType, declaration), c.unknownType)
 	}
 	return links.resolvedType
 }
@@ -1283,7 +1324,32 @@ func (c *Checker) newInferenceContextWorker(inferences []*InferenceInfo, signatu
 }
 
 func (c *Checker) addIntraExpressionInferenceSite(n *InferenceContext, node *ast.Node, t *Type) {
-	n.intraExpressionInferenceSites = append(n.intraExpressionInferenceSites, IntraExpressionInferenceSite{node: node, t: t})
+	site := IntraExpressionInferenceSite{node: node, t: t}
+	n.intraExpressionInferenceSites = append(n.intraExpressionInferenceSites, site)
+	for i := range n.reverseMappedIntraExpressionInferenceSites {
+		n.reverseMappedIntraExpressionInferenceSites[i] = append(n.reverseMappedIntraExpressionInferenceSites[i], site)
+	}
+}
+
+func (c *Checker) pushReverseMappedTypeIntraExpressionInferenceScope(n *InferenceContext, node *ast.Node) {
+	n.reverseMappedIntraExpressionInferenceScopeNodes = append(n.reverseMappedIntraExpressionInferenceScopeNodes, node)
+	n.reverseMappedIntraExpressionInferenceSites = append(n.reverseMappedIntraExpressionInferenceSites, nil)
+}
+
+func (c *Checker) popReverseMappedTypeIntraExpressionInferenceScope(n *InferenceContext) {
+	n.reverseMappedIntraExpressionInferenceScopeNodes = n.reverseMappedIntraExpressionInferenceScopeNodes[:len(n.reverseMappedIntraExpressionInferenceScopeNodes)-1]
+	n.reverseMappedIntraExpressionInferenceSites = n.reverseMappedIntraExpressionInferenceSites[:len(n.reverseMappedIntraExpressionInferenceSites)-1]
+}
+
+func (c *Checker) findReverseMappedTypeIntraExpressionInferenceScope(n *InferenceContext, node *ast.Node) int {
+	if n != nil {
+		for i := len(n.reverseMappedIntraExpressionInferenceScopeNodes) - 1; i >= 0; i-- {
+			if n.reverseMappedIntraExpressionInferenceScopeNodes[i] == node {
+				return i
+			}
+		}
+	}
+	return -1
 }
 
 // We collect intra-expression inference sites within object and array literals to handle cases where
@@ -1299,8 +1365,8 @@ func (c *Checker) addIntraExpressionInferenceSite(n *InferenceContext, node *ast
 // arrow function. This happens automatically when the arrow functions are discrete arguments (because we
 // infer from each argument before processing the next), but when the arrow functions are elements of an
 // object or array literal, we need to perform intra-expression inferences early.
-func (c *Checker) inferFromIntraExpressionSites(n *InferenceContext) {
-	for _, site := range n.intraExpressionInferenceSites {
+func (c *Checker) inferFromIntraExpressionSites(inferences []*InferenceInfo, intraExpressionInferenceSites []IntraExpressionInferenceSite) {
+	for _, site := range intraExpressionInferenceSites {
 		var contextualType *Type
 		if ast.IsMethodDeclaration(site.node) {
 			contextualType = c.getContextualTypeForObjectLiteralMethod(site.node, ContextFlagsNoConstraints)
@@ -1308,10 +1374,9 @@ func (c *Checker) inferFromIntraExpressionSites(n *InferenceContext) {
 			contextualType = c.getContextualType(site.node, ContextFlagsNoConstraints)
 		}
 		if contextualType != nil {
-			c.inferTypes(n.inferences, site.t, contextualType, InferencePriorityNone, false)
+			c.inferTypes(inferences, site.t, contextualType, InferencePriorityNone, false)
 		}
 	}
-	n.intraExpressionInferenceSites = nil
 }
 
 func (c *Checker) getInferredType(n *InferenceContext, index int) *Type {

@@ -315,7 +315,10 @@ func (m *InferenceTypeMapper) Map(t *Type) *Type {
 			if m.fixing && !inference.isFixed {
 				// Before we commit to a particular inference (and thus lock out any further inferences),
 				// we infer from any intra-expression inference sites we have collected.
-				m.c.inferFromIntraExpressionSites(m.n)
+				if m.n.intraExpressionInferenceSites != nil {
+					m.c.inferFromIntraExpressionSites(m.n.inferences, m.n.intraExpressionInferenceSites)
+					m.n.intraExpressionInferenceSites = nil
+				}
 				clearCachedInferences(m.n.inferences)
 				inference.isFixed = true
 			}

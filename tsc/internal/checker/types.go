@@ -216,9 +216,10 @@ type ModuleSymbolLinks struct {
 }
 
 type ReverseMappedSymbolLinks struct {
-	propertyType   *Type
-	mappedType     *Type // References a mapped type
-	constraintType *Type // References an index type
+	reverseMappedType *Type
+	propertyType      *Type
+	mappedType        *Type // References a mapped type
+	constraintType    *Type // References an index type
 }
 
 // Links for late-bound symbols

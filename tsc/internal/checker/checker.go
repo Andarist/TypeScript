@@ -219,9 +219,10 @@ type SubstitutionTypeKey struct {
 // ReverseMappedTypeKey
 
 type ReverseMappedTypeKey struct {
-	sourceId     TypeId
-	targetId     TypeId
-	constraintId TypeId
+	sourceId      TypeId
+	targetId      TypeId
+	constraintId  TypeId
+	declarationId ast.NodeId
 }
 
 // IterationTypesKey
@@ -274,16 +275,18 @@ const (
 // InferenceContext
 
 type InferenceContext struct {
-	inferences                    []*InferenceInfo // Inferences made for each type parameter
-	signature                     *Signature       // Generic signature for which inferences are made (if any)
-	flags                         InferenceFlags   // Inference flags
-	compareTypes                  TypeComparer     // Type comparer function
-	mapper                        *TypeMapper      // Mapper that fixes inferences
-	nonFixingMapper               *TypeMapper      // Mapper that doesn't fix inferences
-	returnMapper                  *TypeMapper      // Type mapper for inferences from return types (if any)
-	outerReturnMapper             *TypeMapper      // Type mapper for inferences from return types of outer function (if any)
-	inferredTypeParameters        []*Type          // Inferred type parameters for function result
-	intraExpressionInferenceSites []IntraExpressionInferenceSite
+	inferences                                      []*InferenceInfo // Inferences made for each type parameter
+	signature                                       *Signature       // Generic signature for which inferences are made (if any)
+	flags                                           InferenceFlags   // Inference flags
+	compareTypes                                    TypeComparer     // Type comparer function
+	mapper                                          *TypeMapper      // Mapper that fixes inferences
+	nonFixingMapper                                 *TypeMapper      // Mapper that doesn't fix inferences
+	returnMapper                                    *TypeMapper      // Type mapper for inferences from return types (if any)
+	outerReturnMapper                               *TypeMapper      // Type mapper for inferences from return types of outer function (if any)
+	inferredTypeParameters                          []*Type          // Inferred type parameters for function result
+	intraExpressionInferenceSites                   []IntraExpressionInferenceSite
+	reverseMappedIntraExpressionInferenceScopeNodes []*ast.Node
+	reverseMappedIntraExpressionInferenceSites      [][]IntraExpressionInferenceSite
 }
 
 type InferenceInfo struct {
@@ -644,6 +647,7 @@ type Checker struct {
 	substitutionTypes                           map[SubstitutionTypeKey]*Type
 	reverseMappedCache                          map[ReverseMappedTypeKey]*Type
 	reverseHomomorphicMappedCache               map[ReverseMappedTypeKey]*Type
+	reversePartialHomomorphicInferrableTypes    map[TypeId]*Type
 	iterationTypesCache                         map[IterationTypesKey]IterationTypes
 	markerTypes                                 collections.Set[*Type]
 	resolvingExplicitTypeOfSymbol               collections.Set[*ast.Symbol]
@@ -959,6 +963,7 @@ func NewChecker(program Program, tracer *Tracer) (*Checker, *sync.Mutex) {
 	c.substitutionTypes = make(map[SubstitutionTypeKey]*Type)
 	c.reverseMappedCache = make(map[ReverseMappedTypeKey]*Type)
 	c.reverseHomomorphicMappedCache = make(map[ReverseMappedTypeKey]*Type)
+	c.reversePartialHomomorphicInferrableTypes = make(map[TypeId]*Type)
 	c.iterationTypesCache = make(map[IterationTypesKey]IterationTypes)
 	c.undefinedSymbol = c.newSymbol(ast.SymbolFlagsProperty, "undefined")
 	c.argumentsSymbol = c.newSymbol(ast.SymbolFlagsProperty, "arguments")
@@ -13378,6 +13383,10 @@ func (c *Checker) checkObjectLiteral(node *ast.Node, checkMode CheckMode) *Type 
 			c.checkComputedPropertyName(elem.Name())
 		}
 	}
+	var intraExpressionInferenceContext *InferenceContext
+	if contextualType != nil && checkMode&CheckModeInferential != 0 && checkMode&CheckModeSkipContextSensitive == 0 {
+		intraExpressionInferenceContext = c.getInferenceContext(node)
+	}
 	offset := 0
 	createObjectLiteralType := func() *Type {
 		var indexInfos []*IndexInfo
@@ -13411,6 +13420,17 @@ func (c *Checker) checkObjectLiteral(node *ast.Node, checkMode CheckMode) *Type 
 			computedNameType = c.checkComputedPropertyName(memberDecl.Name())
 		}
 		if ast.IsPropertyAssignment(memberDecl) || ast.IsShorthandPropertyAssignment(memberDecl) || ast.IsObjectLiteralMethod(memberDecl) {
+			isIntraExpressionInferenceSource := intraExpressionInferenceContext != nil && (ast.IsPropertyAssignment(memberDecl) || ast.IsMethodDeclaration(memberDecl)) && c.isContextSensitive(memberDecl)
+			if isIntraExpressionInferenceSource {
+				// This object literal is a potential source for reverse mapped type inference,
+				// so push it onto the reverse mapped intra-expression inference scope stack.
+				// This makes addIntraExpressionInferenceSite, when called while checking expressions
+				// contained in this member, collect sites for the potential reverse mapped type symbol
+				// originating from this member. The member's type itself wouldn't contribute to
+				// intra-expression inference because no earlier expression could consume it through
+				// contextual parameter assignment.
+				c.pushReverseMappedTypeIntraExpressionInferenceScope(intraExpressionInferenceContext, node)
+			}
 			var t *Type
 			switch memberDecl.Kind {
 			case ast.KindPropertyAssignment:
@@ -13419,6 +13439,9 @@ func (c *Checker) checkObjectLiteral(node *ast.Node, checkMode CheckMode) *Type 
 				t = c.checkShorthandPropertyAssignment(memberDecl, inDestructuringPattern, checkMode)
 			default:
 				t = c.checkObjectLiteralMethod(memberDecl, checkMode)
+			}
+			if isIntraExpressionInferenceSource {
+				c.popReverseMappedTypeIntraExpressionInferenceScope(intraExpressionInferenceContext)
 			}
 			objectFlags |= t.objectFlags & ObjectFlagsPropagatingFlags
 			var nameType *Type
@@ -13458,14 +13481,12 @@ func (c *Checker) checkObjectLiteral(node *ast.Node, checkMode CheckMode) *Type 
 			if allPropertiesTable != nil {
 				allPropertiesTable[prop.Name] = prop
 			}
-			if contextualType != nil && checkMode&CheckModeInferential != 0 && checkMode&CheckModeSkipContextSensitive == 0 && (ast.IsPropertyAssignment(memberDecl) || ast.IsMethodDeclaration(memberDecl)) && c.isContextSensitive(memberDecl) {
-				inferenceContext := c.getInferenceContext(node)
-				// In CheckMode.Inferential we should always have an inference context
+			if isIntraExpressionInferenceSource {
 				inferenceNode := memberDecl
 				if ast.IsPropertyAssignment(memberDecl) {
 					inferenceNode = memberDecl.Initializer()
 				}
-				c.addIntraExpressionInferenceSite(inferenceContext, inferenceNode, t)
+				c.addIntraExpressionInferenceSite(intraExpressionInferenceContext, inferenceNode, t)
 			}
 		} else if memberDecl.Kind == ast.KindSpreadAssignment {
 			if len(propertiesArray) > 0 {
@@ -31234,7 +31255,8 @@ func (c *Checker) popContextualType() {
 }
 
 func (c *Checker) findContextualNode(node *ast.Node, includeCaches bool) int {
-	for i, info := range c.contextualInfos {
+	for i := len(c.contextualInfos) - 1; i >= 0; i-- {
+		info := c.contextualInfos[i]
 		if node == info.node && (includeCaches || !info.isCache) {
 			return i
 		}
