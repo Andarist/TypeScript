@@ -959,9 +959,13 @@ func (c *Checker) inferToMappedType(n *InferenceState, source *Type, target *Typ
 		// type and then make a secondary inference from that type to T. We make a secondary inference
 		// such that direct inferences to T get priority over inferences to Partial<T>, for example.
 		inference := getInferenceInfoForType(n, constraintType.AsIndexType().target)
-		if inference != nil && !inference.isFixed && !c.isFromInferenceBlockedSource(source) {
-			inferredType := c.inferTypeForHomomorphicMappedType(source, target, constraintType)
-			if inferredType != nil {
+		if inference != nil && !c.isFromInferenceBlockedSource(source) {
+			if inference.isFixed {
+				// The type parameter may have been fixed to a reverse mapped type of a provisional source, i.e. one
+				// in which context sensitive expressions were still omitted. If the source now flowing through is
+				// the complete type of the same expression, complete the reverse mapped type from it.
+				c.completeProvisionalReverseMappedType(inference.inferredType, source)
+			} else if inferredType := c.inferTypeForHomomorphicMappedType(source, target, constraintType); inferredType != nil {
 				// We assign a lower priority to inferences made from types containing non-inferrable
 				// types because we may only have a partial result (i.e. we may have failed to make
 				// reverse inferences for some properties), and a still lower priority to inferences
@@ -1170,9 +1174,104 @@ func (c *Checker) getTypeOfReverseMappedSymbol(symbol *ast.Symbol) *Type {
 	links := c.valueSymbolLinks.Get(symbol)
 	if links.resolvedType == nil {
 		reverseLinks := c.ReverseMappedSymbolLinks.Get(symbol)
-		links.resolvedType = core.OrElse(c.inferReverseMappedType(reverseLinks.propertyType, reverseLinks.mappedType, reverseLinks.constraintType), c.unknownType)
+		source := reverseLinks.propertyType
+		if isProvisionalReverseMappedSource(source) {
+			if reverseLinks.refining {
+				// A request for the type made while refining its source (for example, for the contextual type of a
+				// function within the property) sees the unrefined type. It isn't cached, so the refined type is
+				// what every later request sees.
+				return core.OrElse(c.inferReverseMappedType(source, reverseLinks.mappedType, reverseLinks.constraintType), c.unknownType)
+			}
+			reverseLinks.refining = true
+			source = c.getRefinedProvisionalPropertyType(symbol, source)
+			reverseLinks.refining = false
+		}
+		links.resolvedType = core.OrElse(c.inferReverseMappedType(source, reverseLinks.mappedType, reverseLinks.constraintType), c.unknownType)
 	}
 	return links.resolvedType
+}
+
+// A source type of a reverse mapped inference is provisional when it contains non-inferable types, i.e. when it
+// is the type of an object literal in the argument of a call that was checked with context sensitive expressions
+// omitted (CheckMode.SkipContextSensitive). A type parameter may be fixed to a reverse mapped type of such a
+// source before every context sensitive expression in the argument has been checked, for example when a type
+// parameter is fixed while checking an arrow function in the first of several properties. Because members of a
+// reverse mapped type are resolved lazily, members that were not yet resolved at that point can still be
+// resolved from better information later (see getRefinedProvisionalPropertyType and
+// completeProvisionalReverseMappedType).
+func isProvisionalReverseMappedSource(source *Type) bool {
+	return source.objectFlags&ObjectFlagsNonInferrableType != 0
+}
+
+// While the call whose argument contains the declaration of a reverse mapped property is still being resolved,
+// context sensitive expressions within the property may have been checked since the provisional property type
+// was computed. We then check the property again with context sensitive expressions omitted, with the types
+// recorded for intra-expression inference sites standing in for the checked ones, and reverse map that type.
+// For example:
+//
+//	declare function f<T>(arg: { [K in keyof T]: { produce: (n: string) => T[K], consume: (x: T[K]) => void } }): T;
+//	f({ a: { produce: n => n, consume: x => x.toLowerCase() }, b: { produce: n => n.length, consume: x => x.toFixed() } });
+//
+// Above, T is fixed when the parameter of the first 'consume' is contextually typed, before the second 'produce'
+// has been checked. When the parameter of the second 'consume' is later typed as T["b"], the recorded type of the
+// second 'produce' allows T["b"] to be inferred as number.
+func (c *Checker) getRefinedProvisionalPropertyType(symbol *ast.Symbol, source *Type) *Type {
+	decl := core.FirstOrNil(symbol.Declarations)
+	if decl == nil || !(ast.IsPropertyAssignment(decl) || ast.IsMethodDeclaration(decl) || ast.IsJsxAttribute(decl)) {
+		return source
+	}
+	n := c.getInferenceContext(decl)
+	if n == nil || n.argumentInferenceState == nil || len(n.intraExpressionInferenceSites) == 0 {
+		return source
+	}
+	saveSiteTypes := c.intraExpressionInferenceSiteTypes
+	c.intraExpressionInferenceSiteTypes = make(map[*ast.Node]*Type, len(n.intraExpressionInferenceSites))
+	for _, site := range n.intraExpressionInferenceSites {
+		c.intraExpressionInferenceSiteTypes[site.node] = site.t
+	}
+	checkMode := n.argumentInferenceState.checkMode | CheckModeContextual | CheckModeInferential
+	var t *Type
+	switch {
+	case ast.IsPropertyAssignment(decl):
+		t = c.checkPropertyAssignment(decl, checkMode)
+	case ast.IsMethodDeclaration(decl):
+		t = c.checkObjectLiteralMethod(decl, checkMode)
+	default:
+		t = c.checkJsxAttribute(decl, checkMode)
+	}
+	c.intraExpressionInferenceSiteTypes = saveSiteTypes
+	return t
+}
+
+// Once the complete type of an argument (with every context sensitive expression checked) is inferred from, a
+// reverse mapped type of a provisional type of the same expression is completed from it: members not yet resolved
+// take their source from the complete type, and resolved members that are themselves reverse mapped types of
+// provisional sources are completed recursively. Members that were already resolved are left unchanged, so types
+// that were derived from them remain consistent.
+func (c *Checker) completeProvisionalReverseMappedType(t *Type, complete *Type) {
+	if t == nil || t.objectFlags&ObjectFlagsReverseMapped == 0 {
+		return
+	}
+	r := t.AsReverseMappedType()
+	if r.source == complete || !isProvisionalReverseMappedSource(r.source) || isProvisionalReverseMappedSource(complete) || r.source.symbol == nil || r.source.symbol != complete.symbol {
+		return
+	}
+	if t.objectFlags&ObjectFlagsMembersResolved == 0 {
+		r.source = complete
+		return
+	}
+	for _, prop := range c.getPropertiesOfType(t) {
+		completeProp := c.getPropertyOfType(complete, prop.Name)
+		if completeProp == nil {
+			continue
+		}
+		links := c.valueSymbolLinks.Get(prop)
+		if links.resolvedType == nil {
+			c.ReverseMappedSymbolLinks.Get(prop).propertyType = c.getTypeOfSymbol(completeProp)
+		} else {
+			c.completeProvisionalReverseMappedType(links.resolvedType, c.getTypeOfSymbol(completeProp))
+		}
+	}
 }
 
 // If the original mapped type had an intersection constraint we extract its components,
@@ -1340,8 +1439,10 @@ func (c *Checker) inferFromIntraExpressionSites(n *InferenceContext) {
 	if len(sites) == 0 {
 		return
 	}
-	if n.argumentInferenceState != nil && core.Some(n.inferences, isProvisionalInference) {
+	if n.argumentInferenceState != nil && !n.reinferring && core.Some(n.inferences, isProvisionalInference) {
+		n.reinferring = true
 		c.reinferFromArguments(n, sites)
+		n.reinferring = false
 	}
 	for _, site := range sites {
 		var contextualType *Type

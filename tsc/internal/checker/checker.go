@@ -285,6 +285,7 @@ type InferenceContext struct {
 	inferredTypeParameters        []*Type          // Inferred type parameters for function result
 	intraExpressionInferenceSites []IntraExpressionInferenceSite
 	argumentInferenceState        *ArgumentInferenceState // Arguments of the first inference pass (if any), retained for re-inference
+	reinferring                   bool                    // True while inferring from the arguments again (see reinferFromArguments)
 }
 
 // The node, arguments, and check mode of the inference pass that omits context sensitive expressions
@@ -10333,19 +10334,26 @@ func (c *Checker) checkFunctionExpressionOrObjectLiteralMethod(node *ast.Node, c
 		if t := c.intraExpressionInferenceSiteTypes[node]; t != nil {
 			return t
 		}
-		// Skip parameters, return signature with return type that retains noncontextual parts so inferences can still be drawn in an early stage
-		if node.Type() == nil && !ast.HasContextSensitiveParameters(node) {
+		// Skip parameters, return signature with return type that retains noncontextual parts so inferences can still be drawn in an early stage.
+		// When arguments are re-checked with intra-expression inference site types in effect, the body of a function whose parameters have
+		// already received their types can be checked as well.
+		if node.Type() == nil && (!ast.HasContextSensitiveParameters(node) || len(c.intraExpressionInferenceSiteTypes) != 0 && c.hasAssignedParameterTypes(node)) {
 			// Return plain anyFunctionType if there is no possibility we'll make inferences from the return type
 			contextualSignature := c.getContextualSignature(node)
 			if contextualSignature != nil && c.couldContainTypeVariables(c.getReturnTypeOfSignature(contextualSignature)) {
-				if cached, ok := c.contextFreeTypes[node]; ok {
+				// The context free type is not cached while intra-expression inference site types are in effect,
+				// as they alter the types of context sensitive expressions within the body.
+				useCache := len(c.intraExpressionInferenceSiteTypes) == 0
+				if cached, ok := c.contextFreeTypes[node]; ok && useCache {
 					return cached
 				}
 				returnType := c.getReturnTypeFromBody(node, checkMode)
 				returnOnlySignature := c.newSignature(SignatureFlagsIsNonInferrable, nil, nil /*typeParameters*/, nil /*thisParameter*/, nil, returnType, nil /*resolvedTypePredicate*/, 0)
 				returnOnlyType := c.newAnonymousType(node.Symbol(), nil, []*Signature{returnOnlySignature}, nil, nil)
 				returnOnlyType.objectFlags |= ObjectFlagsNonInferrableType
-				c.contextFreeTypes[node] = returnOnlyType
+				if useCache {
+					c.contextFreeTypes[node] = returnOnlyType
+				}
 				return returnOnlyType
 			}
 		}
@@ -10363,6 +10371,21 @@ func (c *Checker) checkFunctionExpressionOrObjectLiteralMethod(node *ast.Node, c
 	}
 	c.contextuallyCheckFunctionExpressionOrObjectLiteralMethod(node, checkMode)
 	return c.getTypeOfSymbol(c.getSymbolOfDeclaration(node))
+}
+
+// Whether every parameter of a contextually checked function has received its type, from an annotation or from
+// contextual typing. The body of such a function can be checked in CheckMode.SkipContextSensitive without forcing
+// the contextual types of its parameters (and thereby fixing type parameters).
+func (c *Checker) hasAssignedParameterTypes(node *ast.Node) bool {
+	if c.nodeLinks.Get(node).flags&NodeCheckFlagsContextChecked == 0 {
+		return false
+	}
+	for _, parameter := range c.getSignatureFromDeclaration(node).parameters {
+		if parameter.ValueDeclaration != nil && parameter.ValueDeclaration.Type() == nil && c.valueSymbolLinks.Get(parameter).resolvedType == nil {
+			return false
+		}
+	}
+	return true
 }
 
 func (c *Checker) contextuallyCheckFunctionExpressionOrObjectLiteralMethod(node *ast.Node, checkMode CheckMode) {

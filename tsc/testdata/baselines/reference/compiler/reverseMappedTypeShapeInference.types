@@ -268,6 +268,126 @@ const o2 = on({ click: e => e.x }, { click: { x: 1 } });
 >x : number
 >1 : 1
 
+// Annotated parameters of context sensitive functions contribute once the argument has been checked
+declare function setup<TAction = {}>(arg: {
+>setup : <TAction = {}>(arg: { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; }) => TAction
+>arg : { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; }
+
+    actions?: {
+>actions : { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; } | undefined
+
+        [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void;
+>params : TAction[K]
+>exec : (arg: TAction) => void
+>arg : TAction
+
+    };
+}): TAction;
+
+const a1 = setup({
+>a1 : { first: { count: number; }; second: { foo: string; }; }
+>setup({    actions: {        first: (params: { count: number }, enqueue) => { enqueue({ first: params, second: { foo: "" } }); },        second: (params: { foo: string }, enqueue) => {},    },}) : { first: { count: number; }; second: { foo: string; }; }
+>setup : <TAction = {}>(arg: { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; }) => TAction
+>{    actions: {        first: (params: { count: number }, enqueue) => { enqueue({ first: params, second: { foo: "" } }); },        second: (params: { foo: string }, enqueue) => {},    },} : { actions: { first: (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; }; }
+
+    actions: {
+>actions : { first: (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; }
+>{        first: (params: { count: number }, enqueue) => { enqueue({ first: params, second: { foo: "" } }); },        second: (params: { foo: string }, enqueue) => {},    } : { first: (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; }
+
+        first: (params: { count: number }, enqueue) => { enqueue({ first: params, second: { foo: "" } }); },
+>first : (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void
+>(params: { count: number }, enqueue) => { enqueue({ first: params, second: { foo: "" } }); } : (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void
+>params : { count: number; }
+>count : number
+>enqueue : (arg: { first: { count: number; }; second: { foo: string; }; }) => void
+>enqueue({ first: params, second: { foo: "" } }) : void
+>enqueue : (arg: { first: { count: number; }; second: { foo: string; }; }) => void
+>{ first: params, second: { foo: "" } } : { first: { count: number; }; second: { foo: string; }; }
+>first : { count: number; }
+>params : { count: number; }
+>second : { foo: string; }
+>{ foo: "" } : { foo: string; }
+>foo : string
+>"" : ""
+
+        second: (params: { foo: string }, enqueue) => {},
+>second : (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void
+>(params: { foo: string }, enqueue) => {} : (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void
+>params : { foo: string; }
+>foo : string
+>enqueue : (arg: { first: { count: number; }; second: { foo: string; }; }) => void
+
+    },
+});
+
+const a2 = setup({
+>a2 : { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }
+>setup({    actions: {        foo: (params: { count: number }) => {},        first: (params: { count: number }, enqueue) => {},        second: (params: { foo: string }, enqueue) => {},    },}) : { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }
+>setup : <TAction = {}>(arg: { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; }) => TAction
+>{    actions: {        foo: (params: { count: number }) => {},        first: (params: { count: number }, enqueue) => {},        second: (params: { foo: string }, enqueue) => {},    },} : { actions: { foo: (params: { count: number; }) => void; first: (params: { count: number; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void; }; }
+
+    actions: {
+>actions : { foo: (params: { count: number; }) => void; first: (params: { count: number; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void; }
+>{        foo: (params: { count: number }) => {},        first: (params: { count: number }, enqueue) => {},        second: (params: { foo: string }, enqueue) => {},    } : { foo: (params: { count: number; }) => void; first: (params: { count: number; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void; }
+
+        foo: (params: { count: number }) => {},
+>foo : (params: { count: number; }) => void
+>(params: { count: number }) => {} : (params: { count: number; }) => void
+>params : { count: number; }
+>count : number
+
+        first: (params: { count: number }, enqueue) => {},
+>first : (params: { count: number; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void
+>(params: { count: number }, enqueue) => {} : (params: { count: number; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void
+>params : { count: number; }
+>count : number
+>enqueue : (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void
+
+        second: (params: { foo: string }, enqueue) => {},
+>second : (params: { foo: string; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void
+>(params: { foo: string }, enqueue) => {} : (params: { foo: string; }, enqueue: (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void) => void
+>params : { foo: string; }
+>foo : string
+>enqueue : (arg: { foo: { count: number; }; first: { count: number; }; second: { foo: string; }; }) => void
+
+    },
+});
+
+declare function fns<T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}) }): T;
+>fns : <T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}); }) => T
+>arg : { [K in keyof T]: T[K] & ((arg: string) => {}); }
+>arg : string
+
+const f1 = fns({ a: arg => arg, b: arg => [arg] });
+>f1 : { a: (arg: string) => string; b: (arg: string) => string[]; }
+>fns({ a: arg => arg, b: arg => [arg] }) : { a: (arg: string) => string; b: (arg: string) => string[]; }
+>fns : <T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}); }) => T
+>{ a: arg => arg, b: arg => [arg] } : { a: (arg: string) => string; b: (arg: string) => string[]; }
+>a : (arg: string) => string
+>arg => arg : (arg: string) => string
+>arg : string
+>arg : string
+>b : (arg: string) => string[]
+>arg => [arg] : (arg: string) => string[]
+>arg : string
+>[arg] : string[]
+>arg : string
+
+const f2 = fns({ a: (arg: string) => arg, b: arg => [arg] });
+>f2 : { a: (arg: string) => string; b: (arg: string) => string[]; }
+>fns({ a: (arg: string) => arg, b: arg => [arg] }) : { a: (arg: string) => string; b: (arg: string) => string[]; }
+>fns : <T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}); }) => T
+>{ a: (arg: string) => arg, b: arg => [arg] } : { a: (arg: string) => string; b: (arg: string) => string[]; }
+>a : (arg: string) => string
+>(arg: string) => arg : (arg: string) => string
+>arg : string
+>arg : string
+>b : (arg: string) => string[]
+>arg => [arg] : (arg: string) => string[]
+>arg : string
+>[arg] : string[]
+>arg : string
+
 // A shape-only inference is used when nothing better is available
 declare function id<T>(arg: { [K in keyof T]: T[K] }): T;
 >id : <T>(arg: { [K in keyof T]: T[K]; }) => T

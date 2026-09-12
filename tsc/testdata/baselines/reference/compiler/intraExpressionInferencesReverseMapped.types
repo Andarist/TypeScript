@@ -154,8 +154,8 @@ const r6 = g({ a: { produce: n => n, consume: x => x.toLowerCase(), tag: 1 } });
 >tag : number
 >1 : 1
 
-// Multiple keys. T is fixed when the first consumer is checked; producers that come later
-// in source order cannot contribute, which is the same limitation as for discrete arguments.
+// Multiple keys. T is fixed when the first consumer is checked, but members of the reverse mapped
+// type are resolved lazily, so producers of later keys still contribute when those keys are read.
 const r7 = g({
 >r7 : { a: string; b: number; }
 >g({    a: { produce: n => n, consume: x => x.toLowerCase() },    b: { produce: () => 1, consume: x => x.toFixed() },}) : { a: string; b: number; }
@@ -193,10 +193,10 @@ const r7 = g({
 
 });
 const r8 = g({
->r8 : { b: number; a: unknown; }
->g({    b: { produce: () => 1, consume: x => x.toFixed() },    a: { produce: n => n, consume: x => x.toLowerCase() },}) : { b: number; a: unknown; }
+>r8 : { b: number; a: string; }
+>g({    b: { produce: () => 1, consume: x => x.toFixed() },    a: { produce: n => n, consume: x => x.toLowerCase() },}) : { b: number; a: string; }
 >g : <T>(arg: { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void; tag?: number; }; }) => T
->{    b: { produce: () => 1, consume: x => x.toFixed() },    a: { produce: n => n, consume: x => x.toLowerCase() },} : { b: { produce: () => number; consume: (x: number) => string; }; a: { produce: (n: string) => string; consume: (x: unknown) => any; }; }
+>{    b: { produce: () => 1, consume: x => x.toFixed() },    a: { produce: n => n, consume: x => x.toLowerCase() },} : { b: { produce: () => number; consume: (x: number) => string; }; a: { produce: (n: string) => string; consume: (x: string) => string; }; }
 
     b: { produce: () => 1, consume: x => x.toFixed() },
 >b : { produce: () => number; consume: (x: number) => string; }
@@ -213,19 +213,19 @@ const r8 = g({
 >toFixed : (fractionDigits?: number) => string
 
     a: { produce: n => n, consume: x => x.toLowerCase() },
->a : { produce: (n: string) => string; consume: (x: unknown) => any; }
->{ produce: n => n, consume: x => x.toLowerCase() } : { produce: (n: string) => string; consume: (x: unknown) => any; }
+>a : { produce: (n: string) => string; consume: (x: string) => string; }
+>{ produce: n => n, consume: x => x.toLowerCase() } : { produce: (n: string) => string; consume: (x: string) => string; }
 >produce : (n: string) => string
 >n => n : (n: string) => string
 >n : string
 >n : string
->consume : (x: unknown) => any
->x => x.toLowerCase() : (x: unknown) => any
->x : unknown
->x.toLowerCase() : any
->x.toLowerCase : any
->x : unknown
->toLowerCase : any
+>consume : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
 
 });
 
@@ -591,4 +591,391 @@ const r17 = f({ a: { produce: n => n, consume: x => x.toFixed() } });
 >x.toFixed : any
 >x : string
 >toFixed : any
+
+// Closures returning the producer/consumer object
+declare function thunk<T>(arg: {
+>thunk : <T>(arg: { [K in keyof T]: () => { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => T
+>arg : { [K in keyof T]: () => { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }
+
+    [K in keyof T]: () => { produce: (n: string) => T[K]; consume: (x: T[K]) => void };
+>produce : (n: string) => T[K]
+>n : string
+>consume : (x: T[K]) => void
+>x : T[K]
+
+}): T;
+
+const r18 = thunk({
+>r18 : { a: string; b: number; }
+>thunk({    a() { return { produce: n => n, consume: x => x.toLowerCase() }; },    b: () => ({ produce: n => n.length, consume: x => x.toFixed() }),}) : { a: string; b: number; }
+>thunk : <T>(arg: { [K in keyof T]: () => { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => T
+>{    a() { return { produce: n => n, consume: x => x.toLowerCase() }; },    b: () => ({ produce: n => n.length, consume: x => x.toFixed() }),} : { a(): { produce: (n: string) => string; consume: (x: string) => string; }; b: () => { produce: (n: string) => number; consume: (x: number) => string; }; }
+
+    a() { return { produce: n => n, consume: x => x.toLowerCase() }; },
+>a : () => { produce: (n: string) => string; consume: (x: string) => string; }
+>{ produce: n => n, consume: x => x.toLowerCase() } : { produce: (n: string) => string; consume: (x: string) => string; }
+>produce : (n: string) => string
+>n => n : (n: string) => string
+>n : string
+>n : string
+>consume : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+
+    b: () => ({ produce: n => n.length, consume: x => x.toFixed() }),
+>b : () => { produce: (n: string) => number; consume: (x: number) => string; }
+>() => ({ produce: n => n.length, consume: x => x.toFixed() }) : () => { produce: (n: string) => number; consume: (x: number) => string; }
+>({ produce: n => n.length, consume: x => x.toFixed() }) : { produce: (n: string) => number; consume: (x: number) => string; }
+>{ produce: n => n.length, consume: x => x.toFixed() } : { produce: (n: string) => number; consume: (x: number) => string; }
+>produce : (n: string) => number
+>n => n.length : (n: string) => number
+>n : string
+>n.length : number
+>n : string
+>length : number
+>consume : (x: number) => string
+>x => x.toFixed() : (x: number) => string
+>x : number
+>x.toFixed() : string
+>x.toFixed : (fractionDigits?: number) => string
+>x : number
+>toFixed : (fractionDigits?: number) => string
+
+});
+
+declare function callback<T>(arg: {
+>callback : <T>(arg: { [K in keyof T]: (flag: boolean) => { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => T
+>arg : { [K in keyof T]: (flag: boolean) => { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }
+
+    [K in keyof T]: (flag: boolean) => { produce: (n: string) => T[K]; consume: (x: T[K]) => void };
+>flag : boolean
+>produce : (n: string) => T[K]
+>n : string
+>consume : (x: T[K]) => void
+>x : T[K]
+
+}): T;
+
+const r19 = callback({
+>r19 : { a: string; b: number; }
+>callback({    a(flag) { return { produce: n => n, consume: x => x.toLowerCase() }; },    b: flag => ({ produce: n => n.length, consume: x => x.toFixed() }),}) : { a: string; b: number; }
+>callback : <T>(arg: { [K in keyof T]: (flag: boolean) => { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => T
+>{    a(flag) { return { produce: n => n, consume: x => x.toLowerCase() }; },    b: flag => ({ produce: n => n.length, consume: x => x.toFixed() }),} : { a(flag: boolean): { produce: (n: string) => string; consume: (x: string) => string; }; b: (flag: boolean) => { produce: (n: string) => number; consume: (x: number) => string; }; }
+
+    a(flag) { return { produce: n => n, consume: x => x.toLowerCase() }; },
+>a : (flag: boolean) => { produce: (n: string) => string; consume: (x: string) => string; }
+>flag : boolean
+>{ produce: n => n, consume: x => x.toLowerCase() } : { produce: (n: string) => string; consume: (x: string) => string; }
+>produce : (n: string) => string
+>n => n : (n: string) => string
+>n : string
+>n : string
+>consume : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+
+    b: flag => ({ produce: n => n.length, consume: x => x.toFixed() }),
+>b : (flag: boolean) => { produce: (n: string) => number; consume: (x: number) => string; }
+>flag => ({ produce: n => n.length, consume: x => x.toFixed() }) : (flag: boolean) => { produce: (n: string) => number; consume: (x: number) => string; }
+>flag : boolean
+>({ produce: n => n.length, consume: x => x.toFixed() }) : { produce: (n: string) => number; consume: (x: number) => string; }
+>{ produce: n => n.length, consume: x => x.toFixed() } : { produce: (n: string) => number; consume: (x: number) => string; }
+>produce : (n: string) => number
+>n => n.length : (n: string) => number
+>n : string
+>n.length : number
+>n : string
+>length : number
+>consume : (x: number) => string
+>x => x.toFixed() : (x: number) => string
+>x : number
+>x.toFixed() : string
+>x.toFixed : (fractionDigits?: number) => string
+>x : number
+>toFixed : (fractionDigits?: number) => string
+
+});
+
+declare function tupleThunk<T>(arg: {
+>tupleThunk : <T>(arg: { [K in keyof T]: () => [(n: string) => T[K], (x: T[K]) => void]; }) => T
+>arg : { [K in keyof T]: () => [(n: string) => T[K], (x: T[K]) => void]; }
+
+    [K in keyof T]: () => [(n: string) => T[K], (x: T[K]) => void];
+>n : string
+>x : T[K]
+
+}): T;
+
+const r20 = tupleThunk({
+>r20 : { a: string; b: number; }
+>tupleThunk({    a() { return [n => n, x => x.toLowerCase()]; },    b() { return [n => n.length, x => x.toFixed()]; },}) : { a: string; b: number; }
+>tupleThunk : <T>(arg: { [K in keyof T]: () => [(n: string) => T[K], (x: T[K]) => void]; }) => T
+>{    a() { return [n => n, x => x.toLowerCase()]; },    b() { return [n => n.length, x => x.toFixed()]; },} : { a(): [(n: string) => string, (x: string) => string]; b(): [(n: string) => number, (x: number) => string]; }
+
+    a() { return [n => n, x => x.toLowerCase()]; },
+>a : () => [(n: string) => string, (x: string) => string]
+>[n => n, x => x.toLowerCase()] : [(n: string) => string, (x: string) => string]
+>n => n : (n: string) => string
+>n : string
+>n : string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+
+    b() { return [n => n.length, x => x.toFixed()]; },
+>b : () => [(n: string) => number, (x: number) => string]
+>[n => n.length, x => x.toFixed()] : [(n: string) => number, (x: number) => string]
+>n => n.length : (n: string) => number
+>n : string
+>n.length : number
+>n : string
+>length : number
+>x => x.toFixed() : (x: number) => string
+>x : number
+>x.toFixed() : string
+>x.toFixed : (fractionDigits?: number) => string
+>x : number
+>toFixed : (fractionDigits?: number) => string
+
+});
+
+// Intersections of mapped types over different type parameters
+declare function both<T1, T2>(arg: {
+>both : <T1, T2>(arg: { [K in keyof T1]: { produce1: (n: string) => T1[K]; consume1: (x: T1[K]) => void; }; } & { [K in keyof T2]: { produce2: (n: string) => T2[K]; consume2: (x: T2[K]) => void; }; }) => [T1, T2]
+>arg : { [K in keyof T1]: { produce1: (n: string) => T1[K]; consume1: (x: T1[K]) => void; }; } & { [K in keyof T2]: { produce2: (n: string) => T2[K]; consume2: (x: T2[K]) => void; }; }
+
+    [K in keyof T1]: { produce1: (n: string) => T1[K]; consume1: (x: T1[K]) => void };
+>produce1 : (n: string) => T1[K]
+>n : string
+>consume1 : (x: T1[K]) => void
+>x : T1[K]
+
+} & {
+    [K in keyof T2]: { produce2: (n: string) => T2[K]; consume2: (x: T2[K]) => void };
+>produce2 : (n: string) => T2[K]
+>n : string
+>consume2 : (x: T2[K]) => void
+>x : T2[K]
+
+}): [T1, T2];
+
+const r21 = both({
+>r21 : [{ a: string; b: number; }, { a: string[]; b: { v: string; }; }]
+>both({    a: {        produce1: n => n, consume1: x => x.toLowerCase(),        produce2: n => [n], consume2: x => x[0].toLowerCase(),    },    b: {        produce1: n => n.length, consume1: x => x.toFixed(),        produce2: n => ({ v: n }), consume2: x => x.v.toLowerCase(),    },}) : [{ a: string; b: number; }, { a: string[]; b: { v: string; }; }]
+>both : <T1, T2>(arg: { [K in keyof T1]: { produce1: (n: string) => T1[K]; consume1: (x: T1[K]) => void; }; } & { [K in keyof T2]: { produce2: (n: string) => T2[K]; consume2: (x: T2[K]) => void; }; }) => [T1, T2]
+>{    a: {        produce1: n => n, consume1: x => x.toLowerCase(),        produce2: n => [n], consume2: x => x[0].toLowerCase(),    },    b: {        produce1: n => n.length, consume1: x => x.toFixed(),        produce2: n => ({ v: n }), consume2: x => x.v.toLowerCase(),    },} : { a: { produce1: (n: string) => string; consume1: (x: string) => string; produce2: (n: string) => string[]; consume2: (x: string[]) => string; }; b: { produce1: (n: string) => number; consume1: (x: number) => string; produce2: (n: string) => { v: string; }; consume2: (x: { v: string; }) => string; }; }
+
+    a: {
+>a : { produce1: (n: string) => string; consume1: (x: string) => string; produce2: (n: string) => string[]; consume2: (x: string[]) => string; }
+>{        produce1: n => n, consume1: x => x.toLowerCase(),        produce2: n => [n], consume2: x => x[0].toLowerCase(),    } : { produce1: (n: string) => string; consume1: (x: string) => string; produce2: (n: string) => string[]; consume2: (x: string[]) => string; }
+
+        produce1: n => n, consume1: x => x.toLowerCase(),
+>produce1 : (n: string) => string
+>n => n : (n: string) => string
+>n : string
+>n : string
+>consume1 : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+
+        produce2: n => [n], consume2: x => x[0].toLowerCase(),
+>produce2 : (n: string) => string[]
+>n => [n] : (n: string) => string[]
+>n : string
+>[n] : string[]
+>n : string
+>consume2 : (x: string[]) => string
+>x => x[0].toLowerCase() : (x: string[]) => string
+>x : string[]
+>x[0].toLowerCase() : string
+>x[0].toLowerCase : () => string
+>x[0] : string
+>x : string[]
+>0 : 0
+>toLowerCase : () => string
+
+    },
+    b: {
+>b : { produce1: (n: string) => number; consume1: (x: number) => string; produce2: (n: string) => { v: string; }; consume2: (x: { v: string; }) => string; }
+>{        produce1: n => n.length, consume1: x => x.toFixed(),        produce2: n => ({ v: n }), consume2: x => x.v.toLowerCase(),    } : { produce1: (n: string) => number; consume1: (x: number) => string; produce2: (n: string) => { v: string; }; consume2: (x: { v: string; }) => string; }
+
+        produce1: n => n.length, consume1: x => x.toFixed(),
+>produce1 : (n: string) => number
+>n => n.length : (n: string) => number
+>n : string
+>n.length : number
+>n : string
+>length : number
+>consume1 : (x: number) => string
+>x => x.toFixed() : (x: number) => string
+>x : number
+>x.toFixed() : string
+>x.toFixed : (fractionDigits?: number) => string
+>x : number
+>toFixed : (fractionDigits?: number) => string
+
+        produce2: n => ({ v: n }), consume2: x => x.v.toLowerCase(),
+>produce2 : (n: string) => { v: string; }
+>n => ({ v: n }) : (n: string) => { v: string; }
+>n : string
+>({ v: n }) : { v: string; }
+>{ v: n } : { v: string; }
+>v : string
+>n : string
+>consume2 : (x: { v: string; }) => string
+>x => x.v.toLowerCase() : (x: { v: string; }) => string
+>x : { v: string; }
+>x.v.toLowerCase() : string
+>x.v.toLowerCase : () => string
+>x.v : string
+>x : { v: string; }
+>v : string
+>toLowerCase : () => string
+
+    },
+});
+
+// A mapped type intersected with a concrete member
+declare function mixed<T1, T2>(arg: {
+>mixed : <T1, T2>(arg: { [K in keyof T1]: { produce: (n: string) => [T1[K], any]; consume: (x: T1[K]) => void; }; } & { a: { produce: (n: string) => [any, T2]; consume2: (x: T2) => void; }; }) => [T1, T2]
+>arg : { [K in keyof T1]: { produce: (n: string) => [T1[K], any]; consume: (x: T1[K]) => void; }; } & { a: { produce: (n: string) => [any, T2]; consume2: (x: T2) => void; }; }
+
+    [K in keyof T1]: { produce: (n: string) => [T1[K], any]; consume: (x: T1[K]) => void };
+>produce : (n: string) => [T1[K], any]
+>n : string
+>consume : (x: T1[K]) => void
+>x : T1[K]
+
+} & {
+    a: { produce: (n: string) => [any, T2]; consume2: (x: T2) => void };
+>a : { produce: (n: string) => [any, T2]; consume2: (x: T2) => void; }
+>produce : (n: string) => [any, T2]
+>n : string
+>consume2 : (x: T2) => void
+>x : T2
+
+}): [T1, T2];
+
+const r22 = mixed({
+>r22 : [{ a: string; b: number; }, string[]]
+>mixed({    a: {        produce: n => [n, [n]],        consume2: x => x[0].toLowerCase(),        consume: x => x.toLowerCase(),    },    b: {        produce: n => [n.length, null],        consume: x => x.toFixed(),    },}) : [{ a: string; b: number; }, string[]]
+>mixed : <T1, T2>(arg: { [K in keyof T1]: { produce: (n: string) => [T1[K], any]; consume: (x: T1[K]) => void; }; } & { a: { produce: (n: string) => [any, T2]; consume2: (x: T2) => void; }; }) => [T1, T2]
+>{    a: {        produce: n => [n, [n]],        consume2: x => x[0].toLowerCase(),        consume: x => x.toLowerCase(),    },    b: {        produce: n => [n.length, null],        consume: x => x.toFixed(),    },} : { a: { produce: (n: string) => [string, string[]]; consume2: (x: string[]) => string; consume: (x: string) => string; }; b: { produce: (n: string) => [number, null]; consume: (x: number) => string; }; }
+
+    a: {
+>a : { produce: (n: string) => [string, string[]]; consume2: (x: string[]) => string; consume: (x: string) => string; }
+>{        produce: n => [n, [n]],        consume2: x => x[0].toLowerCase(),        consume: x => x.toLowerCase(),    } : { produce: (n: string) => [string, string[]]; consume2: (x: string[]) => string; consume: (x: string) => string; }
+
+        produce: n => [n, [n]],
+>produce : (n: string) => [string, string[]]
+>n => [n, [n]] : (n: string) => [string, string[]]
+>n : string
+>[n, [n]] : [string, string[]]
+>n : string
+>[n] : string[]
+>n : string
+
+        consume2: x => x[0].toLowerCase(),
+>consume2 : (x: string[]) => string
+>x => x[0].toLowerCase() : (x: string[]) => string
+>x : string[]
+>x[0].toLowerCase() : string
+>x[0].toLowerCase : () => string
+>x[0] : string
+>x : string[]
+>0 : 0
+>toLowerCase : () => string
+
+        consume: x => x.toLowerCase(),
+>consume : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+
+    },
+    b: {
+>b : { produce: (n: string) => [number, null]; consume: (x: number) => string; }
+>{        produce: n => [n.length, null],        consume: x => x.toFixed(),    } : { produce: (n: string) => [number, null]; consume: (x: number) => string; }
+
+        produce: n => [n.length, null],
+>produce : (n: string) => [number, null]
+>n => [n.length, null] : (n: string) => [number, null]
+>n : string
+>[n.length, null] : [number, null]
+>n.length : number
+>n : string
+>length : number
+
+        consume: x => x.toFixed(),
+>consume : (x: number) => string
+>x => x.toFixed() : (x: number) => string
+>x : number
+>x.toFixed() : string
+>x.toFixed : (fractionDigits?: number) => string
+>x : number
+>toFixed : (fractionDigits?: number) => string
+
+    },
+});
+
+// A property that is never read during the call is completed from the checked argument
+const r23 = f({
+>r23 : { a: string; b: number; }
+>f({    a: { produce: n => n, consume: x => x.toLowerCase() },    b: { produce: n => n.length, consume: () => {} },}) : { a: string; b: number; }
+>f : <T>(arg: { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => T
+>{    a: { produce: n => n, consume: x => x.toLowerCase() },    b: { produce: n => n.length, consume: () => {} },} : { a: { produce: (n: string) => string; consume: (x: string) => string; }; b: { produce: (n: string) => number; consume: () => void; }; }
+
+    a: { produce: n => n, consume: x => x.toLowerCase() },
+>a : { produce: (n: string) => string; consume: (x: string) => string; }
+>{ produce: n => n, consume: x => x.toLowerCase() } : { produce: (n: string) => string; consume: (x: string) => string; }
+>produce : (n: string) => string
+>n => n : (n: string) => string
+>n : string
+>n : string
+>consume : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+
+    b: { produce: n => n.length, consume: () => {} },
+>b : { produce: (n: string) => number; consume: () => void; }
+>{ produce: n => n.length, consume: () => {} } : { produce: (n: string) => number; consume: () => void; }
+>produce : (n: string) => number
+>n => n.length : (n: string) => number
+>n : string
+>n.length : number
+>n : string
+>length : number
+>consume : () => void
+>() => {} : () => void
+
+});
+r23.b.toFixed();
+>r23.b.toFixed() : string
+>r23.b.toFixed : (fractionDigits?: number) => string
+>r23.b : number
+>r23 : { a: string; b: number; }
+>b : number
+>toFixed : (fractionDigits?: number) => string
 

@@ -1,7 +1,7 @@
 reverseMappedTypeShapeInference.ts(92,15): error TS2741: Property 'key' is missing in type '{ click: (e: { x: number; }) => number; }' but required in type '{ click: (e: { x: number; }) => void; key: (e: unknown) => void; }'.
 reverseMappedTypeShapeInference.ts(92,60): error TS7006: Parameter 'k' implicitly has an 'any' type.
-reverseMappedTypeShapeInference.ts(98,25): error TS7006: Parameter 'x' implicitly has an 'any' type.
-reverseMappedTypeShapeInference.ts(99,21): error TS7006: Parameter 'x' implicitly has an 'any' type.
+reverseMappedTypeShapeInference.ts(125,25): error TS7006: Parameter 'x' implicitly has an 'any' type.
+reverseMappedTypeShapeInference.ts(126,21): error TS7006: Parameter 'x' implicitly has an 'any' type.
 
 
 ==== reverseMappedTypeShapeInference.ts (4 errors) ====
@@ -103,6 +103,33 @@ reverseMappedTypeShapeInference.ts(99,21): error TS7006: Parameter 'x' implicitl
                                                                ~
 !!! error TS7006: Parameter 'k' implicitly has an 'any' type.
     const o2 = on({ click: e => e.x }, { click: { x: 1 } });
+    
+    // Annotated parameters of context sensitive functions contribute once the argument has been checked
+    declare function setup<TAction = {}>(arg: {
+        actions?: {
+            [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void;
+        };
+    }): TAction;
+    
+    const a1 = setup({
+        actions: {
+            first: (params: { count: number }, enqueue) => { enqueue({ first: params, second: { foo: "" } }); },
+            second: (params: { foo: string }, enqueue) => {},
+        },
+    });
+    
+    const a2 = setup({
+        actions: {
+            foo: (params: { count: number }) => {},
+            first: (params: { count: number }, enqueue) => {},
+            second: (params: { foo: string }, enqueue) => {},
+        },
+    });
+    
+    declare function fns<T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}) }): T;
+    
+    const f1 = fns({ a: arg => arg, b: arg => [arg] });
+    const f2 = fns({ a: (arg: string) => arg, b: arg => [arg] });
     
     // A shape-only inference is used when nothing better is available
     declare function id<T>(arg: { [K in keyof T]: T[K] }): T;

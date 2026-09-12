@@ -95,6 +95,33 @@ declare function on<T>(
 const o1 = on({ click: e => e.x }, { click: { x: 1 }, key: k => k });
 const o2 = on({ click: e => e.x }, { click: { x: 1 } });
 
+// Annotated parameters of context sensitive functions contribute once the argument has been checked
+declare function setup<TAction = {}>(arg: {
+    actions?: {
+        [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void;
+    };
+}): TAction;
+
+const a1 = setup({
+    actions: {
+        first: (params: { count: number }, enqueue) => { enqueue({ first: params, second: { foo: "" } }); },
+        second: (params: { foo: string }, enqueue) => {},
+    },
+});
+
+const a2 = setup({
+    actions: {
+        foo: (params: { count: number }) => {},
+        first: (params: { count: number }, enqueue) => {},
+        second: (params: { foo: string }, enqueue) => {},
+    },
+});
+
+declare function fns<T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}) }): T;
+
+const f1 = fns({ a: arg => arg, b: arg => [arg] });
+const f2 = fns({ a: (arg: string) => arg, b: arg => [arg] });
+
 // A shape-only inference is used when nothing better is available
 declare function id<T>(arg: { [K in keyof T]: T[K] }): T;
 

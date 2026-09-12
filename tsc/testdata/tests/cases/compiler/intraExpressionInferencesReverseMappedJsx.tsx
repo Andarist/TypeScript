@@ -15,3 +15,4 @@ const e1 = <Mapped a={{ produce: () => "hello", consume: x => x.toLowerCase() }}
 const e2 = <Mapped a={{ produce: n => n, consume: x => x.toLowerCase() }} />;
 const e3 = <Mapped a={{ produce() { return "hello"; }, consume: x => x.toLowerCase() }} />;
 const e4 = <Mapped a={{ produce: n => n, consume: x => x.toFixed() }} />;
+const e5 = <Mapped a={{ produce: n => n, consume: x => x.toLowerCase() }} b={{ produce: n => n.length, consume: x => x.toFixed() }} />;

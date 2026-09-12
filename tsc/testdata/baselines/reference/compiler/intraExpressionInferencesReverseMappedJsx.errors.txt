@@ -18,4 +18,5 @@ intraExpressionInferencesReverseMappedJsx.tsx(13,58): error TS2551: Property 'to
                                                              ~~~~~~~
 !!! error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
 !!! related TS2728 lib.es2015.core.d.ts:--:--: 'fixed' is declared here.
+    const e5 = <Mapped a={{ produce: n => n, consume: x => x.toLowerCase() }} b={{ produce: n => n.length, consume: x => x.toFixed() }} />;
     

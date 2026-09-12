@@ -1,8 +1,7 @@
-intraExpressionInferencesReverseMapped.ts(39,41): error TS18046: 'x' is of type 'unknown'.
 intraExpressionInferencesReverseMapped.ts(116,55): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
 
 
-==== intraExpressionInferencesReverseMapped.ts (2 errors) ====
+==== intraExpressionInferencesReverseMapped.ts (1 errors) ====
     // Intra-expression inferences must flow through reverse mapped (homomorphic mapped type) inferences,
     // where the inference for T is made from the entire source object rather than property by property.
     
@@ -33,8 +32,8 @@ intraExpressionInferencesReverseMapped.ts(116,55): error TS2551: Property 'toFix
     
     const r6 = g({ a: { produce: n => n, consume: x => x.toLowerCase(), tag: 1 } });
     
-    // Multiple keys. T is fixed when the first consumer is checked; producers that come later
-    // in source order cannot contribute, which is the same limitation as for discrete arguments.
+    // Multiple keys. T is fixed when the first consumer is checked, but members of the reverse mapped
+    // type are resolved lazily, so producers of later keys still contribute when those keys are read.
     const r7 = g({
         a: { produce: n => n, consume: x => x.toLowerCase() },
         b: { produce: () => 1, consume: x => x.toFixed() },
@@ -42,8 +41,6 @@ intraExpressionInferencesReverseMapped.ts(116,55): error TS2551: Property 'toFix
     const r8 = g({
         b: { produce: () => 1, consume: x => x.toFixed() },
         a: { produce: n => n, consume: x => x.toLowerCase() },
-                                            ~
-!!! error TS18046: 'x' is of type 'unknown'.
     });
     
     // Tuples in the template
@@ -124,4 +121,76 @@ intraExpressionInferencesReverseMapped.ts(116,55): error TS2551: Property 'toFix
                                                           ~~~~~~~
 !!! error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
 !!! related TS2728 lib.es2015.core.d.ts:--:--: 'fixed' is declared here.
+    
+    // Closures returning the producer/consumer object
+    declare function thunk<T>(arg: {
+        [K in keyof T]: () => { produce: (n: string) => T[K]; consume: (x: T[K]) => void };
+    }): T;
+    
+    const r18 = thunk({
+        a() { return { produce: n => n, consume: x => x.toLowerCase() }; },
+        b: () => ({ produce: n => n.length, consume: x => x.toFixed() }),
+    });
+    
+    declare function callback<T>(arg: {
+        [K in keyof T]: (flag: boolean) => { produce: (n: string) => T[K]; consume: (x: T[K]) => void };
+    }): T;
+    
+    const r19 = callback({
+        a(flag) { return { produce: n => n, consume: x => x.toLowerCase() }; },
+        b: flag => ({ produce: n => n.length, consume: x => x.toFixed() }),
+    });
+    
+    declare function tupleThunk<T>(arg: {
+        [K in keyof T]: () => [(n: string) => T[K], (x: T[K]) => void];
+    }): T;
+    
+    const r20 = tupleThunk({
+        a() { return [n => n, x => x.toLowerCase()]; },
+        b() { return [n => n.length, x => x.toFixed()]; },
+    });
+    
+    // Intersections of mapped types over different type parameters
+    declare function both<T1, T2>(arg: {
+        [K in keyof T1]: { produce1: (n: string) => T1[K]; consume1: (x: T1[K]) => void };
+    } & {
+        [K in keyof T2]: { produce2: (n: string) => T2[K]; consume2: (x: T2[K]) => void };
+    }): [T1, T2];
+    
+    const r21 = both({
+        a: {
+            produce1: n => n, consume1: x => x.toLowerCase(),
+            produce2: n => [n], consume2: x => x[0].toLowerCase(),
+        },
+        b: {
+            produce1: n => n.length, consume1: x => x.toFixed(),
+            produce2: n => ({ v: n }), consume2: x => x.v.toLowerCase(),
+        },
+    });
+    
+    // A mapped type intersected with a concrete member
+    declare function mixed<T1, T2>(arg: {
+        [K in keyof T1]: { produce: (n: string) => [T1[K], any]; consume: (x: T1[K]) => void };
+    } & {
+        a: { produce: (n: string) => [any, T2]; consume2: (x: T2) => void };
+    }): [T1, T2];
+    
+    const r22 = mixed({
+        a: {
+            produce: n => [n, [n]],
+            consume2: x => x[0].toLowerCase(),
+            consume: x => x.toLowerCase(),
+        },
+        b: {
+            produce: n => [n.length, null],
+            consume: x => x.toFixed(),
+        },
+    });
+    
+    // A property that is never read during the call is completed from the checked argument
+    const r23 = f({
+        a: { produce: n => n, consume: x => x.toLowerCase() },
+        b: { produce: n => n.length, consume: () => {} },
+    });
+    r23.b.toFixed();
     

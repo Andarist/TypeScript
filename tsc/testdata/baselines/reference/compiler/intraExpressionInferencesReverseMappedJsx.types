@@ -89,3 +89,36 @@ const e4 = <Mapped a={{ produce: n => n, consume: x => x.toFixed() }} />;
 >x : string
 >toFixed : any
 
+const e5 = <Mapped a={{ produce: n => n, consume: x => x.toLowerCase() }} b={{ produce: n => n.length, consume: x => x.toFixed() }} />;
+>e5 : JSX.Element
+><Mapped a={{ produce: n => n, consume: x => x.toLowerCase() }} b={{ produce: n => n.length, consume: x => x.toFixed() }} /> : JSX.Element
+>Mapped : <T>(props: { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => JSX.Element
+>a : { produce: (n: string) => string; consume: (x: string) => string; }
+>{ produce: n => n, consume: x => x.toLowerCase() } : { produce: (n: string) => string; consume: (x: string) => string; }
+>produce : (n: string) => string
+>n => n : (n: string) => string
+>n : string
+>n : string
+>consume : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+>b : { produce: (n: string) => number; consume: (x: number) => string; }
+>{ produce: n => n.length, consume: x => x.toFixed() } : { produce: (n: string) => number; consume: (x: number) => string; }
+>produce : (n: string) => number
+>n => n.length : (n: string) => number
+>n : string
+>n.length : number
+>n : string
+>length : number
+>consume : (x: number) => string
+>x => x.toFixed() : (x: number) => string
+>x : number
+>x.toFixed() : string
+>x.toFixed : (fractionDigits?: number) => string
+>x : number
+>toFixed : (fractionDigits?: number) => string
+
