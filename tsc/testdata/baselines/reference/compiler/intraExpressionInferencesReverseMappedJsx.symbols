@@ -1,0 +1,77 @@
+//// [tests/cases/compiler/intraExpressionInferencesReverseMappedJsx.tsx] ////
+
+=== intraExpressionInferencesReverseMappedJsx.tsx ===
+/// <reference path="react16.d.ts" />
+
+declare function Mapped<T>(props: {
+>Mapped : Symbol(Mapped, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 0, 0))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 2, 24))
+>props : Symbol(props, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 2, 27))
+
+    [K in keyof T]: {
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 3, 5))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 2, 24))
+
+        produce: (n: string) => T[K];
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 3, 21))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 4, 18))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 2, 24))
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 3, 5))
+
+        consume: (x: T[K]) => void;
+>consume : Symbol(consume, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 4, 37))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 5, 18))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 2, 24))
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 3, 5))
+
+    };
+}): JSX.Element;
+>JSX : Symbol(JSX, Decl(react16.d.ts, 2495, 12))
+>Element : Symbol(JSX.Element, Decl(react16.d.ts, 2496, 23))
+
+const e1 = <Mapped a={{ produce: () => "hello", consume: x => x.toLowerCase() }} />;
+>e1 : Symbol(e1, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 9, 5))
+>Mapped : Symbol(Mapped, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 0, 0))
+>a : Symbol(a, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 9, 18))
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 9, 23))
+>consume : Symbol(consume, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 9, 47))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 9, 56))
+>x.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 9, 56))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+const e2 = <Mapped a={{ produce: n => n, consume: x => x.toLowerCase() }} />;
+>e2 : Symbol(e2, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 10, 5))
+>Mapped : Symbol(Mapped, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 0, 0))
+>a : Symbol(a, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 10, 18))
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 10, 23))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 10, 32))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 10, 32))
+>consume : Symbol(consume, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 10, 40))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 10, 49))
+>x.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 10, 49))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+const e3 = <Mapped a={{ produce() { return "hello"; }, consume: x => x.toLowerCase() }} />;
+>e3 : Symbol(e3, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 11, 5))
+>Mapped : Symbol(Mapped, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 0, 0))
+>a : Symbol(a, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 11, 18))
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 11, 23))
+>consume : Symbol(consume, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 11, 54))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 11, 63))
+>x.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 11, 63))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+const e4 = <Mapped a={{ produce: n => n, consume: x => x.toFixed() }} />;
+>e4 : Symbol(e4, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 12, 5))
+>Mapped : Symbol(Mapped, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 0, 0))
+>a : Symbol(a, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 12, 18))
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 12, 23))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 12, 32))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 12, 32))
+>consume : Symbol(consume, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 12, 40))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 12, 49))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMappedJsx.tsx, 12, 49))
+

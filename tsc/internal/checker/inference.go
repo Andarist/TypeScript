@@ -964,8 +964,11 @@ func (c *Checker) inferToMappedType(n *InferenceState, source *Type, target *Typ
 			if inferredType != nil {
 				// We assign a lower priority to inferences made from types containing non-inferrable
 				// types because we may only have a partial result (i.e. we may have failed to make
-				// reverse inferences for some properties).
-				c.inferWithPriority(n, inferredType, inference.typeParameter, core.IfElse(source.objectFlags&ObjectFlagsNonInferrableType != 0, InferencePriorityPartialHomomorphicMappedType, InferencePriorityHomomorphicMappedType))
+				// reverse inferences for some properties), and a still lower priority to inferences
+				// made from types containing no inferable types at all, because then only the shape
+				// of the source is inferred (i.e. we have failed to make reverse inferences for every
+				// property).
+				c.inferWithPriority(n, inferredType, inference.typeParameter, c.getReverseMappedInferencePriority(source))
 			}
 		}
 		return true
@@ -1012,9 +1015,11 @@ func (c *Checker) inferTypeForHomomorphicMappedType(source *Type, target *Type, 
 }
 
 func (c *Checker) createReverseMappedType(source *Type, target *Type, constraint *Type) *Type {
-	// We consider a source type reverse mappable if it has a string index signature or if
-	// it has one or more properties and is of a partially inferable type.
-	if !(c.getIndexInfoOfType(source, c.stringType) != nil || len(c.getPropertiesOfType(source)) != 0 && c.isPartiallyInferableType(source)) {
+	// We consider a source type reverse mappable if it has a string index signature or one or more
+	// properties. The shape of the source is inferable even when none of its property types are (for
+	// example, when every property is a context sensitive function that hasn't been checked yet), and
+	// preserving that shape keeps properties, and thus 'keyof', of the inferred type intact.
+	if !(c.getIndexInfoOfType(source, c.stringType) != nil || len(c.getPropertiesOfType(source)) != 0) {
 		return nil
 	}
 	// For arrays and tuples we infer new arrays and tuples where the reverse mapping has been
@@ -1061,6 +1066,25 @@ func (c *Checker) isPartiallyInferableType(t *Type) bool {
 	return t.objectFlags&ObjectFlagsNonInferrableType == 0 || isObjectLiteralType(t) && core.Some(c.getPropertiesOfType(t), func(prop *ast.Symbol) bool {
 		return c.isPartiallyInferableType(c.getTypeOfSymbol(prop))
 	}) || isTupleType(t) && core.Some(c.getElementTypes(t), c.isPartiallyInferableType)
+}
+
+// The priority of a reverse mapped inference from the given source: full when the source contains no
+// non-inferable types, partial when it is partially inferable, and shape-only otherwise.
+func (c *Checker) getReverseMappedInferencePriority(source *Type) InferencePriority {
+	switch {
+	case source.objectFlags&ObjectFlagsNonInferrableType == 0:
+		return InferencePriorityHomomorphicMappedType
+	case c.isPartiallyInferableType(source):
+		return InferencePriorityPartialHomomorphicMappedType
+	default:
+		return InferencePriorityShapeHomomorphicMappedType
+	}
+}
+
+// An inference is provisional when its candidates were reverse mapped from sources containing non-inferable
+// types, i.e. from argument types in which context sensitive expressions are represented by wildcards.
+func isProvisionalInference(inference *InferenceInfo) bool {
+	return !inference.isFixed && inference.priority&(InferencePriorityPartialHomomorphicMappedType|InferencePriorityShapeHomomorphicMappedType) != 0
 }
 
 func (c *Checker) inferReverseMappedType(source *Type, target *Type, constraint *Type) *Type {
@@ -1299,8 +1323,27 @@ func (c *Checker) addIntraExpressionInferenceSite(n *InferenceContext, node *ast
 // arrow function. This happens automatically when the arrow functions are discrete arguments (because we
 // infer from each argument before processing the next), but when the arrow functions are elements of an
 // object or array literal, we need to perform intra-expression inferences early.
+//
+// Inferring from each site to its contextual type suffices when inference decomposes structurally, but not
+// for reverse mapped inferences, which are made from an entire source object. For example:
+//
+//	declare function foo<T>(arg: { [K in keyof T]: { produce: (n: number) => T[K], consume: (x: T[K]) => void } }): void;
+//	foo({ a: { produce: _n => 0, consume: n => n.toFixed() } });
+//
+// Above, the first pass infers a reverse mapped type for T from a source in which both arrow functions are
+// wildcards, so nothing is known about T['a']. The site for the first arrow function has contextual type
+// '(n: number) => T["a"]', to which no inference can be made. Instead, when provisional reverse mapped
+// inferences exist, we discard them and infer from the arguments again, this time using the types recorded
+// for the sites in place of the wildcards.
 func (c *Checker) inferFromIntraExpressionSites(n *InferenceContext) {
-	for _, site := range n.intraExpressionInferenceSites {
+	sites := n.intraExpressionInferenceSites
+	if len(sites) == 0 {
+		return
+	}
+	if n.argumentInferenceState != nil && core.Some(n.inferences, isProvisionalInference) {
+		c.reinferFromArguments(n, sites)
+	}
+	for _, site := range sites {
 		var contextualType *Type
 		if ast.IsMethodDeclaration(site.node) {
 			contextualType = c.getContextualTypeForObjectLiteralMethod(site.node, ContextFlagsNoConstraints)
@@ -1311,7 +1354,30 @@ func (c *Checker) inferFromIntraExpressionSites(n *InferenceContext) {
 			c.inferTypes(n.inferences, site.t, contextualType, InferencePriorityNone, false)
 		}
 	}
-	n.intraExpressionInferenceSites = nil
+}
+
+// Discard provisional inferences and repeat the inference pass that omits context sensitive expressions,
+// with the types recorded for intra-expression inference sites standing in for the wildcards. The sites
+// are retained (until the enclosing argument has been checked) so that the types they record remain
+// available when further type parameters are fixed.
+func (c *Checker) reinferFromArguments(n *InferenceContext, sites []IntraExpressionInferenceSite) {
+	for _, inference := range n.inferences {
+		if isProvisionalInference(inference) {
+			inference.candidates = nil
+			inference.contraCandidates = nil
+			inference.inferredType = nil
+			inference.priority = InferencePriorityMaxValue
+			inference.topLevel = true
+		}
+	}
+	saveSiteTypes := c.intraExpressionInferenceSiteTypes
+	c.intraExpressionInferenceSiteTypes = make(map[*ast.Node]*Type, len(sites))
+	for _, site := range sites {
+		c.intraExpressionInferenceSiteTypes[site.node] = site.t
+	}
+	state := n.argumentInferenceState
+	c.inferFromArguments(state.node, n.signature, state.args, state.checkMode, n)
+	c.intraExpressionInferenceSiteTypes = saveSiteTypes
 }
 
 func (c *Checker) getInferredType(n *InferenceContext, index int) *Type {

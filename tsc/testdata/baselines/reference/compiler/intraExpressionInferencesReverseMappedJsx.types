@@ -1,0 +1,91 @@
+//// [tests/cases/compiler/intraExpressionInferencesReverseMappedJsx.tsx] ////
+
+=== intraExpressionInferencesReverseMappedJsx.tsx ===
+/// <reference path="react16.d.ts" />
+
+declare function Mapped<T>(props: {
+>Mapped : <T>(props: { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => JSX.Element
+>props : { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }
+
+    [K in keyof T]: {
+        produce: (n: string) => T[K];
+>produce : (n: string) => T[K]
+>n : string
+
+        consume: (x: T[K]) => void;
+>consume : (x: T[K]) => void
+>x : T[K]
+
+    };
+}): JSX.Element;
+>JSX : any
+
+const e1 = <Mapped a={{ produce: () => "hello", consume: x => x.toLowerCase() }} />;
+>e1 : JSX.Element
+><Mapped a={{ produce: () => "hello", consume: x => x.toLowerCase() }} /> : JSX.Element
+>Mapped : <T>(props: { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => JSX.Element
+>a : { produce: () => string; consume: (x: string) => string; }
+>{ produce: () => "hello", consume: x => x.toLowerCase() } : { produce: () => string; consume: (x: string) => string; }
+>produce : () => string
+>() => "hello" : () => string
+>"hello" : "hello"
+>consume : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+
+const e2 = <Mapped a={{ produce: n => n, consume: x => x.toLowerCase() }} />;
+>e2 : JSX.Element
+><Mapped a={{ produce: n => n, consume: x => x.toLowerCase() }} /> : JSX.Element
+>Mapped : <T>(props: { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => JSX.Element
+>a : { produce: (n: string) => string; consume: (x: string) => string; }
+>{ produce: n => n, consume: x => x.toLowerCase() } : { produce: (n: string) => string; consume: (x: string) => string; }
+>produce : (n: string) => string
+>n => n : (n: string) => string
+>n : string
+>n : string
+>consume : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+
+const e3 = <Mapped a={{ produce() { return "hello"; }, consume: x => x.toLowerCase() }} />;
+>e3 : JSX.Element
+><Mapped a={{ produce() { return "hello"; }, consume: x => x.toLowerCase() }} /> : JSX.Element
+>Mapped : <T>(props: { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => JSX.Element
+>a : { produce(): string; consume: (x: string) => string; }
+>{ produce() { return "hello"; }, consume: x => x.toLowerCase() } : { produce(): string; consume: (x: string) => string; }
+>produce : () => string
+>"hello" : "hello"
+>consume : (x: string) => string
+>x => x.toLowerCase() : (x: string) => string
+>x : string
+>x.toLowerCase() : string
+>x.toLowerCase : () => string
+>x : string
+>toLowerCase : () => string
+
+const e4 = <Mapped a={{ produce: n => n, consume: x => x.toFixed() }} />;
+>e4 : JSX.Element
+><Mapped a={{ produce: n => n, consume: x => x.toFixed() }} /> : JSX.Element
+>Mapped : <T>(props: { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void; }; }) => JSX.Element
+>a : { produce: (n: string) => string; consume: (x: string) => any; }
+>{ produce: n => n, consume: x => x.toFixed() } : { produce: (n: string) => string; consume: (x: string) => any; }
+>produce : (n: string) => string
+>n => n : (n: string) => string
+>n : string
+>n : string
+>consume : (x: string) => any
+>x => x.toFixed() : (x: string) => any
+>x : string
+>x.toFixed() : any
+>x.toFixed : any
+>x : string
+>toFixed : any
+

@@ -195,13 +195,6 @@ func (c *Checker) checkJsxReturnAssignableToAppropriateBound(refKind JsxReferenc
 	}
 }
 
-func (c *Checker) inferJsxTypeArguments(node *ast.Node, signature *Signature, checkMode CheckMode, context *InferenceContext) []*Type {
-	paramType := c.getEffectiveFirstArgumentForJsxSignature(signature, node)
-	checkAttrType := c.checkExpressionWithContextualType(node.Attributes(), paramType, context, checkMode)
-	c.inferTypes(context.inferences, checkAttrType, paramType, InferencePriorityNone, false)
-	return c.getInferredTypes(context)
-}
-
 func (c *Checker) getContextualTypeForJsxExpression(node *ast.Node, contextFlags ContextFlags) *Type {
 	switch {
 	case ast.IsJsxAttributeLike(node.Parent):

@@ -1,0 +1,103 @@
+// @strict: true
+// @noEmit: true
+
+// A source object whose properties are all context sensitive is still reverse mappable: its shape
+// is inferable even though none of its property types are. The shape-only inference has lower
+// priority than a partial inference made from a source with some inferable property types.
+
+type Identity<T> =
+    T extends any
+        ? T extends (...a: never) => unknown ? T :
+          T extends object ? IdentityObject<T> :
+          T
+        : never;
+
+type IdentityObject<T> = { [K in keyof T]: Identity<T[K]> };
+
+declare const createMachine: <D extends {
+    initial: keyof D["states"],
+    context: object,
+    states: {
+        [S in keyof D["states"]]: {
+            entry?: (context: D["context"], state: S) => void,
+            _?: null
+        }
+    }
+}>(definition: IdentityObject<D>) => D;
+
+// All properties of 'a' are context sensitive
+const m1 = createMachine({
+    initial: "a",
+    context: { foo: 1 },
+    states: {
+        a: {
+            entry: context => { context.foo; }
+        }
+    }
+});
+
+// Same, with a non-context sensitive property alongside
+const m2 = createMachine({
+    initial: "a",
+    context: { foo: 1 },
+    states: {
+        a: {
+            entry: context => { context.foo; },
+            _: null
+        }
+    }
+});
+
+type AnyFunction = (...args: any[]) => any;
+
+type InferNarrowest<T> = T extends any
+    ? T extends AnyFunction ? T : T extends object ? InferNarrowestObject<T> : T
+    : never;
+
+type InferNarrowestObject<T> = { readonly [K in keyof T]: InferNarrowest<T[K]> };
+
+type Config<TGlobal, TState = Prop<TGlobal, "states">> = {
+    states: { [StateKey in keyof TState]: { on?: Record<string, (ev: { type: string }) => string> } };
+} & { initial: keyof TState };
+
+type Prop<T, K> = K extends keyof T ? T[K] : never;
+
+declare const createMachine2: <TConfig extends Config<TConfig>>(_config: InferNarrowestObject<TConfig>) => TConfig;
+
+const m3 = createMachine2({
+    initial: "pending",
+    states: {
+        pending: {
+            on: {
+                done() { return "noData"; },
+            },
+        },
+    },
+});
+
+const m4 = createMachine2({
+    initial: "pending",
+    states: {
+        pending: {
+            on: {
+                done: ev => ev.type,
+            },
+        },
+    },
+});
+
+// A shape-only inference yields to a partial inference from another source
+declare function on<T>(
+    handlers: { [K in keyof T]: (e: T[K]) => void },
+    defaults: { [K in keyof T]: T[K] },
+): T;
+
+const o1 = on({ click: e => e.x }, { click: { x: 1 }, key: k => k });
+const o2 = on({ click: e => e.x }, { click: { x: 1 } });
+
+// A shape-only inference is used when nothing better is available
+declare function id<T>(arg: { [K in keyof T]: T[K] }): T;
+
+const s1 = id({ a: { b: x => x } });
+const s2 = id({ a: [x => x] });
+const s3 = id({ a: { m() { return 1; } } });

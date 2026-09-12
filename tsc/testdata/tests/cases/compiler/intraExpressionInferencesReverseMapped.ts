@@ -1,0 +1,119 @@
+// @strict: true
+// @noEmit: true
+
+// Intra-expression inferences must flow through reverse mapped (homomorphic mapped type) inferences,
+// where the inference for T is made from the entire source object rather than property by property.
+
+declare function f<T>(arg: {
+    [K in keyof T]: {
+        produce: (n: string) => T[K];
+        consume: (x: T[K]) => void;
+    };
+}): T;
+
+// Non-context sensitive producers (worked before)
+const r1 = f({ a: { produce: () => "hello", consume: x => x.toLowerCase() } });
+const r2 = f({ a: { produce: (n: string) => n, consume: x => x.toLowerCase() } });
+
+// Context sensitive producers
+const r3 = f({ a: { produce: n => n, consume: x => x.toLowerCase() } });
+const r4 = f({ a: { produce: function () { return "hello"; }, consume: x => x.toLowerCase() } });
+const r5 = f({ a: { produce() { return "hello"; }, consume: x => x.toLowerCase() } });
+
+// Sibling with an inferable type alongside the context sensitive ones
+declare function g<T>(arg: {
+    [K in keyof T]: {
+        produce: (n: string) => T[K];
+        consume: (x: T[K]) => void;
+        tag?: number;
+    };
+}): T;
+
+const r6 = g({ a: { produce: n => n, consume: x => x.toLowerCase(), tag: 1 } });
+
+// Multiple keys. T is fixed when the first consumer is checked; producers that come later
+// in source order cannot contribute, which is the same limitation as for discrete arguments.
+const r7 = g({
+    a: { produce: n => n, consume: x => x.toLowerCase() },
+    b: { produce: () => 1, consume: x => x.toFixed() },
+});
+const r8 = g({
+    b: { produce: () => 1, consume: x => x.toFixed() },
+    a: { produce: n => n, consume: x => x.toLowerCase() },
+});
+
+// Tuples in the template
+declare function h<T>(arg: {
+    [K in keyof T]: [(n: string) => T[K], (x: T[K]) => void];
+}): T;
+
+const r9 = h({ a: [n => n, x => x.toLowerCase()] });
+
+// Array literal source against a variadic tuple
+declare function v<T extends unknown[]>(arg: [...{
+    [K in keyof T]: {
+        produce: (n: string) => T[K];
+        consume: (x: T[K]) => void;
+    };
+}]): T;
+
+const r10 = v([{ produce: () => "hello", consume: x => x.toLowerCase() }]);
+const r11 = v([{ produce: n => n, consume: x => x.toLowerCase() }]);
+const r12 = v([{ produce() { return "hello"; }, consume: x => x.toLowerCase() }]);
+const r13 = v([
+    { produce: n => n, consume: x => x.toLowerCase() },
+    { produce: () => 1, consume: x => x.toFixed() },
+]);
+
+// Variadic element after a fixed element
+declare function vp<T extends unknown[]>(arg: [string, ...{
+    [K in keyof T]: {
+        produce: (n: string) => T[K];
+        consume: (x: T[K]) => void;
+    };
+}]): T;
+
+const r13b = vp(["", { produce: n => n, consume: x => x.toLowerCase() }]);
+
+// Nested reverse mappings
+declare function nested<T>(arg: {
+    [K in keyof T]: {
+        [J in keyof T[K]]: {
+            produce: (n: string) => T[K][J];
+            consume: (x: T[K][J]) => void;
+        };
+    };
+}): T;
+
+const r14 = nested({ a: { b: { produce: n => n, consume: x => x.toLowerCase() } } });
+
+// Reverse mapping nested inside a non-mapped structure
+declare function wrapped<T>(arg: {
+    items: {
+        [K in keyof T]: {
+            produce: (n: string) => T[K];
+            consume: (x: T[K]) => void;
+        };
+    };
+    other: (x: T) => void;
+}): T;
+
+const r15 = wrapped({
+    items: { a: { produce: n => n, consume: x => x.toLowerCase() } },
+    other: t => t.a.toLowerCase(),
+});
+
+// Two type parameters fixed at different points; the types recorded for earlier sites must remain
+// available when the second type parameter is fixed.
+declare function two<T, U>(arg: {
+    first: { [K in keyof T]: { produce: (n: string) => T[K]; consume: (x: T[K]) => void } };
+    second: { [K in keyof U]: { produce: (n: string) => U[K]; consume: (x: U[K], t: T) => void } };
+}): [T, U];
+
+const r16 = two({
+    first: { a: { produce: n => n, consume: x => x.toLowerCase() } },
+    second: { b: { produce: n => n.length, consume: (x, t) => x.toFixed() + t.a.toLowerCase() } },
+});
+
+// Errors are still reported
+const r17 = f({ a: { produce: n => n, consume: x => x.toFixed() } });

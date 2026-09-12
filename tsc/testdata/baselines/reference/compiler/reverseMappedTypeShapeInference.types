@@ -1,0 +1,308 @@
+//// [tests/cases/compiler/reverseMappedTypeShapeInference.ts] ////
+
+=== reverseMappedTypeShapeInference.ts ===
+// A source object whose properties are all context sensitive is still reverse mappable: its shape
+// is inferable even though none of its property types are. The shape-only inference has lower
+// priority than a partial inference made from a source with some inferable property types.
+
+type Identity<T> =
+>Identity : Identity<T>
+
+    T extends any
+        ? T extends (...a: never) => unknown ? T :
+>a : never
+
+          T extends object ? IdentityObject<T> :
+          T
+        : never;
+
+type IdentityObject<T> = { [K in keyof T]: Identity<T[K]> };
+>IdentityObject : IdentityObject<T>
+
+declare const createMachine: <D extends {
+>createMachine : <D extends { initial: keyof D["states"]; context: object; states: { [S in keyof D["states"]]: { entry?: (context: D["context"], state: S) => void; _?: null; }; }; }>(definition: IdentityObject<D>) => D
+
+    initial: keyof D["states"],
+>initial : keyof D["states"]
+
+    context: object,
+>context : object
+
+    states: {
+>states : { [S in keyof D["states"]]: { entry?: (context: D["context"], state: S) => void; _?: null; }; }
+
+        [S in keyof D["states"]]: {
+            entry?: (context: D["context"], state: S) => void,
+>entry : ((context: D["context"], state: S) => void) | undefined
+>context : D["context"]
+>state : S
+
+            _?: null
+>_ : null | undefined
+        }
+    }
+}>(definition: IdentityObject<D>) => D;
+>definition : IdentityObject<D>
+
+// All properties of 'a' are context sensitive
+const m1 = createMachine({
+>m1 : { initial: "a"; context: object; states: { a: { entry?: ((context: { foo: number; }, state: "a") => void) | undefined; _?: null; }; }; }
+>createMachine({    initial: "a",    context: { foo: 1 },    states: {        a: {            entry: context => { context.foo; }        }    }}) : { initial: "a"; context: object; states: { a: { entry?: ((context: { foo: number; }, state: "a") => void) | undefined; _?: null; }; }; }
+>createMachine : <D extends { initial: keyof D["states"]; context: object; states: { [S in keyof D["states"]]: { entry?: (context: D["context"], state: S) => void; _?: null; }; }; }>(definition: IdentityObject<D>) => D
+>{    initial: "a",    context: { foo: 1 },    states: {        a: {            entry: context => { context.foo; }        }    }} : { initial: "a"; context: { foo: number; }; states: { a: { entry: (context: { foo: number; }) => void; }; }; }
+
+    initial: "a",
+>initial : "a"
+>"a" : "a"
+
+    context: { foo: 1 },
+>context : { foo: number; }
+>{ foo: 1 } : { foo: number; }
+>foo : number
+>1 : 1
+
+    states: {
+>states : { a: { entry: (context: { foo: number; }) => void; }; }
+>{        a: {            entry: context => { context.foo; }        }    } : { a: { entry: (context: { foo: number; }) => void; }; }
+
+        a: {
+>a : { entry: (context: { foo: number; }) => void; }
+>{            entry: context => { context.foo; }        } : { entry: (context: { foo: number; }) => void; }
+
+            entry: context => { context.foo; }
+>entry : (context: { foo: number; }) => void
+>context => { context.foo; } : (context: { foo: number; }) => void
+>context : { foo: number; }
+>context.foo : number
+>context : { foo: number; }
+>foo : number
+        }
+    }
+});
+
+// Same, with a non-context sensitive property alongside
+const m2 = createMachine({
+>m2 : { initial: "a"; context: object; states: { a: { entry?: ((context: { foo: number; }, state: "a") => void) | undefined; _?: null; }; }; }
+>createMachine({    initial: "a",    context: { foo: 1 },    states: {        a: {            entry: context => { context.foo; },            _: null        }    }}) : { initial: "a"; context: object; states: { a: { entry?: ((context: { foo: number; }, state: "a") => void) | undefined; _?: null; }; }; }
+>createMachine : <D extends { initial: keyof D["states"]; context: object; states: { [S in keyof D["states"]]: { entry?: (context: D["context"], state: S) => void; _?: null; }; }; }>(definition: IdentityObject<D>) => D
+>{    initial: "a",    context: { foo: 1 },    states: {        a: {            entry: context => { context.foo; },            _: null        }    }} : { initial: "a"; context: { foo: number; }; states: { a: { entry: (context: { foo: number; }) => void; _: null; }; }; }
+
+    initial: "a",
+>initial : "a"
+>"a" : "a"
+
+    context: { foo: 1 },
+>context : { foo: number; }
+>{ foo: 1 } : { foo: number; }
+>foo : number
+>1 : 1
+
+    states: {
+>states : { a: { entry: (context: { foo: number; }) => void; _: null; }; }
+>{        a: {            entry: context => { context.foo; },            _: null        }    } : { a: { entry: (context: { foo: number; }) => void; _: null; }; }
+
+        a: {
+>a : { entry: (context: { foo: number; }) => void; _: null; }
+>{            entry: context => { context.foo; },            _: null        } : { entry: (context: { foo: number; }) => void; _: null; }
+
+            entry: context => { context.foo; },
+>entry : (context: { foo: number; }) => void
+>context => { context.foo; } : (context: { foo: number; }) => void
+>context : { foo: number; }
+>context.foo : number
+>context : { foo: number; }
+>foo : number
+
+            _: null
+>_ : null
+        }
+    }
+});
+
+type AnyFunction = (...args: any[]) => any;
+>AnyFunction : AnyFunction
+>args : any[]
+
+type InferNarrowest<T> = T extends any
+>InferNarrowest : InferNarrowest<T>
+
+    ? T extends AnyFunction ? T : T extends object ? InferNarrowestObject<T> : T
+    : never;
+
+type InferNarrowestObject<T> = { readonly [K in keyof T]: InferNarrowest<T[K]> };
+>InferNarrowestObject : InferNarrowestObject<T>
+
+type Config<TGlobal, TState = Prop<TGlobal, "states">> = {
+>Config : Config<TGlobal, TState>
+
+    states: { [StateKey in keyof TState]: { on?: Record<string, (ev: { type: string }) => string> } };
+>states : { [StateKey in keyof TState]: { on?: Record<string, (ev: { type: string; }) => string>; }; }
+>on : Record<string, (ev: { type: string; }) => string> | undefined
+>ev : { type: string; }
+>type : string
+
+} & { initial: keyof TState };
+>initial : keyof TState
+
+type Prop<T, K> = K extends keyof T ? T[K] : never;
+>Prop : Prop<T, K>
+
+declare const createMachine2: <TConfig extends Config<TConfig>>(_config: InferNarrowestObject<TConfig>) => TConfig;
+>createMachine2 : <TConfig extends Config<TConfig>>(_config: InferNarrowestObject<TConfig>) => TConfig
+>_config : InferNarrowestObject<TConfig>
+
+const m3 = createMachine2({
+>m3 : { initial: "pending"; states: { pending: { on: { done(): string; }; }; }; }
+>createMachine2({    initial: "pending",    states: {        pending: {            on: {                done() { return "noData"; },            },        },    },}) : { initial: "pending"; states: { pending: { on: { done(): string; }; }; }; }
+>createMachine2 : <TConfig extends Config<TConfig>>(_config: InferNarrowestObject<TConfig>) => TConfig
+>{    initial: "pending",    states: {        pending: {            on: {                done() { return "noData"; },            },        },    },} : { initial: "pending"; states: { pending: { on: { done(): string; }; }; }; }
+
+    initial: "pending",
+>initial : "pending"
+>"pending" : "pending"
+
+    states: {
+>states : { pending: { on: { done(): string; }; }; }
+>{        pending: {            on: {                done() { return "noData"; },            },        },    } : { pending: { on: { done(): string; }; }; }
+
+        pending: {
+>pending : { on: { done(): string; }; }
+>{            on: {                done() { return "noData"; },            },        } : { on: { done(): string; }; }
+
+            on: {
+>on : { done(): string; }
+>{                done() { return "noData"; },            } : { done(): string; }
+
+                done() { return "noData"; },
+>done : () => string
+>"noData" : "noData"
+
+            },
+        },
+    },
+});
+
+const m4 = createMachine2({
+>m4 : { initial: "pending"; states: { pending: { on: { done: (ev: { type: string; }) => string; }; }; }; }
+>createMachine2({    initial: "pending",    states: {        pending: {            on: {                done: ev => ev.type,            },        },    },}) : { initial: "pending"; states: { pending: { on: { done: (ev: { type: string; }) => string; }; }; }; }
+>createMachine2 : <TConfig extends Config<TConfig>>(_config: InferNarrowestObject<TConfig>) => TConfig
+>{    initial: "pending",    states: {        pending: {            on: {                done: ev => ev.type,            },        },    },} : { initial: "pending"; states: { pending: { on: { done: (ev: { type: string; }) => string; }; }; }; }
+
+    initial: "pending",
+>initial : "pending"
+>"pending" : "pending"
+
+    states: {
+>states : { pending: { on: { done: (ev: { type: string; }) => string; }; }; }
+>{        pending: {            on: {                done: ev => ev.type,            },        },    } : { pending: { on: { done: (ev: { type: string; }) => string; }; }; }
+
+        pending: {
+>pending : { on: { done: (ev: { type: string; }) => string; }; }
+>{            on: {                done: ev => ev.type,            },        } : { on: { done: (ev: { type: string; }) => string; }; }
+
+            on: {
+>on : { done: (ev: { type: string; }) => string; }
+>{                done: ev => ev.type,            } : { done: (ev: { type: string; }) => string; }
+
+                done: ev => ev.type,
+>done : (ev: { type: string; }) => string
+>ev => ev.type : (ev: { type: string; }) => string
+>ev : { type: string; }
+>ev.type : string
+>ev : { type: string; }
+>type : string
+
+            },
+        },
+    },
+});
+
+// A shape-only inference yields to a partial inference from another source
+declare function on<T>(
+>on : <T>(handlers: { [K in keyof T]: (e: T[K]) => void; }, defaults: { [K in keyof T]: T[K]; }) => T
+
+    handlers: { [K in keyof T]: (e: T[K]) => void },
+>handlers : { [K in keyof T]: (e: T[K]) => void; }
+>e : T[K]
+
+    defaults: { [K in keyof T]: T[K] },
+>defaults : { [K in keyof T]: T[K]; }
+
+): T;
+
+const o1 = on({ click: e => e.x }, { click: { x: 1 }, key: k => k });
+>o1 : { click: { x: number; }; key: unknown; }
+>on({ click: e => e.x }, { click: { x: 1 }, key: k => k }) : { click: { x: number; }; key: unknown; }
+>on : <T>(handlers: { [K in keyof T]: (e: T[K]) => void; }, defaults: { [K in keyof T]: T[K]; }) => T
+>{ click: e => e.x } : { click: (e: { x: number; }) => number; }
+>click : (e: { x: number; }) => number
+>e => e.x : (e: { x: number; }) => number
+>e : { x: number; }
+>e.x : number
+>e : { x: number; }
+>x : number
+>{ click: { x: 1 }, key: k => k } : { click: { x: number; }; key: (k: any) => any; }
+>click : { x: number; }
+>{ x: 1 } : { x: number; }
+>x : number
+>1 : 1
+>key : (k: any) => any
+>k => k : (k: any) => any
+>k : any
+>k : any
+
+const o2 = on({ click: e => e.x }, { click: { x: 1 } });
+>o2 : { click: { x: number; }; }
+>on({ click: e => e.x }, { click: { x: 1 } }) : { click: { x: number; }; }
+>on : <T>(handlers: { [K in keyof T]: (e: T[K]) => void; }, defaults: { [K in keyof T]: T[K]; }) => T
+>{ click: e => e.x } : { click: (e: { x: number; }) => number; }
+>click : (e: { x: number; }) => number
+>e => e.x : (e: { x: number; }) => number
+>e : { x: number; }
+>e.x : number
+>e : { x: number; }
+>x : number
+>{ click: { x: 1 } } : { click: { x: number; }; }
+>click : { x: number; }
+>{ x: 1 } : { x: number; }
+>x : number
+>1 : 1
+
+// A shape-only inference is used when nothing better is available
+declare function id<T>(arg: { [K in keyof T]: T[K] }): T;
+>id : <T>(arg: { [K in keyof T]: T[K]; }) => T
+>arg : { [K in keyof T]: T[K]; }
+
+const s1 = id({ a: { b: x => x } });
+>s1 : { a: { b: (x: any) => any; }; }
+>id({ a: { b: x => x } }) : { a: { b: (x: any) => any; }; }
+>id : <T>(arg: { [K in keyof T]: T[K]; }) => T
+>{ a: { b: x => x } } : { a: { b: (x: any) => any; }; }
+>a : { b: (x: any) => any; }
+>{ b: x => x } : { b: (x: any) => any; }
+>b : (x: any) => any
+>x => x : (x: any) => any
+>x : any
+>x : any
+
+const s2 = id({ a: [x => x] });
+>s2 : { a: ((x: any) => any)[]; }
+>id({ a: [x => x] }) : { a: ((x: any) => any)[]; }
+>id : <T>(arg: { [K in keyof T]: T[K]; }) => T
+>{ a: [x => x] } : { a: ((x: any) => any)[]; }
+>a : ((x: any) => any)[]
+>[x => x] : ((x: any) => any)[]
+>x => x : (x: any) => any
+>x : any
+>x : any
+
+const s3 = id({ a: { m() { return 1; } } });
+>s3 : { a: { m(): 1; }; }
+>id({ a: { m() { return 1; } } }) : { a: { m(): 1; }; }
+>id : <T>(arg: { [K in keyof T]: T[K]; }) => T
+>{ a: { m() { return 1; } } } : { a: { m(): 1; }; }
+>a : { m(): 1; }
+>{ m() { return 1; } } : { m(): 1; }
+>m : () => 1
+>1 : 1
+

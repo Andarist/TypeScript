@@ -284,6 +284,16 @@ type InferenceContext struct {
 	outerReturnMapper             *TypeMapper      // Type mapper for inferences from return types of outer function (if any)
 	inferredTypeParameters        []*Type          // Inferred type parameters for function result
 	intraExpressionInferenceSites []IntraExpressionInferenceSite
+	argumentInferenceState        *ArgumentInferenceState // Arguments of the first inference pass (if any), retained for re-inference
+}
+
+// The node, arguments, and check mode of the inference pass that omits context sensitive expressions
+// (CheckMode.SkipContextSensitive). Inferences made in that pass are provisional and may need to be
+// redone once the types of context sensitive expressions become known (see inferFromIntraExpressionSites).
+type ArgumentInferenceState struct {
+	node      *ast.Node
+	args      []*ast.Node
+	checkMode CheckMode
 }
 
 type InferenceInfo struct {
@@ -306,13 +316,14 @@ const (
 	InferencePrioritySubstituteSource             InferencePriority = 1 << 2  // Source of inference originated within a substitution type's substitute
 	InferencePriorityHomomorphicMappedType        InferencePriority = 1 << 3  // Reverse inference for homomorphic mapped type
 	InferencePriorityPartialHomomorphicMappedType InferencePriority = 1 << 4  // Partial reverse inference for homomorphic mapped type
-	InferencePriorityMappedTypeConstraint         InferencePriority = 1 << 5  // Reverse inference for mapped type
-	InferencePriorityContravariantConditional     InferencePriority = 1 << 6  // Conditional type in contravariant position
-	InferencePriorityReturnType                   InferencePriority = 1 << 7  // Inference made from return type of generic function
-	InferencePriorityLiteralKeyof                 InferencePriority = 1 << 8  // Inference made from a string literal to a keyof T
-	InferencePriorityNoConstraints                InferencePriority = 1 << 9  // Don't infer from constraints of instantiable types
-	InferencePriorityAlwaysStrict                 InferencePriority = 1 << 10 // Always use strict rules for contravariant inferences
-	InferencePriorityMaxValue                     InferencePriority = 1 << 11 // Seed for inference priority tracking
+	InferencePriorityShapeHomomorphicMappedType   InferencePriority = 1 << 5  // Shape-only reverse inference for homomorphic mapped type
+	InferencePriorityMappedTypeConstraint         InferencePriority = 1 << 6  // Reverse inference for mapped type
+	InferencePriorityContravariantConditional     InferencePriority = 1 << 7  // Conditional type in contravariant position
+	InferencePriorityReturnType                   InferencePriority = 1 << 8  // Inference made from return type of generic function
+	InferencePriorityLiteralKeyof                 InferencePriority = 1 << 9  // Inference made from a string literal to a keyof T
+	InferencePriorityNoConstraints                InferencePriority = 1 << 10 // Don't infer from constraints of instantiable types
+	InferencePriorityAlwaysStrict                 InferencePriority = 1 << 11 // Always use strict rules for contravariant inferences
+	InferencePriorityMaxValue                     InferencePriority = 1 << 12 // Seed for inference priority tracking
 	InferencePriorityCircularity                  InferencePriority = -1      // Inference circularity (value less than all other priorities)
 
 	InferencePriorityPriorityImpliesCombination = InferencePriorityReturnType | InferencePriorityMappedTypeConstraint | InferencePriorityLiteralKeyof // These priorities imply that the resulting type should be a combination of all candidates
@@ -701,6 +712,7 @@ type Checker struct {
 	regExpScanner                               *scanner.Scanner
 	patternForType                              map[*Type]*ast.Node
 	contextFreeTypes                            map[*ast.Node]*Type
+	intraExpressionInferenceSiteTypes           map[*ast.Node]*Type // Types of intra-expression inference sites, consulted while re-checking arguments in CheckMode.SkipContextSensitive
 	anyType                                     *Type
 	autoType                                    *Type
 	wildcardType                                *Type
@@ -7652,8 +7664,10 @@ func (c *Checker) checkExpressionWithContextualType(node *ast.Node, contextualTy
 	c.pushInferenceContext(contextNode, inferenceContext)
 	t := c.checkExpressionEx(node, checkMode|CheckModeContextual|core.IfElse(inferenceContext != nil, CheckModeInferential, 0))
 	// In CheckMode.Inferential we collect intra-expression inference sites to process before fixing any type
-	// parameters. This information is no longer needed after the call to checkExpression.
-	if inferenceContext != nil && inferenceContext.intraExpressionInferenceSites != nil {
+	// parameters. This information is no longer needed after the call to checkExpression. (No sites are collected
+	// in CheckMode.SkipContextSensitive, and arguments may be re-checked in that mode while the sites collected
+	// for the enclosing check are still in use, so we leave them alone in that case.)
+	if inferenceContext != nil && checkMode&CheckModeSkipContextSensitive == 0 && inferenceContext.intraExpressionInferenceSites != nil {
 		inferenceContext.intraExpressionInferenceSites = nil
 	}
 	// We strip literal freshness when an appropriate contextual type is present such that contextually typed
@@ -7720,6 +7734,13 @@ func (c *Checker) checkExpression(node *ast.Node) *Type {
 }
 
 func (c *Checker) checkExpressionEx(node *ast.Node, checkMode CheckMode) *Type {
+	if checkMode&CheckModeSkipContextSensitive != 0 {
+		// When arguments are re-checked to redo provisional inferences, context sensitive expressions whose
+		// types have already been determined are represented by those types rather than by wildcards.
+		if t := c.intraExpressionInferenceSiteTypes[node]; t != nil {
+			return t
+		}
+	}
 	if tr := c.tracer; tr != nil {
 		defer tr.Push(tracing.PhaseCheck, "checkExpression", map[string]any{"kind": node.Kind, "pos": node.Pos(), "end": node.End(), "path": ast.GetSourceFileOfNode(node).FileName()}, false)()
 	}
@@ -9565,14 +9586,11 @@ func (c *Checker) getEffectiveCheckNode(argument *ast.Node) *ast.Node {
 }
 
 func (c *Checker) inferTypeArguments(node *ast.Node, signature *Signature, args []*ast.Node, checkMode CheckMode, context *InferenceContext) []*Type {
-	if ast.IsJsxOpeningLikeElement(node) {
-		return c.inferJsxTypeArguments(node, signature, checkMode, context)
-	}
 	// If a contextual type is available, infer from that type to the return type of the call expression. For
 	// example, given a 'function wrap<T, U>(cb: (x: T) => U): (x: T) => U' and a call expression
 	// 'let f: (x: string) => number = wrap(s => s.length)', we infer from the declared type of 'f' to the
 	// return type of 'wrap'.
-	if !ast.IsDecorator(node) && !ast.IsBinaryExpression(node) {
+	if !ast.IsDecorator(node) && !ast.IsBinaryExpression(node) && !ast.IsJsxOpeningLikeElement(node) {
 		skipBindingPatterns := core.Every(signature.typeParameters, func(p *Type) bool { return c.getDefaultFromTypeParameter(p) != nil })
 		contextualType := c.getContextualType(node, core.IfElse(skipBindingPatterns, ContextFlagsSkipBindingPatterns, ContextFlagsNone))
 		if contextualType != nil {
@@ -9636,6 +9654,25 @@ func (c *Checker) inferTypeArguments(node *ast.Node, signature *Signature, args 
 			}
 		}
 	}
+	if checkMode&CheckModeSkipContextSensitive != 0 {
+		// Inferences made in this pass are provisional because context sensitive expressions are omitted
+		// from the argument types. We retain what is needed to infer from the arguments again once the
+		// types of some of those expressions are known (see inferFromIntraExpressionSites).
+		context.argumentInferenceState = &ArgumentInferenceState{node: node, args: args, checkMode: checkMode}
+	}
+	c.inferFromArguments(node, signature, args, checkMode, context)
+	return c.getInferredTypes(context)
+}
+
+// Check the arguments of a call-like expression with the parameter types as contextual types and infer from the
+// resulting argument types to the parameter types.
+func (c *Checker) inferFromArguments(node *ast.Node, signature *Signature, args []*ast.Node, checkMode CheckMode, context *InferenceContext) {
+	if ast.IsJsxOpeningLikeElement(node) {
+		paramType := c.getEffectiveFirstArgumentForJsxSignature(signature, node)
+		checkAttrType := c.checkExpressionWithContextualType(node.Attributes(), paramType, context, checkMode)
+		c.inferTypes(context.inferences, checkAttrType, paramType, InferencePriorityNone, false)
+		return
+	}
 	restType := c.getNonArrayRestType(signature)
 	argCount := len(args)
 	if restType != nil {
@@ -9668,7 +9705,6 @@ func (c *Checker) inferTypeArguments(node *ast.Node, signature *Signature, args 
 		spreadType := c.getSpreadArgumentType(args, argCount, len(args), restType, context, checkMode)
 		c.inferTypes(context.inferences, spreadType, restType, InferencePriorityNone, false)
 	}
-	return c.getInferredTypes(context)
 }
 
 // No signature was applicable. We have already reported the errors for the invalid signature.
@@ -10294,6 +10330,9 @@ func (c *Checker) checkFunctionExpressionOrObjectLiteralMethod(node *ast.Node, c
 		c.checkCollisionsForDeclarationName(node, node.Name())
 	}
 	if checkMode&CheckModeSkipContextSensitive != 0 && c.isContextSensitive(node) {
+		if t := c.intraExpressionInferenceSiteTypes[node]; t != nil {
+			return t
+		}
 		// Skip parameters, return signature with return type that retains noncontextual parts so inferences can still be drawn in an early stage
 		if node.Type() == nil && !ast.HasContextSensitiveParameters(node) {
 			// Return plain anyFunctionType if there is no possibility we'll make inferences from the return type
@@ -30345,7 +30384,6 @@ func (c *Checker) getContextualTypeForElementExpression(t *Type, index int, leng
 			if offset > 0 && offset <= fixedEndLength {
 				return c.getTypeArguments(t)[c.getTypeReferenceArity(t)-offset]
 			}
-			// Return a union of the possible contextual element types with no subtype reduction.
 			tupleIndex := t.TargetTupleType().fixedLength
 			if firstSpreadIndex >= 0 {
 				tupleIndex = min(tupleIndex, firstSpreadIndex)
@@ -30354,6 +30392,18 @@ func (c *Checker) getContextualTypeForElementExpression(t *Type, index int, leng
 			if length >= 0 && lastSpreadIndex >= 0 {
 				endSkipCount = min(fixedEndLength, length-lastSpreadIndex)
 			}
+			// If the index is known and the remaining part of the contextual tuple type is a single variadic element
+			// of a generic mapped type, return the contextual type for the corresponding property of the mapped type,
+			// as we would if the mapped type itself were the contextual type. (A variadic element of a non-generic
+			// type is normalized away, so this treats [...M<T>] and M<T> alike.)
+			if (firstSpreadIndex < 0 || index < firstSpreadIndex) && c.getTypeReferenceArity(t)-endSkipCount == tupleIndex+1 && t.TargetTupleType().elementInfos[tupleIndex].flags&ElementFlagsVariadic != 0 {
+				if elementType := c.getTypeArguments(t)[tupleIndex]; c.isGenericMappedType(elementType) {
+					if propType := c.getTypeOfPropertyOfContextualType(elementType, strconv.Itoa(index-tupleIndex)); propType != nil {
+						return propType
+					}
+				}
+			}
+			// Return a union of the possible contextual element types with no subtype reduction.
 			return c.getElementTypeOfSliceOfTupleType(t, tupleIndex, endSkipCount, false /*writing*/, true /*noReductions*/)
 		}
 		// If element index is known and a contextual property with that name exists, return it. Otherwise return the
