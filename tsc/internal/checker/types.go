@@ -220,6 +220,8 @@ type ReverseMappedSymbolLinks struct {
 	mappedType     *Type // References a mapped type
 	constraintType *Type // References an index type
 	refining       bool  // True while a provisional property type is being refined (see getRefinedProvisionalPropertyType)
+	refinedType    *Type // The refined property type, valid for refinedVersion
+	refinedVersion int   // The intra-expression inference site version refinedType was computed for
 }
 
 // Links for late-bound symbols

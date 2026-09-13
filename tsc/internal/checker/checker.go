@@ -274,17 +274,19 @@ const (
 // InferenceContext
 
 type InferenceContext struct {
-	inferences                    []*InferenceInfo // Inferences made for each type parameter
-	signature                     *Signature       // Generic signature for which inferences are made (if any)
-	flags                         InferenceFlags   // Inference flags
-	compareTypes                  TypeComparer     // Type comparer function
-	mapper                        *TypeMapper      // Mapper that fixes inferences
-	nonFixingMapper               *TypeMapper      // Mapper that doesn't fix inferences
-	returnMapper                  *TypeMapper      // Type mapper for inferences from return types (if any)
-	outerReturnMapper             *TypeMapper      // Type mapper for inferences from return types of outer function (if any)
-	inferredTypeParameters        []*Type          // Inferred type parameters for function result
-	intraExpressionInferenceSites []IntraExpressionInferenceSite
-	argumentCheckMode             CheckMode // Check mode of the inference pass that omitted context sensitive expressions, if there was one
+	inferences                          []*InferenceInfo // Inferences made for each type parameter
+	signature                           *Signature       // Generic signature for which inferences are made (if any)
+	flags                               InferenceFlags   // Inference flags
+	compareTypes                        TypeComparer     // Type comparer function
+	mapper                              *TypeMapper      // Mapper that fixes inferences
+	nonFixingMapper                     *TypeMapper      // Mapper that doesn't fix inferences
+	returnMapper                        *TypeMapper      // Type mapper for inferences from return types (if any)
+	outerReturnMapper                   *TypeMapper      // Type mapper for inferences from return types of outer function (if any)
+	inferredTypeParameters              []*Type          // Inferred type parameters for function result
+	intraExpressionInferenceSites       []IntraExpressionInferenceSite
+	intraExpressionInferenceSiteTypes   map[*ast.Node]*Type // The sites by node, maintained alongside the list
+	intraExpressionInferenceSiteVersion int                 // Changes whenever the sites change (see getRefinedProvisionalPropertyType)
+	argumentCheckMode                   CheckMode           // Check mode of the inference pass that omitted context sensitive expressions, if there was one
 }
 
 type InferenceInfo struct {
@@ -704,6 +706,7 @@ type Checker struct {
 	patternForType                              map[*Type]*ast.Node
 	contextFreeTypes                            map[*ast.Node]*Type
 	intraExpressionInferenceSiteTypes           map[*ast.Node]*Type // Types of intra-expression inference sites, consulted while re-checking arguments in CheckMode.SkipContextSensitive
+	intraExpressionInferenceSiteVersion         int                 // Counter for InferenceContext.intraExpressionInferenceSiteVersion
 	anyType                                     *Type
 	autoType                                    *Type
 	wildcardType                                *Type
@@ -7659,7 +7662,7 @@ func (c *Checker) checkExpressionWithContextualType(node *ast.Node, contextualTy
 	// in CheckMode.SkipContextSensitive, and parts of an argument may be re-checked in that mode while the sites
 	// collected for the enclosing check are still in use, so we leave them alone in that case.)
 	if inferenceContext != nil && checkMode&CheckModeSkipContextSensitive == 0 && inferenceContext.intraExpressionInferenceSites != nil {
-		inferenceContext.intraExpressionInferenceSites = nil
+		c.clearIntraExpressionInferenceSites(inferenceContext)
 	}
 	// We strip literal freshness when an appropriate contextual type is present such that contextually typed
 	// literals always preserve their literal types (otherwise they might widen during type inference). An alternative

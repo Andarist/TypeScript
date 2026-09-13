@@ -1019,11 +1019,12 @@ func (c *Checker) inferTypeForHomomorphicMappedType(source *Type, target *Type, 
 }
 
 func (c *Checker) createReverseMappedType(source *Type, target *Type, constraint *Type) *Type {
-	// We consider a source type reverse mappable if it has a string index signature or one or more
-	// properties. The shape of the source is inferable even when none of its property types are (for
-	// example, when every property is a context sensitive function that hasn't been checked yet), and
-	// preserving that shape keeps properties, and thus 'keyof', of the inferred type intact.
-	if !(c.getIndexInfoOfType(source, c.stringType) != nil || len(c.getPropertiesOfType(source)) != 0) {
+	// We consider a source type reverse mappable if it has a string index signature or if it has one or
+	// more properties and is either of an inferable type or an object or tuple literal. The shape of a
+	// literal is inferable even when none of its property types are (for example, when every property is
+	// a context sensitive function that hasn't been checked yet), and preserving that shape keeps the
+	// properties, and thus 'keyof', of the inferred type intact.
+	if !(c.getIndexInfoOfType(source, c.stringType) != nil || len(c.getPropertiesOfType(source)) != 0 && (source.objectFlags&ObjectFlagsNonInferrableType == 0 || isObjectLiteralType(source) || isTupleType(source))) {
 		return nil
 	}
 	// For arrays and tuples we infer new arrays and tuples where the reverse mapping has been
@@ -1214,6 +1215,10 @@ func isProvisionalReverseMappedSource(source *Type) bool {
 // Above, T is fixed when the parameter of the first 'consume' is contextually typed, before the second 'produce'
 // has been checked. When the parameter of the second 'consume' is later typed as T["b"], the recorded type of the
 // second 'produce' allows T["b"] to be inferred as number.
+//
+// The refined type is memoized against the version of the sites, so repeated requests between site additions do
+// no work, and when the property's own initializer has a site (the property has been checked completely), that
+// type is used directly.
 func (c *Checker) getRefinedProvisionalPropertyType(symbol *ast.Symbol, source *Type) *Type {
 	decl := core.FirstOrNil(symbol.Declarations)
 	if decl == nil || !(ast.IsPropertyAssignment(decl) || ast.IsMethodDeclaration(decl) || ast.IsJsxAttribute(decl)) {
@@ -1223,22 +1228,38 @@ func (c *Checker) getRefinedProvisionalPropertyType(symbol *ast.Symbol, source *
 	if n == nil || n.argumentCheckMode == 0 || len(n.intraExpressionInferenceSites) == 0 {
 		return source
 	}
-	saveSiteTypes := c.intraExpressionInferenceSiteTypes
-	c.intraExpressionInferenceSiteTypes = make(map[*ast.Node]*Type, len(n.intraExpressionInferenceSites))
-	for _, site := range n.intraExpressionInferenceSites {
-		c.intraExpressionInferenceSiteTypes[site.node] = site.t
+	reverseLinks := c.ReverseMappedSymbolLinks.Get(symbol)
+	if reverseLinks.refinedType != nil && reverseLinks.refinedVersion == n.intraExpressionInferenceSiteVersion {
+		return reverseLinks.refinedType
 	}
-	checkMode := n.argumentCheckMode | CheckModeContextual | CheckModeInferential
-	var t *Type
+	var siteNode *ast.Node
 	switch {
 	case ast.IsPropertyAssignment(decl):
-		t = c.checkPropertyAssignment(decl, checkMode)
+		siteNode = decl.Initializer()
 	case ast.IsMethodDeclaration(decl):
-		t = c.checkObjectLiteralMethod(decl, checkMode)
+		siteNode = decl
 	default:
-		t = c.checkJsxAttribute(decl, checkMode)
+		if decl.Initializer() != nil && ast.IsJsxExpression(decl.Initializer()) {
+			siteNode = decl.Initializer().Expression()
+		}
 	}
-	c.intraExpressionInferenceSiteTypes = saveSiteTypes
+	t := n.intraExpressionInferenceSiteTypes[siteNode]
+	if t == nil {
+		saveSiteTypes := c.intraExpressionInferenceSiteTypes
+		c.intraExpressionInferenceSiteTypes = n.intraExpressionInferenceSiteTypes
+		checkMode := n.argumentCheckMode | CheckModeContextual | CheckModeInferential
+		switch {
+		case ast.IsPropertyAssignment(decl):
+			t = c.checkPropertyAssignment(decl, checkMode)
+		case ast.IsMethodDeclaration(decl):
+			t = c.checkObjectLiteralMethod(decl, checkMode)
+		default:
+			t = c.checkJsxAttribute(decl, checkMode)
+		}
+		c.intraExpressionInferenceSiteTypes = saveSiteTypes
+	}
+	reverseLinks.refinedType = t
+	reverseLinks.refinedVersion = n.intraExpressionInferenceSiteVersion
 	return t
 }
 
@@ -1418,6 +1439,19 @@ func (c *Checker) newInferenceContextWorker(inferences []*InferenceInfo, signatu
 
 func (c *Checker) addIntraExpressionInferenceSite(n *InferenceContext, node *ast.Node, t *Type) {
 	n.intraExpressionInferenceSites = append(n.intraExpressionInferenceSites, IntraExpressionInferenceSite{node: node, t: t})
+	if n.intraExpressionInferenceSiteTypes == nil {
+		n.intraExpressionInferenceSiteTypes = make(map[*ast.Node]*Type)
+	}
+	n.intraExpressionInferenceSiteTypes[node] = t
+	c.intraExpressionInferenceSiteVersion++
+	n.intraExpressionInferenceSiteVersion = c.intraExpressionInferenceSiteVersion
+}
+
+func (c *Checker) clearIntraExpressionInferenceSites(n *InferenceContext) {
+	n.intraExpressionInferenceSites = nil
+	n.intraExpressionInferenceSiteTypes = nil
+	c.intraExpressionInferenceSiteVersion++
+	n.intraExpressionInferenceSiteVersion = c.intraExpressionInferenceSiteVersion
 }
 
 // We collect intra-expression inference sites within object and array literals to handle cases where
