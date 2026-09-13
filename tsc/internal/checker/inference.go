@@ -1085,12 +1085,6 @@ func (c *Checker) getReverseMappedInferencePriority(source *Type) InferencePrior
 	}
 }
 
-// An inference is provisional when its candidates were reverse mapped from sources containing non-inferable
-// types, i.e. from argument types in which context sensitive expressions are represented by wildcards.
-func isProvisionalInference(inference *InferenceInfo) bool {
-	return !inference.isFixed && inference.priority&(InferencePriorityPartialHomomorphicMappedType|InferencePriorityShapeHomomorphicMappedType) != 0
-}
-
 func (c *Checker) inferReverseMappedType(source *Type, target *Type, constraint *Type) *Type {
 	key := ReverseMappedTypeKey{sourceId: source.id, targetId: target.id, constraintId: constraint.id}
 	if cached, ok := c.reverseMappedCache[key]; ok {
@@ -1226,7 +1220,7 @@ func (c *Checker) getRefinedProvisionalPropertyType(symbol *ast.Symbol, source *
 		return source
 	}
 	n := c.getInferenceContext(decl)
-	if n == nil || n.argumentInferenceState == nil || len(n.intraExpressionInferenceSites) == 0 {
+	if n == nil || n.argumentCheckMode == 0 || len(n.intraExpressionInferenceSites) == 0 {
 		return source
 	}
 	saveSiteTypes := c.intraExpressionInferenceSiteTypes
@@ -1234,7 +1228,7 @@ func (c *Checker) getRefinedProvisionalPropertyType(symbol *ast.Symbol, source *
 	for _, site := range n.intraExpressionInferenceSites {
 		c.intraExpressionInferenceSiteTypes[site.node] = site.t
 	}
-	checkMode := n.argumentInferenceState.checkMode | CheckModeContextual | CheckModeInferential
+	checkMode := n.argumentCheckMode | CheckModeContextual | CheckModeInferential
 	var t *Type
 	switch {
 	case ast.IsPropertyAssignment(decl):
@@ -1448,20 +1442,11 @@ func (c *Checker) addIntraExpressionInferenceSite(n *InferenceContext, node *ast
 //
 // Above, the first pass infers a reverse mapped type for T from a source in which both arrow functions are
 // wildcards, so nothing is known about T['a']. The site for the first arrow function has contextual type
-// '(n: number) => T["a"]', to which no inference can be made. Instead, when provisional reverse mapped
-// inferences exist, we discard them and infer from the arguments again, this time using the types recorded
-// for the sites in place of the wildcards.
+// '(n: number) => T["a"]', to which no inference can be made. Reverse mapped types resolve their members lazily,
+// however, and the sites are retained until the enclosing argument has been checked, so the recorded types can
+// be used when a member is read (see getRefinedProvisionalPropertyType).
 func (c *Checker) inferFromIntraExpressionSites(n *InferenceContext) {
-	sites := n.intraExpressionInferenceSites
-	if len(sites) == 0 {
-		return
-	}
-	if n.argumentInferenceState != nil && !n.reinferring && core.Some(n.inferences, isProvisionalInference) {
-		n.reinferring = true
-		c.reinferFromArguments(n, sites)
-		n.reinferring = false
-	}
-	for _, site := range sites {
+	for _, site := range n.intraExpressionInferenceSites {
 		var contextualType *Type
 		if ast.IsMethodDeclaration(site.node) {
 			contextualType = c.getContextualTypeForObjectLiteralMethod(site.node, ContextFlagsNoConstraints)
@@ -1472,30 +1457,6 @@ func (c *Checker) inferFromIntraExpressionSites(n *InferenceContext) {
 			c.inferTypes(n.inferences, site.t, contextualType, InferencePriorityNone, false)
 		}
 	}
-}
-
-// Discard provisional inferences and repeat the inference pass that omits context sensitive expressions,
-// with the types recorded for intra-expression inference sites standing in for the wildcards. The sites
-// are retained (until the enclosing argument has been checked) so that the types they record remain
-// available when further type parameters are fixed.
-func (c *Checker) reinferFromArguments(n *InferenceContext, sites []IntraExpressionInferenceSite) {
-	for _, inference := range n.inferences {
-		if isProvisionalInference(inference) {
-			inference.candidates = nil
-			inference.contraCandidates = nil
-			inference.inferredType = nil
-			inference.priority = InferencePriorityMaxValue
-			inference.topLevel = true
-		}
-	}
-	saveSiteTypes := c.intraExpressionInferenceSiteTypes
-	c.intraExpressionInferenceSiteTypes = make(map[*ast.Node]*Type, len(sites))
-	for _, site := range sites {
-		c.intraExpressionInferenceSiteTypes[site.node] = site.t
-	}
-	state := n.argumentInferenceState
-	c.inferFromArguments(state.node, n.signature, state.args, state.checkMode, n)
-	c.intraExpressionInferenceSiteTypes = saveSiteTypes
 }
 
 func (c *Checker) getInferredType(n *InferenceContext, index int) *Type {

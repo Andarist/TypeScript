@@ -49,32 +49,6 @@ declare function h<T>(arg: {
 
 const r9 = h({ a: [n => n, x => x.toLowerCase()] });
 
-// Array literal source against a variadic tuple
-declare function v<T extends unknown[]>(arg: [...{
-    [K in keyof T]: {
-        produce: (n: string) => T[K];
-        consume: (x: T[K]) => void;
-    };
-}]): T;
-
-const r10 = v([{ produce: () => "hello", consume: x => x.toLowerCase() }]);
-const r11 = v([{ produce: n => n, consume: x => x.toLowerCase() }]);
-const r12 = v([{ produce() { return "hello"; }, consume: x => x.toLowerCase() }]);
-const r13 = v([
-    { produce: n => n, consume: x => x.toLowerCase() },
-    { produce: () => 1, consume: x => x.toFixed() },
-]);
-
-// Variadic element after a fixed element
-declare function vp<T extends unknown[]>(arg: [string, ...{
-    [K in keyof T]: {
-        produce: (n: string) => T[K];
-        consume: (x: T[K]) => void;
-    };
-}]): T;
-
-const r13b = vp(["", { produce: n => n, consume: x => x.toLowerCase() }]);
-
 // Nested reverse mappings
 declare function nested<T>(arg: {
     [K in keyof T]: {

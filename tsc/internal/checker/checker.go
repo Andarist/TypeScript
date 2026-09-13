@@ -284,17 +284,7 @@ type InferenceContext struct {
 	outerReturnMapper             *TypeMapper      // Type mapper for inferences from return types of outer function (if any)
 	inferredTypeParameters        []*Type          // Inferred type parameters for function result
 	intraExpressionInferenceSites []IntraExpressionInferenceSite
-	argumentInferenceState        *ArgumentInferenceState // Arguments of the first inference pass (if any), retained for re-inference
-	reinferring                   bool                    // True while inferring from the arguments again (see reinferFromArguments)
-}
-
-// The node, arguments, and check mode of the inference pass that omits context sensitive expressions
-// (CheckMode.SkipContextSensitive). Inferences made in that pass are provisional and may need to be
-// redone once the types of context sensitive expressions become known (see inferFromIntraExpressionSites).
-type ArgumentInferenceState struct {
-	node      *ast.Node
-	args      []*ast.Node
-	checkMode CheckMode
+	argumentCheckMode             CheckMode // Check mode of the inference pass that omitted context sensitive expressions, if there was one
 }
 
 type InferenceInfo struct {
@@ -7666,8 +7656,8 @@ func (c *Checker) checkExpressionWithContextualType(node *ast.Node, contextualTy
 	t := c.checkExpressionEx(node, checkMode|CheckModeContextual|core.IfElse(inferenceContext != nil, CheckModeInferential, 0))
 	// In CheckMode.Inferential we collect intra-expression inference sites to process before fixing any type
 	// parameters. This information is no longer needed after the call to checkExpression. (No sites are collected
-	// in CheckMode.SkipContextSensitive, and arguments may be re-checked in that mode while the sites collected
-	// for the enclosing check are still in use, so we leave them alone in that case.)
+	// in CheckMode.SkipContextSensitive, and parts of an argument may be re-checked in that mode while the sites
+	// collected for the enclosing check are still in use, so we leave them alone in that case.)
 	if inferenceContext != nil && checkMode&CheckModeSkipContextSensitive == 0 && inferenceContext.intraExpressionInferenceSites != nil {
 		inferenceContext.intraExpressionInferenceSites = nil
 	}
@@ -7736,8 +7726,9 @@ func (c *Checker) checkExpression(node *ast.Node) *Type {
 
 func (c *Checker) checkExpressionEx(node *ast.Node, checkMode CheckMode) *Type {
 	if checkMode&CheckModeSkipContextSensitive != 0 {
-		// When arguments are re-checked to redo provisional inferences, context sensitive expressions whose
-		// types have already been determined are represented by those types rather than by wildcards.
+		// When parts of an argument are re-checked to refine provisional reverse mapped inferences, context
+		// sensitive expressions whose types have already been determined are represented by those types
+		// rather than by wildcards (see getRefinedProvisionalPropertyType).
 		if t := c.intraExpressionInferenceSiteTypes[node]; t != nil {
 			return t
 		}
@@ -9656,23 +9647,16 @@ func (c *Checker) inferTypeArguments(node *ast.Node, signature *Signature, args 
 		}
 	}
 	if checkMode&CheckModeSkipContextSensitive != 0 {
-		// Inferences made in this pass are provisional because context sensitive expressions are omitted
-		// from the argument types. We retain what is needed to infer from the arguments again once the
-		// types of some of those expressions are known (see inferFromIntraExpressionSites).
-		context.argumentInferenceState = &ArgumentInferenceState{node: node, args: args, checkMode: checkMode}
+		// Inferences made in this pass are provisional because context sensitive expressions are omitted from
+		// the argument types. Reverse mapped types inferred in it may later be refined by checking parts of the
+		// arguments again in this mode (see getRefinedProvisionalPropertyType).
+		context.argumentCheckMode = checkMode
 	}
-	c.inferFromArguments(node, signature, args, checkMode, context)
-	return c.getInferredTypes(context)
-}
-
-// Check the arguments of a call-like expression with the parameter types as contextual types and infer from the
-// resulting argument types to the parameter types.
-func (c *Checker) inferFromArguments(node *ast.Node, signature *Signature, args []*ast.Node, checkMode CheckMode, context *InferenceContext) {
 	if ast.IsJsxOpeningLikeElement(node) {
 		paramType := c.getEffectiveFirstArgumentForJsxSignature(signature, node)
 		checkAttrType := c.checkExpressionWithContextualType(node.Attributes(), paramType, context, checkMode)
 		c.inferTypes(context.inferences, checkAttrType, paramType, InferencePriorityNone, false)
-		return
+		return c.getInferredTypes(context)
 	}
 	restType := c.getNonArrayRestType(signature)
 	argCount := len(args)
@@ -9706,6 +9690,7 @@ func (c *Checker) inferFromArguments(node *ast.Node, signature *Signature, args 
 		spreadType := c.getSpreadArgumentType(args, argCount, len(args), restType, context, checkMode)
 		c.inferTypes(context.inferences, spreadType, restType, InferencePriorityNone, false)
 	}
+	return c.getInferredTypes(context)
 }
 
 // No signature was applicable. We have already reported the errors for the invalid signature.
@@ -30407,6 +30392,7 @@ func (c *Checker) getContextualTypeForElementExpression(t *Type, index int, leng
 			if offset > 0 && offset <= fixedEndLength {
 				return c.getTypeArguments(t)[c.getTypeReferenceArity(t)-offset]
 			}
+			// Return a union of the possible contextual element types with no subtype reduction.
 			tupleIndex := t.TargetTupleType().fixedLength
 			if firstSpreadIndex >= 0 {
 				tupleIndex = min(tupleIndex, firstSpreadIndex)
@@ -30415,18 +30401,6 @@ func (c *Checker) getContextualTypeForElementExpression(t *Type, index int, leng
 			if length >= 0 && lastSpreadIndex >= 0 {
 				endSkipCount = min(fixedEndLength, length-lastSpreadIndex)
 			}
-			// If the index is known and the remaining part of the contextual tuple type is a single variadic element
-			// of a generic mapped type, return the contextual type for the corresponding property of the mapped type,
-			// as we would if the mapped type itself were the contextual type. (A variadic element of a non-generic
-			// type is normalized away, so this treats [...M<T>] and M<T> alike.)
-			if (firstSpreadIndex < 0 || index < firstSpreadIndex) && c.getTypeReferenceArity(t)-endSkipCount == tupleIndex+1 && t.TargetTupleType().elementInfos[tupleIndex].flags&ElementFlagsVariadic != 0 {
-				if elementType := c.getTypeArguments(t)[tupleIndex]; c.isGenericMappedType(elementType) {
-					if propType := c.getTypeOfPropertyOfContextualType(elementType, strconv.Itoa(index-tupleIndex)); propType != nil {
-						return propType
-					}
-				}
-			}
-			// Return a union of the possible contextual element types with no subtype reduction.
 			return c.getElementTypeOfSliceOfTupleType(t, tupleIndex, endSkipCount, false /*writing*/, true /*noReductions*/)
 		}
 		// If element index is known and a contextual property with that name exists, return it. Otherwise return the
