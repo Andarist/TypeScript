@@ -189,3 +189,56 @@ const r23 = f({
     b: { produce: n => n.length, consume: () => {} },
 });
 r23.b.toFixed();
+
+// Keys whose producers were checked earlier, read through a later key's consumer of the whole type
+declare function whole<T>(arg: {
+    [K in keyof T]: {
+        seed?: T[K];
+        produce?: (n: string) => T[K];
+        consume?: (x: T[K]) => void;
+        consumeAll?: (x: T) => void;
+    };
+}): T;
+
+const r24 = whole({
+    earlier: { produce: n => ({ value: n }) },
+    later: { produce: n => n, consumeAll: x => x.earlier.value.toLowerCase() },
+    partial: { seed: { value: "known" }, consume: x => x.value.toLowerCase() },
+    full: { seed: 123 },
+});
+r24.earlier.value.toLowerCase();
+r24.later.toLowerCase();
+r24.partial.value.toLowerCase();
+r24.full.toFixed();
+
+declare function indexed<T extends { earlier: unknown }>(arg: {
+    [K in keyof T]: {
+        produce?: (n: string) => T[K];
+        consumeEarlier?: (x: T["earlier"]) => void;
+    };
+}): T;
+
+const r25 = indexed({
+    earlier: { produce: n => ({ value: n }) },
+    later: { produce: n => n, consumeEarlier: x => x.value.toLowerCase() },
+});
+r25.earlier.value.toLowerCase();
+r25.later.toLowerCase();
+
+// A key with no producer at all stays unknown
+const r26 = whole({
+    earlier: { produce: n => ({ value: n }) },
+    later: { consumeAll: x => x.earlier.value.toLowerCase() },
+});
+r26.earlier.value.toLowerCase();
+
+declare function pairs<T>(arg: {
+    [K in keyof T]: [(n: string) => T[K], (x: T) => void];
+}): T;
+
+const r27 = pairs({
+    earlier: [n => ({ value: n }), x => {}],
+    later: [n => n, x => x.earlier.value.toLowerCase()],
+});
+r27.earlier.value.toLowerCase();
+r27.later.toLowerCase();

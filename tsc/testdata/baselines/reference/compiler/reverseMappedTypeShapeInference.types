@@ -353,6 +353,58 @@ const a2 = setup({
     },
 });
 
+// A member read while checking applicability in the first pass is not pinned to unknown
+declare function setup2<TAction extends { first?: unknown } = {}>(arg: {
+>setup2 : <TAction extends { first?: unknown; } = {}>(arg: { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; other?: (first: TAction["first"]) => void; }) => TAction
+>first : unknown
+>arg : { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; other?: (first: TAction["first"]) => void; }
+
+    actions?: {
+>actions : { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; } | undefined
+
+        [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void;
+>params : TAction[K]
+>exec : (arg: TAction) => void
+>arg : TAction
+
+    };
+    other?: (first: TAction["first"]) => void;
+>other : ((first: TAction["first"]) => void) | undefined
+>first : TAction["first"]
+
+}): TAction;
+
+const a3 = setup2({
+>a3 : { first: { count: number; }; second: { foo: string; }; }
+>setup2({    actions: {        first: (params: { count: number }, enqueue) => {},        second: (params: { foo: string }, enqueue) => {},    },    other: () => {},}) : { first: { count: number; }; second: { foo: string; }; }
+>setup2 : <TAction extends { first?: unknown; } = {}>(arg: { actions?: { [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void; }; other?: (first: TAction["first"]) => void; }) => TAction
+>{    actions: {        first: (params: { count: number }, enqueue) => {},        second: (params: { foo: string }, enqueue) => {},    },    other: () => {},} : { actions: { first: (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; }; other: () => void; }
+
+    actions: {
+>actions : { first: (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; }
+>{        first: (params: { count: number }, enqueue) => {},        second: (params: { foo: string }, enqueue) => {},    } : { first: (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; second: (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void; }
+
+        first: (params: { count: number }, enqueue) => {},
+>first : (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void
+>(params: { count: number }, enqueue) => {} : (params: { count: number; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void
+>params : { count: number; }
+>count : number
+>enqueue : (arg: { first: { count: number; }; second: { foo: string; }; }) => void
+
+        second: (params: { foo: string }, enqueue) => {},
+>second : (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void
+>(params: { foo: string }, enqueue) => {} : (params: { foo: string; }, enqueue: (arg: { first: { count: number; }; second: { foo: string; }; }) => void) => void
+>params : { foo: string; }
+>foo : string
+>enqueue : (arg: { first: { count: number; }; second: { foo: string; }; }) => void
+
+    },
+    other: () => {},
+>other : () => void
+>() => {} : () => void
+
+});
+
 declare function fns<T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}) }): T;
 >fns : <T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}); }) => T
 >arg : { [K in keyof T]: T[K] & ((arg: string) => {}); }
@@ -387,6 +439,75 @@ const f2 = fns({ a: (arg: string) => arg, b: arg => [arg] });
 >arg : string
 >[arg] : string[]
 >arg : string
+
+// The candidate satisfies a constraint that is conditional on the inferred context
+declare const createMachine3: <D extends {
+>createMachine3 : <D extends { initial: keyof D["states"]; context: D["context"] extends object ? D["context"] : object; states: { [S in keyof D["states"]]: { entry?: (context: D["context"], state: S) => void; }; }; }>(definition: IdentityObject<D>) => D
+
+    initial: keyof D["states"],
+>initial : keyof D["states"]
+
+    context: D["context"] extends object ? D["context"] : object,
+>context : D["context"] extends object ? D["context"] : object
+
+    states: {
+>states : { [S in keyof D["states"]]: { entry?: (context: D["context"], state: S) => void; }; }
+
+        [S in keyof D["states"]]: {
+            entry?: (context: D["context"], state: S) => void
+>entry : ((context: D["context"], state: S) => void) | undefined
+>context : D["context"]
+>state : S
+        }
+    }
+}>(definition: IdentityObject<D>) => D;
+>definition : IdentityObject<D>
+
+const m5 = createMachine3({
+>m5 : { initial: "a"; context: { foo: number; }; states: { a: { entry?: ((context: { foo: number; }, state: "a") => void) | undefined; }; }; }
+>createMachine3({    initial: "a",    context: { foo: 1 },    states: {        a: {            entry: (context, state) => {                context.foo.toFixed();                const currentState: "a" = state;            }        }    }}) : { initial: "a"; context: { foo: number; }; states: { a: { entry?: ((context: { foo: number; }, state: "a") => void) | undefined; }; }; }
+>createMachine3 : <D extends { initial: keyof D["states"]; context: D["context"] extends object ? D["context"] : object; states: { [S in keyof D["states"]]: { entry?: (context: D["context"], state: S) => void; }; }; }>(definition: IdentityObject<D>) => D
+>{    initial: "a",    context: { foo: 1 },    states: {        a: {            entry: (context, state) => {                context.foo.toFixed();                const currentState: "a" = state;            }        }    }} : { initial: "a"; context: { foo: number; }; states: { a: { entry: (context: { foo: number; }, state: "a") => void; }; }; }
+
+    initial: "a",
+>initial : "a"
+>"a" : "a"
+
+    context: { foo: 1 },
+>context : { foo: number; }
+>{ foo: 1 } : { foo: number; }
+>foo : number
+>1 : 1
+
+    states: {
+>states : { a: { entry: (context: { foo: number; }, state: "a") => void; }; }
+>{        a: {            entry: (context, state) => {                context.foo.toFixed();                const currentState: "a" = state;            }        }    } : { a: { entry: (context: { foo: number; }, state: "a") => void; }; }
+
+        a: {
+>a : { entry: (context: { foo: number; }, state: "a") => void; }
+>{            entry: (context, state) => {                context.foo.toFixed();                const currentState: "a" = state;            }        } : { entry: (context: { foo: number; }, state: "a") => void; }
+
+            entry: (context, state) => {
+>entry : (context: { foo: number; }, state: "a") => void
+>(context, state) => {                context.foo.toFixed();                const currentState: "a" = state;            } : (context: { foo: number; }, state: "a") => void
+>context : { foo: number; }
+>state : "a"
+
+                context.foo.toFixed();
+>context.foo.toFixed() : string
+>context.foo.toFixed : (fractionDigits?: number) => string
+>context.foo : number
+>context : { foo: number; }
+>foo : number
+>toFixed : (fractionDigits?: number) => string
+
+                const currentState: "a" = state;
+>currentState : "a"
+>state : "a"
+            }
+        }
+    }
+});
 
 // A shape-only inference is used when nothing better is available
 declare function id<T>(arg: { [K in keyof T]: T[K] }): T;

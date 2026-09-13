@@ -375,66 +375,192 @@ const a2 = setup({
     },
 });
 
+// A member read while checking applicability in the first pass is not pinned to unknown
+declare function setup2<TAction extends { first?: unknown } = {}>(arg: {
+>setup2 : Symbol(setup2, Decl(reverseMappedTypeShapeInference.ts, 114, 3))
+>TAction : Symbol(TAction, Decl(reverseMappedTypeShapeInference.ts, 117, 24))
+>first : Symbol(first, Decl(reverseMappedTypeShapeInference.ts, 117, 41))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 117, 66))
+
+    actions?: {
+>actions : Symbol(actions, Decl(reverseMappedTypeShapeInference.ts, 117, 72))
+
+        [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void;
+>K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 119, 9))
+>TAction : Symbol(TAction, Decl(reverseMappedTypeShapeInference.ts, 117, 24))
+>params : Symbol(params, Decl(reverseMappedTypeShapeInference.ts, 119, 31))
+>TAction : Symbol(TAction, Decl(reverseMappedTypeShapeInference.ts, 117, 24))
+>K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 119, 9))
+>exec : Symbol(exec, Decl(reverseMappedTypeShapeInference.ts, 119, 50))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 119, 58))
+>TAction : Symbol(TAction, Decl(reverseMappedTypeShapeInference.ts, 117, 24))
+
+    };
+    other?: (first: TAction["first"]) => void;
+>other : Symbol(other, Decl(reverseMappedTypeShapeInference.ts, 120, 6))
+>first : Symbol(first, Decl(reverseMappedTypeShapeInference.ts, 121, 13))
+>TAction : Symbol(TAction, Decl(reverseMappedTypeShapeInference.ts, 117, 24))
+
+}): TAction;
+>TAction : Symbol(TAction, Decl(reverseMappedTypeShapeInference.ts, 117, 24))
+
+const a3 = setup2({
+>a3 : Symbol(a3, Decl(reverseMappedTypeShapeInference.ts, 124, 5))
+>setup2 : Symbol(setup2, Decl(reverseMappedTypeShapeInference.ts, 114, 3))
+
+    actions: {
+>actions : Symbol(actions, Decl(reverseMappedTypeShapeInference.ts, 124, 19))
+
+        first: (params: { count: number }, enqueue) => {},
+>first : Symbol(first, Decl(reverseMappedTypeShapeInference.ts, 125, 14))
+>params : Symbol(params, Decl(reverseMappedTypeShapeInference.ts, 126, 16))
+>count : Symbol(count, Decl(reverseMappedTypeShapeInference.ts, 126, 25))
+>enqueue : Symbol(enqueue, Decl(reverseMappedTypeShapeInference.ts, 126, 42))
+
+        second: (params: { foo: string }, enqueue) => {},
+>second : Symbol(second, Decl(reverseMappedTypeShapeInference.ts, 126, 58))
+>params : Symbol(params, Decl(reverseMappedTypeShapeInference.ts, 127, 17))
+>foo : Symbol(foo, Decl(reverseMappedTypeShapeInference.ts, 127, 26))
+>enqueue : Symbol(enqueue, Decl(reverseMappedTypeShapeInference.ts, 127, 41))
+
+    },
+    other: () => {},
+>other : Symbol(other, Decl(reverseMappedTypeShapeInference.ts, 128, 6))
+
+});
+
 declare function fns<T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}) }): T;
->fns : Symbol(fns, Decl(reverseMappedTypeShapeInference.ts, 114, 3))
->T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 116, 21))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 116, 24))
->K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 116, 32))
->T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 116, 21))
->T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 116, 21))
->K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 116, 32))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 116, 56))
->T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 116, 21))
+>fns : Symbol(fns, Decl(reverseMappedTypeShapeInference.ts, 130, 3))
+>T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 132, 21))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 132, 24))
+>K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 132, 32))
+>T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 132, 21))
+>T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 132, 21))
+>K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 132, 32))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 132, 56))
+>T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 132, 21))
 
 const f1 = fns({ a: arg => arg, b: arg => [arg] });
->f1 : Symbol(f1, Decl(reverseMappedTypeShapeInference.ts, 118, 5))
->fns : Symbol(fns, Decl(reverseMappedTypeShapeInference.ts, 114, 3))
->a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 118, 16))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 118, 19))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 118, 19))
->b : Symbol(b, Decl(reverseMappedTypeShapeInference.ts, 118, 31))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 118, 34))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 118, 34))
+>f1 : Symbol(f1, Decl(reverseMappedTypeShapeInference.ts, 134, 5))
+>fns : Symbol(fns, Decl(reverseMappedTypeShapeInference.ts, 130, 3))
+>a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 134, 16))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 134, 19))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 134, 19))
+>b : Symbol(b, Decl(reverseMappedTypeShapeInference.ts, 134, 31))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 134, 34))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 134, 34))
 
 const f2 = fns({ a: (arg: string) => arg, b: arg => [arg] });
->f2 : Symbol(f2, Decl(reverseMappedTypeShapeInference.ts, 119, 5))
->fns : Symbol(fns, Decl(reverseMappedTypeShapeInference.ts, 114, 3))
->a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 119, 16))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 119, 21))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 119, 21))
->b : Symbol(b, Decl(reverseMappedTypeShapeInference.ts, 119, 41))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 119, 44))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 119, 44))
+>f2 : Symbol(f2, Decl(reverseMappedTypeShapeInference.ts, 135, 5))
+>fns : Symbol(fns, Decl(reverseMappedTypeShapeInference.ts, 130, 3))
+>a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 135, 16))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 135, 21))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 135, 21))
+>b : Symbol(b, Decl(reverseMappedTypeShapeInference.ts, 135, 41))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 135, 44))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 135, 44))
+
+// The candidate satisfies a constraint that is conditional on the inferred context
+declare const createMachine3: <D extends {
+>createMachine3 : Symbol(createMachine3, Decl(reverseMappedTypeShapeInference.ts, 138, 13))
+>D : Symbol(D, Decl(reverseMappedTypeShapeInference.ts, 138, 31))
+
+    initial: keyof D["states"],
+>initial : Symbol(initial, Decl(reverseMappedTypeShapeInference.ts, 138, 42))
+>D : Symbol(D, Decl(reverseMappedTypeShapeInference.ts, 138, 31))
+
+    context: D["context"] extends object ? D["context"] : object,
+>context : Symbol(context, Decl(reverseMappedTypeShapeInference.ts, 139, 31))
+>D : Symbol(D, Decl(reverseMappedTypeShapeInference.ts, 138, 31))
+>D : Symbol(D, Decl(reverseMappedTypeShapeInference.ts, 138, 31))
+
+    states: {
+>states : Symbol(states, Decl(reverseMappedTypeShapeInference.ts, 140, 65))
+
+        [S in keyof D["states"]]: {
+>S : Symbol(S, Decl(reverseMappedTypeShapeInference.ts, 142, 9))
+>D : Symbol(D, Decl(reverseMappedTypeShapeInference.ts, 138, 31))
+
+            entry?: (context: D["context"], state: S) => void
+>entry : Symbol(entry, Decl(reverseMappedTypeShapeInference.ts, 142, 35))
+>context : Symbol(context, Decl(reverseMappedTypeShapeInference.ts, 143, 21))
+>D : Symbol(D, Decl(reverseMappedTypeShapeInference.ts, 138, 31))
+>state : Symbol(state, Decl(reverseMappedTypeShapeInference.ts, 143, 43))
+>S : Symbol(S, Decl(reverseMappedTypeShapeInference.ts, 142, 9))
+        }
+    }
+}>(definition: IdentityObject<D>) => D;
+>definition : Symbol(definition, Decl(reverseMappedTypeShapeInference.ts, 146, 3))
+>IdentityObject : Symbol(IdentityObject, Decl(reverseMappedTypeShapeInference.ts, 9, 16))
+>D : Symbol(D, Decl(reverseMappedTypeShapeInference.ts, 138, 31))
+>D : Symbol(D, Decl(reverseMappedTypeShapeInference.ts, 138, 31))
+
+const m5 = createMachine3({
+>m5 : Symbol(m5, Decl(reverseMappedTypeShapeInference.ts, 148, 5))
+>createMachine3 : Symbol(createMachine3, Decl(reverseMappedTypeShapeInference.ts, 138, 13))
+
+    initial: "a",
+>initial : Symbol(initial, Decl(reverseMappedTypeShapeInference.ts, 148, 27))
+
+    context: { foo: 1 },
+>context : Symbol(context, Decl(reverseMappedTypeShapeInference.ts, 149, 17))
+>foo : Symbol(foo, Decl(reverseMappedTypeShapeInference.ts, 150, 14))
+
+    states: {
+>states : Symbol(states, Decl(reverseMappedTypeShapeInference.ts, 150, 24))
+
+        a: {
+>a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 151, 13))
+
+            entry: (context, state) => {
+>entry : Symbol(entry, Decl(reverseMappedTypeShapeInference.ts, 152, 12))
+>context : Symbol(context, Decl(reverseMappedTypeShapeInference.ts, 153, 20))
+>state : Symbol(state, Decl(reverseMappedTypeShapeInference.ts, 153, 28))
+
+                context.foo.toFixed();
+>context.foo.toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+>context.foo : Symbol(foo, Decl(reverseMappedTypeShapeInference.ts, 150, 14))
+>context : Symbol(context, Decl(reverseMappedTypeShapeInference.ts, 153, 20))
+>foo : Symbol(foo, Decl(reverseMappedTypeShapeInference.ts, 150, 14))
+>toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+
+                const currentState: "a" = state;
+>currentState : Symbol(currentState, Decl(reverseMappedTypeShapeInference.ts, 155, 21))
+>state : Symbol(state, Decl(reverseMappedTypeShapeInference.ts, 153, 28))
+            }
+        }
+    }
+});
 
 // A shape-only inference is used when nothing better is available
 declare function id<T>(arg: { [K in keyof T]: T[K] }): T;
->id : Symbol(id, Decl(reverseMappedTypeShapeInference.ts, 119, 61))
->T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 122, 20))
->arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 122, 23))
->K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 122, 31))
->T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 122, 20))
->T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 122, 20))
->K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 122, 31))
->T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 122, 20))
+>id : Symbol(id, Decl(reverseMappedTypeShapeInference.ts, 159, 3))
+>T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 162, 20))
+>arg : Symbol(arg, Decl(reverseMappedTypeShapeInference.ts, 162, 23))
+>K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 162, 31))
+>T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 162, 20))
+>T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 162, 20))
+>K : Symbol(K, Decl(reverseMappedTypeShapeInference.ts, 162, 31))
+>T : Symbol(T, Decl(reverseMappedTypeShapeInference.ts, 162, 20))
 
 const s1 = id({ a: { b: x => x } });
->s1 : Symbol(s1, Decl(reverseMappedTypeShapeInference.ts, 124, 5))
->id : Symbol(id, Decl(reverseMappedTypeShapeInference.ts, 119, 61))
->a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 124, 15))
->b : Symbol(b, Decl(reverseMappedTypeShapeInference.ts, 124, 20))
->x : Symbol(x, Decl(reverseMappedTypeShapeInference.ts, 124, 23))
->x : Symbol(x, Decl(reverseMappedTypeShapeInference.ts, 124, 23))
+>s1 : Symbol(s1, Decl(reverseMappedTypeShapeInference.ts, 164, 5))
+>id : Symbol(id, Decl(reverseMappedTypeShapeInference.ts, 159, 3))
+>a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 164, 15))
+>b : Symbol(b, Decl(reverseMappedTypeShapeInference.ts, 164, 20))
+>x : Symbol(x, Decl(reverseMappedTypeShapeInference.ts, 164, 23))
+>x : Symbol(x, Decl(reverseMappedTypeShapeInference.ts, 164, 23))
 
 const s2 = id({ a: [x => x] });
->s2 : Symbol(s2, Decl(reverseMappedTypeShapeInference.ts, 125, 5))
->id : Symbol(id, Decl(reverseMappedTypeShapeInference.ts, 119, 61))
->a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 125, 15))
->x : Symbol(x, Decl(reverseMappedTypeShapeInference.ts, 125, 20))
->x : Symbol(x, Decl(reverseMappedTypeShapeInference.ts, 125, 20))
+>s2 : Symbol(s2, Decl(reverseMappedTypeShapeInference.ts, 165, 5))
+>id : Symbol(id, Decl(reverseMappedTypeShapeInference.ts, 159, 3))
+>a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 165, 15))
+>x : Symbol(x, Decl(reverseMappedTypeShapeInference.ts, 165, 20))
+>x : Symbol(x, Decl(reverseMappedTypeShapeInference.ts, 165, 20))
 
 const s3 = id({ a: { m() { return 1; } } });
->s3 : Symbol(s3, Decl(reverseMappedTypeShapeInference.ts, 126, 5))
->id : Symbol(id, Decl(reverseMappedTypeShapeInference.ts, 119, 61))
->a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 126, 15))
->m : Symbol(m, Decl(reverseMappedTypeShapeInference.ts, 126, 20))
+>s3 : Symbol(s3, Decl(reverseMappedTypeShapeInference.ts, 166, 5))
+>id : Symbol(id, Decl(reverseMappedTypeShapeInference.ts, 159, 3))
+>a : Symbol(a, Decl(reverseMappedTypeShapeInference.ts, 166, 15))
+>m : Symbol(m, Decl(reverseMappedTypeShapeInference.ts, 166, 20))
 

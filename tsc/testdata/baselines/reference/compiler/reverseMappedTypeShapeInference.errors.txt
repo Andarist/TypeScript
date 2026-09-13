@@ -1,7 +1,7 @@
 reverseMappedTypeShapeInference.ts(92,15): error TS2741: Property 'key' is missing in type '{ click: (e: { x: number; }) => number; }' but required in type '{ click: (e: { x: number; }) => void; key: (e: unknown) => void; }'.
 reverseMappedTypeShapeInference.ts(92,60): error TS7006: Parameter 'k' implicitly has an 'any' type.
-reverseMappedTypeShapeInference.ts(125,25): error TS7006: Parameter 'x' implicitly has an 'any' type.
-reverseMappedTypeShapeInference.ts(126,21): error TS7006: Parameter 'x' implicitly has an 'any' type.
+reverseMappedTypeShapeInference.ts(165,25): error TS7006: Parameter 'x' implicitly has an 'any' type.
+reverseMappedTypeShapeInference.ts(166,21): error TS7006: Parameter 'x' implicitly has an 'any' type.
 
 
 ==== reverseMappedTypeShapeInference.ts (4 errors) ====
@@ -126,10 +126,50 @@ reverseMappedTypeShapeInference.ts(126,21): error TS7006: Parameter 'x' implicit
         },
     });
     
+    // A member read while checking applicability in the first pass is not pinned to unknown
+    declare function setup2<TAction extends { first?: unknown } = {}>(arg: {
+        actions?: {
+            [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void;
+        };
+        other?: (first: TAction["first"]) => void;
+    }): TAction;
+    
+    const a3 = setup2({
+        actions: {
+            first: (params: { count: number }, enqueue) => {},
+            second: (params: { foo: string }, enqueue) => {},
+        },
+        other: () => {},
+    });
+    
     declare function fns<T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}) }): T;
     
     const f1 = fns({ a: arg => arg, b: arg => [arg] });
     const f2 = fns({ a: (arg: string) => arg, b: arg => [arg] });
+    
+    // The candidate satisfies a constraint that is conditional on the inferred context
+    declare const createMachine3: <D extends {
+        initial: keyof D["states"],
+        context: D["context"] extends object ? D["context"] : object,
+        states: {
+            [S in keyof D["states"]]: {
+                entry?: (context: D["context"], state: S) => void
+            }
+        }
+    }>(definition: IdentityObject<D>) => D;
+    
+    const m5 = createMachine3({
+        initial: "a",
+        context: { foo: 1 },
+        states: {
+            a: {
+                entry: (context, state) => {
+                    context.foo.toFixed();
+                    const currentState: "a" = state;
+                }
+            }
+        }
+    });
     
     // A shape-only inference is used when nothing better is available
     declare function id<T>(arg: { [K in keyof T]: T[K] }): T;

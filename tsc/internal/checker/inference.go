@@ -964,7 +964,7 @@ func (c *Checker) inferToMappedType(n *InferenceState, source *Type, target *Typ
 				// The type parameter may have been fixed to a reverse mapped type of a provisional source, i.e. one
 				// in which context sensitive expressions were still omitted. If the source now flowing through is
 				// the complete type of the same expression, complete the reverse mapped type from it.
-				c.completeProvisionalReverseMappedType(inference.inferredType, source)
+				c.completeProvisionalReverseMappedInference(inference, source)
 			} else if inferredType := c.inferTypeForHomomorphicMappedType(source, target, constraintType); inferredType != nil {
 				// We assign a lower priority to inferences made from types containing non-inferrable
 				// types because we may only have a partial result (i.e. we may have failed to make
@@ -1176,15 +1176,20 @@ func (c *Checker) getTypeOfReverseMappedSymbol(symbol *ast.Symbol) *Type {
 		reverseLinks := c.ReverseMappedSymbolLinks.Get(symbol)
 		source := reverseLinks.propertyType
 		if isProvisionalReverseMappedSource(source) {
-			if reverseLinks.refining {
-				// A request for the type made while refining its source (for example, for the contextual type of a
-				// function within the property) sees the unrefined type. It isn't cached, so the refined type is
-				// what every later request sees.
+			// A request made while refining the source (for example, for the contextual type of a function within
+			// the property) sees the unrefined source.
+			if !reverseLinks.refining {
+				reverseLinks.refining = true
+				source = c.getRefinedProvisionalPropertyType(symbol, source)
+				reverseLinks.refining = false
+			}
+			if isProvisionalReverseMappedSource(source) {
+				// The type of a property whose source is still provisional is itself provisional and is not cached:
+				// it reflects what is known at the time of the request, until the reverse mapped type is completed
+				// from the checked argument (see completeProvisionalReverseMappedType). Otherwise a request made
+				// early, for example while checking applicability in the first inference pass, would pin the type.
 				return core.OrElse(c.inferReverseMappedType(source, reverseLinks.mappedType, reverseLinks.constraintType), c.unknownType)
 			}
-			reverseLinks.refining = true
-			source = c.getRefinedProvisionalPropertyType(symbol, source)
-			reverseLinks.refining = false
 		}
 		links.resolvedType = core.OrElse(c.inferReverseMappedType(source, reverseLinks.mappedType, reverseLinks.constraintType), c.unknownType)
 	}
@@ -1243,11 +1248,20 @@ func (c *Checker) getRefinedProvisionalPropertyType(symbol *ast.Symbol, source *
 	return t
 }
 
-// Once the complete type of an argument (with every context sensitive expression checked) is inferred from, a
-// reverse mapped type of a provisional type of the same expression is completed from it: members not yet resolved
-// take their source from the complete type, and resolved members that are themselves reverse mapped types of
-// provisional sources are completed recursively. Members that were already resolved are left unchanged, so types
-// that were derived from them remain consistent.
+// Once the complete type of an argument (with every context sensitive expression checked) is inferred from for a
+// type parameter that is already fixed, the reverse mapped types of provisional types of the same expression among
+// the inference's candidates (one of which is usually the inferred type itself, unless the constraint was chosen
+// instead) are completed from it.
+func (c *Checker) completeProvisionalReverseMappedInference(inference *InferenceInfo, complete *Type) {
+	c.completeProvisionalReverseMappedType(inference.inferredType, complete)
+	for _, candidate := range inference.candidates {
+		c.completeProvisionalReverseMappedType(candidate, complete)
+	}
+}
+
+// Members of a reverse mapped type of a provisional source whose own sources are provisional take their source
+// from the complete type. A nested reverse mapped type already obtained from a provisional member is completed
+// recursively, so that types derived from it remain consistent with the completed one.
 func (c *Checker) completeProvisionalReverseMappedType(t *Type, complete *Type) {
 	if t == nil || t.objectFlags&ObjectFlagsReverseMapped == 0 {
 		return
@@ -1261,16 +1275,19 @@ func (c *Checker) completeProvisionalReverseMappedType(t *Type, complete *Type) 
 		return
 	}
 	for _, prop := range c.getPropertiesOfType(t) {
+		reverseLinks := c.ReverseMappedSymbolLinks.Get(prop)
+		if !isProvisionalReverseMappedSource(reverseLinks.propertyType) {
+			continue
+		}
 		completeProp := c.getPropertyOfType(complete, prop.Name)
 		if completeProp == nil {
 			continue
 		}
-		links := c.valueSymbolLinks.Get(prop)
-		if links.resolvedType == nil {
-			c.ReverseMappedSymbolLinks.Get(prop).propertyType = c.getTypeOfSymbol(completeProp)
-		} else {
-			c.completeProvisionalReverseMappedType(links.resolvedType, c.getTypeOfSymbol(completeProp))
+		completeType := c.getTypeOfSymbol(completeProp)
+		if nested := c.inferReverseMappedType(reverseLinks.propertyType, reverseLinks.mappedType, reverseLinks.constraintType); nested != nil {
+			c.completeProvisionalReverseMappedType(nested, completeType)
 		}
+		reverseLinks.propertyType = completeType
 	}
 }
 

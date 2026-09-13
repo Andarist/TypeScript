@@ -893,3 +893,272 @@ r23.b.toFixed();
 >b : Symbol(b, Decl(intraExpressionInferencesReverseMapped.ts, 184, 58))
 >toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
 
+// Keys whose producers were checked earlier, read through a later key's consumer of the whole type
+declare function whole<T>(arg: {
+>whole : Symbol(whole, Decl(intraExpressionInferencesReverseMapped.ts, 187, 16))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 190, 23))
+>arg : Symbol(arg, Decl(intraExpressionInferencesReverseMapped.ts, 190, 26))
+
+    [K in keyof T]: {
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMapped.ts, 191, 5))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 190, 23))
+
+        seed?: T[K];
+>seed : Symbol(seed, Decl(intraExpressionInferencesReverseMapped.ts, 191, 21))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 190, 23))
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMapped.ts, 191, 5))
+
+        produce?: (n: string) => T[K];
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMapped.ts, 192, 20))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 193, 19))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 190, 23))
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMapped.ts, 191, 5))
+
+        consume?: (x: T[K]) => void;
+>consume : Symbol(consume, Decl(intraExpressionInferencesReverseMapped.ts, 193, 38))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 194, 19))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 190, 23))
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMapped.ts, 191, 5))
+
+        consumeAll?: (x: T) => void;
+>consumeAll : Symbol(consumeAll, Decl(intraExpressionInferencesReverseMapped.ts, 194, 36))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 195, 22))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 190, 23))
+
+    };
+}): T;
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 190, 23))
+
+const r24 = whole({
+>r24 : Symbol(r24, Decl(intraExpressionInferencesReverseMapped.ts, 199, 5))
+>whole : Symbol(whole, Decl(intraExpressionInferencesReverseMapped.ts, 187, 16))
+
+    earlier: { produce: n => ({ value: n }) },
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 199, 19))
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMapped.ts, 200, 14))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 200, 23))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 200, 31))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 200, 23))
+
+    later: { produce: n => n, consumeAll: x => x.earlier.value.toLowerCase() },
+>later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 200, 46))
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMapped.ts, 201, 12))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 201, 21))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 201, 21))
+>consumeAll : Symbol(consumeAll, Decl(intraExpressionInferencesReverseMapped.ts, 201, 29))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 201, 41))
+>x.earlier.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>x.earlier.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 200, 31))
+>x.earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 199, 19))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 201, 41))
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 199, 19))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 200, 31))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+    partial: { seed: { value: "known" }, consume: x => x.value.toLowerCase() },
+>partial : Symbol(partial, Decl(intraExpressionInferencesReverseMapped.ts, 201, 79))
+>seed : Symbol(seed, Decl(intraExpressionInferencesReverseMapped.ts, 202, 14))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 202, 22))
+>consume : Symbol(consume, Decl(intraExpressionInferencesReverseMapped.ts, 202, 40))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 202, 49))
+>x.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>x.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 202, 22))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 202, 49))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 202, 22))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+    full: { seed: 123 },
+>full : Symbol(full, Decl(intraExpressionInferencesReverseMapped.ts, 202, 79))
+>seed : Symbol(seed, Decl(intraExpressionInferencesReverseMapped.ts, 203, 11))
+
+});
+r24.earlier.value.toLowerCase();
+>r24.earlier.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>r24.earlier.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 200, 31))
+>r24.earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 199, 19))
+>r24 : Symbol(r24, Decl(intraExpressionInferencesReverseMapped.ts, 199, 5))
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 199, 19))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 200, 31))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+r24.later.toLowerCase();
+>r24.later.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>r24.later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 200, 46))
+>r24 : Symbol(r24, Decl(intraExpressionInferencesReverseMapped.ts, 199, 5))
+>later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 200, 46))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+r24.partial.value.toLowerCase();
+>r24.partial.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>r24.partial.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 202, 22))
+>r24.partial : Symbol(partial, Decl(intraExpressionInferencesReverseMapped.ts, 201, 79))
+>r24 : Symbol(r24, Decl(intraExpressionInferencesReverseMapped.ts, 199, 5))
+>partial : Symbol(partial, Decl(intraExpressionInferencesReverseMapped.ts, 201, 79))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 202, 22))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+r24.full.toFixed();
+>r24.full.toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+>r24.full : Symbol(full, Decl(intraExpressionInferencesReverseMapped.ts, 202, 79))
+>r24 : Symbol(r24, Decl(intraExpressionInferencesReverseMapped.ts, 199, 5))
+>full : Symbol(full, Decl(intraExpressionInferencesReverseMapped.ts, 202, 79))
+>toFixed : Symbol(Number.toFixed, Decl(lib.es5.d.ts, --, --))
+
+declare function indexed<T extends { earlier: unknown }>(arg: {
+>indexed : Symbol(indexed, Decl(intraExpressionInferencesReverseMapped.ts, 208, 19))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 210, 25))
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 210, 36))
+>arg : Symbol(arg, Decl(intraExpressionInferencesReverseMapped.ts, 210, 57))
+
+    [K in keyof T]: {
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMapped.ts, 211, 5))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 210, 25))
+
+        produce?: (n: string) => T[K];
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMapped.ts, 211, 21))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 212, 19))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 210, 25))
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMapped.ts, 211, 5))
+
+        consumeEarlier?: (x: T["earlier"]) => void;
+>consumeEarlier : Symbol(consumeEarlier, Decl(intraExpressionInferencesReverseMapped.ts, 212, 38))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 213, 26))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 210, 25))
+
+    };
+}): T;
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 210, 25))
+
+const r25 = indexed({
+>r25 : Symbol(r25, Decl(intraExpressionInferencesReverseMapped.ts, 217, 5))
+>indexed : Symbol(indexed, Decl(intraExpressionInferencesReverseMapped.ts, 208, 19))
+
+    earlier: { produce: n => ({ value: n }) },
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 217, 21))
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMapped.ts, 218, 14))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 218, 23))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 218, 31))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 218, 23))
+
+    later: { produce: n => n, consumeEarlier: x => x.value.toLowerCase() },
+>later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 218, 46))
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMapped.ts, 219, 12))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 219, 21))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 219, 21))
+>consumeEarlier : Symbol(consumeEarlier, Decl(intraExpressionInferencesReverseMapped.ts, 219, 29))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 219, 45))
+>x.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>x.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 218, 31))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 219, 45))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 218, 31))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+});
+r25.earlier.value.toLowerCase();
+>r25.earlier.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>r25.earlier.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 218, 31))
+>r25.earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 217, 21))
+>r25 : Symbol(r25, Decl(intraExpressionInferencesReverseMapped.ts, 217, 5))
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 217, 21))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 218, 31))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+r25.later.toLowerCase();
+>r25.later.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>r25.later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 218, 46))
+>r25 : Symbol(r25, Decl(intraExpressionInferencesReverseMapped.ts, 217, 5))
+>later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 218, 46))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+// A key with no producer at all stays unknown
+const r26 = whole({
+>r26 : Symbol(r26, Decl(intraExpressionInferencesReverseMapped.ts, 225, 5))
+>whole : Symbol(whole, Decl(intraExpressionInferencesReverseMapped.ts, 187, 16))
+
+    earlier: { produce: n => ({ value: n }) },
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 225, 19))
+>produce : Symbol(produce, Decl(intraExpressionInferencesReverseMapped.ts, 226, 14))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 226, 23))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 226, 31))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 226, 23))
+
+    later: { consumeAll: x => x.earlier.value.toLowerCase() },
+>later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 226, 46))
+>consumeAll : Symbol(consumeAll, Decl(intraExpressionInferencesReverseMapped.ts, 227, 12))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 227, 24))
+>x.earlier.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>x.earlier.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 226, 31))
+>x.earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 225, 19))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 227, 24))
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 225, 19))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 226, 31))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+});
+r26.earlier.value.toLowerCase();
+>r26.earlier.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>r26.earlier.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 226, 31))
+>r26.earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 225, 19))
+>r26 : Symbol(r26, Decl(intraExpressionInferencesReverseMapped.ts, 225, 5))
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 225, 19))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 226, 31))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+declare function pairs<T>(arg: {
+>pairs : Symbol(pairs, Decl(intraExpressionInferencesReverseMapped.ts, 229, 32))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 231, 23))
+>arg : Symbol(arg, Decl(intraExpressionInferencesReverseMapped.ts, 231, 26))
+
+    [K in keyof T]: [(n: string) => T[K], (x: T) => void];
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMapped.ts, 232, 5))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 231, 23))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 232, 22))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 231, 23))
+>K : Symbol(K, Decl(intraExpressionInferencesReverseMapped.ts, 232, 5))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 232, 43))
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 231, 23))
+
+}): T;
+>T : Symbol(T, Decl(intraExpressionInferencesReverseMapped.ts, 231, 23))
+
+const r27 = pairs({
+>r27 : Symbol(r27, Decl(intraExpressionInferencesReverseMapped.ts, 235, 5))
+>pairs : Symbol(pairs, Decl(intraExpressionInferencesReverseMapped.ts, 229, 32))
+
+    earlier: [n => ({ value: n }), x => {}],
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 235, 19))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 236, 14))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 236, 21))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 236, 14))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 236, 34))
+
+    later: [n => n, x => x.earlier.value.toLowerCase()],
+>later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 236, 44))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 237, 12))
+>n : Symbol(n, Decl(intraExpressionInferencesReverseMapped.ts, 237, 12))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 237, 19))
+>x.earlier.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>x.earlier.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 236, 21))
+>x.earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 235, 19))
+>x : Symbol(x, Decl(intraExpressionInferencesReverseMapped.ts, 237, 19))
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 235, 19))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 236, 21))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+});
+r27.earlier.value.toLowerCase();
+>r27.earlier.value.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>r27.earlier.value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 236, 21))
+>r27.earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 235, 19))
+>r27 : Symbol(r27, Decl(intraExpressionInferencesReverseMapped.ts, 235, 5))
+>earlier : Symbol(earlier, Decl(intraExpressionInferencesReverseMapped.ts, 235, 19))
+>value : Symbol(value, Decl(intraExpressionInferencesReverseMapped.ts, 236, 21))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+
+r27.later.toLowerCase();
+>r27.later.toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+>r27.later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 236, 44))
+>r27 : Symbol(r27, Decl(intraExpressionInferencesReverseMapped.ts, 235, 5))
+>later : Symbol(later, Decl(intraExpressionInferencesReverseMapped.ts, 236, 44))
+>toLowerCase : Symbol(String.toLowerCase, Decl(lib.es5.d.ts, --, --))
+

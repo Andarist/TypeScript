@@ -117,10 +117,50 @@ const a2 = setup({
     },
 });
 
+// A member read while checking applicability in the first pass is not pinned to unknown
+declare function setup2<TAction extends { first?: unknown } = {}>(arg: {
+    actions?: {
+        [K in keyof TAction]: (params: TAction[K], exec: (arg: TAction) => void) => void;
+    };
+    other?: (first: TAction["first"]) => void;
+}): TAction;
+
+const a3 = setup2({
+    actions: {
+        first: (params: { count: number }, enqueue) => {},
+        second: (params: { foo: string }, enqueue) => {},
+    },
+    other: () => {},
+});
+
 declare function fns<T>(arg: { [K in keyof T]: T[K] & ((arg: string) => {}) }): T;
 
 const f1 = fns({ a: arg => arg, b: arg => [arg] });
 const f2 = fns({ a: (arg: string) => arg, b: arg => [arg] });
+
+// The candidate satisfies a constraint that is conditional on the inferred context
+declare const createMachine3: <D extends {
+    initial: keyof D["states"],
+    context: D["context"] extends object ? D["context"] : object,
+    states: {
+        [S in keyof D["states"]]: {
+            entry?: (context: D["context"], state: S) => void
+        }
+    }
+}>(definition: IdentityObject<D>) => D;
+
+const m5 = createMachine3({
+    initial: "a",
+    context: { foo: 1 },
+    states: {
+        a: {
+            entry: (context, state) => {
+                context.foo.toFixed();
+                const currentState: "a" = state;
+            }
+        }
+    }
+});
 
 // A shape-only inference is used when nothing better is available
 declare function id<T>(arg: { [K in keyof T]: T[K] }): T;

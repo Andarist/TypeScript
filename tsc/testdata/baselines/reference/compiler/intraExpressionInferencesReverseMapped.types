@@ -979,3 +979,301 @@ r23.b.toFixed();
 >b : number
 >toFixed : (fractionDigits?: number) => string
 
+// Keys whose producers were checked earlier, read through a later key's consumer of the whole type
+declare function whole<T>(arg: {
+>whole : <T>(arg: { [K in keyof T]: { seed?: T[K]; produce?: (n: string) => T[K]; consume?: (x: T[K]) => void; consumeAll?: (x: T) => void; }; }) => T
+>arg : { [K in keyof T]: { seed?: T[K]; produce?: (n: string) => T[K]; consume?: (x: T[K]) => void; consumeAll?: (x: T) => void; }; }
+
+    [K in keyof T]: {
+        seed?: T[K];
+>seed : T[K] | undefined
+
+        produce?: (n: string) => T[K];
+>produce : ((n: string) => T[K]) | undefined
+>n : string
+
+        consume?: (x: T[K]) => void;
+>consume : ((x: T[K]) => void) | undefined
+>x : T[K]
+
+        consumeAll?: (x: T) => void;
+>consumeAll : ((x: T) => void) | undefined
+>x : T
+
+    };
+}): T;
+
+const r24 = whole({
+>r24 : { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }
+>whole({    earlier: { produce: n => ({ value: n }) },    later: { produce: n => n, consumeAll: x => x.earlier.value.toLowerCase() },    partial: { seed: { value: "known" }, consume: x => x.value.toLowerCase() },    full: { seed: 123 },}) : { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }
+>whole : <T>(arg: { [K in keyof T]: { seed?: T[K]; produce?: (n: string) => T[K]; consume?: (x: T[K]) => void; consumeAll?: (x: T) => void; }; }) => T
+>{    earlier: { produce: n => ({ value: n }) },    later: { produce: n => n, consumeAll: x => x.earlier.value.toLowerCase() },    partial: { seed: { value: "known" }, consume: x => x.value.toLowerCase() },    full: { seed: 123 },} : { earlier: { produce: (n: string) => { value: string; }; }; later: { produce: (n: string) => string; consumeAll: (x: { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }) => string; }; partial: { seed: { value: string; }; consume: (x: { value: string; }) => string; }; full: { seed: number; }; }
+
+    earlier: { produce: n => ({ value: n }) },
+>earlier : { produce: (n: string) => { value: string; }; }
+>{ produce: n => ({ value: n }) } : { produce: (n: string) => { value: string; }; }
+>produce : (n: string) => { value: string; }
+>n => ({ value: n }) : (n: string) => { value: string; }
+>n : string
+>({ value: n }) : { value: string; }
+>{ value: n } : { value: string; }
+>value : string
+>n : string
+
+    later: { produce: n => n, consumeAll: x => x.earlier.value.toLowerCase() },
+>later : { produce: (n: string) => string; consumeAll: (x: { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }) => string; }
+>{ produce: n => n, consumeAll: x => x.earlier.value.toLowerCase() } : { produce: (n: string) => string; consumeAll: (x: { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }) => string; }
+>produce : (n: string) => string
+>n => n : (n: string) => string
+>n : string
+>n : string
+>consumeAll : (x: { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }) => string
+>x => x.earlier.value.toLowerCase() : (x: { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }) => string
+>x : { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }
+>x.earlier.value.toLowerCase() : string
+>x.earlier.value.toLowerCase : () => string
+>x.earlier.value : string
+>x.earlier : { value: string; }
+>x : { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }
+>earlier : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+    partial: { seed: { value: "known" }, consume: x => x.value.toLowerCase() },
+>partial : { seed: { value: string; }; consume: (x: { value: string; }) => string; }
+>{ seed: { value: "known" }, consume: x => x.value.toLowerCase() } : { seed: { value: string; }; consume: (x: { value: string; }) => string; }
+>seed : { value: string; }
+>{ value: "known" } : { value: string; }
+>value : string
+>"known" : "known"
+>consume : (x: { value: string; }) => string
+>x => x.value.toLowerCase() : (x: { value: string; }) => string
+>x : { value: string; }
+>x.value.toLowerCase() : string
+>x.value.toLowerCase : () => string
+>x.value : string
+>x : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+    full: { seed: 123 },
+>full : { seed: number; }
+>{ seed: 123 } : { seed: number; }
+>seed : number
+>123 : 123
+
+});
+r24.earlier.value.toLowerCase();
+>r24.earlier.value.toLowerCase() : string
+>r24.earlier.value.toLowerCase : () => string
+>r24.earlier.value : string
+>r24.earlier : { value: string; }
+>r24 : { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }
+>earlier : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+r24.later.toLowerCase();
+>r24.later.toLowerCase() : string
+>r24.later.toLowerCase : () => string
+>r24.later : string
+>r24 : { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }
+>later : string
+>toLowerCase : () => string
+
+r24.partial.value.toLowerCase();
+>r24.partial.value.toLowerCase() : string
+>r24.partial.value.toLowerCase : () => string
+>r24.partial.value : string
+>r24.partial : { value: string; }
+>r24 : { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }
+>partial : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+r24.full.toFixed();
+>r24.full.toFixed() : string
+>r24.full.toFixed : (fractionDigits?: number) => string
+>r24.full : number
+>r24 : { earlier: { value: string; }; later: string; partial: { value: string; }; full: number; }
+>full : number
+>toFixed : (fractionDigits?: number) => string
+
+declare function indexed<T extends { earlier: unknown }>(arg: {
+>indexed : <T extends { earlier: unknown; }>(arg: { [K in keyof T]: { produce?: (n: string) => T[K]; consumeEarlier?: (x: T["earlier"]) => void; }; }) => T
+>earlier : unknown
+>arg : { [K in keyof T]: { produce?: (n: string) => T[K]; consumeEarlier?: (x: T["earlier"]) => void; }; }
+
+    [K in keyof T]: {
+        produce?: (n: string) => T[K];
+>produce : ((n: string) => T[K]) | undefined
+>n : string
+
+        consumeEarlier?: (x: T["earlier"]) => void;
+>consumeEarlier : ((x: T["earlier"]) => void) | undefined
+>x : T["earlier"]
+
+    };
+}): T;
+
+const r25 = indexed({
+>r25 : { earlier: { value: string; }; later: string; }
+>indexed({    earlier: { produce: n => ({ value: n }) },    later: { produce: n => n, consumeEarlier: x => x.value.toLowerCase() },}) : { earlier: { value: string; }; later: string; }
+>indexed : <T extends { earlier: unknown; }>(arg: { [K in keyof T]: { produce?: (n: string) => T[K]; consumeEarlier?: (x: T["earlier"]) => void; }; }) => T
+>{    earlier: { produce: n => ({ value: n }) },    later: { produce: n => n, consumeEarlier: x => x.value.toLowerCase() },} : { earlier: { produce: (n: string) => { value: string; }; }; later: { produce: (n: string) => string; consumeEarlier: (x: { value: string; }) => string; }; }
+
+    earlier: { produce: n => ({ value: n }) },
+>earlier : { produce: (n: string) => { value: string; }; }
+>{ produce: n => ({ value: n }) } : { produce: (n: string) => { value: string; }; }
+>produce : (n: string) => { value: string; }
+>n => ({ value: n }) : (n: string) => { value: string; }
+>n : string
+>({ value: n }) : { value: string; }
+>{ value: n } : { value: string; }
+>value : string
+>n : string
+
+    later: { produce: n => n, consumeEarlier: x => x.value.toLowerCase() },
+>later : { produce: (n: string) => string; consumeEarlier: (x: { value: string; }) => string; }
+>{ produce: n => n, consumeEarlier: x => x.value.toLowerCase() } : { produce: (n: string) => string; consumeEarlier: (x: { value: string; }) => string; }
+>produce : (n: string) => string
+>n => n : (n: string) => string
+>n : string
+>n : string
+>consumeEarlier : (x: { value: string; }) => string
+>x => x.value.toLowerCase() : (x: { value: string; }) => string
+>x : { value: string; }
+>x.value.toLowerCase() : string
+>x.value.toLowerCase : () => string
+>x.value : string
+>x : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+});
+r25.earlier.value.toLowerCase();
+>r25.earlier.value.toLowerCase() : string
+>r25.earlier.value.toLowerCase : () => string
+>r25.earlier.value : string
+>r25.earlier : { value: string; }
+>r25 : { earlier: { value: string; }; later: string; }
+>earlier : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+r25.later.toLowerCase();
+>r25.later.toLowerCase() : string
+>r25.later.toLowerCase : () => string
+>r25.later : string
+>r25 : { earlier: { value: string; }; later: string; }
+>later : string
+>toLowerCase : () => string
+
+// A key with no producer at all stays unknown
+const r26 = whole({
+>r26 : { earlier: { value: string; }; later: unknown; }
+>whole({    earlier: { produce: n => ({ value: n }) },    later: { consumeAll: x => x.earlier.value.toLowerCase() },}) : { earlier: { value: string; }; later: unknown; }
+>whole : <T>(arg: { [K in keyof T]: { seed?: T[K]; produce?: (n: string) => T[K]; consume?: (x: T[K]) => void; consumeAll?: (x: T) => void; }; }) => T
+>{    earlier: { produce: n => ({ value: n }) },    later: { consumeAll: x => x.earlier.value.toLowerCase() },} : { earlier: { produce: (n: string) => { value: string; }; }; later: { consumeAll: (x: { earlier: { value: string; }; later: unknown; }) => string; }; }
+
+    earlier: { produce: n => ({ value: n }) },
+>earlier : { produce: (n: string) => { value: string; }; }
+>{ produce: n => ({ value: n }) } : { produce: (n: string) => { value: string; }; }
+>produce : (n: string) => { value: string; }
+>n => ({ value: n }) : (n: string) => { value: string; }
+>n : string
+>({ value: n }) : { value: string; }
+>{ value: n } : { value: string; }
+>value : string
+>n : string
+
+    later: { consumeAll: x => x.earlier.value.toLowerCase() },
+>later : { consumeAll: (x: { earlier: { value: string; }; later: unknown; }) => string; }
+>{ consumeAll: x => x.earlier.value.toLowerCase() } : { consumeAll: (x: { earlier: { value: string; }; later: unknown; }) => string; }
+>consumeAll : (x: { earlier: { value: string; }; later: unknown; }) => string
+>x => x.earlier.value.toLowerCase() : (x: { earlier: { value: string; }; later: unknown; }) => string
+>x : { earlier: { value: string; }; later: unknown; }
+>x.earlier.value.toLowerCase() : string
+>x.earlier.value.toLowerCase : () => string
+>x.earlier.value : string
+>x.earlier : { value: string; }
+>x : { earlier: { value: string; }; later: unknown; }
+>earlier : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+});
+r26.earlier.value.toLowerCase();
+>r26.earlier.value.toLowerCase() : string
+>r26.earlier.value.toLowerCase : () => string
+>r26.earlier.value : string
+>r26.earlier : { value: string; }
+>r26 : { earlier: { value: string; }; later: unknown; }
+>earlier : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+declare function pairs<T>(arg: {
+>pairs : <T>(arg: { [K in keyof T]: [(n: string) => T[K], (x: T) => void]; }) => T
+>arg : { [K in keyof T]: [(n: string) => T[K], (x: T) => void]; }
+
+    [K in keyof T]: [(n: string) => T[K], (x: T) => void];
+>n : string
+>x : T
+
+}): T;
+
+const r27 = pairs({
+>r27 : { earlier: { value: string; }; later: string; }
+>pairs({    earlier: [n => ({ value: n }), x => {}],    later: [n => n, x => x.earlier.value.toLowerCase()],}) : { earlier: { value: string; }; later: string; }
+>pairs : <T>(arg: { [K in keyof T]: [(n: string) => T[K], (x: T) => void]; }) => T
+>{    earlier: [n => ({ value: n }), x => {}],    later: [n => n, x => x.earlier.value.toLowerCase()],} : { earlier: [(n: string) => { value: string; }, (x: { earlier: { value: string; }; later: string; }) => void]; later: [(n: string) => string, (x: { earlier: { value: string; }; later: string; }) => string]; }
+
+    earlier: [n => ({ value: n }), x => {}],
+>earlier : [(n: string) => { value: string; }, (x: { earlier: { value: string; }; later: string; }) => void]
+>[n => ({ value: n }), x => {}] : [(n: string) => { value: string; }, (x: { earlier: { value: string; }; later: string; }) => void]
+>n => ({ value: n }) : (n: string) => { value: string; }
+>n : string
+>({ value: n }) : { value: string; }
+>{ value: n } : { value: string; }
+>value : string
+>n : string
+>x => {} : (x: { earlier: { value: string; }; later: string; }) => void
+>x : { earlier: { value: string; }; later: string; }
+
+    later: [n => n, x => x.earlier.value.toLowerCase()],
+>later : [(n: string) => string, (x: { earlier: { value: string; }; later: string; }) => string]
+>[n => n, x => x.earlier.value.toLowerCase()] : [(n: string) => string, (x: { earlier: { value: string; }; later: string; }) => string]
+>n => n : (n: string) => string
+>n : string
+>n : string
+>x => x.earlier.value.toLowerCase() : (x: { earlier: { value: string; }; later: string; }) => string
+>x : { earlier: { value: string; }; later: string; }
+>x.earlier.value.toLowerCase() : string
+>x.earlier.value.toLowerCase : () => string
+>x.earlier.value : string
+>x.earlier : { value: string; }
+>x : { earlier: { value: string; }; later: string; }
+>earlier : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+});
+r27.earlier.value.toLowerCase();
+>r27.earlier.value.toLowerCase() : string
+>r27.earlier.value.toLowerCase : () => string
+>r27.earlier.value : string
+>r27.earlier : { value: string; }
+>r27 : { earlier: { value: string; }; later: string; }
+>earlier : { value: string; }
+>value : string
+>toLowerCase : () => string
+
+r27.later.toLowerCase();
+>r27.later.toLowerCase() : string
+>r27.later.toLowerCase : () => string
+>r27.later : string
+>r27 : { earlier: { value: string; }; later: string; }
+>later : string
+>toLowerCase : () => string
+
