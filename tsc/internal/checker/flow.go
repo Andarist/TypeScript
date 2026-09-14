@@ -474,46 +474,50 @@ func (c *Checker) narrowTypeByBinaryExpression(f *FlowState, t *Type, expr *ast.
 		operator := expr.OperatorToken.Kind
 		left := c.getReferenceCandidate(expr.Left)
 		right := c.getReferenceCandidate(expr.Right)
-		if left.Kind == ast.KindTypeOfExpression && ast.IsStringLiteralLike(right) {
+		leftNarrowingInvalidated := c.isReferenceAssignedInExpression(f.reference, expr.Right)
+		if !leftNarrowingInvalidated && left.Kind == ast.KindTypeOfExpression && ast.IsStringLiteralLike(right) {
 			return c.narrowTypeByTypeof(f, t, left.AsTypeOfExpression(), operator, right, assumeTrue)
 		}
 		if right.Kind == ast.KindTypeOfExpression && ast.IsStringLiteralLike(left) {
 			return c.narrowTypeByTypeof(f, t, right.AsTypeOfExpression(), operator, left, assumeTrue)
 		}
-		if c.isMatchingReference(f.reference, left) {
+		if !leftNarrowingInvalidated && c.isMatchingReference(f.reference, left) {
 			return c.narrowTypeByEquality(t, operator, right, assumeTrue)
 		}
 		if c.isMatchingReference(f.reference, right) {
 			return c.narrowTypeByEquality(t, operator, left, assumeTrue)
 		}
 		if c.strictNullChecks {
-			if c.optionalChainContainsReference(left, f.reference) {
+			if !leftNarrowingInvalidated && c.optionalChainContainsReference(left, f.reference) {
 				t = c.narrowTypeByOptionalChainContainment(f, t, operator, right, assumeTrue)
 			} else if c.optionalChainContainsReference(right, f.reference) {
 				t = c.narrowTypeByOptionalChainContainment(f, t, operator, left, assumeTrue)
 			}
 		}
 		leftAccess := c.getDiscriminantPropertyAccess(f, left, t)
-		if leftAccess != nil {
+		if leftAccess != nil && !leftNarrowingInvalidated {
 			return c.narrowTypeByDiscriminantProperty(t, leftAccess, operator, right, assumeTrue)
 		}
 		rightAccess := c.getDiscriminantPropertyAccess(f, right, t)
 		if rightAccess != nil {
 			return c.narrowTypeByDiscriminantProperty(t, rightAccess, operator, left, assumeTrue)
 		}
-		if c.isMatchingConstructorReference(f, left) {
+		if !leftNarrowingInvalidated && c.isMatchingConstructorReference(f, left) {
 			return c.narrowTypeByConstructor(t, operator, right, assumeTrue)
 		}
 		if c.isMatchingConstructorReference(f, right) {
 			return c.narrowTypeByConstructor(t, operator, left, assumeTrue)
 		}
-		if ast.IsBooleanLiteral(right) && !ast.IsAccessExpression(left) {
+		if !leftNarrowingInvalidated && ast.IsBooleanLiteral(right) && !ast.IsAccessExpression(left) {
 			return c.narrowTypeByBooleanComparison(f, t, left, right, operator, assumeTrue)
 		}
 		if ast.IsBooleanLiteral(left) && !ast.IsAccessExpression(right) {
 			return c.narrowTypeByBooleanComparison(f, t, right, left, operator, assumeTrue)
 		}
 	case ast.KindInstanceOfKeyword:
+		if c.isReferenceAssignedInExpression(f.reference, expr.Right) {
+			return t
+		}
 		return c.narrowTypeByInstanceof(f, t, expr, assumeTrue)
 	case ast.KindInKeyword:
 		if ast.IsPrivateIdentifier(expr.Left) {
@@ -1062,12 +1066,13 @@ func (c *Checker) getTypeAtSwitchClause(f *FlowState, flow *ast.FlowNode) FlowTy
 	flowType := c.getTypeAtFlowNode(f, flow.Antecedent)
 	t := flowType.t
 	switch {
+	case expr.Kind == ast.KindTrueKeyword:
+		t = c.narrowTypeBySwitchOnTrue(f, t, data)
+	case c.isReferenceAssignedInSwitchClauseExpressions(f.reference, data):
 	case c.isMatchingReference(f.reference, expr):
 		t = c.narrowTypeBySwitchOnDiscriminant(t, data)
 	case expr.Kind == ast.KindTypeOfExpression && c.isMatchingReference(f.reference, expr.Expression()):
 		t = c.narrowTypeBySwitchOnTypeOf(t, data)
-	case expr.Kind == ast.KindTrueKeyword:
-		t = c.narrowTypeBySwitchOnTrue(f, t, data)
 	default:
 		if c.strictNullChecks {
 			if c.optionalChainContainsReference(expr, f.reference) {
@@ -1846,6 +1851,33 @@ func (c *Checker) containsMatchingReference(source *ast.Node, target *ast.Node) 
 		}
 	}
 	return false
+}
+
+func (c *Checker) isReferenceAssignedInExpression(reference *ast.Node, expression *ast.Node) bool {
+	var visit ast.Visitor
+	visit = func(node *ast.Node) bool {
+		if ast.IsFunctionLike(node) && (ast.GetImmediatelyInvokedFunctionExpression(node) == nil || ast.GetFunctionFlags(node)&ast.FunctionFlagsAsyncGenerator != 0) {
+			return false
+		}
+		if ast.IsAssignmentTarget(node) && c.isMatchingReference(reference, node) {
+			return true
+		}
+		return node.ForEachChild(visit)
+	}
+	return visit(expression)
+}
+
+func (c *Checker) isReferenceAssignedInSwitchClauseExpressions(reference *ast.Node, data *ast.FlowSwitchClauseData) bool {
+	clauses := data.SwitchStatement.AsSwitchStatement().CaseBlock.AsCaseBlock().Clauses.Nodes
+	clauseEnd := int(data.ClauseEnd)
+	if data.IsEmpty() || slices.ContainsFunc(clauses[data.ClauseStart:data.ClauseEnd], func(clause *ast.Node) bool {
+		return clause.Kind == ast.KindDefaultClause
+	}) {
+		clauseEnd = len(clauses)
+	}
+	return core.Some(clauses[:clauseEnd], func(clause *ast.Node) bool {
+		return clause.Kind == ast.KindCaseClause && c.isReferenceAssignedInExpression(reference, clause.Expression())
+	})
 }
 
 func (c *Checker) optionalChainContainsReference(source *ast.Node, target *ast.Node) bool {
