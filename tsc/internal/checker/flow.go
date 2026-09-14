@@ -502,9 +502,11 @@ func (c *Checker) narrowTypeByBinaryExpression(f *FlowState, t *Type, expr *ast.
 			return c.narrowTypeByDiscriminantProperty(t, rightAccess, operator, left, assumeTrue)
 		}
 		if c.isMatchingConstructorReference(f, left) {
+			t = c.narrowTypeByNonNullAccess(t, left)
 			return c.narrowTypeByConstructor(t, operator, right, assumeTrue)
 		}
 		if c.isMatchingConstructorReference(f, right) {
+			t = c.narrowTypeByNonNullAccess(t, right)
 			return c.narrowTypeByConstructor(t, operator, left, assumeTrue)
 		}
 		if ast.IsBooleanLiteral(right) && !ast.IsAccessExpression(left) {
@@ -528,7 +530,13 @@ func (c *Checker) narrowTypeByBinaryExpression(f *FlowState, t *Type, expr *ast.
 				}
 			}
 		}
+		if c.strictNullChecks && ast.IsNonNullExpression(target) && c.optionalChainContainsReference(target.Expression(), f.reference) {
+			t = c.getAdjustedTypeWithFacts(t, TypeFactsNEUndefinedOrNull)
+		}
 		if c.isMatchingReference(f.reference, target) {
+			if c.strictNullChecks && ast.IsNonNullExpression(target) && c.maybeTypeOfKind(t, TypeFlagsNullable) {
+				t = c.getTypeWithFacts(t, TypeFactsNEUndefinedOrNull)
+			}
 			leftType := c.getTypeOfExpression(expr.Left)
 			if isTypeUsableAsPropertyName(leftType) {
 				return c.narrowTypeByInKeyword(f, t, leftType, assumeTrue)
@@ -700,6 +708,7 @@ func (c *Checker) narrowTypeByTypeFacts(t *Type, impliedType *Type, facts TypeFa
 }
 
 func (c *Checker) narrowTypeByDiscriminantProperty(t *Type, access *ast.Node, operator ast.Kind, value *ast.Node, assumeTrue bool) *Type {
+	t = c.narrowTypeByNonNullAccess(t, access)
 	if (operator == ast.KindEqualsEqualsEqualsToken || operator == ast.KindExclamationEqualsEqualsToken) && t.flags&TypeFlagsUnion != 0 {
 		keyPropertyName := c.getKeyPropertyName(t)
 		if keyPropertyName != "" {
@@ -728,7 +737,8 @@ func (c *Checker) narrowTypeByDiscriminant(t *Type, access *ast.Node, narrowType
 		return t
 	}
 	optionalChain := ast.IsOptionalChain(access)
-	removeNullable := c.strictNullChecks && (optionalChain || isNonNullAccess(access)) && c.maybeTypeOfKind(t, TypeFlagsNullable)
+	t = c.narrowTypeByNonNullAccess(t, access)
+	removeNullable := c.strictNullChecks && optionalChain && c.maybeTypeOfKind(t, TypeFlagsNullable)
 	nonNullType := t
 	if removeNullable {
 		nonNullType = c.getTypeWithFacts(t, TypeFactsNEUndefinedOrNull)
@@ -745,6 +755,13 @@ func (c *Checker) narrowTypeByDiscriminant(t *Type, access *ast.Node, narrowType
 		discriminantType := core.OrElse(c.getTypeOfPropertyOrIndexSignatureOfType(t, propName), c.unknownType)
 		return discriminantType.flags&TypeFlagsNever == 0 && narrowedPropType.flags&TypeFlagsNever == 0 && c.areTypesComparable(narrowedPropType, discriminantType)
 	})
+}
+
+func (c *Checker) narrowTypeByNonNullAccess(t *Type, access *ast.Node) *Type {
+	if c.strictNullChecks && isNonNullAccess(access) && !ast.IsOptionalChain(access) && c.maybeTypeOfKind(t, TypeFlagsNullable) {
+		return c.getTypeWithFacts(t, TypeFactsNEUndefinedOrNull)
+	}
+	return t
 }
 
 func (c *Checker) isMatchingConstructorReference(f *FlowState, expr *ast.Node) bool {

@@ -1,0 +1,566 @@
+//// [tests/cases/compiler/nonNullDiscriminantNarrowing.ts] ////
+
+=== nonNullDiscriminantNarrowing.ts ===
+type Small = { type: "1" } | { type: "2" } | null | undefined;
+>Small : Small
+>type : "1"
+>type : "2"
+
+declare let smallEqual: Small;
+>smallEqual : Small
+
+if (smallEqual!.type === "1") {
+>smallEqual!.type === "1" : boolean
+>smallEqual!.type : "1" | "2"
+>smallEqual! : { type: "1"; } | { type: "2"; }
+>smallEqual : Small
+>type : "1" | "2"
+>"1" : "1"
+
+    const narrowed: { type: "1" } = smallEqual;
+>narrowed : { type: "1"; }
+>type : "1"
+>smallEqual : { type: "1"; }
+}
+
+declare let smallEqualRight: Small;
+>smallEqualRight : Small
+
+if ("1" === smallEqualRight!.type) {
+>"1" === smallEqualRight!.type : boolean
+>"1" : "1"
+>smallEqualRight!.type : "1" | "2"
+>smallEqualRight! : { type: "1"; } | { type: "2"; }
+>smallEqualRight : Small
+>type : "1" | "2"
+
+    const narrowed: { type: "1" } = smallEqualRight;
+>narrowed : { type: "1"; }
+>type : "1"
+>smallEqualRight : { type: "1"; }
+}
+
+declare let smallNotEqual: Small;
+>smallNotEqual : Small
+
+if (smallNotEqual!.type !== "1") {
+>smallNotEqual!.type !== "1" : boolean
+>smallNotEqual!.type : "1" | "2"
+>smallNotEqual! : { type: "1"; } | { type: "2"; }
+>smallNotEqual : Small
+>type : "1" | "2"
+>"1" : "1"
+
+    const narrowed: { type: "2" } = smallNotEqual;
+>narrowed : { type: "2"; }
+>type : "2"
+>smallNotEqual : { type: "2"; }
+}
+
+type Large =
+>Large : Large
+
+    | { type: "1" }
+>type : "1"
+
+    | { type: "2" }
+>type : "2"
+
+    | { type: "3" }
+>type : "3"
+
+    | { type: "4" }
+>type : "4"
+
+    | { type: "5" }
+>type : "5"
+
+    | { type: "6" }
+>type : "6"
+
+    | { type: "7" }
+>type : "7"
+
+    | { type: "8" }
+>type : "8"
+
+    | { type: "9" }
+>type : "9"
+
+    | { type: "10" }
+>type : "10"
+
+    | null
+    | undefined;
+
+declare let largeEqual: Large;
+>largeEqual : Large
+
+if (largeEqual!.type === "1") {
+>largeEqual!.type === "1" : boolean
+>largeEqual!.type : "1" | "10" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+>largeEqual! : { type: "1"; } | { type: "2"; } | { type: "3"; } | { type: "4"; } | { type: "5"; } | { type: "6"; } | { type: "7"; } | { type: "8"; } | { type: "9"; } | { type: "10"; }
+>largeEqual : Large
+>type : "1" | "10" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+>"1" : "1"
+
+    const narrowed: { type: "1" } = largeEqual;
+>narrowed : { type: "1"; }
+>type : "1"
+>largeEqual : { type: "1"; }
+}
+
+declare let largeNotEqual: Large;
+>largeNotEqual : Large
+
+if (largeNotEqual!.type !== "1") {
+>largeNotEqual!.type !== "1" : boolean
+>largeNotEqual!.type : "1" | "10" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+>largeNotEqual! : { type: "1"; } | { type: "2"; } | { type: "3"; } | { type: "4"; } | { type: "5"; } | { type: "6"; } | { type: "7"; } | { type: "8"; } | { type: "9"; } | { type: "10"; }
+>largeNotEqual : Large
+>type : "1" | "10" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+>"1" : "1"
+
+    const narrowed: Exclude<Large, null | undefined | { type: "1" }> = largeNotEqual;
+>narrowed : { type: "2"; } | { type: "3"; } | { type: "4"; } | { type: "5"; } | { type: "6"; } | { type: "7"; } | { type: "8"; } | { type: "9"; } | { type: "10"; }
+>type : "1"
+>largeNotEqual : { type: "2"; } | { type: "3"; } | { type: "4"; } | { type: "5"; } | { type: "6"; } | { type: "7"; } | { type: "8"; } | { type: "9"; } | { type: "10"; }
+}
+
+declare let optional: Small;
+>optional : Small
+
+if (optional?.type === undefined) {
+>optional?.type === undefined : boolean
+>optional?.type : "1" | "2" | undefined
+>optional : Small
+>type : "1" | "2" | undefined
+>undefined : undefined
+
+    const narrowed: null | undefined = optional;
+>narrowed : null | undefined
+>optional : null | undefined
+}
+
+declare function isNever<T>(value: T): [T] extends [never] ? true : false;
+>isNever : <T>(value: T) => [T] extends [never] ? true : false
+>value : T
+>true : true
+>false : false
+
+declare let optionalAfterNonNull: Small;
+>optionalAfterNonNull : Small
+
+if (optionalAfterNonNull!?.type === undefined) {
+>optionalAfterNonNull!?.type === undefined : boolean
+>optionalAfterNonNull!?.type : "1" | "2"
+>optionalAfterNonNull! : { type: "1"; } | { type: "2"; }
+>optionalAfterNonNull : Small
+>type : "1" | "2"
+>undefined : undefined
+
+    const narrowed: null | undefined = optionalAfterNonNull;
+>narrowed : null | undefined
+>optionalAfterNonNull : null | undefined
+
+    const notNever: false = isNever(optionalAfterNonNull);
+>notNever : false
+>false : false
+>isNever(optionalAfterNonNull) : false
+>isNever : <T>(value: T) => [T] extends [never] ? true : false
+>optionalAfterNonNull : null | undefined
+}
+
+declare let optionalBangLeft: Small;
+>optionalBangLeft : Small
+
+if (optionalBangLeft!?.type === "1") {
+>optionalBangLeft!?.type === "1" : boolean
+>optionalBangLeft!?.type : "1" | "2"
+>optionalBangLeft! : { type: "1"; } | { type: "2"; }
+>optionalBangLeft : Small
+>type : "1" | "2"
+>"1" : "1"
+
+    const narrowed: { type: "1" } = optionalBangLeft;
+>narrowed : { type: "1"; }
+>type : "1"
+>optionalBangLeft : { type: "1"; }
+}
+else {
+    const narrowed: Exclude<Small, { type: "1" }> = optionalBangLeft;
+>narrowed : { type: "2"; } | null | undefined
+>type : "1"
+>optionalBangLeft : { type: "2"; } | null | undefined
+}
+
+declare let optionalBangRight: Small;
+>optionalBangRight : Small
+
+if ("1" === optionalBangRight!?.type) {
+>"1" === optionalBangRight!?.type : boolean
+>"1" : "1"
+>optionalBangRight!?.type : "1" | "2"
+>optionalBangRight! : { type: "1"; } | { type: "2"; }
+>optionalBangRight : Small
+>type : "1" | "2"
+
+    const narrowed: { type: "1" } = optionalBangRight;
+>narrowed : { type: "1"; }
+>type : "1"
+>optionalBangRight : { type: "1"; }
+}
+else {
+    const narrowed: Exclude<Small, { type: "1" }> = optionalBangRight;
+>narrowed : { type: "2"; } | null | undefined
+>type : "1"
+>optionalBangRight : { type: "2"; } | null | undefined
+}
+
+declare let optionalBangSwitch: Small;
+>optionalBangSwitch : Small
+
+switch (optionalBangSwitch!?.type) {
+>optionalBangSwitch!?.type : "1" | "2"
+>optionalBangSwitch! : { type: "1"; } | { type: "2"; }
+>optionalBangSwitch : Small
+>type : "1" | "2"
+
+    case "1":
+>"1" : "1"
+
+        const one: { type: "1" } = optionalBangSwitch;
+>one : { type: "1"; }
+>type : "1"
+>optionalBangSwitch : { type: "1"; }
+
+        break;
+    default:
+        const rest: Exclude<Small, { type: "1" }> = optionalBangSwitch;
+>rest : { type: "2"; } | null | undefined
+>type : "1"
+>optionalBangSwitch : { type: "2"; } | null | undefined
+}
+
+type Bare = 0 | 1 | null | undefined;
+>Bare : Bare
+
+declare let bareTruthy: Bare;
+>bareTruthy : Bare
+
+if (bareTruthy!) {
+>bareTruthy! : 0 | 1
+>bareTruthy : Bare
+
+    const narrowed: 1 = bareTruthy;
+>narrowed : 1
+>bareTruthy : 1
+}
+else {
+    const narrowed: 0 | null | undefined = bareTruthy;
+>narrowed : 0 | null | undefined
+>bareTruthy : 0 | null | undefined
+}
+
+declare let bareNegated: Bare;
+>bareNegated : Bare
+
+if (!bareNegated!) {
+>!bareNegated! : boolean
+>bareNegated! : 0 | 1
+>bareNegated : Bare
+
+    const narrowed: 0 | null | undefined = bareNegated;
+>narrowed : 0 | null | undefined
+>bareNegated : 0 | null | undefined
+}
+else {
+    const narrowed: 1 = bareNegated;
+>narrowed : 1
+>bareNegated : 1
+}
+
+declare let bareEqual: Bare;
+>bareEqual : Bare
+
+if (bareEqual! === 1) {
+>bareEqual! === 1 : boolean
+>bareEqual! : 0 | 1
+>bareEqual : Bare
+>1 : 1
+
+    const narrowed: 1 = bareEqual;
+>narrowed : 1
+>bareEqual : 1
+}
+else {
+    const narrowed: 0 | null | undefined = bareEqual;
+>narrowed : 0 | null | undefined
+>bareEqual : 0 | null | undefined
+}
+
+type ByFlag = { flag: true } | { flag: false } | null | undefined;
+>ByFlag : ByFlag
+>flag : true
+>true : true
+>flag : false
+>false : false
+
+declare let byFlag: ByFlag;
+>byFlag : ByFlag
+
+if (byFlag!.flag) {
+>byFlag!.flag : boolean
+>byFlag! : { flag: true; } | { flag: false; }
+>byFlag : ByFlag
+>flag : boolean
+
+    const narrowed: { flag: true } = byFlag;
+>narrowed : { flag: true; }
+>flag : true
+>true : true
+>byFlag : { flag: true; }
+}
+else {
+    const narrowed: { flag: false } = byFlag;
+>narrowed : { flag: false; }
+>flag : false
+>false : false
+>byFlag : { flag: false; }
+}
+
+type ByValue = { value: "text" } | { value: 0 } | null | undefined;
+>ByValue : ByValue
+>value : "text"
+>value : 0
+
+declare let byTypeof: ByValue;
+>byTypeof : ByValue
+
+if (typeof byTypeof!.value === "string") {
+>typeof byTypeof!.value === "string" : boolean
+>typeof byTypeof!.value : "bigint" | "boolean" | "function" | "number" | "object" | "string" | "symbol" | "undefined"
+>byTypeof!.value : "text" | 0
+>byTypeof! : { value: "text"; } | { value: 0; }
+>byTypeof : ByValue
+>value : "text" | 0
+>"string" : "string"
+
+    const narrowed: { value: "text" } = byTypeof;
+>narrowed : { value: "text"; }
+>value : "text"
+>byTypeof : { value: "text"; }
+}
+else {
+    const narrowed: { value: 0 } = byTypeof;
+>narrowed : { value: 0; }
+>value : 0
+>byTypeof : { value: 0; }
+}
+
+function switchSmall(value: Small) {
+>switchSmall : (value: Small) => void
+>value : Small
+
+    switch (value!.type) {
+>value!.type : "1" | "2"
+>value! : { type: "1"; } | { type: "2"; }
+>value : Small
+>type : "1" | "2"
+
+        case "1":
+>"1" : "1"
+
+            const one: { type: "1" } = value;
+>one : { type: "1"; }
+>type : "1"
+>value : { type: "1"; }
+
+            break;
+        case "2":
+>"2" : "2"
+
+            const two: { type: "2" } = value;
+>two : { type: "2"; }
+>type : "2"
+>value : { type: "2"; }
+
+            break;
+    }
+}
+
+function switchLarge(value: Large) {
+>switchLarge : (value: Large) => void
+>value : Large
+
+    switch (value!.type) {
+>value!.type : "1" | "10" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+>value! : { type: "1"; } | { type: "2"; } | { type: "3"; } | { type: "4"; } | { type: "5"; } | { type: "6"; } | { type: "7"; } | { type: "8"; } | { type: "9"; } | { type: "10"; }
+>value : Large
+>type : "1" | "10" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+        case "1":
+>"1" : "1"
+
+            const one: { type: "1" } = value;
+>one : { type: "1"; }
+>type : "1"
+>value : { type: "1"; }
+
+            break;
+        default:
+            const rest: Exclude<Large, null | undefined | { type: "1" }> = value;
+>rest : { type: "2"; } | { type: "3"; } | { type: "4"; } | { type: "5"; } | { type: "6"; } | { type: "7"; } | { type: "8"; } | { type: "9"; } | { type: "10"; }
+>type : "1"
+>value : { type: "2"; } | { type: "3"; } | { type: "4"; } | { type: "5"; } | { type: "6"; } | { type: "7"; } | { type: "8"; } | { type: "9"; } | { type: "10"; }
+    }
+}
+
+type ByOptional = { value: string } | { value: undefined } | null | undefined;
+>ByOptional : ByOptional
+>value : string
+>value : undefined
+
+declare function useMissing(value: { value: undefined }): string;
+>useMissing : (value: { value: undefined; }) => string
+>value : { value: undefined; }
+>value : undefined
+
+declare let byOptional: ByOptional;
+>byOptional : ByOptional
+
+const coalesced = byOptional!.value ?? useMissing(byOptional);
+>coalesced : string
+>byOptional!.value ?? useMissing(byOptional) : string
+>byOptional!.value : string | undefined
+>byOptional! : { value: string; } | { value: undefined; }
+>byOptional : ByOptional
+>value : string | undefined
+>useMissing(byOptional) : string
+>useMissing : (value: { value: undefined; }) => string
+>byOptional : { value: undefined; }
+
+type ByPresence = { present: number } | { absent: number } | null | undefined;
+>ByPresence : ByPresence
+>present : number
+>absent : number
+
+declare let byPresence: ByPresence;
+>byPresence : ByPresence
+
+if ("present" in byPresence!) {
+>"present" in byPresence! : boolean
+>"present" : "present"
+>byPresence! : { present: number; } | { absent: number; }
+>byPresence : ByPresence
+
+    const narrowed: { present: number } = byPresence;
+>narrowed : { present: number; }
+>present : number
+>byPresence : { present: number; }
+}
+else {
+    const narrowed: { absent: number } = byPresence;
+>narrowed : { absent: number; }
+>absent : number
+>byPresence : { absent: number; }
+}
+
+type Container = { child: { present: number } | { absent: number } } | null | undefined;
+>Container : Container
+>child : { present: number; } | { absent: number; }
+>present : number
+>absent : number
+
+declare let container: Container;
+>container : Container
+
+if ("present" in container?.child!) {
+>"present" in container?.child! : boolean
+>"present" : "present"
+>container?.child! : { present: number; } | { absent: number; }
+>container?.child : { present: number; } | { absent: number; } | undefined
+>container : Container
+>child : { present: number; } | { absent: number; } | undefined
+
+    const defined: NonNullable<Container> = container;
+>defined : { child: { present: number; } | { absent: number; }; }
+>container : { child: { present: number; } | { absent: number; }; }
+}
+else {
+    const defined: NonNullable<Container> = container;
+>defined : { child: { present: number; } | { absent: number; }; }
+>container : { child: { present: number; } | { absent: number; }; }
+}
+
+class A { a = 0; }
+>A : A
+>a : number
+>0 : 0
+
+class B { b = 0; }
+>B : B
+>b : number
+>0 : 0
+
+declare let constructorLeft: A | B | null | undefined;
+>constructorLeft : A | B | null | undefined
+
+if (constructorLeft!.constructor === A) {
+>constructorLeft!.constructor === A : boolean
+>constructorLeft!.constructor : Function
+>constructorLeft! : A | B
+>constructorLeft : A | B | null | undefined
+>constructor : Function
+>A : typeof A
+
+    const narrowed: A = constructorLeft;
+>narrowed : A
+>constructorLeft : A
+}
+else {
+    const narrowed: A | B = constructorLeft;
+>narrowed : A | B
+>constructorLeft : A | B
+}
+
+declare let constructorRight: A | B | null | undefined;
+>constructorRight : A | B | null | undefined
+
+if (A === constructorRight!.constructor) {
+>A === constructorRight!.constructor : boolean
+>A : typeof A
+>constructorRight!.constructor : Function
+>constructorRight! : A | B
+>constructorRight : A | B | null | undefined
+>constructor : Function
+
+    const narrowed: A = constructorRight;
+>narrowed : A
+>constructorRight : A
+}
+else {
+    const narrowed: A | B = constructorRight;
+>narrowed : A | B
+>constructorRight : A | B
+}
+
+declare let byInstanceof: A | B | null | undefined;
+>byInstanceof : A | B | null | undefined
+
+if (byInstanceof! instanceof A) {
+>byInstanceof! instanceof A : boolean
+>byInstanceof! : A | B
+>byInstanceof : A | B | null | undefined
+>A : typeof A
+
+    const narrowed: A = byInstanceof;
+>narrowed : A
+>byInstanceof : A
+}
+else {
+    const narrowed: B | null | undefined = byInstanceof;
+>narrowed : B | null | undefined
+>byInstanceof : B | null | undefined
+}
+

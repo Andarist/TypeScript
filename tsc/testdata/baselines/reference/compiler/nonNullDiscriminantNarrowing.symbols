@@ -1,0 +1,546 @@
+//// [tests/cases/compiler/nonNullDiscriminantNarrowing.ts] ////
+
+=== nonNullDiscriminantNarrowing.ts ===
+type Small = { type: "1" } | { type: "2" } | null | undefined;
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+
+declare let smallEqual: Small;
+>smallEqual : Symbol(smallEqual, Decl(nonNullDiscriminantNarrowing.ts, 2, 11))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+
+if (smallEqual!.type === "1") {
+>smallEqual!.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>smallEqual : Symbol(smallEqual, Decl(nonNullDiscriminantNarrowing.ts, 2, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+
+    const narrowed: { type: "1" } = smallEqual;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 5, 9))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 5, 21))
+>smallEqual : Symbol(smallEqual, Decl(nonNullDiscriminantNarrowing.ts, 2, 11))
+}
+
+declare let smallEqualRight: Small;
+>smallEqualRight : Symbol(smallEqualRight, Decl(nonNullDiscriminantNarrowing.ts, 8, 11))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+
+if ("1" === smallEqualRight!.type) {
+>smallEqualRight!.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>smallEqualRight : Symbol(smallEqualRight, Decl(nonNullDiscriminantNarrowing.ts, 8, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+
+    const narrowed: { type: "1" } = smallEqualRight;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 11, 9))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 11, 21))
+>smallEqualRight : Symbol(smallEqualRight, Decl(nonNullDiscriminantNarrowing.ts, 8, 11))
+}
+
+declare let smallNotEqual: Small;
+>smallNotEqual : Symbol(smallNotEqual, Decl(nonNullDiscriminantNarrowing.ts, 14, 11))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+
+if (smallNotEqual!.type !== "1") {
+>smallNotEqual!.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>smallNotEqual : Symbol(smallNotEqual, Decl(nonNullDiscriminantNarrowing.ts, 14, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+
+    const narrowed: { type: "2" } = smallNotEqual;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 17, 9))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 17, 21))
+>smallNotEqual : Symbol(smallNotEqual, Decl(nonNullDiscriminantNarrowing.ts, 14, 11))
+}
+
+type Large =
+>Large : Symbol(Large, Decl(nonNullDiscriminantNarrowing.ts, 18, 1))
+
+    | { type: "1" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 21, 7))
+
+    | { type: "2" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 22, 7))
+
+    | { type: "3" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 23, 7))
+
+    | { type: "4" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 24, 7))
+
+    | { type: "5" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 25, 7))
+
+    | { type: "6" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 26, 7))
+
+    | { type: "7" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 27, 7))
+
+    | { type: "8" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 28, 7))
+
+    | { type: "9" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 29, 7))
+
+    | { type: "10" }
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 30, 7))
+
+    | null
+    | undefined;
+
+declare let largeEqual: Large;
+>largeEqual : Symbol(largeEqual, Decl(nonNullDiscriminantNarrowing.ts, 34, 11))
+>Large : Symbol(Large, Decl(nonNullDiscriminantNarrowing.ts, 18, 1))
+
+if (largeEqual!.type === "1") {
+>largeEqual!.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 21, 7), Decl(nonNullDiscriminantNarrowing.ts, 22, 7), Decl(nonNullDiscriminantNarrowing.ts, 23, 7), Decl(nonNullDiscriminantNarrowing.ts, 24, 7), Decl(nonNullDiscriminantNarrowing.ts, 25, 7) ... and 5 more)
+>largeEqual : Symbol(largeEqual, Decl(nonNullDiscriminantNarrowing.ts, 34, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 21, 7), Decl(nonNullDiscriminantNarrowing.ts, 22, 7), Decl(nonNullDiscriminantNarrowing.ts, 23, 7), Decl(nonNullDiscriminantNarrowing.ts, 24, 7), Decl(nonNullDiscriminantNarrowing.ts, 25, 7) ... and 5 more)
+
+    const narrowed: { type: "1" } = largeEqual;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 37, 9))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 37, 21))
+>largeEqual : Symbol(largeEqual, Decl(nonNullDiscriminantNarrowing.ts, 34, 11))
+}
+
+declare let largeNotEqual: Large;
+>largeNotEqual : Symbol(largeNotEqual, Decl(nonNullDiscriminantNarrowing.ts, 40, 11))
+>Large : Symbol(Large, Decl(nonNullDiscriminantNarrowing.ts, 18, 1))
+
+if (largeNotEqual!.type !== "1") {
+>largeNotEqual!.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 21, 7), Decl(nonNullDiscriminantNarrowing.ts, 22, 7), Decl(nonNullDiscriminantNarrowing.ts, 23, 7), Decl(nonNullDiscriminantNarrowing.ts, 24, 7), Decl(nonNullDiscriminantNarrowing.ts, 25, 7) ... and 5 more)
+>largeNotEqual : Symbol(largeNotEqual, Decl(nonNullDiscriminantNarrowing.ts, 40, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 21, 7), Decl(nonNullDiscriminantNarrowing.ts, 22, 7), Decl(nonNullDiscriminantNarrowing.ts, 23, 7), Decl(nonNullDiscriminantNarrowing.ts, 24, 7), Decl(nonNullDiscriminantNarrowing.ts, 25, 7) ... and 5 more)
+
+    const narrowed: Exclude<Large, null | undefined | { type: "1" }> = largeNotEqual;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 43, 9))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Large : Symbol(Large, Decl(nonNullDiscriminantNarrowing.ts, 18, 1))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 43, 55))
+>largeNotEqual : Symbol(largeNotEqual, Decl(nonNullDiscriminantNarrowing.ts, 40, 11))
+}
+
+declare let optional: Small;
+>optional : Symbol(optional, Decl(nonNullDiscriminantNarrowing.ts, 46, 11))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+
+if (optional?.type === undefined) {
+>optional?.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>optional : Symbol(optional, Decl(nonNullDiscriminantNarrowing.ts, 46, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>undefined : Symbol(undefined)
+
+    const narrowed: null | undefined = optional;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 49, 9))
+>optional : Symbol(optional, Decl(nonNullDiscriminantNarrowing.ts, 46, 11))
+}
+
+declare function isNever<T>(value: T): [T] extends [never] ? true : false;
+>isNever : Symbol(isNever, Decl(nonNullDiscriminantNarrowing.ts, 50, 1))
+>T : Symbol(T, Decl(nonNullDiscriminantNarrowing.ts, 52, 25))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 52, 28))
+>T : Symbol(T, Decl(nonNullDiscriminantNarrowing.ts, 52, 25))
+>T : Symbol(T, Decl(nonNullDiscriminantNarrowing.ts, 52, 25))
+
+declare let optionalAfterNonNull: Small;
+>optionalAfterNonNull : Symbol(optionalAfterNonNull, Decl(nonNullDiscriminantNarrowing.ts, 53, 11))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+
+if (optionalAfterNonNull!?.type === undefined) {
+>optionalAfterNonNull!?.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>optionalAfterNonNull : Symbol(optionalAfterNonNull, Decl(nonNullDiscriminantNarrowing.ts, 53, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>undefined : Symbol(undefined)
+
+    const narrowed: null | undefined = optionalAfterNonNull;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 56, 9))
+>optionalAfterNonNull : Symbol(optionalAfterNonNull, Decl(nonNullDiscriminantNarrowing.ts, 53, 11))
+
+    const notNever: false = isNever(optionalAfterNonNull);
+>notNever : Symbol(notNever, Decl(nonNullDiscriminantNarrowing.ts, 57, 9))
+>isNever : Symbol(isNever, Decl(nonNullDiscriminantNarrowing.ts, 50, 1))
+>optionalAfterNonNull : Symbol(optionalAfterNonNull, Decl(nonNullDiscriminantNarrowing.ts, 53, 11))
+}
+
+declare let optionalBangLeft: Small;
+>optionalBangLeft : Symbol(optionalBangLeft, Decl(nonNullDiscriminantNarrowing.ts, 60, 11))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+
+if (optionalBangLeft!?.type === "1") {
+>optionalBangLeft!?.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>optionalBangLeft : Symbol(optionalBangLeft, Decl(nonNullDiscriminantNarrowing.ts, 60, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+
+    const narrowed: { type: "1" } = optionalBangLeft;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 63, 9))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 63, 21))
+>optionalBangLeft : Symbol(optionalBangLeft, Decl(nonNullDiscriminantNarrowing.ts, 60, 11))
+}
+else {
+    const narrowed: Exclude<Small, { type: "1" }> = optionalBangLeft;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 66, 9))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 66, 36))
+>optionalBangLeft : Symbol(optionalBangLeft, Decl(nonNullDiscriminantNarrowing.ts, 60, 11))
+}
+
+declare let optionalBangRight: Small;
+>optionalBangRight : Symbol(optionalBangRight, Decl(nonNullDiscriminantNarrowing.ts, 69, 11))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+
+if ("1" === optionalBangRight!?.type) {
+>optionalBangRight!?.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>optionalBangRight : Symbol(optionalBangRight, Decl(nonNullDiscriminantNarrowing.ts, 69, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+
+    const narrowed: { type: "1" } = optionalBangRight;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 72, 9))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 72, 21))
+>optionalBangRight : Symbol(optionalBangRight, Decl(nonNullDiscriminantNarrowing.ts, 69, 11))
+}
+else {
+    const narrowed: Exclude<Small, { type: "1" }> = optionalBangRight;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 75, 9))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 75, 36))
+>optionalBangRight : Symbol(optionalBangRight, Decl(nonNullDiscriminantNarrowing.ts, 69, 11))
+}
+
+declare let optionalBangSwitch: Small;
+>optionalBangSwitch : Symbol(optionalBangSwitch, Decl(nonNullDiscriminantNarrowing.ts, 78, 11))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+
+switch (optionalBangSwitch!?.type) {
+>optionalBangSwitch!?.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>optionalBangSwitch : Symbol(optionalBangSwitch, Decl(nonNullDiscriminantNarrowing.ts, 78, 11))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+
+    case "1":
+        const one: { type: "1" } = optionalBangSwitch;
+>one : Symbol(one, Decl(nonNullDiscriminantNarrowing.ts, 82, 13))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 82, 20))
+>optionalBangSwitch : Symbol(optionalBangSwitch, Decl(nonNullDiscriminantNarrowing.ts, 78, 11))
+
+        break;
+    default:
+        const rest: Exclude<Small, { type: "1" }> = optionalBangSwitch;
+>rest : Symbol(rest, Decl(nonNullDiscriminantNarrowing.ts, 85, 13))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 85, 36))
+>optionalBangSwitch : Symbol(optionalBangSwitch, Decl(nonNullDiscriminantNarrowing.ts, 78, 11))
+}
+
+type Bare = 0 | 1 | null | undefined;
+>Bare : Symbol(Bare, Decl(nonNullDiscriminantNarrowing.ts, 86, 1))
+
+declare let bareTruthy: Bare;
+>bareTruthy : Symbol(bareTruthy, Decl(nonNullDiscriminantNarrowing.ts, 90, 11))
+>Bare : Symbol(Bare, Decl(nonNullDiscriminantNarrowing.ts, 86, 1))
+
+if (bareTruthy!) {
+>bareTruthy : Symbol(bareTruthy, Decl(nonNullDiscriminantNarrowing.ts, 90, 11))
+
+    const narrowed: 1 = bareTruthy;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 92, 9))
+>bareTruthy : Symbol(bareTruthy, Decl(nonNullDiscriminantNarrowing.ts, 90, 11))
+}
+else {
+    const narrowed: 0 | null | undefined = bareTruthy;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 95, 9))
+>bareTruthy : Symbol(bareTruthy, Decl(nonNullDiscriminantNarrowing.ts, 90, 11))
+}
+
+declare let bareNegated: Bare;
+>bareNegated : Symbol(bareNegated, Decl(nonNullDiscriminantNarrowing.ts, 98, 11))
+>Bare : Symbol(Bare, Decl(nonNullDiscriminantNarrowing.ts, 86, 1))
+
+if (!bareNegated!) {
+>bareNegated : Symbol(bareNegated, Decl(nonNullDiscriminantNarrowing.ts, 98, 11))
+
+    const narrowed: 0 | null | undefined = bareNegated;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 100, 9))
+>bareNegated : Symbol(bareNegated, Decl(nonNullDiscriminantNarrowing.ts, 98, 11))
+}
+else {
+    const narrowed: 1 = bareNegated;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 103, 9))
+>bareNegated : Symbol(bareNegated, Decl(nonNullDiscriminantNarrowing.ts, 98, 11))
+}
+
+declare let bareEqual: Bare;
+>bareEqual : Symbol(bareEqual, Decl(nonNullDiscriminantNarrowing.ts, 106, 11))
+>Bare : Symbol(Bare, Decl(nonNullDiscriminantNarrowing.ts, 86, 1))
+
+if (bareEqual! === 1) {
+>bareEqual : Symbol(bareEqual, Decl(nonNullDiscriminantNarrowing.ts, 106, 11))
+
+    const narrowed: 1 = bareEqual;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 108, 9))
+>bareEqual : Symbol(bareEqual, Decl(nonNullDiscriminantNarrowing.ts, 106, 11))
+}
+else {
+    const narrowed: 0 | null | undefined = bareEqual;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 111, 9))
+>bareEqual : Symbol(bareEqual, Decl(nonNullDiscriminantNarrowing.ts, 106, 11))
+}
+
+type ByFlag = { flag: true } | { flag: false } | null | undefined;
+>ByFlag : Symbol(ByFlag, Decl(nonNullDiscriminantNarrowing.ts, 112, 1))
+>flag : Symbol(flag, Decl(nonNullDiscriminantNarrowing.ts, 114, 15))
+>flag : Symbol(flag, Decl(nonNullDiscriminantNarrowing.ts, 114, 32))
+
+declare let byFlag: ByFlag;
+>byFlag : Symbol(byFlag, Decl(nonNullDiscriminantNarrowing.ts, 116, 11))
+>ByFlag : Symbol(ByFlag, Decl(nonNullDiscriminantNarrowing.ts, 112, 1))
+
+if (byFlag!.flag) {
+>byFlag!.flag : Symbol(flag, Decl(nonNullDiscriminantNarrowing.ts, 114, 15), Decl(nonNullDiscriminantNarrowing.ts, 114, 32))
+>byFlag : Symbol(byFlag, Decl(nonNullDiscriminantNarrowing.ts, 116, 11))
+>flag : Symbol(flag, Decl(nonNullDiscriminantNarrowing.ts, 114, 15), Decl(nonNullDiscriminantNarrowing.ts, 114, 32))
+
+    const narrowed: { flag: true } = byFlag;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 118, 9))
+>flag : Symbol(flag, Decl(nonNullDiscriminantNarrowing.ts, 118, 21))
+>byFlag : Symbol(byFlag, Decl(nonNullDiscriminantNarrowing.ts, 116, 11))
+}
+else {
+    const narrowed: { flag: false } = byFlag;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 121, 9))
+>flag : Symbol(flag, Decl(nonNullDiscriminantNarrowing.ts, 121, 21))
+>byFlag : Symbol(byFlag, Decl(nonNullDiscriminantNarrowing.ts, 116, 11))
+}
+
+type ByValue = { value: "text" } | { value: 0 } | null | undefined;
+>ByValue : Symbol(ByValue, Decl(nonNullDiscriminantNarrowing.ts, 122, 1))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 124, 16))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 124, 36))
+
+declare let byTypeof: ByValue;
+>byTypeof : Symbol(byTypeof, Decl(nonNullDiscriminantNarrowing.ts, 126, 11))
+>ByValue : Symbol(ByValue, Decl(nonNullDiscriminantNarrowing.ts, 122, 1))
+
+if (typeof byTypeof!.value === "string") {
+>byTypeof!.value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 124, 16), Decl(nonNullDiscriminantNarrowing.ts, 124, 36))
+>byTypeof : Symbol(byTypeof, Decl(nonNullDiscriminantNarrowing.ts, 126, 11))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 124, 16), Decl(nonNullDiscriminantNarrowing.ts, 124, 36))
+
+    const narrowed: { value: "text" } = byTypeof;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 128, 9))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 128, 21))
+>byTypeof : Symbol(byTypeof, Decl(nonNullDiscriminantNarrowing.ts, 126, 11))
+}
+else {
+    const narrowed: { value: 0 } = byTypeof;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 131, 9))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 131, 21))
+>byTypeof : Symbol(byTypeof, Decl(nonNullDiscriminantNarrowing.ts, 126, 11))
+}
+
+function switchSmall(value: Small) {
+>switchSmall : Symbol(switchSmall, Decl(nonNullDiscriminantNarrowing.ts, 132, 1))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 134, 21))
+>Small : Symbol(Small, Decl(nonNullDiscriminantNarrowing.ts, 0, 0))
+
+    switch (value!.type) {
+>value!.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 134, 21))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 0, 14), Decl(nonNullDiscriminantNarrowing.ts, 0, 30))
+
+        case "1":
+            const one: { type: "1" } = value;
+>one : Symbol(one, Decl(nonNullDiscriminantNarrowing.ts, 137, 17))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 137, 24))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 134, 21))
+
+            break;
+        case "2":
+            const two: { type: "2" } = value;
+>two : Symbol(two, Decl(nonNullDiscriminantNarrowing.ts, 140, 17))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 140, 24))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 134, 21))
+
+            break;
+    }
+}
+
+function switchLarge(value: Large) {
+>switchLarge : Symbol(switchLarge, Decl(nonNullDiscriminantNarrowing.ts, 143, 1))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 145, 21))
+>Large : Symbol(Large, Decl(nonNullDiscriminantNarrowing.ts, 18, 1))
+
+    switch (value!.type) {
+>value!.type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 21, 7), Decl(nonNullDiscriminantNarrowing.ts, 22, 7), Decl(nonNullDiscriminantNarrowing.ts, 23, 7), Decl(nonNullDiscriminantNarrowing.ts, 24, 7), Decl(nonNullDiscriminantNarrowing.ts, 25, 7) ... and 5 more)
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 145, 21))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 21, 7), Decl(nonNullDiscriminantNarrowing.ts, 22, 7), Decl(nonNullDiscriminantNarrowing.ts, 23, 7), Decl(nonNullDiscriminantNarrowing.ts, 24, 7), Decl(nonNullDiscriminantNarrowing.ts, 25, 7) ... and 5 more)
+
+        case "1":
+            const one: { type: "1" } = value;
+>one : Symbol(one, Decl(nonNullDiscriminantNarrowing.ts, 148, 17))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 148, 24))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 145, 21))
+
+            break;
+        default:
+            const rest: Exclude<Large, null | undefined | { type: "1" }> = value;
+>rest : Symbol(rest, Decl(nonNullDiscriminantNarrowing.ts, 151, 17))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Large : Symbol(Large, Decl(nonNullDiscriminantNarrowing.ts, 18, 1))
+>type : Symbol(type, Decl(nonNullDiscriminantNarrowing.ts, 151, 59))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 145, 21))
+    }
+}
+
+type ByOptional = { value: string } | { value: undefined } | null | undefined;
+>ByOptional : Symbol(ByOptional, Decl(nonNullDiscriminantNarrowing.ts, 153, 1))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 155, 19))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 155, 39))
+
+declare function useMissing(value: { value: undefined }): string;
+>useMissing : Symbol(useMissing, Decl(nonNullDiscriminantNarrowing.ts, 155, 78))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 157, 28))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 157, 36))
+
+declare let byOptional: ByOptional;
+>byOptional : Symbol(byOptional, Decl(nonNullDiscriminantNarrowing.ts, 158, 11))
+>ByOptional : Symbol(ByOptional, Decl(nonNullDiscriminantNarrowing.ts, 153, 1))
+
+const coalesced = byOptional!.value ?? useMissing(byOptional);
+>coalesced : Symbol(coalesced, Decl(nonNullDiscriminantNarrowing.ts, 159, 5))
+>byOptional!.value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 155, 19), Decl(nonNullDiscriminantNarrowing.ts, 155, 39))
+>byOptional : Symbol(byOptional, Decl(nonNullDiscriminantNarrowing.ts, 158, 11))
+>value : Symbol(value, Decl(nonNullDiscriminantNarrowing.ts, 155, 19), Decl(nonNullDiscriminantNarrowing.ts, 155, 39))
+>useMissing : Symbol(useMissing, Decl(nonNullDiscriminantNarrowing.ts, 155, 78))
+>byOptional : Symbol(byOptional, Decl(nonNullDiscriminantNarrowing.ts, 158, 11))
+
+type ByPresence = { present: number } | { absent: number } | null | undefined;
+>ByPresence : Symbol(ByPresence, Decl(nonNullDiscriminantNarrowing.ts, 159, 62))
+>present : Symbol(present, Decl(nonNullDiscriminantNarrowing.ts, 161, 19))
+>absent : Symbol(absent, Decl(nonNullDiscriminantNarrowing.ts, 161, 41))
+
+declare let byPresence: ByPresence;
+>byPresence : Symbol(byPresence, Decl(nonNullDiscriminantNarrowing.ts, 163, 11))
+>ByPresence : Symbol(ByPresence, Decl(nonNullDiscriminantNarrowing.ts, 159, 62))
+
+if ("present" in byPresence!) {
+>byPresence : Symbol(byPresence, Decl(nonNullDiscriminantNarrowing.ts, 163, 11))
+
+    const narrowed: { present: number } = byPresence;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 165, 9))
+>present : Symbol(present, Decl(nonNullDiscriminantNarrowing.ts, 165, 21))
+>byPresence : Symbol(byPresence, Decl(nonNullDiscriminantNarrowing.ts, 163, 11))
+}
+else {
+    const narrowed: { absent: number } = byPresence;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 168, 9))
+>absent : Symbol(absent, Decl(nonNullDiscriminantNarrowing.ts, 168, 21))
+>byPresence : Symbol(byPresence, Decl(nonNullDiscriminantNarrowing.ts, 163, 11))
+}
+
+type Container = { child: { present: number } | { absent: number } } | null | undefined;
+>Container : Symbol(Container, Decl(nonNullDiscriminantNarrowing.ts, 169, 1))
+>child : Symbol(child, Decl(nonNullDiscriminantNarrowing.ts, 171, 18))
+>present : Symbol(present, Decl(nonNullDiscriminantNarrowing.ts, 171, 27))
+>absent : Symbol(absent, Decl(nonNullDiscriminantNarrowing.ts, 171, 49))
+
+declare let container: Container;
+>container : Symbol(container, Decl(nonNullDiscriminantNarrowing.ts, 173, 11))
+>Container : Symbol(Container, Decl(nonNullDiscriminantNarrowing.ts, 169, 1))
+
+if ("present" in container?.child!) {
+>container?.child : Symbol(child, Decl(nonNullDiscriminantNarrowing.ts, 171, 18))
+>container : Symbol(container, Decl(nonNullDiscriminantNarrowing.ts, 173, 11))
+>child : Symbol(child, Decl(nonNullDiscriminantNarrowing.ts, 171, 18))
+
+    const defined: NonNullable<Container> = container;
+>defined : Symbol(defined, Decl(nonNullDiscriminantNarrowing.ts, 175, 9))
+>NonNullable : Symbol(NonNullable, Decl(lib.es5.d.ts, --, --))
+>Container : Symbol(Container, Decl(nonNullDiscriminantNarrowing.ts, 169, 1))
+>container : Symbol(container, Decl(nonNullDiscriminantNarrowing.ts, 173, 11))
+}
+else {
+    const defined: NonNullable<Container> = container;
+>defined : Symbol(defined, Decl(nonNullDiscriminantNarrowing.ts, 178, 9))
+>NonNullable : Symbol(NonNullable, Decl(lib.es5.d.ts, --, --))
+>Container : Symbol(Container, Decl(nonNullDiscriminantNarrowing.ts, 169, 1))
+>container : Symbol(container, Decl(nonNullDiscriminantNarrowing.ts, 173, 11))
+}
+
+class A { a = 0; }
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>a : Symbol(A.a, Decl(nonNullDiscriminantNarrowing.ts, 181, 9))
+
+class B { b = 0; }
+>B : Symbol(B, Decl(nonNullDiscriminantNarrowing.ts, 181, 18))
+>b : Symbol(B.b, Decl(nonNullDiscriminantNarrowing.ts, 182, 9))
+
+declare let constructorLeft: A | B | null | undefined;
+>constructorLeft : Symbol(constructorLeft, Decl(nonNullDiscriminantNarrowing.ts, 184, 11))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>B : Symbol(B, Decl(nonNullDiscriminantNarrowing.ts, 181, 18))
+
+if (constructorLeft!.constructor === A) {
+>constructorLeft!.constructor : Symbol(Object.constructor, Decl(lib.es5.d.ts, --, --))
+>constructorLeft : Symbol(constructorLeft, Decl(nonNullDiscriminantNarrowing.ts, 184, 11))
+>constructor : Symbol(Object.constructor, Decl(lib.es5.d.ts, --, --))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+
+    const narrowed: A = constructorLeft;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 186, 9))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>constructorLeft : Symbol(constructorLeft, Decl(nonNullDiscriminantNarrowing.ts, 184, 11))
+}
+else {
+    const narrowed: A | B = constructorLeft;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 189, 9))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>B : Symbol(B, Decl(nonNullDiscriminantNarrowing.ts, 181, 18))
+>constructorLeft : Symbol(constructorLeft, Decl(nonNullDiscriminantNarrowing.ts, 184, 11))
+}
+
+declare let constructorRight: A | B | null | undefined;
+>constructorRight : Symbol(constructorRight, Decl(nonNullDiscriminantNarrowing.ts, 192, 11))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>B : Symbol(B, Decl(nonNullDiscriminantNarrowing.ts, 181, 18))
+
+if (A === constructorRight!.constructor) {
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>constructorRight!.constructor : Symbol(Object.constructor, Decl(lib.es5.d.ts, --, --))
+>constructorRight : Symbol(constructorRight, Decl(nonNullDiscriminantNarrowing.ts, 192, 11))
+>constructor : Symbol(Object.constructor, Decl(lib.es5.d.ts, --, --))
+
+    const narrowed: A = constructorRight;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 194, 9))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>constructorRight : Symbol(constructorRight, Decl(nonNullDiscriminantNarrowing.ts, 192, 11))
+}
+else {
+    const narrowed: A | B = constructorRight;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 197, 9))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>B : Symbol(B, Decl(nonNullDiscriminantNarrowing.ts, 181, 18))
+>constructorRight : Symbol(constructorRight, Decl(nonNullDiscriminantNarrowing.ts, 192, 11))
+}
+
+declare let byInstanceof: A | B | null | undefined;
+>byInstanceof : Symbol(byInstanceof, Decl(nonNullDiscriminantNarrowing.ts, 200, 11))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>B : Symbol(B, Decl(nonNullDiscriminantNarrowing.ts, 181, 18))
+
+if (byInstanceof! instanceof A) {
+>byInstanceof : Symbol(byInstanceof, Decl(nonNullDiscriminantNarrowing.ts, 200, 11))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+
+    const narrowed: A = byInstanceof;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 202, 9))
+>A : Symbol(A, Decl(nonNullDiscriminantNarrowing.ts, 179, 1))
+>byInstanceof : Symbol(byInstanceof, Decl(nonNullDiscriminantNarrowing.ts, 200, 11))
+}
+else {
+    const narrowed: B | null | undefined = byInstanceof;
+>narrowed : Symbol(narrowed, Decl(nonNullDiscriminantNarrowing.ts, 205, 9))
+>B : Symbol(B, Decl(nonNullDiscriminantNarrowing.ts, 181, 18))
+>byInstanceof : Symbol(byInstanceof, Decl(nonNullDiscriminantNarrowing.ts, 200, 11))
+}
+
