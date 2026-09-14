@@ -387,7 +387,7 @@ func (c *Checker) narrowType(f *FlowState, t *Type, expr *ast.Node, assumeTrue b
 			symbol := c.getResolvedSymbol(expr)
 			if c.isConstantVariable(symbol) {
 				declaration := symbol.ValueDeclaration
-				if declaration != nil && ast.IsVariableDeclaration(declaration) && declaration.Type() == nil && declaration.Initializer() != nil && c.isConstantReference(f.reference) {
+				if declaration != nil && ast.IsVariableDeclaration(declaration) && declaration.Type() == nil && declaration.Initializer() != nil && c.isConstantReference(f.reference, nil) {
 					c.inlineLevel++
 					result := c.narrowType(f, t, declaration.Initializer(), assumeTrue)
 					c.inlineLevel--
@@ -1476,15 +1476,24 @@ func (c *Checker) getCandidateDiscriminantPropertyAccess(f *FlowState, expr *ast
 		symbol := c.getResolvedSymbol(expr)
 		if c.isConstantVariable(symbol) {
 			declaration := symbol.ValueDeclaration
+			referenceRoot := f.reference
+			for {
+				referenceRoot = ast.SkipParentheses(referenceRoot)
+				if !ast.IsAccessExpression(referenceRoot) {
+					break
+				}
+				referenceRoot = referenceRoot.Expression()
+			}
 			initializer := getCandidateVariableDeclarationInitializer(declaration)
 			// Given 'const x = obj.kind', allow 'x' as an alias for 'obj.kind'
-			if initializer != nil && ast.IsAccessExpression(initializer) && c.isMatchingReference(f.reference, initializer.Expression()) {
+			if initializer != nil && ast.IsAccessExpression(initializer) && c.isMatchingReference(f.reference, initializer.Expression()) && c.isConstantReference(referenceRoot, declaration) {
 				return initializer
 			}
 			// Given 'const { kind: x } = obj', allow 'x' as an alias for 'obj.kind'
 			if ast.IsBindingElement(declaration) && declaration.Initializer() == nil {
-				initializer = getCandidateVariableDeclarationInitializer(declaration.Parent.Parent)
-				if initializer != nil && (ast.IsIdentifier(initializer) || ast.IsAccessExpression(initializer)) && c.isMatchingReference(f.reference, initializer) {
+				rootDeclaration := declaration.Parent.Parent
+				initializer = getCandidateVariableDeclarationInitializer(rootDeclaration)
+				if initializer != nil && (ast.IsIdentifier(initializer) || ast.IsAccessExpression(initializer)) && c.isMatchingReference(f.reference, initializer) && c.isConstantReference(referenceRoot, rootDeclaration) {
 					return declaration
 				}
 			}
@@ -1811,18 +1820,18 @@ func (c *Checker) getLiteralPropertyNameText(name *ast.Node) (string, bool) {
 	return "", false
 }
 
-func (c *Checker) isConstantReference(node *ast.Node) bool {
+func (c *Checker) isConstantReference(node *ast.Node, location *ast.Node) bool {
 	switch node.Kind {
 	case ast.KindThisKeyword:
 		return true
 	case ast.KindIdentifier:
 		if !ast.IsThisInTypeQuery(node) {
 			symbol := c.getResolvedSymbol(node)
-			return c.isConstantVariable(symbol) || c.isParameterOrMutableLocalVariable(symbol) && !c.isSymbolAssigned(symbol) || symbol.ValueDeclaration != nil && ast.IsFunctionExpression(symbol.ValueDeclaration)
+			return c.isConstantVariable(symbol) || c.isParameterOrMutableLocalVariable(symbol) && c.isPastLastAssignment(symbol, location) || symbol.ValueDeclaration != nil && ast.IsFunctionExpression(symbol.ValueDeclaration)
 		}
 	case ast.KindPropertyAccessExpression, ast.KindElementAccessExpression:
 		// The resolvedSymbol property is initialized by checkPropertyAccess or checkElementAccess before we get here.
-		if c.isConstantReference(node.Expression()) {
+		if c.isConstantReference(node.Expression(), location) {
 			symbol := c.getResolvedSymbolOrNil(node)
 			if symbol != nil {
 				return c.isReadonlySymbol(symbol)

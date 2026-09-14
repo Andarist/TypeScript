@@ -20594,7 +20594,7 @@ func (c *Checker) checkAndAggregateReturnExpressionTypes(fn *ast.Node, checkMode
 			expr = ast.SkipParentheses(expr.Expression())
 		}
 		if ast.IsCallExpression(expr) && ast.IsIdentifier(expr.Expression()) && c.checkExpressionCached(expr.Expression()).symbol == c.getMergedSymbol(fn.Symbol()) &&
-			(!ast.IsFunctionExpressionOrArrowFunction(fn.Symbol().ValueDeclaration) || c.isConstantReference(expr.Expression())) {
+			(!ast.IsFunctionExpressionOrArrowFunction(fn.Symbol().ValueDeclaration) || c.isConstantReference(expr.Expression(), nil)) {
 			hasReturnOfTypeNever = true
 			return false
 		}

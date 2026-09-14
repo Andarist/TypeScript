@@ -1,0 +1,330 @@
+//// [tests/cases/compiler/narrowingByAliasedDiscriminantAfterAssignment.ts] ////
+
+=== narrowingByAliasedDiscriminantAfterAssignment.ts ===
+type U = { kind: "a"; a: number } | { kind: "b"; b: string };
+>U : U
+>kind : "a"
+>a : number
+>kind : "b"
+>b : string
+
+declare let replacement: U;
+>replacement : U
+
+function equality(value: U) {
+>equality : (value: U) => void
+>value : U
+
+    const kind = value.kind;
+>kind : "a" | "b"
+>value.kind : "a" | "b"
+>value : U
+>kind : "a" | "b"
+
+    value = replacement;
+>value = replacement : U
+>value : U
+>replacement : U
+
+    if (kind === "a") {
+>kind === "a" : boolean
+>kind : "a" | "b"
+>"a" : "a"
+
+        value.a;
+>value.a : any
+>value : U
+>a : any
+    }
+}
+
+function destructured(value: U) {
+>destructured : (value: U) => void
+>value : U
+
+    const { kind } = value;
+>kind : "a" | "b"
+>value : U
+
+    value = replacement;
+>value = replacement : U
+>value : U
+>replacement : U
+
+    if (kind === "a") {
+>kind === "a" : boolean
+>kind : "a" | "b"
+>"a" : "a"
+
+        value.a;
+>value.a : any
+>value : U
+>a : any
+    }
+}
+
+function switchAlias(value: U) {
+>switchAlias : (value: U) => void
+>value : U
+
+    const kind = value.kind;
+>kind : "a" | "b"
+>value.kind : "a" | "b"
+>value : U
+>kind : "a" | "b"
+
+    value = replacement;
+>value = replacement : U
+>value : U
+>replacement : U
+
+    switch (kind) {
+>kind : "a" | "b"
+
+        case "a":
+>"a" : "a"
+
+            value.a;
+>value.a : any
+>value : U
+>a : any
+    }
+}
+
+type TruthyU = { flag: true; a: number } | { flag: false; b: string };
+>TruthyU : TruthyU
+>flag : true
+>true : true
+>a : number
+>flag : false
+>false : false
+>b : string
+
+declare let truthyReplacement: TruthyU;
+>truthyReplacement : TruthyU
+
+function truthiness(value: TruthyU) {
+>truthiness : (value: TruthyU) => void
+>value : TruthyU
+
+    const flag = value.flag;
+>flag : boolean
+>value.flag : boolean
+>value : TruthyU
+>flag : boolean
+
+    value = truthyReplacement;
+>value = truthyReplacement : TruthyU
+>value : TruthyU
+>truthyReplacement : TruthyU
+
+    if (flag) {
+>flag : boolean
+
+        value.a;
+>value.a : any
+>value : TruthyU
+>a : any
+    }
+}
+
+type TypeofU = { data: "text"; a: number } | { data: 0; b: string };
+>TypeofU : TypeofU
+>data : "text"
+>a : number
+>data : 0
+>b : string
+
+declare let typeofReplacement: TypeofU;
+>typeofReplacement : TypeofU
+
+function typeofAlias(value: TypeofU) {
+>typeofAlias : (value: TypeofU) => void
+>value : TypeofU
+
+    const data = value.data;
+>data : "text" | 0
+>value.data : "text" | 0
+>value : TypeofU
+>data : "text" | 0
+
+    value = typeofReplacement;
+>value = typeofReplacement : TypeofU
+>value : TypeofU
+>typeofReplacement : TypeofU
+
+    if (typeof data === "string") {
+>typeof data === "string" : boolean
+>typeof data : "bigint" | "boolean" | "function" | "number" | "object" | "string" | "symbol" | "undefined"
+>data : "text" | 0
+>"string" : "string"
+
+        value.a;
+>value.a : any
+>value : TypeofU
+>a : any
+    }
+}
+
+type OptionalU = { marker: "present"; a: number } | { marker: undefined; b: string };
+>OptionalU : OptionalU
+>marker : "present"
+>a : number
+>marker : undefined
+>b : string
+
+declare let optionalReplacement: OptionalU;
+>optionalReplacement : OptionalU
+
+function optionalAlias(value: OptionalU) {
+>optionalAlias : (value: OptionalU) => void
+>value : OptionalU
+
+    const marker = value.marker;
+>marker : "present" | undefined
+>value.marker : "present" | undefined
+>value : OptionalU
+>marker : "present" | undefined
+
+    value = optionalReplacement;
+>value = optionalReplacement : OptionalU
+>value : OptionalU
+>optionalReplacement : OptionalU
+
+    if (marker?.length) {
+>marker?.length : number | undefined
+>marker : "present" | undefined
+>length : number | undefined
+
+        value.a;
+>value.a : any
+>value : OptionalU
+>a : any
+    }
+}
+
+declare function assert(condition: unknown): asserts condition;
+>assert : (condition: unknown) => asserts condition
+>condition : unknown
+
+function assertionAlias(value: U) {
+>assertionAlias : (value: U) => void
+>value : U
+
+    const kind = value.kind;
+>kind : "a" | "b"
+>value.kind : "a" | "b"
+>value : U
+>kind : "a" | "b"
+
+    value = replacement;
+>value = replacement : U
+>value : U
+>replacement : U
+
+    assert(kind === "a");
+>assert(kind === "a") : void
+>assert : (condition: unknown) => asserts condition
+>kind === "a" : boolean
+>kind : "a" | "b"
+>"a" : "a"
+
+    value.a;
+>value.a : any
+>value : U
+>a : any
+}
+
+declare function assertA(kind: U["kind"]): asserts kind is "a";
+>assertA : (kind: U["kind"]) => asserts kind is "a"
+>kind : "a" | "b"
+
+function assertionPredicateAlias(value: U) {
+>assertionPredicateAlias : (value: U) => void
+>value : U
+
+    const kind = value.kind;
+>kind : "a" | "b"
+>value.kind : "a" | "b"
+>value : U
+>kind : "a" | "b"
+
+    value = replacement;
+>value = replacement : U
+>value : U
+>replacement : U
+
+    assertA(kind);
+>assertA(kind) : void
+>assertA : (kind: U["kind"]) => asserts kind is "a"
+>kind : "a" | "b"
+
+    value.a;
+>value.a : any
+>value : U
+>a : any
+}
+
+declare let holderReplacement: { value: U };
+>holderReplacement : { value: U; }
+>value : U
+
+function nestedRoot(holder: { value: U }) {
+>nestedRoot : (holder: { value: U; }) => void
+>holder : { value: U; }
+>value : U
+
+    const kind = holder.value.kind;
+>kind : "a" | "b"
+>holder.value.kind : "a" | "b"
+>holder.value : U
+>holder : { value: U; }
+>value : U
+>kind : "a" | "b"
+
+    holder = holderReplacement;
+>holder = holderReplacement : { value: U; }
+>holder : { value: U; }
+>holderReplacement : { value: U; }
+
+    if (kind === "a") {
+>kind === "a" : boolean
+>kind : "a" | "b"
+>"a" : "a"
+
+        holder.value.a;
+>holder.value.a : any
+>holder.value : U
+>holder : { value: U; }
+>value : U
+>a : any
+    }
+}
+
+function assignmentBeforeCapture(value: U) {
+>assignmentBeforeCapture : (value: U) => void
+>value : U
+
+    value = replacement;
+>value = replacement : U
+>value : U
+>replacement : U
+
+    const kind = value.kind;
+>kind : "a" | "b"
+>value.kind : "a" | "b"
+>value : U
+>kind : "a" | "b"
+
+    if (kind === "a") {
+>kind === "a" : boolean
+>kind : "a" | "b"
+>"a" : "a"
+
+        value.a;
+>value.a : number
+>value : { kind: "a"; a: number; }
+>a : number
+    }
+}
+

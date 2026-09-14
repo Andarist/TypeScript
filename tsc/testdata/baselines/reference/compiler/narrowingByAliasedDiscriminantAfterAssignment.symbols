@@ -1,0 +1,301 @@
+//// [tests/cases/compiler/narrowingByAliasedDiscriminantAfterAssignment.ts] ////
+
+=== narrowingByAliasedDiscriminantAfterAssignment.ts ===
+type U = { kind: "a"; a: number } | { kind: "b"; b: string };
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10))
+>a : Symbol(a, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 21))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+>b : Symbol(b, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 48))
+
+declare let replacement: U;
+>replacement : Symbol(replacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 2, 11))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+
+function equality(value: U) {
+>equality : Symbol(equality, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 2, 27))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 4, 18))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+
+    const kind = value.kind;
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 5, 9))
+>value.kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 4, 18))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+
+    value = replacement;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 4, 18))
+>replacement : Symbol(replacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 2, 11))
+
+    if (kind === "a") {
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 5, 9))
+
+        value.a;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 4, 18))
+    }
+}
+
+function destructured(value: U) {
+>destructured : Symbol(destructured, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 10, 1))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 12, 22))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+
+    const { kind } = value;
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 13, 11))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 12, 22))
+
+    value = replacement;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 12, 22))
+>replacement : Symbol(replacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 2, 11))
+
+    if (kind === "a") {
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 13, 11))
+
+        value.a;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 12, 22))
+    }
+}
+
+function switchAlias(value: U) {
+>switchAlias : Symbol(switchAlias, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 18, 1))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 20, 21))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+
+    const kind = value.kind;
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 21, 9))
+>value.kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 20, 21))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+
+    value = replacement;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 20, 21))
+>replacement : Symbol(replacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 2, 11))
+
+    switch (kind) {
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 21, 9))
+
+        case "a":
+            value.a;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 20, 21))
+    }
+}
+
+type TruthyU = { flag: true; a: number } | { flag: false; b: string };
+>TruthyU : Symbol(TruthyU, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 27, 1))
+>flag : Symbol(flag, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 29, 16))
+>a : Symbol(a, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 29, 28))
+>flag : Symbol(flag, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 29, 44))
+>b : Symbol(b, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 29, 57))
+
+declare let truthyReplacement: TruthyU;
+>truthyReplacement : Symbol(truthyReplacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 31, 11))
+>TruthyU : Symbol(TruthyU, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 27, 1))
+
+function truthiness(value: TruthyU) {
+>truthiness : Symbol(truthiness, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 31, 39))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 33, 20))
+>TruthyU : Symbol(TruthyU, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 27, 1))
+
+    const flag = value.flag;
+>flag : Symbol(flag, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 34, 9))
+>value.flag : Symbol(flag, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 29, 16), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 29, 44))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 33, 20))
+>flag : Symbol(flag, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 29, 16), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 29, 44))
+
+    value = truthyReplacement;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 33, 20))
+>truthyReplacement : Symbol(truthyReplacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 31, 11))
+
+    if (flag) {
+>flag : Symbol(flag, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 34, 9))
+
+        value.a;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 33, 20))
+    }
+}
+
+type TypeofU = { data: "text"; a: number } | { data: 0; b: string };
+>TypeofU : Symbol(TypeofU, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 39, 1))
+>data : Symbol(data, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 41, 16))
+>a : Symbol(a, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 41, 30))
+>data : Symbol(data, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 41, 46))
+>b : Symbol(b, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 41, 55))
+
+declare let typeofReplacement: TypeofU;
+>typeofReplacement : Symbol(typeofReplacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 43, 11))
+>TypeofU : Symbol(TypeofU, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 39, 1))
+
+function typeofAlias(value: TypeofU) {
+>typeofAlias : Symbol(typeofAlias, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 43, 39))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 45, 21))
+>TypeofU : Symbol(TypeofU, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 39, 1))
+
+    const data = value.data;
+>data : Symbol(data, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 46, 9))
+>value.data : Symbol(data, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 41, 16), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 41, 46))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 45, 21))
+>data : Symbol(data, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 41, 16), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 41, 46))
+
+    value = typeofReplacement;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 45, 21))
+>typeofReplacement : Symbol(typeofReplacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 43, 11))
+
+    if (typeof data === "string") {
+>data : Symbol(data, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 46, 9))
+
+        value.a;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 45, 21))
+    }
+}
+
+type OptionalU = { marker: "present"; a: number } | { marker: undefined; b: string };
+>OptionalU : Symbol(OptionalU, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 51, 1))
+>marker : Symbol(marker, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 53, 18))
+>a : Symbol(a, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 53, 37))
+>marker : Symbol(marker, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 53, 53))
+>b : Symbol(b, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 53, 72))
+
+declare let optionalReplacement: OptionalU;
+>optionalReplacement : Symbol(optionalReplacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 55, 11))
+>OptionalU : Symbol(OptionalU, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 51, 1))
+
+function optionalAlias(value: OptionalU) {
+>optionalAlias : Symbol(optionalAlias, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 55, 43))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 57, 23))
+>OptionalU : Symbol(OptionalU, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 51, 1))
+
+    const marker = value.marker;
+>marker : Symbol(marker, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 58, 9))
+>value.marker : Symbol(marker, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 53, 18), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 53, 53))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 57, 23))
+>marker : Symbol(marker, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 53, 18), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 53, 53))
+
+    value = optionalReplacement;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 57, 23))
+>optionalReplacement : Symbol(optionalReplacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 55, 11))
+
+    if (marker?.length) {
+>marker?.length : Symbol(String.length, Decl(lib.es5.d.ts, --, --))
+>marker : Symbol(marker, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 58, 9))
+>length : Symbol(String.length, Decl(lib.es5.d.ts, --, --))
+
+        value.a;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 57, 23))
+    }
+}
+
+declare function assert(condition: unknown): asserts condition;
+>assert : Symbol(assert, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 63, 1))
+>condition : Symbol(condition, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 65, 24))
+>condition : Symbol(condition, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 65, 24))
+
+function assertionAlias(value: U) {
+>assertionAlias : Symbol(assertionAlias, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 65, 63))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 67, 24))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+
+    const kind = value.kind;
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 68, 9))
+>value.kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 67, 24))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+
+    value = replacement;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 67, 24))
+>replacement : Symbol(replacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 2, 11))
+
+    assert(kind === "a");
+>assert : Symbol(assert, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 63, 1))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 68, 9))
+
+    value.a;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 67, 24))
+}
+
+declare function assertA(kind: U["kind"]): asserts kind is "a";
+>assertA : Symbol(assertA, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 72, 1))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 74, 25))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 74, 25))
+
+function assertionPredicateAlias(value: U) {
+>assertionPredicateAlias : Symbol(assertionPredicateAlias, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 74, 63))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 76, 33))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+
+    const kind = value.kind;
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 77, 9))
+>value.kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 76, 33))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+
+    value = replacement;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 76, 33))
+>replacement : Symbol(replacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 2, 11))
+
+    assertA(kind);
+>assertA : Symbol(assertA, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 72, 1))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 77, 9))
+
+    value.a;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 76, 33))
+}
+
+declare let holderReplacement: { value: U };
+>holderReplacement : Symbol(holderReplacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 83, 11))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 83, 32))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+
+function nestedRoot(holder: { value: U }) {
+>nestedRoot : Symbol(nestedRoot, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 83, 44))
+>holder : Symbol(holder, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 85, 20))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 85, 29))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+
+    const kind = holder.value.kind;
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 86, 9))
+>holder.value.kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+>holder.value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 85, 29))
+>holder : Symbol(holder, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 85, 20))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 85, 29))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+
+    holder = holderReplacement;
+>holder : Symbol(holder, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 85, 20))
+>holderReplacement : Symbol(holderReplacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 83, 11))
+
+    if (kind === "a") {
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 86, 9))
+
+        holder.value.a;
+>holder.value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 85, 29))
+>holder : Symbol(holder, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 85, 20))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 85, 29))
+    }
+}
+
+function assignmentBeforeCapture(value: U) {
+>assignmentBeforeCapture : Symbol(assignmentBeforeCapture, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 91, 1))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 93, 33))
+>U : Symbol(U, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 0))
+
+    value = replacement;
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 93, 33))
+>replacement : Symbol(replacement, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 2, 11))
+
+    const kind = value.kind;
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 95, 9))
+>value.kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 93, 33))
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 10), Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 37))
+
+    if (kind === "a") {
+>kind : Symbol(kind, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 95, 9))
+
+        value.a;
+>value.a : Symbol(a, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 21))
+>value : Symbol(value, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 93, 33))
+>a : Symbol(a, Decl(narrowingByAliasedDiscriminantAfterAssignment.ts, 0, 21))
+    }
+}
+
