@@ -1670,6 +1670,9 @@ func (c *Checker) writeFlowCacheKey(b *keyBuilder, node *ast.Node, declaredType 
 			if symbol == c.unknownSymbol {
 				return false
 			}
+			if c.isConstraintPosition(declaredType, node) {
+				b.writeByte('@')
+			}
 			b.writeSymbol(symbol)
 		}
 		fallthrough

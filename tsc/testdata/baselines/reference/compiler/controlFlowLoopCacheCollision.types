@@ -1,0 +1,271 @@
+//// [tests/cases/compiler/controlFlowLoopCacheCollision.ts] ////
+
+=== controlFlowLoopCacheCollision.ts ===
+// Repro from #59715
+
+class Child extends HTMLElement {
+>Child : Child
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : Parent | null
+
+        const { parentElement } = this;
+>parentElement : HTMLElement | null
+>this : this
+
+        if (!(parentElement instanceof Parent)) {
+>!(parentElement instanceof Parent) : boolean
+>(parentElement instanceof Parent) : boolean
+>parentElement instanceof Parent : boolean
+>parentElement : HTMLElement | null
+>Parent : typeof Parent
+
+            return null;
+        }
+
+        return parentElement;
+>parentElement : Parent
+    }
+}
+
+class Parent extends HTMLElement {
+>Parent : Parent
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : GrandParent | null
+
+        const { parentElement } = this;
+>parentElement : HTMLElement | null
+>this : this
+
+        if (!(parentElement instanceof GrandParent)) {
+>!(parentElement instanceof GrandParent) : boolean
+>(parentElement instanceof GrandParent) : boolean
+>parentElement instanceof GrandParent : boolean
+>parentElement : HTMLElement | null
+>GrandParent : typeof GrandParent
+
+            return null;
+        }
+
+        return parentElement;
+>parentElement : GrandParent
+    }
+}
+
+class GrandParent extends HTMLElement {
+>GrandParent : GrandParent
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : GreatGrandParent | null
+
+        const { parentElement } = this;
+>parentElement : HTMLElement | null
+>this : this
+
+        if (!(parentElement instanceof GreatGrandParent)) {
+>!(parentElement instanceof GreatGrandParent) : boolean
+>(parentElement instanceof GreatGrandParent) : boolean
+>parentElement instanceof GreatGrandParent : boolean
+>parentElement : HTMLElement | null
+>GreatGrandParent : typeof GreatGrandParent
+
+            return null;
+        }
+
+        return parentElement;
+>parentElement : GreatGrandParent
+    }
+}
+
+class GreatGrandParent extends HTMLElement {
+>GreatGrandParent : GreatGrandParent
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : null
+
+        return null;
+    }
+}
+
+customElements.define("c-child", Child);
+>customElements.define("c-child", Child) : void
+>customElements.define : (name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions) => void
+>customElements : CustomElementRegistry
+>define : (name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions) => void
+>"c-child" : "c-child"
+>Child : typeof Child
+
+customElements.define("c-parent", Parent);
+>customElements.define("c-parent", Parent) : void
+>customElements.define : (name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions) => void
+>customElements : CustomElementRegistry
+>define : (name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions) => void
+>"c-parent" : "c-parent"
+>Parent : typeof Parent
+
+customElements.define("c-grand-parent", GrandParent);
+>customElements.define("c-grand-parent", GrandParent) : void
+>customElements.define : (name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions) => void
+>customElements : CustomElementRegistry
+>define : (name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions) => void
+>"c-grand-parent" : "c-grand-parent"
+>GrandParent : typeof GrandParent
+
+customElements.define("c-great-grand-parent", GreatGrandParent);
+>customElements.define("c-great-grand-parent", GreatGrandParent) : void
+>customElements.define : (name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions) => void
+>customElements : CustomElementRegistry
+>define : (name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions) => void
+>"c-great-grand-parent" : "c-great-grand-parent"
+>GreatGrandParent : typeof GreatGrandParent
+
+type ParentElements = GreatGrandParent | GrandParent | Parent;
+>ParentElements : ParentElements
+
+const child = new Child();
+>child : Child
+>new Child() : Child
+>Child : typeof Child
+
+let currentParent: ParentElements | null = child.parent;
+>currentParent : ParentElements | null
+>child.parent : Parent | null
+>child : Child
+>parent : Parent | null
+
+while (currentParent) {
+>currentParent : ParentElements | null
+
+    currentParent;
+>currentParent : ParentElements
+
+    currentParent = currentParent.parent;
+>currentParent = currentParent.parent : GrandParent | GreatGrandParent | null
+>currentParent : ParentElements | null
+>currentParent.parent : GrandParent | GreatGrandParent | null
+>currentParent : GrandParent | Parent
+>parent : GrandParent | GreatGrandParent | null
+}
+
+// Minimized repro using inferred getters
+
+class GetterEnd {
+>GetterEnd : GetterEnd
+
+    get next() {
+>next : null
+
+        return null;
+    }
+}
+
+class GetterMiddle {
+>GetterMiddle : GetterMiddle
+
+    get next() {
+>next : GetterEnd | null
+
+        return Math.random() ? new GetterEnd() : null;
+>Math.random() ? new GetterEnd() : null : GetterEnd | null
+>Math.random() : number
+>Math.random : () => number
+>Math : Math
+>random : () => number
+>new GetterEnd() : GetterEnd
+>GetterEnd : typeof GetterEnd
+    }
+}
+
+class GetterStart {
+>GetterStart : GetterStart
+
+    get next() {
+>next : GetterMiddle | null
+
+        return Math.random() ? new GetterMiddle() : null;
+>Math.random() ? new GetterMiddle() : null : GetterMiddle | null
+>Math.random() : number
+>Math.random : () => number
+>Math : Math
+>random : () => number
+>new GetterMiddle() : GetterMiddle
+>GetterMiddle : typeof GetterMiddle
+    }
+}
+
+type GetterNodes = GetterEnd | GetterMiddle | GetterStart;
+>GetterNodes : GetterNodes
+
+declare const getterStart: GetterStart | null;
+>getterStart : GetterStart | null
+
+let getterCurrent: GetterNodes | null = getterStart;
+>getterCurrent : GetterNodes | null
+>getterStart : GetterStart | null
+
+while (getterCurrent) {
+>getterCurrent : GetterNodes | null
+
+    getterCurrent;
+>getterCurrent : GetterNodes
+
+    getterCurrent = getterCurrent.next;
+>getterCurrent = getterCurrent.next : GetterEnd | GetterMiddle | null
+>getterCurrent : GetterNodes | null
+>getterCurrent.next : GetterEnd | GetterMiddle | null
+>getterCurrent : GetterMiddle | GetterStart
+>next : GetterEnd | GetterMiddle | null
+}
+
+// Minimized repro using readonly properties
+
+class PropertyEnd {
+>PropertyEnd : PropertyEnd
+
+    readonly next: null = null;
+>next : null
+}
+
+class PropertyMiddle {
+>PropertyMiddle : PropertyMiddle
+
+    readonly next: PropertyEnd | null = null;
+>next : PropertyEnd | null
+}
+
+class PropertyStart {
+>PropertyStart : PropertyStart
+
+    readonly next: PropertyMiddle | null = null;
+>next : PropertyMiddle | null
+}
+
+type PropertyNodes = PropertyEnd | PropertyMiddle | PropertyStart;
+>PropertyNodes : PropertyNodes
+
+declare const propertyStart: PropertyStart | null;
+>propertyStart : PropertyStart | null
+
+let propertyCurrent: PropertyNodes | null = propertyStart;
+>propertyCurrent : PropertyNodes | null
+>propertyStart : PropertyStart | null
+
+while (propertyCurrent) {
+>propertyCurrent : PropertyNodes | null
+
+    propertyCurrent;
+>propertyCurrent : PropertyNodes
+
+    propertyCurrent = propertyCurrent.next;
+>propertyCurrent = propertyCurrent.next : PropertyEnd | PropertyMiddle | null
+>propertyCurrent : PropertyNodes | null
+>propertyCurrent.next : PropertyEnd | PropertyMiddle | null
+>propertyCurrent : PropertyMiddle | PropertyStart
+>next : PropertyEnd | PropertyMiddle | null
+}
+

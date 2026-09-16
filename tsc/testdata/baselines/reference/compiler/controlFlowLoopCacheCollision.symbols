@@ -1,0 +1,260 @@
+//// [tests/cases/compiler/controlFlowLoopCacheCollision.ts] ////
+
+=== controlFlowLoopCacheCollision.ts ===
+// Repro from #59715
+
+class Child extends HTMLElement {
+>Child : Symbol(Child, Decl(controlFlowLoopCacheCollision.ts, 0, 0))
+>HTMLElement : Symbol(HTMLElement, Decl(lib.dom.d.ts, --, --), Decl(lib.dom.d.ts, --, --))
+
+    get parent() {
+>parent : Symbol(Child.parent, Decl(controlFlowLoopCacheCollision.ts, 2, 33))
+
+        const { parentElement } = this;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopCacheCollision.ts, 4, 15))
+>this : Symbol(Child, Decl(controlFlowLoopCacheCollision.ts, 0, 0))
+
+        if (!(parentElement instanceof Parent)) {
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopCacheCollision.ts, 4, 15))
+>Parent : Symbol(Parent, Decl(controlFlowLoopCacheCollision.ts, 12, 1))
+
+            return null;
+        }
+
+        return parentElement;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopCacheCollision.ts, 4, 15))
+    }
+}
+
+class Parent extends HTMLElement {
+>Parent : Symbol(Parent, Decl(controlFlowLoopCacheCollision.ts, 12, 1))
+>HTMLElement : Symbol(HTMLElement, Decl(lib.dom.d.ts, --, --), Decl(lib.dom.d.ts, --, --))
+
+    get parent() {
+>parent : Symbol(Parent.parent, Decl(controlFlowLoopCacheCollision.ts, 14, 34))
+
+        const { parentElement } = this;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopCacheCollision.ts, 16, 15))
+>this : Symbol(Parent, Decl(controlFlowLoopCacheCollision.ts, 12, 1))
+
+        if (!(parentElement instanceof GrandParent)) {
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopCacheCollision.ts, 16, 15))
+>GrandParent : Symbol(GrandParent, Decl(controlFlowLoopCacheCollision.ts, 24, 1))
+
+            return null;
+        }
+
+        return parentElement;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopCacheCollision.ts, 16, 15))
+    }
+}
+
+class GrandParent extends HTMLElement {
+>GrandParent : Symbol(GrandParent, Decl(controlFlowLoopCacheCollision.ts, 24, 1))
+>HTMLElement : Symbol(HTMLElement, Decl(lib.dom.d.ts, --, --), Decl(lib.dom.d.ts, --, --))
+
+    get parent() {
+>parent : Symbol(GrandParent.parent, Decl(controlFlowLoopCacheCollision.ts, 26, 39))
+
+        const { parentElement } = this;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopCacheCollision.ts, 28, 15))
+>this : Symbol(GrandParent, Decl(controlFlowLoopCacheCollision.ts, 24, 1))
+
+        if (!(parentElement instanceof GreatGrandParent)) {
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopCacheCollision.ts, 28, 15))
+>GreatGrandParent : Symbol(GreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 36, 1))
+
+            return null;
+        }
+
+        return parentElement;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopCacheCollision.ts, 28, 15))
+    }
+}
+
+class GreatGrandParent extends HTMLElement {
+>GreatGrandParent : Symbol(GreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 36, 1))
+>HTMLElement : Symbol(HTMLElement, Decl(lib.dom.d.ts, --, --), Decl(lib.dom.d.ts, --, --))
+
+    get parent() {
+>parent : Symbol(GreatGrandParent.parent, Decl(controlFlowLoopCacheCollision.ts, 38, 44))
+
+        return null;
+    }
+}
+
+customElements.define("c-child", Child);
+>customElements.define : Symbol(CustomElementRegistry.define, Decl(lib.dom.d.ts, --, --))
+>customElements : Symbol(customElements, Decl(lib.dom.d.ts, --, --))
+>define : Symbol(CustomElementRegistry.define, Decl(lib.dom.d.ts, --, --))
+>Child : Symbol(Child, Decl(controlFlowLoopCacheCollision.ts, 0, 0))
+
+customElements.define("c-parent", Parent);
+>customElements.define : Symbol(CustomElementRegistry.define, Decl(lib.dom.d.ts, --, --))
+>customElements : Symbol(customElements, Decl(lib.dom.d.ts, --, --))
+>define : Symbol(CustomElementRegistry.define, Decl(lib.dom.d.ts, --, --))
+>Parent : Symbol(Parent, Decl(controlFlowLoopCacheCollision.ts, 12, 1))
+
+customElements.define("c-grand-parent", GrandParent);
+>customElements.define : Symbol(CustomElementRegistry.define, Decl(lib.dom.d.ts, --, --))
+>customElements : Symbol(customElements, Decl(lib.dom.d.ts, --, --))
+>define : Symbol(CustomElementRegistry.define, Decl(lib.dom.d.ts, --, --))
+>GrandParent : Symbol(GrandParent, Decl(controlFlowLoopCacheCollision.ts, 24, 1))
+
+customElements.define("c-great-grand-parent", GreatGrandParent);
+>customElements.define : Symbol(CustomElementRegistry.define, Decl(lib.dom.d.ts, --, --))
+>customElements : Symbol(customElements, Decl(lib.dom.d.ts, --, --))
+>define : Symbol(CustomElementRegistry.define, Decl(lib.dom.d.ts, --, --))
+>GreatGrandParent : Symbol(GreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 36, 1))
+
+type ParentElements = GreatGrandParent | GrandParent | Parent;
+>ParentElements : Symbol(ParentElements, Decl(controlFlowLoopCacheCollision.ts, 47, 64))
+>GreatGrandParent : Symbol(GreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 36, 1))
+>GrandParent : Symbol(GrandParent, Decl(controlFlowLoopCacheCollision.ts, 24, 1))
+>Parent : Symbol(Parent, Decl(controlFlowLoopCacheCollision.ts, 12, 1))
+
+const child = new Child();
+>child : Symbol(child, Decl(controlFlowLoopCacheCollision.ts, 51, 5))
+>Child : Symbol(Child, Decl(controlFlowLoopCacheCollision.ts, 0, 0))
+
+let currentParent: ParentElements | null = child.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopCacheCollision.ts, 53, 3))
+>ParentElements : Symbol(ParentElements, Decl(controlFlowLoopCacheCollision.ts, 47, 64))
+>child.parent : Symbol(Child.parent, Decl(controlFlowLoopCacheCollision.ts, 2, 33))
+>child : Symbol(child, Decl(controlFlowLoopCacheCollision.ts, 51, 5))
+>parent : Symbol(Child.parent, Decl(controlFlowLoopCacheCollision.ts, 2, 33))
+
+while (currentParent) {
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopCacheCollision.ts, 53, 3))
+
+    currentParent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopCacheCollision.ts, 53, 3))
+
+    currentParent = currentParent.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopCacheCollision.ts, 53, 3))
+>currentParent.parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 26, 39), Decl(controlFlowLoopCacheCollision.ts, 14, 34))
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopCacheCollision.ts, 53, 3))
+>parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 26, 39), Decl(controlFlowLoopCacheCollision.ts, 14, 34))
+}
+
+// Minimized repro using inferred getters
+
+class GetterEnd {
+>GetterEnd : Symbol(GetterEnd, Decl(controlFlowLoopCacheCollision.ts, 57, 1))
+
+    get next() {
+>next : Symbol(GetterEnd.next, Decl(controlFlowLoopCacheCollision.ts, 61, 17))
+
+        return null;
+    }
+}
+
+class GetterMiddle {
+>GetterMiddle : Symbol(GetterMiddle, Decl(controlFlowLoopCacheCollision.ts, 65, 1))
+
+    get next() {
+>next : Symbol(GetterMiddle.next, Decl(controlFlowLoopCacheCollision.ts, 67, 20))
+
+        return Math.random() ? new GetterEnd() : null;
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>GetterEnd : Symbol(GetterEnd, Decl(controlFlowLoopCacheCollision.ts, 57, 1))
+    }
+}
+
+class GetterStart {
+>GetterStart : Symbol(GetterStart, Decl(controlFlowLoopCacheCollision.ts, 71, 1))
+
+    get next() {
+>next : Symbol(GetterStart.next, Decl(controlFlowLoopCacheCollision.ts, 73, 19))
+
+        return Math.random() ? new GetterMiddle() : null;
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>GetterMiddle : Symbol(GetterMiddle, Decl(controlFlowLoopCacheCollision.ts, 65, 1))
+    }
+}
+
+type GetterNodes = GetterEnd | GetterMiddle | GetterStart;
+>GetterNodes : Symbol(GetterNodes, Decl(controlFlowLoopCacheCollision.ts, 77, 1))
+>GetterEnd : Symbol(GetterEnd, Decl(controlFlowLoopCacheCollision.ts, 57, 1))
+>GetterMiddle : Symbol(GetterMiddle, Decl(controlFlowLoopCacheCollision.ts, 65, 1))
+>GetterStart : Symbol(GetterStart, Decl(controlFlowLoopCacheCollision.ts, 71, 1))
+
+declare const getterStart: GetterStart | null;
+>getterStart : Symbol(getterStart, Decl(controlFlowLoopCacheCollision.ts, 81, 13))
+>GetterStart : Symbol(GetterStart, Decl(controlFlowLoopCacheCollision.ts, 71, 1))
+
+let getterCurrent: GetterNodes | null = getterStart;
+>getterCurrent : Symbol(getterCurrent, Decl(controlFlowLoopCacheCollision.ts, 82, 3))
+>GetterNodes : Symbol(GetterNodes, Decl(controlFlowLoopCacheCollision.ts, 77, 1))
+>getterStart : Symbol(getterStart, Decl(controlFlowLoopCacheCollision.ts, 81, 13))
+
+while (getterCurrent) {
+>getterCurrent : Symbol(getterCurrent, Decl(controlFlowLoopCacheCollision.ts, 82, 3))
+
+    getterCurrent;
+>getterCurrent : Symbol(getterCurrent, Decl(controlFlowLoopCacheCollision.ts, 82, 3))
+
+    getterCurrent = getterCurrent.next;
+>getterCurrent : Symbol(getterCurrent, Decl(controlFlowLoopCacheCollision.ts, 82, 3))
+>getterCurrent.next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 67, 20), Decl(controlFlowLoopCacheCollision.ts, 73, 19))
+>getterCurrent : Symbol(getterCurrent, Decl(controlFlowLoopCacheCollision.ts, 82, 3))
+>next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 67, 20), Decl(controlFlowLoopCacheCollision.ts, 73, 19))
+}
+
+// Minimized repro using readonly properties
+
+class PropertyEnd {
+>PropertyEnd : Symbol(PropertyEnd, Decl(controlFlowLoopCacheCollision.ts, 86, 1))
+
+    readonly next: null = null;
+>next : Symbol(PropertyEnd.next, Decl(controlFlowLoopCacheCollision.ts, 90, 19))
+}
+
+class PropertyMiddle {
+>PropertyMiddle : Symbol(PropertyMiddle, Decl(controlFlowLoopCacheCollision.ts, 92, 1))
+
+    readonly next: PropertyEnd | null = null;
+>next : Symbol(PropertyMiddle.next, Decl(controlFlowLoopCacheCollision.ts, 94, 22))
+>PropertyEnd : Symbol(PropertyEnd, Decl(controlFlowLoopCacheCollision.ts, 86, 1))
+}
+
+class PropertyStart {
+>PropertyStart : Symbol(PropertyStart, Decl(controlFlowLoopCacheCollision.ts, 96, 1))
+
+    readonly next: PropertyMiddle | null = null;
+>next : Symbol(PropertyStart.next, Decl(controlFlowLoopCacheCollision.ts, 98, 21))
+>PropertyMiddle : Symbol(PropertyMiddle, Decl(controlFlowLoopCacheCollision.ts, 92, 1))
+}
+
+type PropertyNodes = PropertyEnd | PropertyMiddle | PropertyStart;
+>PropertyNodes : Symbol(PropertyNodes, Decl(controlFlowLoopCacheCollision.ts, 100, 1))
+>PropertyEnd : Symbol(PropertyEnd, Decl(controlFlowLoopCacheCollision.ts, 86, 1))
+>PropertyMiddle : Symbol(PropertyMiddle, Decl(controlFlowLoopCacheCollision.ts, 92, 1))
+>PropertyStart : Symbol(PropertyStart, Decl(controlFlowLoopCacheCollision.ts, 96, 1))
+
+declare const propertyStart: PropertyStart | null;
+>propertyStart : Symbol(propertyStart, Decl(controlFlowLoopCacheCollision.ts, 104, 13))
+>PropertyStart : Symbol(PropertyStart, Decl(controlFlowLoopCacheCollision.ts, 96, 1))
+
+let propertyCurrent: PropertyNodes | null = propertyStart;
+>propertyCurrent : Symbol(propertyCurrent, Decl(controlFlowLoopCacheCollision.ts, 105, 3))
+>PropertyNodes : Symbol(PropertyNodes, Decl(controlFlowLoopCacheCollision.ts, 100, 1))
+>propertyStart : Symbol(propertyStart, Decl(controlFlowLoopCacheCollision.ts, 104, 13))
+
+while (propertyCurrent) {
+>propertyCurrent : Symbol(propertyCurrent, Decl(controlFlowLoopCacheCollision.ts, 105, 3))
+
+    propertyCurrent;
+>propertyCurrent : Symbol(propertyCurrent, Decl(controlFlowLoopCacheCollision.ts, 105, 3))
+
+    propertyCurrent = propertyCurrent.next;
+>propertyCurrent : Symbol(propertyCurrent, Decl(controlFlowLoopCacheCollision.ts, 105, 3))
+>propertyCurrent.next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 94, 22), Decl(controlFlowLoopCacheCollision.ts, 98, 21))
+>propertyCurrent : Symbol(propertyCurrent, Decl(controlFlowLoopCacheCollision.ts, 105, 3))
+>next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 94, 22), Decl(controlFlowLoopCacheCollision.ts, 98, 21))
+}
+
