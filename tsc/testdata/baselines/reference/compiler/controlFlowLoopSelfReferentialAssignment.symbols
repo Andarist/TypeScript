@@ -1,0 +1,682 @@
+//// [tests/cases/compiler/controlFlowLoopSelfReferentialAssignment.ts] ////
+
+=== controlFlowLoopSelfReferentialAssignment.ts ===
+// Repro from #59715
+
+declare class Child {
+>Child : Symbol(Child, Decl(controlFlowLoopSelfReferentialAssignment.ts, 0, 0))
+
+    parent: Parent | null;
+>parent : Symbol(Child.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 2, 21))
+>Parent : Symbol(Parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 4, 1))
+}
+
+declare class Parent {
+>Parent : Symbol(Parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 4, 1))
+
+    parent: GrandParent | null;
+>parent : Symbol(Parent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 6, 22))
+>GrandParent : Symbol(GrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 8, 1))
+}
+
+declare class GrandParent {
+>GrandParent : Symbol(GrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 8, 1))
+
+    parent: GreatGrandParent | null;
+>parent : Symbol(GrandParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 10, 27))
+>GreatGrandParent : Symbol(GreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 12, 1))
+}
+
+declare class GreatGrandParent {
+>GreatGrandParent : Symbol(GreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 12, 1))
+
+    parent: null;
+>parent : Symbol(GreatGrandParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 14, 32))
+}
+
+declare const child: Child;
+>child : Symbol(child, Decl(controlFlowLoopSelfReferentialAssignment.ts, 18, 13))
+>Child : Symbol(Child, Decl(controlFlowLoopSelfReferentialAssignment.ts, 0, 0))
+
+function f1() {
+>f1 : Symbol(f1, Decl(controlFlowLoopSelfReferentialAssignment.ts, 18, 27))
+
+    let currentParent: GreatGrandParent | GrandParent | Parent | null = child.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 21, 7))
+>GreatGrandParent : Symbol(GreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 12, 1))
+>GrandParent : Symbol(GrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 8, 1))
+>Parent : Symbol(Parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 4, 1))
+>child.parent : Symbol(Child.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 2, 21))
+>child : Symbol(child, Decl(controlFlowLoopSelfReferentialAssignment.ts, 18, 13))
+>parent : Symbol(Child.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 2, 21))
+
+    while (currentParent) {
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 21, 7))
+
+        currentParent; // GrandParent | GreatGrandParent | Parent
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 21, 7))
+
+        currentParent = currentParent.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 21, 7))
+>currentParent.parent : Symbol(parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 10, 27), Decl(controlFlowLoopSelfReferentialAssignment.ts, 14, 32), Decl(controlFlowLoopSelfReferentialAssignment.ts, 6, 22))
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 21, 7))
+>parent : Symbol(parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 10, 27), Decl(controlFlowLoopSelfReferentialAssignment.ts, 14, 32), Decl(controlFlowLoopSelfReferentialAssignment.ts, 6, 22))
+
+        currentParent; // GrandParent | GreatGrandParent | Parent | null
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 21, 7))
+    }
+    currentParent; // null
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 21, 7))
+}
+
+// Nominal classes
+
+declare class NChild {
+>NChild : Symbol(NChild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 28, 1))
+
+    parent: NParent | null;
+>parent : Symbol(NChild.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 32, 22))
+>NParent : Symbol(NParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 35, 1))
+
+    private _x: unknown;
+>_x : Symbol(NChild._x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 33, 27))
+}
+
+declare class NParent {
+>NParent : Symbol(NParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 35, 1))
+
+    parent: NGrandParent | null;
+>parent : Symbol(NParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 37, 23))
+>NGrandParent : Symbol(NGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 40, 1))
+
+    private _x: unknown;
+>_x : Symbol(NParent._x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 38, 32))
+}
+
+declare class NGrandParent {
+>NGrandParent : Symbol(NGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 40, 1))
+
+    parent: NGreatGrandParent | null;
+>parent : Symbol(NGrandParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 42, 28))
+>NGreatGrandParent : Symbol(NGreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 45, 1))
+
+    private _x: unknown;
+>_x : Symbol(NGrandParent._x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 43, 37))
+}
+
+declare class NGreatGrandParent {
+>NGreatGrandParent : Symbol(NGreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 45, 1))
+
+    parent: null;
+>parent : Symbol(NGreatGrandParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 47, 33))
+
+    private _x: unknown;
+>_x : Symbol(NGreatGrandParent._x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 48, 17))
+}
+
+declare const nchild: NChild;
+>nchild : Symbol(nchild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 52, 13))
+>NChild : Symbol(NChild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 28, 1))
+
+function f2() {
+>f2 : Symbol(f2, Decl(controlFlowLoopSelfReferentialAssignment.ts, 52, 29))
+
+    let currentParent: NGreatGrandParent | NGrandParent | NParent | null = nchild.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 55, 7))
+>NGreatGrandParent : Symbol(NGreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 45, 1))
+>NGrandParent : Symbol(NGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 40, 1))
+>NParent : Symbol(NParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 35, 1))
+>nchild.parent : Symbol(NChild.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 32, 22))
+>nchild : Symbol(nchild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 52, 13))
+>parent : Symbol(NChild.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 32, 22))
+
+    while (currentParent) {
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 55, 7))
+
+        currentParent; // NGrandParent | NGreatGrandParent | NParent
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 55, 7))
+
+        currentParent = currentParent.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 55, 7))
+>currentParent.parent : Symbol(parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 42, 28), Decl(controlFlowLoopSelfReferentialAssignment.ts, 47, 33), Decl(controlFlowLoopSelfReferentialAssignment.ts, 37, 23))
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 55, 7))
+>parent : Symbol(parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 42, 28), Decl(controlFlowLoopSelfReferentialAssignment.ts, 47, 33), Decl(controlFlowLoopSelfReferentialAssignment.ts, 37, 23))
+
+        currentParent; // NGrandParent | NGreatGrandParent | null
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 55, 7))
+    }
+}
+
+// Missing constituents previously permitted unsound property accesses
+
+declare class PChild {
+>PChild : Symbol(PChild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 61, 1))
+
+    parent: PParent | null;
+>parent : Symbol(PChild.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 65, 22))
+>PParent : Symbol(PParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 67, 1))
+}
+
+declare class PParent {
+>PParent : Symbol(PParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 67, 1))
+
+    parent: PGrandParent | null;
+>parent : Symbol(PParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 69, 23))
+>PGrandParent : Symbol(PGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 72, 1))
+
+    prop: number;
+>prop : Symbol(PParent.prop, Decl(controlFlowLoopSelfReferentialAssignment.ts, 70, 32))
+}
+
+declare class PGrandParent {
+>PGrandParent : Symbol(PGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 72, 1))
+
+    parent: PGreatGrandParent | null;
+>parent : Symbol(PGrandParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 74, 28))
+>PGreatGrandParent : Symbol(PGreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 77, 1))
+
+    prop: number;
+>prop : Symbol(PGrandParent.prop, Decl(controlFlowLoopSelfReferentialAssignment.ts, 75, 37))
+}
+
+declare class PGreatGrandParent {
+>PGreatGrandParent : Symbol(PGreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 77, 1))
+
+    parent: null;
+>parent : Symbol(PGreatGrandParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 79, 33))
+}
+
+declare const pchild: PChild;
+>pchild : Symbol(pchild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 83, 13))
+>PChild : Symbol(PChild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 61, 1))
+
+function f3() {
+>f3 : Symbol(f3, Decl(controlFlowLoopSelfReferentialAssignment.ts, 83, 29))
+
+    let currentParent: PGreatGrandParent | PGrandParent | PParent | null = pchild.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 86, 7))
+>PGreatGrandParent : Symbol(PGreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 77, 1))
+>PGrandParent : Symbol(PGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 72, 1))
+>PParent : Symbol(PParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 67, 1))
+>pchild.parent : Symbol(PChild.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 65, 22))
+>pchild : Symbol(pchild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 83, 13))
+>parent : Symbol(PChild.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 65, 22))
+
+    while (currentParent) {
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 86, 7))
+
+        const num: number = currentParent.prop; // Error
+>num : Symbol(num, Decl(controlFlowLoopSelfReferentialAssignment.ts, 88, 13))
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 86, 7))
+
+        currentParent = currentParent.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 86, 7))
+>currentParent.parent : Symbol(parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 74, 28), Decl(controlFlowLoopSelfReferentialAssignment.ts, 79, 33), Decl(controlFlowLoopSelfReferentialAssignment.ts, 69, 23))
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 86, 7))
+>parent : Symbol(parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 74, 28), Decl(controlFlowLoopSelfReferentialAssignment.ts, 79, 33), Decl(controlFlowLoopSelfReferentialAssignment.ts, 69, 23))
+    }
+}
+
+// Custom elements
+
+class CChild extends HTMLElement {
+>CChild : Symbol(CChild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 91, 1))
+>HTMLElement : Symbol(HTMLElement, Decl(lib.dom.d.ts, --, --), Decl(lib.dom.d.ts, --, --))
+
+    get parent() {
+>parent : Symbol(CChild.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 95, 34))
+
+        const { parentElement } = this;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopSelfReferentialAssignment.ts, 97, 15))
+>this : Symbol(CChild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 91, 1))
+
+        if (!(parentElement instanceof CParent)) {
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopSelfReferentialAssignment.ts, 97, 15))
+>CParent : Symbol(CParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 103, 1))
+
+            return null;
+        }
+        return parentElement;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopSelfReferentialAssignment.ts, 97, 15))
+    }
+}
+
+class CParent extends HTMLElement {
+>CParent : Symbol(CParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 103, 1))
+>HTMLElement : Symbol(HTMLElement, Decl(lib.dom.d.ts, --, --), Decl(lib.dom.d.ts, --, --))
+
+    get parent() {
+>parent : Symbol(CParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 105, 35))
+
+        const { parentElement } = this;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopSelfReferentialAssignment.ts, 107, 15))
+>this : Symbol(CParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 103, 1))
+
+        if (!(parentElement instanceof CGrandParent)) {
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopSelfReferentialAssignment.ts, 107, 15))
+>CGrandParent : Symbol(CGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 113, 1))
+
+            return null;
+        }
+        return parentElement;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopSelfReferentialAssignment.ts, 107, 15))
+    }
+}
+
+class CGrandParent extends HTMLElement {
+>CGrandParent : Symbol(CGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 113, 1))
+>HTMLElement : Symbol(HTMLElement, Decl(lib.dom.d.ts, --, --), Decl(lib.dom.d.ts, --, --))
+
+    get parent() {
+>parent : Symbol(CGrandParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 115, 40))
+
+        const { parentElement } = this;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopSelfReferentialAssignment.ts, 117, 15))
+>this : Symbol(CGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 113, 1))
+
+        if (!(parentElement instanceof CGreatGrandParent)) {
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopSelfReferentialAssignment.ts, 117, 15))
+>CGreatGrandParent : Symbol(CGreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 123, 1))
+
+            return null;
+        }
+        return parentElement;
+>parentElement : Symbol(parentElement, Decl(controlFlowLoopSelfReferentialAssignment.ts, 117, 15))
+    }
+}
+
+class CGreatGrandParent extends HTMLElement {
+>CGreatGrandParent : Symbol(CGreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 123, 1))
+>HTMLElement : Symbol(HTMLElement, Decl(lib.dom.d.ts, --, --), Decl(lib.dom.d.ts, --, --))
+
+    get parent() {
+>parent : Symbol(CGreatGrandParent.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 125, 45))
+
+        return null;
+    }
+}
+
+type ParentElements = CGreatGrandParent | CGrandParent | CParent;
+>ParentElements : Symbol(ParentElements, Decl(controlFlowLoopSelfReferentialAssignment.ts, 129, 1))
+>CGreatGrandParent : Symbol(CGreatGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 123, 1))
+>CGrandParent : Symbol(CGrandParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 113, 1))
+>CParent : Symbol(CParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 103, 1))
+
+function f4() {
+>f4 : Symbol(f4, Decl(controlFlowLoopSelfReferentialAssignment.ts, 131, 65))
+
+    const cchild = new CChild();
+>cchild : Symbol(cchild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 134, 9))
+>CChild : Symbol(CChild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 91, 1))
+
+    let currentParent: ParentElements | null = cchild.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 135, 7))
+>ParentElements : Symbol(ParentElements, Decl(controlFlowLoopSelfReferentialAssignment.ts, 129, 1))
+>cchild.parent : Symbol(CChild.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 95, 34))
+>cchild : Symbol(cchild, Decl(controlFlowLoopSelfReferentialAssignment.ts, 134, 9))
+>parent : Symbol(CChild.parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 95, 34))
+
+    while (currentParent) {
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 135, 7))
+
+        currentParent; // ParentElements
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 135, 7))
+
+        currentParent = currentParent.parent;
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 135, 7))
+>currentParent.parent : Symbol(parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 115, 40), Decl(controlFlowLoopSelfReferentialAssignment.ts, 125, 45), Decl(controlFlowLoopSelfReferentialAssignment.ts, 105, 35))
+>currentParent : Symbol(currentParent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 135, 7))
+>parent : Symbol(parent, Decl(controlFlowLoopSelfReferentialAssignment.ts, 115, 40), Decl(controlFlowLoopSelfReferentialAssignment.ts, 125, 45), Decl(controlFlowLoopSelfReferentialAssignment.ts, 105, 35))
+    }
+}
+
+// Loop variable of a for statement
+
+type All = A1 | A2 | A3 | A4;
+>All : Symbol(All, Decl(controlFlowLoopSelfReferentialAssignment.ts, 140, 1))
+>A1 : Symbol(A1, Decl(controlFlowLoopSelfReferentialAssignment.ts, 144, 29))
+>A2 : Symbol(A2, Decl(controlFlowLoopSelfReferentialAssignment.ts, 151, 1))
+>A3 : Symbol(A3, Decl(controlFlowLoopSelfReferentialAssignment.ts, 158, 1))
+>A4 : Symbol(A4, Decl(controlFlowLoopSelfReferentialAssignment.ts, 165, 1))
+
+class A1 {
+>A1 : Symbol(A1, Decl(controlFlowLoopSelfReferentialAssignment.ts, 144, 29))
+
+    nom = "a1" as const;
+>nom : Symbol(A1.nom, Decl(controlFlowLoopSelfReferentialAssignment.ts, 146, 10))
+>const : Symbol(const)
+
+    next() {
+>next : Symbol(A1.next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 147, 24))
+
+        return new A2;
+>A2 : Symbol(A2, Decl(controlFlowLoopSelfReferentialAssignment.ts, 151, 1))
+    }
+}
+
+class A2 {
+>A2 : Symbol(A2, Decl(controlFlowLoopSelfReferentialAssignment.ts, 151, 1))
+
+    nom = "a2" as const;
+>nom : Symbol(A2.nom, Decl(controlFlowLoopSelfReferentialAssignment.ts, 153, 10))
+>const : Symbol(const)
+
+    next() {
+>next : Symbol(A2.next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 154, 24))
+
+        return new A3;
+>A3 : Symbol(A3, Decl(controlFlowLoopSelfReferentialAssignment.ts, 158, 1))
+    }
+}
+
+class A3 {
+>A3 : Symbol(A3, Decl(controlFlowLoopSelfReferentialAssignment.ts, 158, 1))
+
+    nom = "a3" as const;
+>nom : Symbol(A3.nom, Decl(controlFlowLoopSelfReferentialAssignment.ts, 160, 10))
+>const : Symbol(const)
+
+    next() {
+>next : Symbol(A3.next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 161, 24))
+
+        return new A4;
+>A4 : Symbol(A4, Decl(controlFlowLoopSelfReferentialAssignment.ts, 165, 1))
+    }
+}
+
+class A4 {
+>A4 : Symbol(A4, Decl(controlFlowLoopSelfReferentialAssignment.ts, 165, 1))
+
+    nom = "a4" as const;
+>nom : Symbol(A4.nom, Decl(controlFlowLoopSelfReferentialAssignment.ts, 167, 10))
+>const : Symbol(const)
+
+    next() {
+>next : Symbol(A4.next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 168, 24))
+
+        return null;
+    }
+}
+
+function f5(a: A1) {
+>f5 : Symbol(f5, Decl(controlFlowLoopSelfReferentialAssignment.ts, 172, 1))
+>a : Symbol(a, Decl(controlFlowLoopSelfReferentialAssignment.ts, 174, 12))
+>A1 : Symbol(A1, Decl(controlFlowLoopSelfReferentialAssignment.ts, 144, 29))
+
+    for (let p: All | null = a; p != null; p = p.next()) {
+>p : Symbol(p, Decl(controlFlowLoopSelfReferentialAssignment.ts, 175, 12))
+>All : Symbol(All, Decl(controlFlowLoopSelfReferentialAssignment.ts, 140, 1))
+>a : Symbol(a, Decl(controlFlowLoopSelfReferentialAssignment.ts, 174, 12))
+>p : Symbol(p, Decl(controlFlowLoopSelfReferentialAssignment.ts, 175, 12))
+>p : Symbol(p, Decl(controlFlowLoopSelfReferentialAssignment.ts, 175, 12))
+>p.next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 147, 24), Decl(controlFlowLoopSelfReferentialAssignment.ts, 154, 24), Decl(controlFlowLoopSelfReferentialAssignment.ts, 161, 24), Decl(controlFlowLoopSelfReferentialAssignment.ts, 168, 24))
+>p : Symbol(p, Decl(controlFlowLoopSelfReferentialAssignment.ts, 175, 12))
+>next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 147, 24), Decl(controlFlowLoopSelfReferentialAssignment.ts, 154, 24), Decl(controlFlowLoopSelfReferentialAssignment.ts, 161, 24), Decl(controlFlowLoopSelfReferentialAssignment.ts, 168, 24))
+
+        p; // All
+>p : Symbol(p, Decl(controlFlowLoopSelfReferentialAssignment.ts, 175, 12))
+
+        if (p.nom === "a4") {
+>p.nom : Symbol(nom, Decl(controlFlowLoopSelfReferentialAssignment.ts, 146, 10), Decl(controlFlowLoopSelfReferentialAssignment.ts, 153, 10), Decl(controlFlowLoopSelfReferentialAssignment.ts, 160, 10), Decl(controlFlowLoopSelfReferentialAssignment.ts, 167, 10))
+>p : Symbol(p, Decl(controlFlowLoopSelfReferentialAssignment.ts, 175, 12))
+>nom : Symbol(nom, Decl(controlFlowLoopSelfReferentialAssignment.ts, 146, 10), Decl(controlFlowLoopSelfReferentialAssignment.ts, 153, 10), Decl(controlFlowLoopSelfReferentialAssignment.ts, 160, 10), Decl(controlFlowLoopSelfReferentialAssignment.ts, 167, 10))
+
+            p; // A4
+>p : Symbol(p, Decl(controlFlowLoopSelfReferentialAssignment.ts, 175, 12))
+        }
+    }
+}
+
+// Other loop forms and nesting
+
+declare class A { next: B | null; a: 1 }
+>A : Symbol(A, Decl(controlFlowLoopSelfReferentialAssignment.ts, 181, 1))
+>next : Symbol(A.next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17))
+>B : Symbol(B, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 40))
+>a : Symbol(A.a, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 33))
+
+declare class B { next: C | null; b: 1 }
+>B : Symbol(B, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 40))
+>next : Symbol(B.next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17))
+>C : Symbol(C, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 40))
+>b : Symbol(B.b, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 33))
+
+declare class C { next: null; c: 1 }
+>C : Symbol(C, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 40))
+>next : Symbol(C.next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+>c : Symbol(C.c, Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 29))
+
+declare const a: A;
+>a : Symbol(a, Decl(controlFlowLoopSelfReferentialAssignment.ts, 188, 13))
+>A : Symbol(A, Decl(controlFlowLoopSelfReferentialAssignment.ts, 181, 1))
+
+declare let cond: boolean;
+>cond : Symbol(cond, Decl(controlFlowLoopSelfReferentialAssignment.ts, 189, 11))
+
+function f6() {
+>f6 : Symbol(f6, Decl(controlFlowLoopSelfReferentialAssignment.ts, 189, 26))
+
+    let x: A | B | C | null = a;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 192, 7))
+>A : Symbol(A, Decl(controlFlowLoopSelfReferentialAssignment.ts, 181, 1))
+>B : Symbol(B, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 40))
+>C : Symbol(C, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 40))
+>a : Symbol(a, Decl(controlFlowLoopSelfReferentialAssignment.ts, 188, 13))
+
+    do {
+        x; // A | B | C
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 192, 7))
+
+        x = x && x.next;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 192, 7))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 192, 7))
+>x.next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 192, 7))
+>next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+
+        x; // B | C | null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 192, 7))
+
+    } while (x);
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 192, 7))
+
+    x; // null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 192, 7))
+}
+
+function f7() {
+>f7 : Symbol(f7, Decl(controlFlowLoopSelfReferentialAssignment.ts, 199, 1))
+
+    let x: A | B | C | null = a;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 202, 7))
+>A : Symbol(A, Decl(controlFlowLoopSelfReferentialAssignment.ts, 181, 1))
+>B : Symbol(B, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 40))
+>C : Symbol(C, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 40))
+>a : Symbol(a, Decl(controlFlowLoopSelfReferentialAssignment.ts, 188, 13))
+
+    do {
+        x; // A | B | C | null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 202, 7))
+
+        if (x) {
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 202, 7))
+
+            x = x.next;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 202, 7))
+>x.next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 202, 7))
+>next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+        }
+        x; // B | C | null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 202, 7))
+
+    } while (cond);
+>cond : Symbol(cond, Decl(controlFlowLoopSelfReferentialAssignment.ts, 189, 11))
+
+    x; // B | C | null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 202, 7))
+}
+
+function f8() {
+>f8 : Symbol(f8, Decl(controlFlowLoopSelfReferentialAssignment.ts, 211, 1))
+
+    let x: A | B | C | null = a;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 214, 7))
+>A : Symbol(A, Decl(controlFlowLoopSelfReferentialAssignment.ts, 181, 1))
+>B : Symbol(B, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 40))
+>C : Symbol(C, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 40))
+>a : Symbol(a, Decl(controlFlowLoopSelfReferentialAssignment.ts, 188, 13))
+
+    while (cond) {
+>cond : Symbol(cond, Decl(controlFlowLoopSelfReferentialAssignment.ts, 189, 11))
+
+        x = x && x.next;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 214, 7))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 214, 7))
+>x.next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 214, 7))
+>next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+
+        while (cond) {
+>cond : Symbol(cond, Decl(controlFlowLoopSelfReferentialAssignment.ts, 189, 11))
+
+            x; // B | C | null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 214, 7))
+        }
+    }
+    x; // A | B | C | null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 214, 7))
+}
+
+function f9() {
+>f9 : Symbol(f9, Decl(controlFlowLoopSelfReferentialAssignment.ts, 222, 1))
+
+    let x: A | B | C | null = a;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 225, 7))
+>A : Symbol(A, Decl(controlFlowLoopSelfReferentialAssignment.ts, 181, 1))
+>B : Symbol(B, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 40))
+>C : Symbol(C, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 40))
+>a : Symbol(a, Decl(controlFlowLoopSelfReferentialAssignment.ts, 188, 13))
+
+    while (cond) {
+>cond : Symbol(cond, Decl(controlFlowLoopSelfReferentialAssignment.ts, 189, 11))
+
+        while (x) {
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 225, 7))
+
+            x = x.next;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 225, 7))
+>x.next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 225, 7))
+>next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+        }
+        x; // null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 225, 7))
+    }
+    x; // A | null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 225, 7))
+}
+
+function f10() {
+>f10 : Symbol(f10, Decl(controlFlowLoopSelfReferentialAssignment.ts, 233, 1))
+
+    let x: A | B | C | null = a;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 236, 7))
+>A : Symbol(A, Decl(controlFlowLoopSelfReferentialAssignment.ts, 181, 1))
+>B : Symbol(B, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 40))
+>C : Symbol(C, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 40))
+>a : Symbol(a, Decl(controlFlowLoopSelfReferentialAssignment.ts, 188, 13))
+
+    while (cond) {
+>cond : Symbol(cond, Decl(controlFlowLoopSelfReferentialAssignment.ts, 189, 11))
+
+        x; // A | B | C | null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 236, 7))
+
+        if (cond) {
+>cond : Symbol(cond, Decl(controlFlowLoopSelfReferentialAssignment.ts, 189, 11))
+
+            x = x && x.next;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 236, 7))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 236, 7))
+>x.next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 236, 7))
+>next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+
+            continue;
+        }
+        x; // A | B | C | null
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 236, 7))
+    }
+}
+
+// Reference in a type predicate call
+
+interface Next<T> { next: T }
+>Next : Symbol(Next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 245, 1))
+>T : Symbol(T, Decl(controlFlowLoopSelfReferentialAssignment.ts, 249, 15))
+>next : Symbol(Next.next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 249, 19))
+>T : Symbol(T, Decl(controlFlowLoopSelfReferentialAssignment.ts, 249, 15))
+
+declare function isNext<T>(x: T): x is T & Next<T>;
+>isNext : Symbol(isNext, Decl(controlFlowLoopSelfReferentialAssignment.ts, 249, 29))
+>T : Symbol(T, Decl(controlFlowLoopSelfReferentialAssignment.ts, 250, 24))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 250, 27))
+>T : Symbol(T, Decl(controlFlowLoopSelfReferentialAssignment.ts, 250, 24))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 250, 27))
+>T : Symbol(T, Decl(controlFlowLoopSelfReferentialAssignment.ts, 250, 24))
+>Next : Symbol(Next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 245, 1))
+>T : Symbol(T, Decl(controlFlowLoopSelfReferentialAssignment.ts, 250, 24))
+
+function f11(start: A) {
+>f11 : Symbol(f11, Decl(controlFlowLoopSelfReferentialAssignment.ts, 250, 51))
+>start : Symbol(start, Decl(controlFlowLoopSelfReferentialAssignment.ts, 252, 13))
+>A : Symbol(A, Decl(controlFlowLoopSelfReferentialAssignment.ts, 181, 1))
+
+    let x: A | B | C | null = start;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 253, 7))
+>A : Symbol(A, Decl(controlFlowLoopSelfReferentialAssignment.ts, 181, 1))
+>B : Symbol(B, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 40))
+>C : Symbol(C, Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 40))
+>start : Symbol(start, Decl(controlFlowLoopSelfReferentialAssignment.ts, 252, 13))
+
+    while (x) {
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 253, 7))
+
+        if (isNext(x)) {
+>isNext : Symbol(isNext, Decl(controlFlowLoopSelfReferentialAssignment.ts, 249, 29))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 253, 7))
+
+            x;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 253, 7))
+        }
+        x = x.next;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 253, 7))
+>x.next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 253, 7))
+>next : Symbol(next, Decl(controlFlowLoopSelfReferentialAssignment.ts, 185, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 186, 17), Decl(controlFlowLoopSelfReferentialAssignment.ts, 187, 17))
+    }
+}
+
+// Evolving types are not iterated
+
+function f12() {
+>f12 : Symbol(f12, Decl(controlFlowLoopSelfReferentialAssignment.ts, 260, 1))
+
+    let x;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 265, 7))
+
+    x = 1;
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 265, 7))
+
+    while (cond) {
+>cond : Symbol(cond, Decl(controlFlowLoopSelfReferentialAssignment.ts, 189, 11))
+
+        x = [x];
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 265, 7))
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 265, 7))
+    }
+    return x; // number | number[]
+>x : Symbol(x, Decl(controlFlowLoopSelfReferentialAssignment.ts, 265, 7))
+}
+

@@ -1,0 +1,662 @@
+//// [tests/cases/compiler/controlFlowLoopSelfReferentialAssignment.ts] ////
+
+=== controlFlowLoopSelfReferentialAssignment.ts ===
+// Repro from #59715
+
+declare class Child {
+>Child : Child
+
+    parent: Parent | null;
+>parent : Parent | null
+}
+
+declare class Parent {
+>Parent : Parent
+
+    parent: GrandParent | null;
+>parent : GrandParent | null
+}
+
+declare class GrandParent {
+>GrandParent : GrandParent
+
+    parent: GreatGrandParent | null;
+>parent : GreatGrandParent | null
+}
+
+declare class GreatGrandParent {
+>GreatGrandParent : GreatGrandParent
+
+    parent: null;
+>parent : null
+}
+
+declare const child: Child;
+>child : Child
+
+function f1() {
+>f1 : () => void
+
+    let currentParent: GreatGrandParent | GrandParent | Parent | null = child.parent;
+>currentParent : GrandParent | GreatGrandParent | Parent | null
+>child.parent : Parent | null
+>child : Child
+>parent : Parent | null
+
+    while (currentParent) {
+>currentParent : GrandParent | GreatGrandParent | Parent | null
+
+        currentParent; // GrandParent | GreatGrandParent | Parent
+>currentParent : GrandParent | GreatGrandParent | Parent
+
+        currentParent = currentParent.parent;
+>currentParent = currentParent.parent : GrandParent | GreatGrandParent | null
+>currentParent : GrandParent | GreatGrandParent | Parent | null
+>currentParent.parent : GrandParent | GreatGrandParent | null
+>currentParent : GrandParent | GreatGrandParent | Parent
+>parent : GrandParent | GreatGrandParent | null
+
+        currentParent; // GrandParent | GreatGrandParent | Parent | null
+>currentParent : GrandParent | GreatGrandParent | Parent | null
+    }
+    currentParent; // null
+>currentParent : null
+}
+
+// Nominal classes
+
+declare class NChild {
+>NChild : NChild
+
+    parent: NParent | null;
+>parent : NParent | null
+
+    private _x: unknown;
+>_x : unknown
+}
+
+declare class NParent {
+>NParent : NParent
+
+    parent: NGrandParent | null;
+>parent : NGrandParent | null
+
+    private _x: unknown;
+>_x : unknown
+}
+
+declare class NGrandParent {
+>NGrandParent : NGrandParent
+
+    parent: NGreatGrandParent | null;
+>parent : NGreatGrandParent | null
+
+    private _x: unknown;
+>_x : unknown
+}
+
+declare class NGreatGrandParent {
+>NGreatGrandParent : NGreatGrandParent
+
+    parent: null;
+>parent : null
+
+    private _x: unknown;
+>_x : unknown
+}
+
+declare const nchild: NChild;
+>nchild : NChild
+
+function f2() {
+>f2 : () => void
+
+    let currentParent: NGreatGrandParent | NGrandParent | NParent | null = nchild.parent;
+>currentParent : NGrandParent | NGreatGrandParent | NParent | null
+>nchild.parent : NParent | null
+>nchild : NChild
+>parent : NParent | null
+
+    while (currentParent) {
+>currentParent : NGrandParent | NGreatGrandParent | NParent | null
+
+        currentParent; // NGrandParent | NGreatGrandParent | NParent
+>currentParent : NGrandParent | NGreatGrandParent | NParent
+
+        currentParent = currentParent.parent;
+>currentParent = currentParent.parent : NGrandParent | NGreatGrandParent | null
+>currentParent : NGrandParent | NGreatGrandParent | NParent | null
+>currentParent.parent : NGrandParent | NGreatGrandParent | null
+>currentParent : NGrandParent | NGreatGrandParent | NParent
+>parent : NGrandParent | NGreatGrandParent | null
+
+        currentParent; // NGrandParent | NGreatGrandParent | null
+>currentParent : NGrandParent | NGreatGrandParent | null
+    }
+}
+
+// Missing constituents previously permitted unsound property accesses
+
+declare class PChild {
+>PChild : PChild
+
+    parent: PParent | null;
+>parent : PParent | null
+}
+
+declare class PParent {
+>PParent : PParent
+
+    parent: PGrandParent | null;
+>parent : PGrandParent | null
+
+    prop: number;
+>prop : number
+}
+
+declare class PGrandParent {
+>PGrandParent : PGrandParent
+
+    parent: PGreatGrandParent | null;
+>parent : PGreatGrandParent | null
+
+    prop: number;
+>prop : number
+}
+
+declare class PGreatGrandParent {
+>PGreatGrandParent : PGreatGrandParent
+
+    parent: null;
+>parent : null
+}
+
+declare const pchild: PChild;
+>pchild : PChild
+
+function f3() {
+>f3 : () => void
+
+    let currentParent: PGreatGrandParent | PGrandParent | PParent | null = pchild.parent;
+>currentParent : PGrandParent | PGreatGrandParent | PParent | null
+>pchild.parent : PParent | null
+>pchild : PChild
+>parent : PParent | null
+
+    while (currentParent) {
+>currentParent : PGrandParent | PGreatGrandParent | PParent | null
+
+        const num: number = currentParent.prop; // Error
+>num : number
+>currentParent.prop : any
+>currentParent : PGrandParent | PGreatGrandParent | PParent
+>prop : any
+
+        currentParent = currentParent.parent;
+>currentParent = currentParent.parent : PGrandParent | PGreatGrandParent | null
+>currentParent : PGrandParent | PGreatGrandParent | PParent | null
+>currentParent.parent : PGrandParent | PGreatGrandParent | null
+>currentParent : PGrandParent | PGreatGrandParent | PParent
+>parent : PGrandParent | PGreatGrandParent | null
+    }
+}
+
+// Custom elements
+
+class CChild extends HTMLElement {
+>CChild : CChild
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : CParent | null
+
+        const { parentElement } = this;
+>parentElement : HTMLElement | null
+>this : this
+
+        if (!(parentElement instanceof CParent)) {
+>!(parentElement instanceof CParent) : boolean
+>(parentElement instanceof CParent) : boolean
+>parentElement instanceof CParent : boolean
+>parentElement : HTMLElement | null
+>CParent : typeof CParent
+
+            return null;
+        }
+        return parentElement;
+>parentElement : CParent
+    }
+}
+
+class CParent extends HTMLElement {
+>CParent : CParent
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : CGrandParent | null
+
+        const { parentElement } = this;
+>parentElement : HTMLElement | null
+>this : this
+
+        if (!(parentElement instanceof CGrandParent)) {
+>!(parentElement instanceof CGrandParent) : boolean
+>(parentElement instanceof CGrandParent) : boolean
+>parentElement instanceof CGrandParent : boolean
+>parentElement : HTMLElement | null
+>CGrandParent : typeof CGrandParent
+
+            return null;
+        }
+        return parentElement;
+>parentElement : CGrandParent
+    }
+}
+
+class CGrandParent extends HTMLElement {
+>CGrandParent : CGrandParent
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : CGreatGrandParent | null
+
+        const { parentElement } = this;
+>parentElement : HTMLElement | null
+>this : this
+
+        if (!(parentElement instanceof CGreatGrandParent)) {
+>!(parentElement instanceof CGreatGrandParent) : boolean
+>(parentElement instanceof CGreatGrandParent) : boolean
+>parentElement instanceof CGreatGrandParent : boolean
+>parentElement : HTMLElement | null
+>CGreatGrandParent : typeof CGreatGrandParent
+
+            return null;
+        }
+        return parentElement;
+>parentElement : CGreatGrandParent
+    }
+}
+
+class CGreatGrandParent extends HTMLElement {
+>CGreatGrandParent : CGreatGrandParent
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : null
+
+        return null;
+    }
+}
+
+type ParentElements = CGreatGrandParent | CGrandParent | CParent;
+>ParentElements : ParentElements
+
+function f4() {
+>f4 : () => void
+
+    const cchild = new CChild();
+>cchild : CChild
+>new CChild() : CChild
+>CChild : typeof CChild
+
+    let currentParent: ParentElements | null = cchild.parent;
+>currentParent : ParentElements | null
+>cchild.parent : CParent | null
+>cchild : CChild
+>parent : CParent | null
+
+    while (currentParent) {
+>currentParent : ParentElements | null
+
+        currentParent; // ParentElements
+>currentParent : ParentElements
+
+        currentParent = currentParent.parent;
+>currentParent = currentParent.parent : CGrandParent | CGreatGrandParent | null
+>currentParent : ParentElements | null
+>currentParent.parent : CGrandParent | CGreatGrandParent | null
+>currentParent : ParentElements
+>parent : CGrandParent | CGreatGrandParent | null
+    }
+}
+
+// Loop variable of a for statement
+
+type All = A1 | A2 | A3 | A4;
+>All : All
+
+class A1 {
+>A1 : A1
+
+    nom = "a1" as const;
+>nom : "a1"
+>"a1" as const : "a1"
+>"a1" : "a1"
+
+    next() {
+>next : () => A2
+
+        return new A2;
+>new A2 : A2
+>A2 : typeof A2
+    }
+}
+
+class A2 {
+>A2 : A2
+
+    nom = "a2" as const;
+>nom : "a2"
+>"a2" as const : "a2"
+>"a2" : "a2"
+
+    next() {
+>next : () => A3
+
+        return new A3;
+>new A3 : A3
+>A3 : typeof A3
+    }
+}
+
+class A3 {
+>A3 : A3
+
+    nom = "a3" as const;
+>nom : "a3"
+>"a3" as const : "a3"
+>"a3" : "a3"
+
+    next() {
+>next : () => A4
+
+        return new A4;
+>new A4 : A4
+>A4 : typeof A4
+    }
+}
+
+class A4 {
+>A4 : A4
+
+    nom = "a4" as const;
+>nom : "a4"
+>"a4" as const : "a4"
+>"a4" : "a4"
+
+    next() {
+>next : () => null
+
+        return null;
+    }
+}
+
+function f5(a: A1) {
+>f5 : (a: A1) => void
+>a : A1
+
+    for (let p: All | null = a; p != null; p = p.next()) {
+>p : All | null
+>a : A1
+>p != null : boolean
+>p : All | null
+>p = p.next() : A2 | A3 | A4 | null
+>p : All | null
+>p.next() : A2 | A3 | A4 | null
+>p.next : (() => A2) | (() => A3) | (() => A4) | (() => null)
+>p : A1 | A2 | A3 | A4
+>next : (() => A2) | (() => A3) | (() => A4) | (() => null)
+
+        p; // All
+>p : All
+
+        if (p.nom === "a4") {
+>p.nom === "a4" : boolean
+>p.nom : "a1" | "a2" | "a3" | "a4"
+>p : All
+>nom : "a1" | "a2" | "a3" | "a4"
+>"a4" : "a4"
+
+            p; // A4
+>p : A4
+        }
+    }
+}
+
+// Other loop forms and nesting
+
+declare class A { next: B | null; a: 1 }
+>A : A
+>next : B | null
+>a : 1
+
+declare class B { next: C | null; b: 1 }
+>B : B
+>next : C | null
+>b : 1
+
+declare class C { next: null; c: 1 }
+>C : C
+>next : null
+>c : 1
+
+declare const a: A;
+>a : A
+
+declare let cond: boolean;
+>cond : boolean
+
+function f6() {
+>f6 : () => void
+
+    let x: A | B | C | null = a;
+>x : A | B | C | null
+>a : A
+
+    do {
+        x; // A | B | C
+>x : A | B | C
+
+        x = x && x.next;
+>x = x && x.next : B | C | null
+>x : A | B | C | null
+>x && x.next : B | C | null
+>x : A | B | C
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+
+        x; // B | C | null
+>x : B | C | null
+
+    } while (x);
+>x : B | C | null
+
+    x; // null
+>x : null
+}
+
+function f7() {
+>f7 : () => void
+
+    let x: A | B | C | null = a;
+>x : A | B | C | null
+>a : A
+
+    do {
+        x; // A | B | C | null
+>x : A | B | C | null
+
+        if (x) {
+>x : A | B | C | null
+
+            x = x.next;
+>x = x.next : B | C | null
+>x : A | B | C | null
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+        }
+        x; // B | C | null
+>x : B | C | null
+
+    } while (cond);
+>cond : boolean
+
+    x; // B | C | null
+>x : B | C | null
+}
+
+function f8() {
+>f8 : () => void
+
+    let x: A | B | C | null = a;
+>x : A | B | C | null
+>a : A
+
+    while (cond) {
+>cond : boolean
+
+        x = x && x.next;
+>x = x && x.next : B | C | null
+>x : A | B | C | null
+>x && x.next : B | C | null
+>x : A | B | C | null
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+
+        while (cond) {
+>cond : true
+
+            x; // B | C | null
+>x : B | C | null
+        }
+    }
+    x; // A | B | C | null
+>x : A | B | C | null
+}
+
+function f9() {
+>f9 : () => void
+
+    let x: A | B | C | null = a;
+>x : A | B | C | null
+>a : A
+
+    while (cond) {
+>cond : boolean
+
+        while (x) {
+>x : A | B | C | null
+
+            x = x.next;
+>x = x.next : B | C | null
+>x : A | B | C | null
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+        }
+        x; // null
+>x : null
+    }
+    x; // A | null
+>x : A | null
+}
+
+function f10() {
+>f10 : () => void
+
+    let x: A | B | C | null = a;
+>x : A | B | C | null
+>a : A
+
+    while (cond) {
+>cond : boolean
+
+        x; // A | B | C | null
+>x : A | B | C | null
+
+        if (cond) {
+>cond : true
+
+            x = x && x.next;
+>x = x && x.next : B | C | null
+>x : A | B | C | null
+>x && x.next : B | C | null
+>x : A | B | C | null
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+
+            continue;
+        }
+        x; // A | B | C | null
+>x : A | B | C | null
+    }
+}
+
+// Reference in a type predicate call
+
+interface Next<T> { next: T }
+>next : T
+
+declare function isNext<T>(x: T): x is T & Next<T>;
+>isNext : <T>(x: T) => x is T & Next<T>
+>x : T
+
+function f11(start: A) {
+>f11 : (start: A) => void
+>start : A
+
+    let x: A | B | C | null = start;
+>x : A | B | C | null
+>start : A
+
+    while (x) {
+>x : A | B | C | null
+
+        if (isNext(x)) {
+>isNext(x) : boolean
+>isNext : <T>(x: T) => x is T & Next<T>
+>x : A | B | C
+
+            x;
+>x : A & Next<A>
+        }
+        x = x.next;
+>x = x.next : B | C | null
+>x : A | B | C | null
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+    }
+}
+
+// Evolving types are not iterated
+
+function f12() {
+>f12 : () => number | number[]
+
+    let x;
+>x : any
+
+    x = 1;
+>x = 1 : 1
+>x : any
+>1 : 1
+
+    while (cond) {
+>cond : boolean
+
+        x = [x];
+>x = [x] : (number | number[])[]
+>x : any
+>[x] : (number | number[])[]
+>x : number | number[]
+    }
+    return x; // number | number[]
+>x : number | number[]
+}
+

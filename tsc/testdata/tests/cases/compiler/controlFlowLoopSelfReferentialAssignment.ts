@@ -1,0 +1,276 @@
+// @strict: true
+// @lib: esnext,dom
+// @noEmit: true
+
+// Repro from #59715
+
+declare class Child {
+    parent: Parent | null;
+}
+
+declare class Parent {
+    parent: GrandParent | null;
+}
+
+declare class GrandParent {
+    parent: GreatGrandParent | null;
+}
+
+declare class GreatGrandParent {
+    parent: null;
+}
+
+declare const child: Child;
+
+function f1() {
+    let currentParent: GreatGrandParent | GrandParent | Parent | null = child.parent;
+    while (currentParent) {
+        currentParent; // GrandParent | GreatGrandParent | Parent
+        currentParent = currentParent.parent;
+        currentParent; // GrandParent | GreatGrandParent | Parent | null
+    }
+    currentParent; // null
+}
+
+// Nominal classes
+
+declare class NChild {
+    parent: NParent | null;
+    private _x: unknown;
+}
+
+declare class NParent {
+    parent: NGrandParent | null;
+    private _x: unknown;
+}
+
+declare class NGrandParent {
+    parent: NGreatGrandParent | null;
+    private _x: unknown;
+}
+
+declare class NGreatGrandParent {
+    parent: null;
+    private _x: unknown;
+}
+
+declare const nchild: NChild;
+
+function f2() {
+    let currentParent: NGreatGrandParent | NGrandParent | NParent | null = nchild.parent;
+    while (currentParent) {
+        currentParent; // NGrandParent | NGreatGrandParent | NParent
+        currentParent = currentParent.parent;
+        currentParent; // NGrandParent | NGreatGrandParent | null
+    }
+}
+
+// Missing constituents previously permitted unsound property accesses
+
+declare class PChild {
+    parent: PParent | null;
+}
+
+declare class PParent {
+    parent: PGrandParent | null;
+    prop: number;
+}
+
+declare class PGrandParent {
+    parent: PGreatGrandParent | null;
+    prop: number;
+}
+
+declare class PGreatGrandParent {
+    parent: null;
+}
+
+declare const pchild: PChild;
+
+function f3() {
+    let currentParent: PGreatGrandParent | PGrandParent | PParent | null = pchild.parent;
+    while (currentParent) {
+        const num: number = currentParent.prop; // Error
+        currentParent = currentParent.parent;
+    }
+}
+
+// Custom elements
+
+class CChild extends HTMLElement {
+    get parent() {
+        const { parentElement } = this;
+        if (!(parentElement instanceof CParent)) {
+            return null;
+        }
+        return parentElement;
+    }
+}
+
+class CParent extends HTMLElement {
+    get parent() {
+        const { parentElement } = this;
+        if (!(parentElement instanceof CGrandParent)) {
+            return null;
+        }
+        return parentElement;
+    }
+}
+
+class CGrandParent extends HTMLElement {
+    get parent() {
+        const { parentElement } = this;
+        if (!(parentElement instanceof CGreatGrandParent)) {
+            return null;
+        }
+        return parentElement;
+    }
+}
+
+class CGreatGrandParent extends HTMLElement {
+    get parent() {
+        return null;
+    }
+}
+
+type ParentElements = CGreatGrandParent | CGrandParent | CParent;
+
+function f4() {
+    const cchild = new CChild();
+    let currentParent: ParentElements | null = cchild.parent;
+    while (currentParent) {
+        currentParent; // ParentElements
+        currentParent = currentParent.parent;
+    }
+}
+
+// Loop variable of a for statement
+
+type All = A1 | A2 | A3 | A4;
+
+class A1 {
+    nom = "a1" as const;
+    next() {
+        return new A2;
+    }
+}
+
+class A2 {
+    nom = "a2" as const;
+    next() {
+        return new A3;
+    }
+}
+
+class A3 {
+    nom = "a3" as const;
+    next() {
+        return new A4;
+    }
+}
+
+class A4 {
+    nom = "a4" as const;
+    next() {
+        return null;
+    }
+}
+
+function f5(a: A1) {
+    for (let p: All | null = a; p != null; p = p.next()) {
+        p; // All
+        if (p.nom === "a4") {
+            p; // A4
+        }
+    }
+}
+
+// Other loop forms and nesting
+
+declare class A { next: B | null; a: 1 }
+declare class B { next: C | null; b: 1 }
+declare class C { next: null; c: 1 }
+declare const a: A;
+declare let cond: boolean;
+
+function f6() {
+    let x: A | B | C | null = a;
+    do {
+        x; // A | B | C
+        x = x && x.next;
+        x; // B | C | null
+    } while (x);
+    x; // null
+}
+
+function f7() {
+    let x: A | B | C | null = a;
+    do {
+        x; // A | B | C | null
+        if (x) {
+            x = x.next;
+        }
+        x; // B | C | null
+    } while (cond);
+    x; // B | C | null
+}
+
+function f8() {
+    let x: A | B | C | null = a;
+    while (cond) {
+        x = x && x.next;
+        while (cond) {
+            x; // B | C | null
+        }
+    }
+    x; // A | B | C | null
+}
+
+function f9() {
+    let x: A | B | C | null = a;
+    while (cond) {
+        while (x) {
+            x = x.next;
+        }
+        x; // null
+    }
+    x; // A | null
+}
+
+function f10() {
+    let x: A | B | C | null = a;
+    while (cond) {
+        x; // A | B | C | null
+        if (cond) {
+            x = x && x.next;
+            continue;
+        }
+        x; // A | B | C | null
+    }
+}
+
+// Reference in a type predicate call
+
+interface Next<T> { next: T }
+declare function isNext<T>(x: T): x is T & Next<T>;
+
+function f11(start: A) {
+    let x: A | B | C | null = start;
+    while (x) {
+        if (isNext(x)) {
+            x;
+        }
+        x = x.next;
+    }
+}
+
+// Evolving types are not iterated
+
+function f12() {
+    let x;
+    x = 1;
+    while (cond) {
+        x = [x];
+    }
+    return x; // number | number[]
+}

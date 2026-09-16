@@ -804,6 +804,7 @@ type Checker struct {
 	freeFlowState                               *FlowState
 	flowLoopCache                               map[FlowLoopKey]*Type
 	flowLoopStack                               []FlowLoopInfo
+	flowLoopReentryCount                        int
 	sharedFlows                                 []SharedFlow
 	antecedentTypes                             []*Type
 	flowAnalysisDisabled                        bool
