@@ -256,8 +256,9 @@ type FlowLoopKey struct {
 }
 
 type FlowLoopInfo struct {
-	key   FlowLoopKey
-	types []*Type
+	key       FlowLoopKey
+	types     []*Type
+	reentered bool
 }
 
 // InferenceFlags

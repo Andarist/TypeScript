@@ -1,0 +1,251 @@
+controlFlowLoopCacheCollision.ts(167,19): error TS2339: Property 'prop' does not exist on type 'UnsafeGrandParent | UnsafeGreatGrandParent | UnsafeParent'.
+  Property 'prop' does not exist on type 'UnsafeGreatGrandParent'.
+
+
+==== controlFlowLoopCacheCollision.ts (1 errors) ====
+    // Repro from #59715
+    
+    class Child extends HTMLElement {
+        get parent() {
+            const { parentElement } = this;
+    
+            if (!(parentElement instanceof Parent)) {
+                return null;
+            }
+    
+            return parentElement;
+        }
+    }
+    
+    class Parent extends HTMLElement {
+        get parent() {
+            const { parentElement } = this;
+    
+            if (!(parentElement instanceof GrandParent)) {
+                return null;
+            }
+    
+            return parentElement;
+        }
+    }
+    
+    class GrandParent extends HTMLElement {
+        get parent() {
+            const { parentElement } = this;
+    
+            if (!(parentElement instanceof GreatGrandParent)) {
+                return null;
+            }
+    
+            return parentElement;
+        }
+    }
+    
+    class GreatGrandParent extends HTMLElement {
+        get parent() {
+            return null;
+        }
+    }
+    
+    customElements.define("c-child", Child);
+    customElements.define("c-parent", Parent);
+    customElements.define("c-grand-parent", GrandParent);
+    customElements.define("c-great-grand-parent", GreatGrandParent);
+    
+    type ParentElements = GreatGrandParent | GrandParent | Parent;
+    
+    const child = new Child();
+    
+    let currentParent: ParentElements | null = child.parent;
+    while (currentParent) {
+        currentParent;
+        currentParent = currentParent.parent;
+    }
+    
+    // Minimized repro using inferred getters
+    
+    class GetterEnd {
+        get next() {
+            return null;
+        }
+    }
+    
+    class GetterMiddle {
+        get next() {
+            return Math.random() ? new GetterEnd() : null;
+        }
+    }
+    
+    class GetterStart {
+        get next() {
+            return Math.random() ? new GetterMiddle() : null;
+        }
+    }
+    
+    type GetterNodes = GetterEnd | GetterMiddle | GetterStart;
+    
+    declare const getterStart: GetterStart | null;
+    let getterCurrent: GetterNodes | null = getterStart;
+    while (getterCurrent) {
+        getterCurrent;
+        getterCurrent = getterCurrent.next;
+    }
+    
+    // Minimized repro using readonly properties
+    
+    class PropertyEnd {
+        readonly next: null = null;
+    }
+    
+    class PropertyMiddle {
+        readonly next: PropertyEnd | null = null;
+    }
+    
+    class PropertyStart {
+        readonly next: PropertyMiddle | null = null;
+    }
+    
+    type PropertyNodes = PropertyEnd | PropertyMiddle | PropertyStart;
+    
+    declare const propertyStart: PropertyStart | null;
+    let propertyCurrent: PropertyNodes | null = propertyStart;
+    while (propertyCurrent) {
+        propertyCurrent;
+        propertyCurrent = propertyCurrent.next;
+    }
+    
+    // Minimized repro from the issue using declared properties
+    
+    declare class DeclaredChild {
+        parent: DeclaredParent | null;
+    }
+    
+    declare class DeclaredParent {
+        parent: DeclaredGrandParent | null;
+    }
+    
+    declare class DeclaredGrandParent {
+        parent: DeclaredGreatGrandParent | null;
+    }
+    
+    declare class DeclaredGreatGrandParent {
+        parent: null;
+    }
+    
+    declare const declaredChild: DeclaredChild;
+    let declaredCurrent: DeclaredGreatGrandParent | DeclaredGrandParent | DeclaredParent | null = declaredChild.parent;
+    while (declaredCurrent) {
+        declaredCurrent;
+        declaredCurrent = declaredCurrent.parent;
+        declaredCurrent;
+    }
+    
+    declare let alreadyWide: DeclaredGreatGrandParent | DeclaredGrandParent | DeclaredParent | null;
+    while (alreadyWide) {
+        alreadyWide;
+        alreadyWide = alreadyWide.parent;
+    }
+    
+    // Unsound property access variant from the issue
+    
+    declare class UnsafeChild {
+        parent: UnsafeParent | null;
+    }
+    
+    declare class UnsafeParent {
+        parent: UnsafeGrandParent | null;
+        prop: number;
+    }
+    
+    declare class UnsafeGrandParent {
+        parent: UnsafeGreatGrandParent | null;
+        prop: number;
+    }
+    
+    declare class UnsafeGreatGrandParent {
+        parent: null;
+    }
+    
+    declare const unsafeChild: UnsafeChild;
+    let unsafeCurrent: UnsafeGreatGrandParent | UnsafeGrandParent | UnsafeParent | null = unsafeChild.parent;
+    while (unsafeCurrent) {
+        unsafeCurrent.prop; // error
+                      ~~~~
+!!! error TS2339: Property 'prop' does not exist on type 'UnsafeGrandParent | UnsafeGreatGrandParent | UnsafeParent'.
+!!! error TS2339:   Property 'prop' does not exist on type 'UnsafeGreatGrandParent'.
+        unsafeCurrent = unsafeCurrent.parent;
+    }
+    
+    // Nominal class variant from the issue
+    
+    declare class NominalChild {
+        private childBrand;
+        parent: NominalParent | null;
+    }
+    
+    declare class NominalParent {
+        private parentBrand;
+        parent: NominalGrandParent | null;
+    }
+    
+    declare class NominalGrandParent {
+        private grandParentBrand;
+        parent: NominalGreatGrandParent | null;
+    }
+    
+    declare class NominalGreatGrandParent {
+        private greatGrandParentBrand;
+        parent: null;
+    }
+    
+    declare const nominalChild: NominalChild;
+    let nominalCurrent: NominalGreatGrandParent | NominalGrandParent | NominalParent | null = nominalChild.parent;
+    while (nominalCurrent) {
+        nominalCurrent;
+        nominalCurrent = nominalCurrent.parent;
+    }
+    
+    // Four-layer method variant from the issue
+    
+    type MethodNodes = MethodA1 | MethodA2 | MethodA3 | MethodA4;
+    
+    class MethodA1 {
+        nom = "a1" as const;
+        next() {
+            return new MethodA2();
+        }
+    }
+    
+    class MethodA2 {
+        nom = "a2" as const;
+        next() {
+            return new MethodA3();
+        }
+    }
+    
+    class MethodA3 {
+        nom = "a3" as const;
+        next() {
+            return new MethodA4();
+        }
+    }
+    
+    class MethodA4 {
+        nom = "a4" as const;
+        next() {
+            return null;
+        }
+    }
+    
+    function methodLoop(a: MethodA1) {
+        for (let p: MethodNodes | null = a; p !== null; p = p.next()) {
+            p;
+            if (p.nom === "a4") {
+                p;
+                console.log("This is reached at runtime");
+            }
+        }
+    }
+    
+    methodLoop(new MethodA1());
+    

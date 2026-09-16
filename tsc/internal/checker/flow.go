@@ -1344,8 +1344,10 @@ func (c *Checker) getTypeAtFlowLoopLabel(f *FlowState, flow *ast.FlowNode) FlowT
 	// a non-empty in-process array for the outer loop and eventually terminate because
 	// the first antecedent of a loop junction is always the non-looping control flow
 	// path that leads to the top.
-	for _, loopInfo := range c.flowLoopStack {
+	for i := range c.flowLoopStack {
+		loopInfo := &c.flowLoopStack[i]
 		if loopInfo.key == key && len(loopInfo.types) != 0 {
+			loopInfo.reentered = true
 			return c.newFlowType(c.getUnionOrEvolvingArrayType(f, loopInfo.types, UnionReductionLiteral), true /*incomplete*/)
 		}
 	}
@@ -1354,40 +1356,51 @@ func (c *Checker) getTypeAtFlowLoopLabel(f *FlowState, flow *ast.FlowNode) FlowT
 	antecedentTypes := make([]*Type, 0, 4)
 	subtypeReduction := false
 	var firstAntecedentType FlowType
-	for list := flow.Antecedents; list != nil; list = list.Next {
-		var flowType FlowType
-		if firstAntecedentType.isNil() {
-			// The first antecedent of a loop junction is always the non-looping control
-			// flow path that leads to the top.
-			firstAntecedentType = c.getTypeAtFlowNode(f, list.Flow)
-			flowType = firstAntecedentType
-		} else {
-			// All but the first antecedent are the looping control flow paths that lead
-			// back to the loop junction. We track these on the flow loop stack.
-			c.flowLoopStack = append(c.flowLoopStack, FlowLoopInfo{key: key, types: antecedentTypes})
-			saveFlowTypeCache := c.flowTypeCache
-			c.flowTypeCache = nil
-			flowType = c.getTypeAtFlowNode(f, list.Flow)
-			c.flowTypeCache = saveFlowTypeCache
-			c.flowLoopStack = c.flowLoopStack[:len(c.flowLoopStack)-1]
-			// If we see a value appear in the cache it is a sign that control flow analysis
-			// was restarted and completed by checkExpressionCached. We can simply pick up
-			// the resulting type and bail out.
-			if cached := c.flowLoopCache[key]; cached != nil {
-				return FlowType{t: cached}
+	for {
+		antecedentCount := len(antecedentTypes)
+		reentered := false
+		for list := flow.Antecedents; list != nil; list = list.Next {
+			var flowType FlowType
+			if firstAntecedentType.isNil() {
+				// The first antecedent of a loop junction is always the non-looping control
+				// flow path that leads to the top.
+				firstAntecedentType = c.getTypeAtFlowNode(f, list.Flow)
+				flowType = firstAntecedentType
+			} else if list == flow.Antecedents {
+				flowType = firstAntecedentType
+			} else {
+				// All but the first antecedent are the looping control flow paths that lead
+				// back to the loop junction. We track these on the flow loop stack.
+				c.flowLoopStack = append(c.flowLoopStack, FlowLoopInfo{key: key, types: antecedentTypes})
+				loopIndex := len(c.flowLoopStack) - 1
+				saveFlowTypeCache := c.flowTypeCache
+				c.flowTypeCache = nil
+				flowType = c.getTypeAtFlowNode(f, list.Flow)
+				c.flowTypeCache = saveFlowTypeCache
+				reentered = reentered || c.flowLoopStack[loopIndex].reentered
+				c.flowLoopStack = c.flowLoopStack[:loopIndex]
+				// If we see a value appear in the cache it is a sign that control flow analysis
+				// was restarted and completed by checkExpressionCached. We can simply pick up
+				// the resulting type and bail out.
+				if cached := c.flowLoopCache[key]; cached != nil {
+					return FlowType{t: cached}
+				}
+			}
+			antecedentTypes = core.AppendIfUnique(antecedentTypes, flowType.t)
+			// If an antecedent type is not a subset of the declared type, we need to perform
+			// subtype reduction. This happens when a "foreign" type is injected into the control
+			// flow using the instanceof operator or a user defined type predicate.
+			if !c.isTypeSubsetOf(flowType.t, f.initialType) {
+				subtypeReduction = true
+			}
+			// If the type at a particular antecedent path is the declared type there is no
+			// reason to process more antecedents since the only possible outcome is subtypes
+			// that will be removed in the final union type anyway.
+			if flowType.t == f.declaredType {
+				break
 			}
 		}
-		antecedentTypes = core.AppendIfUnique(antecedentTypes, flowType.t)
-		// If an antecedent type is not a subset of the declared type, we need to perform
-		// subtype reduction. This happens when a "foreign" type is injected into the control
-		// flow using the instanceof operator or a user defined type predicate.
-		if !c.isTypeSubsetOf(flowType.t, f.initialType) {
-			subtypeReduction = true
-		}
-		// If the type at a particular antecedent path is the declared type there is no
-		// reason to process more antecedents since the only possible outcome is subtypes
-		// that will be removed in the final union type anyway.
-		if flowType.t == f.declaredType {
+		if !reentered || len(antecedentTypes) == antecedentCount {
 			break
 		}
 	}
@@ -1669,9 +1682,6 @@ func (c *Checker) writeFlowCacheKey(b *keyBuilder, node *ast.Node, declaredType 
 			symbol := c.getResolvedSymbol(node)
 			if symbol == c.unknownSymbol {
 				return false
-			}
-			if c.isConstraintPosition(declaredType, node) {
-				b.writeByte('@')
 			}
 			b.writeSymbol(symbol)
 		}

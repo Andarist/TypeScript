@@ -112,6 +112,138 @@ while (propertyCurrent) {
     propertyCurrent = propertyCurrent.next;
 }
 
+// Minimized repro from the issue using declared properties
+
+declare class DeclaredChild {
+    parent: DeclaredParent | null;
+}
+
+declare class DeclaredParent {
+    parent: DeclaredGrandParent | null;
+}
+
+declare class DeclaredGrandParent {
+    parent: DeclaredGreatGrandParent | null;
+}
+
+declare class DeclaredGreatGrandParent {
+    parent: null;
+}
+
+declare const declaredChild: DeclaredChild;
+let declaredCurrent: DeclaredGreatGrandParent | DeclaredGrandParent | DeclaredParent | null = declaredChild.parent;
+while (declaredCurrent) {
+    declaredCurrent;
+    declaredCurrent = declaredCurrent.parent;
+    declaredCurrent;
+}
+
+declare let alreadyWide: DeclaredGreatGrandParent | DeclaredGrandParent | DeclaredParent | null;
+while (alreadyWide) {
+    alreadyWide;
+    alreadyWide = alreadyWide.parent;
+}
+
+// Unsound property access variant from the issue
+
+declare class UnsafeChild {
+    parent: UnsafeParent | null;
+}
+
+declare class UnsafeParent {
+    parent: UnsafeGrandParent | null;
+    prop: number;
+}
+
+declare class UnsafeGrandParent {
+    parent: UnsafeGreatGrandParent | null;
+    prop: number;
+}
+
+declare class UnsafeGreatGrandParent {
+    parent: null;
+}
+
+declare const unsafeChild: UnsafeChild;
+let unsafeCurrent: UnsafeGreatGrandParent | UnsafeGrandParent | UnsafeParent | null = unsafeChild.parent;
+while (unsafeCurrent) {
+    unsafeCurrent.prop; // error
+    unsafeCurrent = unsafeCurrent.parent;
+}
+
+// Nominal class variant from the issue
+
+declare class NominalChild {
+    private childBrand;
+    parent: NominalParent | null;
+}
+
+declare class NominalParent {
+    private parentBrand;
+    parent: NominalGrandParent | null;
+}
+
+declare class NominalGrandParent {
+    private grandParentBrand;
+    parent: NominalGreatGrandParent | null;
+}
+
+declare class NominalGreatGrandParent {
+    private greatGrandParentBrand;
+    parent: null;
+}
+
+declare const nominalChild: NominalChild;
+let nominalCurrent: NominalGreatGrandParent | NominalGrandParent | NominalParent | null = nominalChild.parent;
+while (nominalCurrent) {
+    nominalCurrent;
+    nominalCurrent = nominalCurrent.parent;
+}
+
+// Four-layer method variant from the issue
+
+type MethodNodes = MethodA1 | MethodA2 | MethodA3 | MethodA4;
+
+class MethodA1 {
+    nom = "a1" as const;
+    next() {
+        return new MethodA2();
+    }
+}
+
+class MethodA2 {
+    nom = "a2" as const;
+    next() {
+        return new MethodA3();
+    }
+}
+
+class MethodA3 {
+    nom = "a3" as const;
+    next() {
+        return new MethodA4();
+    }
+}
+
+class MethodA4 {
+    nom = "a4" as const;
+    next() {
+        return null;
+    }
+}
+
+function methodLoop(a: MethodA1) {
+    for (let p: MethodNodes | null = a; p !== null; p = p.next()) {
+        p;
+        if (p.nom === "a4") {
+            p;
+            console.log("This is reached at runtime");
+        }
+    }
+}
+
+methodLoop(new MethodA1());
+
 
 //// [controlFlowLoopCacheCollision.js]
 "use strict";
@@ -200,3 +332,65 @@ while (propertyCurrent) {
     propertyCurrent;
     propertyCurrent = propertyCurrent.next;
 }
+let declaredCurrent = declaredChild.parent;
+while (declaredCurrent) {
+    declaredCurrent;
+    declaredCurrent = declaredCurrent.parent;
+    declaredCurrent;
+}
+while (alreadyWide) {
+    alreadyWide;
+    alreadyWide = alreadyWide.parent;
+}
+let unsafeCurrent = unsafeChild.parent;
+while (unsafeCurrent) {
+    unsafeCurrent.prop; // error
+    unsafeCurrent = unsafeCurrent.parent;
+}
+let nominalCurrent = nominalChild.parent;
+while (nominalCurrent) {
+    nominalCurrent;
+    nominalCurrent = nominalCurrent.parent;
+}
+class MethodA1 {
+    constructor() {
+        this.nom = "a1";
+    }
+    next() {
+        return new MethodA2();
+    }
+}
+class MethodA2 {
+    constructor() {
+        this.nom = "a2";
+    }
+    next() {
+        return new MethodA3();
+    }
+}
+class MethodA3 {
+    constructor() {
+        this.nom = "a3";
+    }
+    next() {
+        return new MethodA4();
+    }
+}
+class MethodA4 {
+    constructor() {
+        this.nom = "a4";
+    }
+    next() {
+        return null;
+    }
+}
+function methodLoop(a) {
+    for (let p = a; p !== null; p = p.next()) {
+        p;
+        if (p.nom === "a4") {
+            p;
+            console.log("This is reached at runtime");
+        }
+    }
+}
+methodLoop(new MethodA1());

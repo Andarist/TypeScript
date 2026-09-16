@@ -148,7 +148,7 @@ while (currentParent) {
 >currentParent = currentParent.parent : GrandParent | GreatGrandParent | null
 >currentParent : ParentElements | null
 >currentParent.parent : GrandParent | GreatGrandParent | null
->currentParent : GrandParent | Parent
+>currentParent : ParentElements
 >parent : GrandParent | GreatGrandParent | null
 }
 
@@ -218,7 +218,7 @@ while (getterCurrent) {
 >getterCurrent = getterCurrent.next : GetterEnd | GetterMiddle | null
 >getterCurrent : GetterNodes | null
 >getterCurrent.next : GetterEnd | GetterMiddle | null
->getterCurrent : GetterMiddle | GetterStart
+>getterCurrent : GetterNodes
 >next : GetterEnd | GetterMiddle | null
 }
 
@@ -265,7 +265,322 @@ while (propertyCurrent) {
 >propertyCurrent = propertyCurrent.next : PropertyEnd | PropertyMiddle | null
 >propertyCurrent : PropertyNodes | null
 >propertyCurrent.next : PropertyEnd | PropertyMiddle | null
->propertyCurrent : PropertyMiddle | PropertyStart
+>propertyCurrent : PropertyNodes
 >next : PropertyEnd | PropertyMiddle | null
 }
+
+// Minimized repro from the issue using declared properties
+
+declare class DeclaredChild {
+>DeclaredChild : DeclaredChild
+
+    parent: DeclaredParent | null;
+>parent : DeclaredParent | null
+}
+
+declare class DeclaredParent {
+>DeclaredParent : DeclaredParent
+
+    parent: DeclaredGrandParent | null;
+>parent : DeclaredGrandParent | null
+}
+
+declare class DeclaredGrandParent {
+>DeclaredGrandParent : DeclaredGrandParent
+
+    parent: DeclaredGreatGrandParent | null;
+>parent : DeclaredGreatGrandParent | null
+}
+
+declare class DeclaredGreatGrandParent {
+>DeclaredGreatGrandParent : DeclaredGreatGrandParent
+
+    parent: null;
+>parent : null
+}
+
+declare const declaredChild: DeclaredChild;
+>declaredChild : DeclaredChild
+
+let declaredCurrent: DeclaredGreatGrandParent | DeclaredGrandParent | DeclaredParent | null = declaredChild.parent;
+>declaredCurrent : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent | null
+>declaredChild.parent : DeclaredParent | null
+>declaredChild : DeclaredChild
+>parent : DeclaredParent | null
+
+while (declaredCurrent) {
+>declaredCurrent : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent | null
+
+    declaredCurrent;
+>declaredCurrent : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent
+
+    declaredCurrent = declaredCurrent.parent;
+>declaredCurrent = declaredCurrent.parent : DeclaredGrandParent | DeclaredGreatGrandParent | null
+>declaredCurrent : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent | null
+>declaredCurrent.parent : DeclaredGrandParent | DeclaredGreatGrandParent | null
+>declaredCurrent : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent
+>parent : DeclaredGrandParent | DeclaredGreatGrandParent | null
+
+    declaredCurrent;
+>declaredCurrent : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent | null
+}
+
+declare let alreadyWide: DeclaredGreatGrandParent | DeclaredGrandParent | DeclaredParent | null;
+>alreadyWide : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent | null
+
+while (alreadyWide) {
+>alreadyWide : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent | null
+
+    alreadyWide;
+>alreadyWide : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent
+
+    alreadyWide = alreadyWide.parent;
+>alreadyWide = alreadyWide.parent : DeclaredGrandParent | DeclaredGreatGrandParent | null
+>alreadyWide : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent | null
+>alreadyWide.parent : DeclaredGrandParent | DeclaredGreatGrandParent | null
+>alreadyWide : DeclaredGrandParent | DeclaredGreatGrandParent | DeclaredParent
+>parent : DeclaredGrandParent | DeclaredGreatGrandParent | null
+}
+
+// Unsound property access variant from the issue
+
+declare class UnsafeChild {
+>UnsafeChild : UnsafeChild
+
+    parent: UnsafeParent | null;
+>parent : UnsafeParent | null
+}
+
+declare class UnsafeParent {
+>UnsafeParent : UnsafeParent
+
+    parent: UnsafeGrandParent | null;
+>parent : UnsafeGrandParent | null
+
+    prop: number;
+>prop : number
+}
+
+declare class UnsafeGrandParent {
+>UnsafeGrandParent : UnsafeGrandParent
+
+    parent: UnsafeGreatGrandParent | null;
+>parent : UnsafeGreatGrandParent | null
+
+    prop: number;
+>prop : number
+}
+
+declare class UnsafeGreatGrandParent {
+>UnsafeGreatGrandParent : UnsafeGreatGrandParent
+
+    parent: null;
+>parent : null
+}
+
+declare const unsafeChild: UnsafeChild;
+>unsafeChild : UnsafeChild
+
+let unsafeCurrent: UnsafeGreatGrandParent | UnsafeGrandParent | UnsafeParent | null = unsafeChild.parent;
+>unsafeCurrent : UnsafeGrandParent | UnsafeGreatGrandParent | UnsafeParent | null
+>unsafeChild.parent : UnsafeParent | null
+>unsafeChild : UnsafeChild
+>parent : UnsafeParent | null
+
+while (unsafeCurrent) {
+>unsafeCurrent : UnsafeGrandParent | UnsafeGreatGrandParent | UnsafeParent | null
+
+    unsafeCurrent.prop; // error
+>unsafeCurrent.prop : any
+>unsafeCurrent : UnsafeGrandParent | UnsafeGreatGrandParent | UnsafeParent
+>prop : any
+
+    unsafeCurrent = unsafeCurrent.parent;
+>unsafeCurrent = unsafeCurrent.parent : UnsafeGrandParent | UnsafeGreatGrandParent | null
+>unsafeCurrent : UnsafeGrandParent | UnsafeGreatGrandParent | UnsafeParent | null
+>unsafeCurrent.parent : UnsafeGrandParent | UnsafeGreatGrandParent | null
+>unsafeCurrent : UnsafeGrandParent | UnsafeGreatGrandParent | UnsafeParent
+>parent : UnsafeGrandParent | UnsafeGreatGrandParent | null
+}
+
+// Nominal class variant from the issue
+
+declare class NominalChild {
+>NominalChild : NominalChild
+
+    private childBrand;
+>childBrand : any
+
+    parent: NominalParent | null;
+>parent : NominalParent | null
+}
+
+declare class NominalParent {
+>NominalParent : NominalParent
+
+    private parentBrand;
+>parentBrand : any
+
+    parent: NominalGrandParent | null;
+>parent : NominalGrandParent | null
+}
+
+declare class NominalGrandParent {
+>NominalGrandParent : NominalGrandParent
+
+    private grandParentBrand;
+>grandParentBrand : any
+
+    parent: NominalGreatGrandParent | null;
+>parent : NominalGreatGrandParent | null
+}
+
+declare class NominalGreatGrandParent {
+>NominalGreatGrandParent : NominalGreatGrandParent
+
+    private greatGrandParentBrand;
+>greatGrandParentBrand : any
+
+    parent: null;
+>parent : null
+}
+
+declare const nominalChild: NominalChild;
+>nominalChild : NominalChild
+
+let nominalCurrent: NominalGreatGrandParent | NominalGrandParent | NominalParent | null = nominalChild.parent;
+>nominalCurrent : NominalGrandParent | NominalGreatGrandParent | NominalParent | null
+>nominalChild.parent : NominalParent | null
+>nominalChild : NominalChild
+>parent : NominalParent | null
+
+while (nominalCurrent) {
+>nominalCurrent : NominalGrandParent | NominalGreatGrandParent | NominalParent | null
+
+    nominalCurrent;
+>nominalCurrent : NominalGrandParent | NominalGreatGrandParent | NominalParent
+
+    nominalCurrent = nominalCurrent.parent;
+>nominalCurrent = nominalCurrent.parent : NominalGrandParent | NominalGreatGrandParent | null
+>nominalCurrent : NominalGrandParent | NominalGreatGrandParent | NominalParent | null
+>nominalCurrent.parent : NominalGrandParent | NominalGreatGrandParent | null
+>nominalCurrent : NominalGrandParent | NominalGreatGrandParent | NominalParent
+>parent : NominalGrandParent | NominalGreatGrandParent | null
+}
+
+// Four-layer method variant from the issue
+
+type MethodNodes = MethodA1 | MethodA2 | MethodA3 | MethodA4;
+>MethodNodes : MethodNodes
+
+class MethodA1 {
+>MethodA1 : MethodA1
+
+    nom = "a1" as const;
+>nom : "a1"
+>"a1" as const : "a1"
+>"a1" : "a1"
+
+    next() {
+>next : () => MethodA2
+
+        return new MethodA2();
+>new MethodA2() : MethodA2
+>MethodA2 : typeof MethodA2
+    }
+}
+
+class MethodA2 {
+>MethodA2 : MethodA2
+
+    nom = "a2" as const;
+>nom : "a2"
+>"a2" as const : "a2"
+>"a2" : "a2"
+
+    next() {
+>next : () => MethodA3
+
+        return new MethodA3();
+>new MethodA3() : MethodA3
+>MethodA3 : typeof MethodA3
+    }
+}
+
+class MethodA3 {
+>MethodA3 : MethodA3
+
+    nom = "a3" as const;
+>nom : "a3"
+>"a3" as const : "a3"
+>"a3" : "a3"
+
+    next() {
+>next : () => MethodA4
+
+        return new MethodA4();
+>new MethodA4() : MethodA4
+>MethodA4 : typeof MethodA4
+    }
+}
+
+class MethodA4 {
+>MethodA4 : MethodA4
+
+    nom = "a4" as const;
+>nom : "a4"
+>"a4" as const : "a4"
+>"a4" : "a4"
+
+    next() {
+>next : () => null
+
+        return null;
+    }
+}
+
+function methodLoop(a: MethodA1) {
+>methodLoop : (a: MethodA1) => void
+>a : MethodA1
+
+    for (let p: MethodNodes | null = a; p !== null; p = p.next()) {
+>p : MethodNodes | null
+>a : MethodA1
+>p !== null : boolean
+>p : MethodNodes | null
+>p = p.next() : MethodA2 | MethodA3 | MethodA4 | null
+>p : MethodNodes | null
+>p.next() : MethodA2 | MethodA3 | MethodA4 | null
+>p.next : (() => MethodA2) | (() => MethodA3) | (() => MethodA4) | (() => null)
+>p : MethodA1 | MethodA2 | MethodA3 | MethodA4
+>next : (() => MethodA2) | (() => MethodA3) | (() => MethodA4) | (() => null)
+
+        p;
+>p : MethodNodes
+
+        if (p.nom === "a4") {
+>p.nom === "a4" : boolean
+>p.nom : "a1" | "a2" | "a3" | "a4"
+>p : MethodNodes
+>nom : "a1" | "a2" | "a3" | "a4"
+>"a4" : "a4"
+
+            p;
+>p : MethodA4
+
+            console.log("This is reached at runtime");
+>console.log("This is reached at runtime") : void
+>console.log : (...data: any[]) => void
+>console : Console
+>log : (...data: any[]) => void
+>"This is reached at runtime" : "This is reached at runtime"
+        }
+    }
+}
+
+methodLoop(new MethodA1());
+>methodLoop(new MethodA1()) : void
+>methodLoop : (a: MethodA1) => void
+>new MethodA1() : MethodA1
+>MethodA1 : typeof MethodA1
 

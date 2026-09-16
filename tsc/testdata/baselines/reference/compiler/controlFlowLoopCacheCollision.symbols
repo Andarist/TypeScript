@@ -132,9 +132,9 @@ while (currentParent) {
 
     currentParent = currentParent.parent;
 >currentParent : Symbol(currentParent, Decl(controlFlowLoopCacheCollision.ts, 53, 3))
->currentParent.parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 26, 39), Decl(controlFlowLoopCacheCollision.ts, 14, 34))
+>currentParent.parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 26, 39), Decl(controlFlowLoopCacheCollision.ts, 38, 44), Decl(controlFlowLoopCacheCollision.ts, 14, 34))
 >currentParent : Symbol(currentParent, Decl(controlFlowLoopCacheCollision.ts, 53, 3))
->parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 26, 39), Decl(controlFlowLoopCacheCollision.ts, 14, 34))
+>parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 26, 39), Decl(controlFlowLoopCacheCollision.ts, 38, 44), Decl(controlFlowLoopCacheCollision.ts, 14, 34))
 }
 
 // Minimized repro using inferred getters
@@ -200,9 +200,9 @@ while (getterCurrent) {
 
     getterCurrent = getterCurrent.next;
 >getterCurrent : Symbol(getterCurrent, Decl(controlFlowLoopCacheCollision.ts, 82, 3))
->getterCurrent.next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 67, 20), Decl(controlFlowLoopCacheCollision.ts, 73, 19))
+>getterCurrent.next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 61, 17), Decl(controlFlowLoopCacheCollision.ts, 67, 20), Decl(controlFlowLoopCacheCollision.ts, 73, 19))
 >getterCurrent : Symbol(getterCurrent, Decl(controlFlowLoopCacheCollision.ts, 82, 3))
->next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 67, 20), Decl(controlFlowLoopCacheCollision.ts, 73, 19))
+>next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 61, 17), Decl(controlFlowLoopCacheCollision.ts, 67, 20), Decl(controlFlowLoopCacheCollision.ts, 73, 19))
 }
 
 // Minimized repro using readonly properties
@@ -253,8 +253,331 @@ while (propertyCurrent) {
 
     propertyCurrent = propertyCurrent.next;
 >propertyCurrent : Symbol(propertyCurrent, Decl(controlFlowLoopCacheCollision.ts, 105, 3))
->propertyCurrent.next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 94, 22), Decl(controlFlowLoopCacheCollision.ts, 98, 21))
+>propertyCurrent.next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 90, 19), Decl(controlFlowLoopCacheCollision.ts, 94, 22), Decl(controlFlowLoopCacheCollision.ts, 98, 21))
 >propertyCurrent : Symbol(propertyCurrent, Decl(controlFlowLoopCacheCollision.ts, 105, 3))
->next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 94, 22), Decl(controlFlowLoopCacheCollision.ts, 98, 21))
+>next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 90, 19), Decl(controlFlowLoopCacheCollision.ts, 94, 22), Decl(controlFlowLoopCacheCollision.ts, 98, 21))
 }
+
+// Minimized repro from the issue using declared properties
+
+declare class DeclaredChild {
+>DeclaredChild : Symbol(DeclaredChild, Decl(controlFlowLoopCacheCollision.ts, 109, 1))
+
+    parent: DeclaredParent | null;
+>parent : Symbol(DeclaredChild.parent, Decl(controlFlowLoopCacheCollision.ts, 113, 29))
+>DeclaredParent : Symbol(DeclaredParent, Decl(controlFlowLoopCacheCollision.ts, 115, 1))
+}
+
+declare class DeclaredParent {
+>DeclaredParent : Symbol(DeclaredParent, Decl(controlFlowLoopCacheCollision.ts, 115, 1))
+
+    parent: DeclaredGrandParent | null;
+>parent : Symbol(DeclaredParent.parent, Decl(controlFlowLoopCacheCollision.ts, 117, 30))
+>DeclaredGrandParent : Symbol(DeclaredGrandParent, Decl(controlFlowLoopCacheCollision.ts, 119, 1))
+}
+
+declare class DeclaredGrandParent {
+>DeclaredGrandParent : Symbol(DeclaredGrandParent, Decl(controlFlowLoopCacheCollision.ts, 119, 1))
+
+    parent: DeclaredGreatGrandParent | null;
+>parent : Symbol(DeclaredGrandParent.parent, Decl(controlFlowLoopCacheCollision.ts, 121, 35))
+>DeclaredGreatGrandParent : Symbol(DeclaredGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 123, 1))
+}
+
+declare class DeclaredGreatGrandParent {
+>DeclaredGreatGrandParent : Symbol(DeclaredGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 123, 1))
+
+    parent: null;
+>parent : Symbol(DeclaredGreatGrandParent.parent, Decl(controlFlowLoopCacheCollision.ts, 125, 40))
+}
+
+declare const declaredChild: DeclaredChild;
+>declaredChild : Symbol(declaredChild, Decl(controlFlowLoopCacheCollision.ts, 129, 13))
+>DeclaredChild : Symbol(DeclaredChild, Decl(controlFlowLoopCacheCollision.ts, 109, 1))
+
+let declaredCurrent: DeclaredGreatGrandParent | DeclaredGrandParent | DeclaredParent | null = declaredChild.parent;
+>declaredCurrent : Symbol(declaredCurrent, Decl(controlFlowLoopCacheCollision.ts, 130, 3))
+>DeclaredGreatGrandParent : Symbol(DeclaredGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 123, 1))
+>DeclaredGrandParent : Symbol(DeclaredGrandParent, Decl(controlFlowLoopCacheCollision.ts, 119, 1))
+>DeclaredParent : Symbol(DeclaredParent, Decl(controlFlowLoopCacheCollision.ts, 115, 1))
+>declaredChild.parent : Symbol(DeclaredChild.parent, Decl(controlFlowLoopCacheCollision.ts, 113, 29))
+>declaredChild : Symbol(declaredChild, Decl(controlFlowLoopCacheCollision.ts, 129, 13))
+>parent : Symbol(DeclaredChild.parent, Decl(controlFlowLoopCacheCollision.ts, 113, 29))
+
+while (declaredCurrent) {
+>declaredCurrent : Symbol(declaredCurrent, Decl(controlFlowLoopCacheCollision.ts, 130, 3))
+
+    declaredCurrent;
+>declaredCurrent : Symbol(declaredCurrent, Decl(controlFlowLoopCacheCollision.ts, 130, 3))
+
+    declaredCurrent = declaredCurrent.parent;
+>declaredCurrent : Symbol(declaredCurrent, Decl(controlFlowLoopCacheCollision.ts, 130, 3))
+>declaredCurrent.parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 121, 35), Decl(controlFlowLoopCacheCollision.ts, 125, 40), Decl(controlFlowLoopCacheCollision.ts, 117, 30))
+>declaredCurrent : Symbol(declaredCurrent, Decl(controlFlowLoopCacheCollision.ts, 130, 3))
+>parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 121, 35), Decl(controlFlowLoopCacheCollision.ts, 125, 40), Decl(controlFlowLoopCacheCollision.ts, 117, 30))
+
+    declaredCurrent;
+>declaredCurrent : Symbol(declaredCurrent, Decl(controlFlowLoopCacheCollision.ts, 130, 3))
+}
+
+declare let alreadyWide: DeclaredGreatGrandParent | DeclaredGrandParent | DeclaredParent | null;
+>alreadyWide : Symbol(alreadyWide, Decl(controlFlowLoopCacheCollision.ts, 137, 11))
+>DeclaredGreatGrandParent : Symbol(DeclaredGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 123, 1))
+>DeclaredGrandParent : Symbol(DeclaredGrandParent, Decl(controlFlowLoopCacheCollision.ts, 119, 1))
+>DeclaredParent : Symbol(DeclaredParent, Decl(controlFlowLoopCacheCollision.ts, 115, 1))
+
+while (alreadyWide) {
+>alreadyWide : Symbol(alreadyWide, Decl(controlFlowLoopCacheCollision.ts, 137, 11))
+
+    alreadyWide;
+>alreadyWide : Symbol(alreadyWide, Decl(controlFlowLoopCacheCollision.ts, 137, 11))
+
+    alreadyWide = alreadyWide.parent;
+>alreadyWide : Symbol(alreadyWide, Decl(controlFlowLoopCacheCollision.ts, 137, 11))
+>alreadyWide.parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 121, 35), Decl(controlFlowLoopCacheCollision.ts, 125, 40), Decl(controlFlowLoopCacheCollision.ts, 117, 30))
+>alreadyWide : Symbol(alreadyWide, Decl(controlFlowLoopCacheCollision.ts, 137, 11))
+>parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 121, 35), Decl(controlFlowLoopCacheCollision.ts, 125, 40), Decl(controlFlowLoopCacheCollision.ts, 117, 30))
+}
+
+// Unsound property access variant from the issue
+
+declare class UnsafeChild {
+>UnsafeChild : Symbol(UnsafeChild, Decl(controlFlowLoopCacheCollision.ts, 141, 1))
+
+    parent: UnsafeParent | null;
+>parent : Symbol(UnsafeChild.parent, Decl(controlFlowLoopCacheCollision.ts, 145, 27))
+>UnsafeParent : Symbol(UnsafeParent, Decl(controlFlowLoopCacheCollision.ts, 147, 1))
+}
+
+declare class UnsafeParent {
+>UnsafeParent : Symbol(UnsafeParent, Decl(controlFlowLoopCacheCollision.ts, 147, 1))
+
+    parent: UnsafeGrandParent | null;
+>parent : Symbol(UnsafeParent.parent, Decl(controlFlowLoopCacheCollision.ts, 149, 28))
+>UnsafeGrandParent : Symbol(UnsafeGrandParent, Decl(controlFlowLoopCacheCollision.ts, 152, 1))
+
+    prop: number;
+>prop : Symbol(UnsafeParent.prop, Decl(controlFlowLoopCacheCollision.ts, 150, 37))
+}
+
+declare class UnsafeGrandParent {
+>UnsafeGrandParent : Symbol(UnsafeGrandParent, Decl(controlFlowLoopCacheCollision.ts, 152, 1))
+
+    parent: UnsafeGreatGrandParent | null;
+>parent : Symbol(UnsafeGrandParent.parent, Decl(controlFlowLoopCacheCollision.ts, 154, 33))
+>UnsafeGreatGrandParent : Symbol(UnsafeGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 157, 1))
+
+    prop: number;
+>prop : Symbol(UnsafeGrandParent.prop, Decl(controlFlowLoopCacheCollision.ts, 155, 42))
+}
+
+declare class UnsafeGreatGrandParent {
+>UnsafeGreatGrandParent : Symbol(UnsafeGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 157, 1))
+
+    parent: null;
+>parent : Symbol(UnsafeGreatGrandParent.parent, Decl(controlFlowLoopCacheCollision.ts, 159, 38))
+}
+
+declare const unsafeChild: UnsafeChild;
+>unsafeChild : Symbol(unsafeChild, Decl(controlFlowLoopCacheCollision.ts, 163, 13))
+>UnsafeChild : Symbol(UnsafeChild, Decl(controlFlowLoopCacheCollision.ts, 141, 1))
+
+let unsafeCurrent: UnsafeGreatGrandParent | UnsafeGrandParent | UnsafeParent | null = unsafeChild.parent;
+>unsafeCurrent : Symbol(unsafeCurrent, Decl(controlFlowLoopCacheCollision.ts, 164, 3))
+>UnsafeGreatGrandParent : Symbol(UnsafeGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 157, 1))
+>UnsafeGrandParent : Symbol(UnsafeGrandParent, Decl(controlFlowLoopCacheCollision.ts, 152, 1))
+>UnsafeParent : Symbol(UnsafeParent, Decl(controlFlowLoopCacheCollision.ts, 147, 1))
+>unsafeChild.parent : Symbol(UnsafeChild.parent, Decl(controlFlowLoopCacheCollision.ts, 145, 27))
+>unsafeChild : Symbol(unsafeChild, Decl(controlFlowLoopCacheCollision.ts, 163, 13))
+>parent : Symbol(UnsafeChild.parent, Decl(controlFlowLoopCacheCollision.ts, 145, 27))
+
+while (unsafeCurrent) {
+>unsafeCurrent : Symbol(unsafeCurrent, Decl(controlFlowLoopCacheCollision.ts, 164, 3))
+
+    unsafeCurrent.prop; // error
+>unsafeCurrent : Symbol(unsafeCurrent, Decl(controlFlowLoopCacheCollision.ts, 164, 3))
+
+    unsafeCurrent = unsafeCurrent.parent;
+>unsafeCurrent : Symbol(unsafeCurrent, Decl(controlFlowLoopCacheCollision.ts, 164, 3))
+>unsafeCurrent.parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 154, 33), Decl(controlFlowLoopCacheCollision.ts, 159, 38), Decl(controlFlowLoopCacheCollision.ts, 149, 28))
+>unsafeCurrent : Symbol(unsafeCurrent, Decl(controlFlowLoopCacheCollision.ts, 164, 3))
+>parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 154, 33), Decl(controlFlowLoopCacheCollision.ts, 159, 38), Decl(controlFlowLoopCacheCollision.ts, 149, 28))
+}
+
+// Nominal class variant from the issue
+
+declare class NominalChild {
+>NominalChild : Symbol(NominalChild, Decl(controlFlowLoopCacheCollision.ts, 168, 1))
+
+    private childBrand;
+>childBrand : Symbol(NominalChild.childBrand, Decl(controlFlowLoopCacheCollision.ts, 172, 28))
+
+    parent: NominalParent | null;
+>parent : Symbol(NominalChild.parent, Decl(controlFlowLoopCacheCollision.ts, 173, 23))
+>NominalParent : Symbol(NominalParent, Decl(controlFlowLoopCacheCollision.ts, 175, 1))
+}
+
+declare class NominalParent {
+>NominalParent : Symbol(NominalParent, Decl(controlFlowLoopCacheCollision.ts, 175, 1))
+
+    private parentBrand;
+>parentBrand : Symbol(NominalParent.parentBrand, Decl(controlFlowLoopCacheCollision.ts, 177, 29))
+
+    parent: NominalGrandParent | null;
+>parent : Symbol(NominalParent.parent, Decl(controlFlowLoopCacheCollision.ts, 178, 24))
+>NominalGrandParent : Symbol(NominalGrandParent, Decl(controlFlowLoopCacheCollision.ts, 180, 1))
+}
+
+declare class NominalGrandParent {
+>NominalGrandParent : Symbol(NominalGrandParent, Decl(controlFlowLoopCacheCollision.ts, 180, 1))
+
+    private grandParentBrand;
+>grandParentBrand : Symbol(NominalGrandParent.grandParentBrand, Decl(controlFlowLoopCacheCollision.ts, 182, 34))
+
+    parent: NominalGreatGrandParent | null;
+>parent : Symbol(NominalGrandParent.parent, Decl(controlFlowLoopCacheCollision.ts, 183, 29))
+>NominalGreatGrandParent : Symbol(NominalGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 185, 1))
+}
+
+declare class NominalGreatGrandParent {
+>NominalGreatGrandParent : Symbol(NominalGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 185, 1))
+
+    private greatGrandParentBrand;
+>greatGrandParentBrand : Symbol(NominalGreatGrandParent.greatGrandParentBrand, Decl(controlFlowLoopCacheCollision.ts, 187, 39))
+
+    parent: null;
+>parent : Symbol(NominalGreatGrandParent.parent, Decl(controlFlowLoopCacheCollision.ts, 188, 34))
+}
+
+declare const nominalChild: NominalChild;
+>nominalChild : Symbol(nominalChild, Decl(controlFlowLoopCacheCollision.ts, 192, 13))
+>NominalChild : Symbol(NominalChild, Decl(controlFlowLoopCacheCollision.ts, 168, 1))
+
+let nominalCurrent: NominalGreatGrandParent | NominalGrandParent | NominalParent | null = nominalChild.parent;
+>nominalCurrent : Symbol(nominalCurrent, Decl(controlFlowLoopCacheCollision.ts, 193, 3))
+>NominalGreatGrandParent : Symbol(NominalGreatGrandParent, Decl(controlFlowLoopCacheCollision.ts, 185, 1))
+>NominalGrandParent : Symbol(NominalGrandParent, Decl(controlFlowLoopCacheCollision.ts, 180, 1))
+>NominalParent : Symbol(NominalParent, Decl(controlFlowLoopCacheCollision.ts, 175, 1))
+>nominalChild.parent : Symbol(NominalChild.parent, Decl(controlFlowLoopCacheCollision.ts, 173, 23))
+>nominalChild : Symbol(nominalChild, Decl(controlFlowLoopCacheCollision.ts, 192, 13))
+>parent : Symbol(NominalChild.parent, Decl(controlFlowLoopCacheCollision.ts, 173, 23))
+
+while (nominalCurrent) {
+>nominalCurrent : Symbol(nominalCurrent, Decl(controlFlowLoopCacheCollision.ts, 193, 3))
+
+    nominalCurrent;
+>nominalCurrent : Symbol(nominalCurrent, Decl(controlFlowLoopCacheCollision.ts, 193, 3))
+
+    nominalCurrent = nominalCurrent.parent;
+>nominalCurrent : Symbol(nominalCurrent, Decl(controlFlowLoopCacheCollision.ts, 193, 3))
+>nominalCurrent.parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 183, 29), Decl(controlFlowLoopCacheCollision.ts, 188, 34), Decl(controlFlowLoopCacheCollision.ts, 178, 24))
+>nominalCurrent : Symbol(nominalCurrent, Decl(controlFlowLoopCacheCollision.ts, 193, 3))
+>parent : Symbol(parent, Decl(controlFlowLoopCacheCollision.ts, 183, 29), Decl(controlFlowLoopCacheCollision.ts, 188, 34), Decl(controlFlowLoopCacheCollision.ts, 178, 24))
+}
+
+// Four-layer method variant from the issue
+
+type MethodNodes = MethodA1 | MethodA2 | MethodA3 | MethodA4;
+>MethodNodes : Symbol(MethodNodes, Decl(controlFlowLoopCacheCollision.ts, 197, 1))
+>MethodA1 : Symbol(MethodA1, Decl(controlFlowLoopCacheCollision.ts, 201, 61))
+>MethodA2 : Symbol(MethodA2, Decl(controlFlowLoopCacheCollision.ts, 208, 1))
+>MethodA3 : Symbol(MethodA3, Decl(controlFlowLoopCacheCollision.ts, 215, 1))
+>MethodA4 : Symbol(MethodA4, Decl(controlFlowLoopCacheCollision.ts, 222, 1))
+
+class MethodA1 {
+>MethodA1 : Symbol(MethodA1, Decl(controlFlowLoopCacheCollision.ts, 201, 61))
+
+    nom = "a1" as const;
+>nom : Symbol(MethodA1.nom, Decl(controlFlowLoopCacheCollision.ts, 203, 16))
+>const : Symbol(const)
+
+    next() {
+>next : Symbol(MethodA1.next, Decl(controlFlowLoopCacheCollision.ts, 204, 24))
+
+        return new MethodA2();
+>MethodA2 : Symbol(MethodA2, Decl(controlFlowLoopCacheCollision.ts, 208, 1))
+    }
+}
+
+class MethodA2 {
+>MethodA2 : Symbol(MethodA2, Decl(controlFlowLoopCacheCollision.ts, 208, 1))
+
+    nom = "a2" as const;
+>nom : Symbol(MethodA2.nom, Decl(controlFlowLoopCacheCollision.ts, 210, 16))
+>const : Symbol(const)
+
+    next() {
+>next : Symbol(MethodA2.next, Decl(controlFlowLoopCacheCollision.ts, 211, 24))
+
+        return new MethodA3();
+>MethodA3 : Symbol(MethodA3, Decl(controlFlowLoopCacheCollision.ts, 215, 1))
+    }
+}
+
+class MethodA3 {
+>MethodA3 : Symbol(MethodA3, Decl(controlFlowLoopCacheCollision.ts, 215, 1))
+
+    nom = "a3" as const;
+>nom : Symbol(MethodA3.nom, Decl(controlFlowLoopCacheCollision.ts, 217, 16))
+>const : Symbol(const)
+
+    next() {
+>next : Symbol(MethodA3.next, Decl(controlFlowLoopCacheCollision.ts, 218, 24))
+
+        return new MethodA4();
+>MethodA4 : Symbol(MethodA4, Decl(controlFlowLoopCacheCollision.ts, 222, 1))
+    }
+}
+
+class MethodA4 {
+>MethodA4 : Symbol(MethodA4, Decl(controlFlowLoopCacheCollision.ts, 222, 1))
+
+    nom = "a4" as const;
+>nom : Symbol(MethodA4.nom, Decl(controlFlowLoopCacheCollision.ts, 224, 16))
+>const : Symbol(const)
+
+    next() {
+>next : Symbol(MethodA4.next, Decl(controlFlowLoopCacheCollision.ts, 225, 24))
+
+        return null;
+    }
+}
+
+function methodLoop(a: MethodA1) {
+>methodLoop : Symbol(methodLoop, Decl(controlFlowLoopCacheCollision.ts, 229, 1))
+>a : Symbol(a, Decl(controlFlowLoopCacheCollision.ts, 231, 20))
+>MethodA1 : Symbol(MethodA1, Decl(controlFlowLoopCacheCollision.ts, 201, 61))
+
+    for (let p: MethodNodes | null = a; p !== null; p = p.next()) {
+>p : Symbol(p, Decl(controlFlowLoopCacheCollision.ts, 232, 12))
+>MethodNodes : Symbol(MethodNodes, Decl(controlFlowLoopCacheCollision.ts, 197, 1))
+>a : Symbol(a, Decl(controlFlowLoopCacheCollision.ts, 231, 20))
+>p : Symbol(p, Decl(controlFlowLoopCacheCollision.ts, 232, 12))
+>p : Symbol(p, Decl(controlFlowLoopCacheCollision.ts, 232, 12))
+>p.next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 204, 24), Decl(controlFlowLoopCacheCollision.ts, 211, 24), Decl(controlFlowLoopCacheCollision.ts, 218, 24), Decl(controlFlowLoopCacheCollision.ts, 225, 24))
+>p : Symbol(p, Decl(controlFlowLoopCacheCollision.ts, 232, 12))
+>next : Symbol(next, Decl(controlFlowLoopCacheCollision.ts, 204, 24), Decl(controlFlowLoopCacheCollision.ts, 211, 24), Decl(controlFlowLoopCacheCollision.ts, 218, 24), Decl(controlFlowLoopCacheCollision.ts, 225, 24))
+
+        p;
+>p : Symbol(p, Decl(controlFlowLoopCacheCollision.ts, 232, 12))
+
+        if (p.nom === "a4") {
+>p.nom : Symbol(nom, Decl(controlFlowLoopCacheCollision.ts, 203, 16), Decl(controlFlowLoopCacheCollision.ts, 210, 16), Decl(controlFlowLoopCacheCollision.ts, 217, 16), Decl(controlFlowLoopCacheCollision.ts, 224, 16))
+>p : Symbol(p, Decl(controlFlowLoopCacheCollision.ts, 232, 12))
+>nom : Symbol(nom, Decl(controlFlowLoopCacheCollision.ts, 203, 16), Decl(controlFlowLoopCacheCollision.ts, 210, 16), Decl(controlFlowLoopCacheCollision.ts, 217, 16), Decl(controlFlowLoopCacheCollision.ts, 224, 16))
+
+            p;
+>p : Symbol(p, Decl(controlFlowLoopCacheCollision.ts, 232, 12))
+
+            console.log("This is reached at runtime");
+>console.log : Symbol(Console.log, Decl(lib.dom.d.ts, --, --))
+>console : Symbol(console, Decl(lib.dom.d.ts, --, --))
+>log : Symbol(Console.log, Decl(lib.dom.d.ts, --, --))
+        }
+    }
+}
+
+methodLoop(new MethodA1());
+>methodLoop : Symbol(methodLoop, Decl(controlFlowLoopCacheCollision.ts, 229, 1))
+>MethodA1 : Symbol(MethodA1, Decl(controlFlowLoopCacheCollision.ts, 201, 61))
 
