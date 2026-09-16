@@ -1420,7 +1420,9 @@ func (c *Checker) getTypeAtFlowLoopLabel(f *FlowState, flow *ast.FlowNode) FlowT
 			if c.flowLoopReentryCount == reentryCount || f.declaredType.flags&TypeFlagsUnion == 0 {
 				break
 			}
-			result := c.getUnionOrEvolvingArrayType(f, antecedentTypes, core.IfElse(subtypeReduction, UnionReductionSubtype, UnionReductionLiteral))
+			// Results that differ only in the freshness of literal types are considered equal
+			// since another pass would observe the same constituents.
+			result := c.getRegularTypeOfLiteralType(c.getUnionOrEvolvingArrayType(f, antecedentTypes, core.IfElse(subtypeReduction, UnionReductionSubtype, UnionReductionLiteral)))
 			if result == lastResult {
 				break
 			}
