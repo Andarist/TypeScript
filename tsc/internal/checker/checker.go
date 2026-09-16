@@ -256,9 +256,8 @@ type FlowLoopKey struct {
 }
 
 type FlowLoopInfo struct {
-	key       FlowLoopKey
-	types     []*Type
-	reentered bool // set when the in-process types were observed by a nested flow analysis of the same reference
+	key   FlowLoopKey
+	types []*Type
 }
 
 // InferenceFlags
@@ -805,6 +804,7 @@ type Checker struct {
 	freeFlowState                               *FlowState
 	flowLoopCache                               map[FlowLoopKey]*Type
 	flowLoopStack                               []FlowLoopInfo
+	flowLoopReentryCount                        int
 	sharedFlows                                 []SharedFlow
 	antecedentTypes                             []*Type
 	flowAnalysisDisabled                        bool

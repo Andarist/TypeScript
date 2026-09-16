@@ -208,3 +208,154 @@ controlFlowLoopSelfReferentialAssignment.ts(53,31): error TS2339: Property 'prop
         }
     }
     
+    // Nominal classes: the structural cases above also reduce by subtype relationships between
+    // the levels, so repeat the chain with classes that are not mutually assignable.
+    
+    declare class NChild { parent: NParent | null; private _x: unknown; }
+    declare class NParent { parent: NGrandParent | null; private _x: unknown; }
+    declare class NGrandParent { parent: NGreatGrandParent | null; private _x: unknown; }
+    declare class NGreatGrandParent { parent: null; private _x: unknown; }
+    declare const nchild: NChild;
+    
+    function nominal() {
+        let currentParent: NGreatGrandParent | NGrandParent | NParent | null = nchild.parent;
+        while (currentParent) {
+            currentParent; // should be NParent | NGrandParent | NGreatGrandParent
+            currentParent = currentParent.parent;
+            currentParent; // should be NGrandParent | NGreatGrandParent | null
+        }
+    }
+    
+    // The original custom elements example from #59715
+    
+    class CChild extends HTMLElement {
+        get parent() {
+            const { parentElement } = this;
+            if (!(parentElement instanceof CParent)) {
+                return null;
+            }
+            return parentElement;
+        }
+    }
+    
+    class CParent extends HTMLElement {
+        get parent() {
+            const { parentElement } = this;
+            if (!(parentElement instanceof CGrandParent)) {
+                return null;
+            }
+            return parentElement;
+        }
+    }
+    
+    class CGrandParent extends HTMLElement {
+        get parent() {
+            const { parentElement } = this;
+            if (!(parentElement instanceof CGreatGrandParent)) {
+                return null;
+            }
+            return parentElement;
+        }
+    }
+    
+    class CGreatGrandParent extends HTMLElement {
+        get parent() {
+            return null;
+        }
+    }
+    
+    type ParentElements = CGreatGrandParent | CGrandParent | CParent;
+    
+    function customElementsChain() {
+        const cchild = new CChild();
+        let currentParent: ParentElements | null = cchild.parent;
+        while (currentParent) {
+            currentParent; // should be CParent | CGrandParent | CGreatGrandParent, alias ParentElements
+            currentParent = currentParent.parent;
+        }
+    }
+    
+    // do-while: the assignment precedes the condition, and the flow node of the assignment is
+    // shared by both branches of the condition.
+    
+    declare class A { next: B | null; a: 1 }
+    declare class B { next: C | null; b: 1 }
+    declare class C { next: null; c: 1 }
+    declare const a: A;
+    declare let cond: boolean;
+    
+    function doWhileCondition() {
+        let x: A | B | C | null = a;
+        do {
+            x; // should be A | B | C
+            x = x && x.next;
+            x; // should be B | C | null
+        } while (x);
+        x; // should be null
+    }
+    
+    function doWhileBody() {
+        let x: A | B | C | null = a;
+        do {
+            x; // should be A | B | C | null
+            if (x) {
+                x = x.next;
+            }
+            x; // should be B | C | null
+        } while (cond);
+        x; // should be B | C | null
+    }
+    
+    // The self-assignment is in an inner loop and the outer loop reads the result.
+    
+    function innerLoopAssigns() {
+        let x: A | B | C | null = a;
+        while (cond) {
+            while (x) {
+                x = x.next;
+            }
+            x; // should be null
+        }
+        x; // should be A | null
+    }
+    
+    // A continue statement adds a second looping antecedent.
+    
+    function continueStatement() {
+        let x: A | B | C | null = a;
+        while (cond) {
+            x; // should be A | B | C | null
+            if (cond) {
+                x = x && x.next;
+                continue;
+            }
+            x; // should be A | B | C | null
+        }
+    }
+    
+    // The reference is read by a type predicate call whose signature is instantiated from it.
+    
+    interface Next<T> { next: T }
+    declare function isNext<T>(x: T): x is T & Next<T>;
+    
+    function typePredicate(start: A) {
+        let x: A | B | C | null = start;
+        while (x) {
+            if (isNext(x)) {
+                x;
+            }
+            x = x.next;
+        }
+    }
+    
+    // An evolving type assigned from itself has no bound and is not iterated.
+    
+    function evolvingSelfAssignment() {
+        let x;
+        x = 1;
+        while (cond) {
+            x = [x];
+        }
+        return x; // should be number | number[]
+    }
+    

@@ -701,3 +701,387 @@ function threeLevelsInnermostAssigns(a: A1) {
     }
 }
 
+// Nominal classes: the structural cases above also reduce by subtype relationships between
+// the levels, so repeat the chain with classes that are not mutually assignable.
+
+declare class NChild { parent: NParent | null; private _x: unknown; }
+>NChild : NChild
+>parent : NParent | null
+>_x : unknown
+
+declare class NParent { parent: NGrandParent | null; private _x: unknown; }
+>NParent : NParent
+>parent : NGrandParent | null
+>_x : unknown
+
+declare class NGrandParent { parent: NGreatGrandParent | null; private _x: unknown; }
+>NGrandParent : NGrandParent
+>parent : NGreatGrandParent | null
+>_x : unknown
+
+declare class NGreatGrandParent { parent: null; private _x: unknown; }
+>NGreatGrandParent : NGreatGrandParent
+>parent : null
+>_x : unknown
+
+declare const nchild: NChild;
+>nchild : NChild
+
+function nominal() {
+>nominal : () => void
+
+    let currentParent: NGreatGrandParent | NGrandParent | NParent | null = nchild.parent;
+>currentParent : NGrandParent | NGreatGrandParent | NParent | null
+>nchild.parent : NParent | null
+>nchild : NChild
+>parent : NParent | null
+
+    while (currentParent) {
+>currentParent : NGrandParent | NGreatGrandParent | NParent | null
+
+        currentParent; // should be NParent | NGrandParent | NGreatGrandParent
+>currentParent : NGrandParent | NGreatGrandParent | NParent
+
+        currentParent = currentParent.parent;
+>currentParent = currentParent.parent : NGrandParent | NGreatGrandParent | null
+>currentParent : NGrandParent | NGreatGrandParent | NParent | null
+>currentParent.parent : NGrandParent | NGreatGrandParent | null
+>currentParent : NGrandParent | NGreatGrandParent | NParent
+>parent : NGrandParent | NGreatGrandParent | null
+
+        currentParent; // should be NGrandParent | NGreatGrandParent | null
+>currentParent : NGrandParent | NGreatGrandParent | null
+    }
+}
+
+// The original custom elements example from #59715
+
+class CChild extends HTMLElement {
+>CChild : CChild
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : CParent | null
+
+        const { parentElement } = this;
+>parentElement : HTMLElement | null
+>this : this
+
+        if (!(parentElement instanceof CParent)) {
+>!(parentElement instanceof CParent) : boolean
+>(parentElement instanceof CParent) : boolean
+>parentElement instanceof CParent : boolean
+>parentElement : HTMLElement | null
+>CParent : typeof CParent
+
+            return null;
+        }
+        return parentElement;
+>parentElement : CParent
+    }
+}
+
+class CParent extends HTMLElement {
+>CParent : CParent
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : CGrandParent | null
+
+        const { parentElement } = this;
+>parentElement : HTMLElement | null
+>this : this
+
+        if (!(parentElement instanceof CGrandParent)) {
+>!(parentElement instanceof CGrandParent) : boolean
+>(parentElement instanceof CGrandParent) : boolean
+>parentElement instanceof CGrandParent : boolean
+>parentElement : HTMLElement | null
+>CGrandParent : typeof CGrandParent
+
+            return null;
+        }
+        return parentElement;
+>parentElement : CGrandParent
+    }
+}
+
+class CGrandParent extends HTMLElement {
+>CGrandParent : CGrandParent
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : CGreatGrandParent | null
+
+        const { parentElement } = this;
+>parentElement : HTMLElement | null
+>this : this
+
+        if (!(parentElement instanceof CGreatGrandParent)) {
+>!(parentElement instanceof CGreatGrandParent) : boolean
+>(parentElement instanceof CGreatGrandParent) : boolean
+>parentElement instanceof CGreatGrandParent : boolean
+>parentElement : HTMLElement | null
+>CGreatGrandParent : typeof CGreatGrandParent
+
+            return null;
+        }
+        return parentElement;
+>parentElement : CGreatGrandParent
+    }
+}
+
+class CGreatGrandParent extends HTMLElement {
+>CGreatGrandParent : CGreatGrandParent
+>HTMLElement : HTMLElement
+
+    get parent() {
+>parent : null
+
+        return null;
+    }
+}
+
+type ParentElements = CGreatGrandParent | CGrandParent | CParent;
+>ParentElements : ParentElements
+
+function customElementsChain() {
+>customElementsChain : () => void
+
+    const cchild = new CChild();
+>cchild : CChild
+>new CChild() : CChild
+>CChild : typeof CChild
+
+    let currentParent: ParentElements | null = cchild.parent;
+>currentParent : ParentElements | null
+>cchild.parent : CParent | null
+>cchild : CChild
+>parent : CParent | null
+
+    while (currentParent) {
+>currentParent : ParentElements | null
+
+        currentParent; // should be CParent | CGrandParent | CGreatGrandParent, alias ParentElements
+>currentParent : ParentElements
+
+        currentParent = currentParent.parent;
+>currentParent = currentParent.parent : CGrandParent | CGreatGrandParent | null
+>currentParent : ParentElements | null
+>currentParent.parent : CGrandParent | CGreatGrandParent | null
+>currentParent : ParentElements
+>parent : CGrandParent | CGreatGrandParent | null
+    }
+}
+
+// do-while: the assignment precedes the condition, and the flow node of the assignment is
+// shared by both branches of the condition.
+
+declare class A { next: B | null; a: 1 }
+>A : A
+>next : B | null
+>a : 1
+
+declare class B { next: C | null; b: 1 }
+>B : B
+>next : C | null
+>b : 1
+
+declare class C { next: null; c: 1 }
+>C : C
+>next : null
+>c : 1
+
+declare const a: A;
+>a : A
+
+declare let cond: boolean;
+>cond : boolean
+
+function doWhileCondition() {
+>doWhileCondition : () => void
+
+    let x: A | B | C | null = a;
+>x : A | B | C | null
+>a : A
+
+    do {
+        x; // should be A | B | C
+>x : A | B | C
+
+        x = x && x.next;
+>x = x && x.next : B | C | null
+>x : A | B | C | null
+>x && x.next : B | C | null
+>x : A | B | C
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+
+        x; // should be B | C | null
+>x : B | C | null
+
+    } while (x);
+>x : B | C | null
+
+    x; // should be null
+>x : null
+}
+
+function doWhileBody() {
+>doWhileBody : () => void
+
+    let x: A | B | C | null = a;
+>x : A | B | C | null
+>a : A
+
+    do {
+        x; // should be A | B | C | null
+>x : A | B | C | null
+
+        if (x) {
+>x : A | B | C | null
+
+            x = x.next;
+>x = x.next : B | C | null
+>x : A | B | C | null
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+        }
+        x; // should be B | C | null
+>x : B | C | null
+
+    } while (cond);
+>cond : boolean
+
+    x; // should be B | C | null
+>x : B | C | null
+}
+
+// The self-assignment is in an inner loop and the outer loop reads the result.
+
+function innerLoopAssigns() {
+>innerLoopAssigns : () => void
+
+    let x: A | B | C | null = a;
+>x : A | B | C | null
+>a : A
+
+    while (cond) {
+>cond : boolean
+
+        while (x) {
+>x : A | B | C | null
+
+            x = x.next;
+>x = x.next : B | C | null
+>x : A | B | C | null
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+        }
+        x; // should be null
+>x : null
+    }
+    x; // should be A | null
+>x : A | null
+}
+
+// A continue statement adds a second looping antecedent.
+
+function continueStatement() {
+>continueStatement : () => void
+
+    let x: A | B | C | null = a;
+>x : A | B | C | null
+>a : A
+
+    while (cond) {
+>cond : boolean
+
+        x; // should be A | B | C | null
+>x : A | B | C | null
+
+        if (cond) {
+>cond : true
+
+            x = x && x.next;
+>x = x && x.next : B | C | null
+>x : A | B | C | null
+>x && x.next : B | C | null
+>x : A | B | C | null
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+
+            continue;
+        }
+        x; // should be A | B | C | null
+>x : A | B | C | null
+    }
+}
+
+// The reference is read by a type predicate call whose signature is instantiated from it.
+
+interface Next<T> { next: T }
+>next : T
+
+declare function isNext<T>(x: T): x is T & Next<T>;
+>isNext : <T>(x: T) => x is T & Next<T>
+>x : T
+
+function typePredicate(start: A) {
+>typePredicate : (start: A) => void
+>start : A
+
+    let x: A | B | C | null = start;
+>x : A | B | C | null
+>start : A
+
+    while (x) {
+>x : A | B | C | null
+
+        if (isNext(x)) {
+>isNext(x) : boolean
+>isNext : <T>(x: T) => x is T & Next<T>
+>x : A | B | C
+
+            x;
+>x : A & Next<A>
+        }
+        x = x.next;
+>x = x.next : B | C | null
+>x : A | B | C | null
+>x.next : B | C | null
+>x : A | B | C
+>next : B | C | null
+    }
+}
+
+// An evolving type assigned from itself has no bound and is not iterated.
+
+function evolvingSelfAssignment() {
+>evolvingSelfAssignment : () => number | number[]
+
+    let x;
+>x : any
+
+    x = 1;
+>x = 1 : 1
+>x : any
+>1 : 1
+
+    while (cond) {
+>cond : boolean
+
+        x = [x];
+>x = [x] : (number | number[])[]
+>x : any
+>[x] : (number | number[])[]
+>x : number | number[]
+    }
+    return x; // should be number | number[]
+>x : number | number[]
+}
+

@@ -45,6 +45,7 @@ type FlowState struct {
 	refKey          CacheHashKey
 	depth           int
 	sharedFlowStart int
+	flowLoopStart   int
 	reduceLabels    []*ast.FlowReduceLabelData
 	next            *FlowState
 }
@@ -94,6 +95,7 @@ func (c *Checker) getFlowTypeOfReferenceEx(reference *ast.Node, declaredType *Ty
 	f.initialType = core.Coalesce(initialType, declaredType)
 	f.flowContainer = flowContainer
 	f.sharedFlowStart = len(c.sharedFlows)
+	f.flowLoopStart = len(c.flowLoopStack)
 	c.flowInvocationCount++
 	evolvedType := c.getTypeAtFlowNode(f, flowNode).t
 	c.sharedFlows = c.sharedFlows[:f.sharedFlowStart]
@@ -229,13 +231,17 @@ func (c *Checker) getTypeAtFlowAssignment(f *FlowState, flow *ast.FlowNode) Flow
 			flowType := c.getTypeAtFlowNode(f, flow.Antecedent)
 			return c.newFlowType(c.getBaseTypeOfLiteralType(flowType.t), flowType.incomplete)
 		}
+		// Computing the assigned type may involve a nested control flow analysis of the same reference
+		// (for example in 'x = x.next'). When that analysis observes the in-process types of a loop
+		// junction, the assigned type is incomplete.
+		reentryCount := c.flowLoopReentryCount
 		if f.declaredType == c.autoType || f.declaredType == c.autoArrayType {
 			if c.isEmptyArrayAssignment(node) {
 				return FlowType{t: c.getEvolvingArrayType(c.neverType)}
 			}
 			assignedType := c.getWidenedLiteralType(c.getInitialOrAssignedType(f, flow))
 			if c.isTypeAssignableTo(assignedType, f.declaredType) {
-				return FlowType{t: assignedType}
+				return c.newFlowType(assignedType, c.flowLoopReentryCount != reentryCount)
 			}
 			return FlowType{t: c.anyArrayType}
 		}
@@ -244,7 +250,8 @@ func (c *Checker) getTypeAtFlowAssignment(f *FlowState, flow *ast.FlowNode) Flow
 			t = c.getBaseTypeOfLiteralType(t)
 		}
 		if t.flags&TypeFlagsUnion != 0 {
-			return FlowType{t: c.getAssignmentReducedType(t, c.getInitialOrAssignedType(f, flow))}
+			assignedType := c.getAssignmentReducedType(t, c.getInitialOrAssignedType(f, flow))
+			return c.newFlowType(assignedType, c.flowLoopReentryCount != reentryCount)
 		}
 		return FlowType{t: t}
 	}
@@ -286,6 +293,9 @@ func (c *Checker) isEmptyArrayAssignment(node *ast.Node) bool {
 }
 
 func (c *Checker) getTypeAtFlowCall(f *FlowState, flow *ast.FlowNode) FlowType {
+	// Resolving the effects signature and narrowing by it may involve nested flow analyses
+	// of the call's arguments.
+	reentryCount := c.flowLoopReentryCount
 	signature := c.getEffectsSignature(flow.Node)
 	if signature != nil {
 		predicate := c.getTypePredicateOfSignature(signature)
@@ -304,7 +314,7 @@ func (c *Checker) getTypeAtFlowCall(f *FlowState, flow *ast.FlowNode) FlowType {
 			if narrowedType == t {
 				return flowType
 			}
-			return c.newFlowType(narrowedType, flowType.incomplete)
+			return c.newFlowType(narrowedType, flowType.incomplete || c.flowLoopReentryCount != reentryCount)
 		}
 		if c.getReturnTypeOfSignature(signature).flags&TypeFlagsNever != 0 {
 			return FlowType{t: c.unreachableNeverType}
@@ -365,11 +375,12 @@ func (c *Checker) getTypeAtFlowCondition(f *FlowState, flow *ast.FlowNode) FlowT
 	// *only* place a silent never type is ever generated.
 	assumeTrue := flow.Flags&ast.FlowFlagsTrueCondition != 0
 	nonEvolvingType := c.finalizeEvolvingArrayType(flowType.t)
+	reentryCount := c.flowLoopReentryCount
 	narrowedType := c.narrowType(f, nonEvolvingType, flow.Node, assumeTrue)
 	if narrowedType == nonEvolvingType {
 		return flowType
 	}
-	return c.newFlowType(narrowedType, flowType.incomplete)
+	return c.newFlowType(narrowedType, flowType.incomplete || c.flowLoopReentryCount != reentryCount)
 }
 
 // Narrow the given type based on the given expression having the assumed boolean value. The returned type
@@ -1061,6 +1072,7 @@ func (c *Checker) getTypeAtSwitchClause(f *FlowState, flow *ast.FlowNode) FlowTy
 	expr := ast.SkipParentheses(data.SwitchStatement.Expression())
 	flowType := c.getTypeAtFlowNode(f, flow.Antecedent)
 	t := flowType.t
+	reentryCount := c.flowLoopReentryCount
 	switch {
 	case c.isMatchingReference(f.reference, expr):
 		t = c.narrowTypeBySwitchOnDiscriminant(t, data)
@@ -1085,7 +1097,7 @@ func (c *Checker) getTypeAtSwitchClause(f *FlowState, flow *ast.FlowNode) FlowTy
 			t = c.narrowTypeBySwitchOnDiscriminantProperty(t, access, data)
 		}
 	}
-	return c.newFlowType(t, flowType.incomplete)
+	return c.newFlowType(t, flowType.incomplete || c.flowLoopReentryCount != reentryCount)
 }
 
 func (c *Checker) narrowTypeBySwitchOnDiscriminant(t *Type, data *ast.FlowSwitchClauseData) *Type {
@@ -1344,109 +1356,87 @@ func (c *Checker) getTypeAtFlowLoopLabel(f *FlowState, flow *ast.FlowNode) FlowT
 	// a non-empty in-process array for the outer loop and eventually terminate because
 	// the first antecedent of a loop junction is always the non-looping control flow
 	// path that leads to the top.
-	for i := range c.flowLoopStack {
-		loopInfo := &c.flowLoopStack[i]
+	for i, loopInfo := range c.flowLoopStack {
 		if loopInfo.key == key && len(loopInfo.types) != 0 {
-			// Record that the in-process result was observed so that the junction being
-			// computed knows its looping antecedents were derived from a partial type.
-			loopInfo.reentered = true
+			// When the loop junction is being processed by an enclosing flow analysis, we are
+			// here as part of a nested flow analysis (for example, of the assigned value in
+			// 'x = x.next'). We record the observation such that the enclosing analysis knows
+			// its result may depend on the in-process types.
+			if i < f.flowLoopStart {
+				c.flowLoopReentryCount++
+			}
 			return c.newFlowType(c.getUnionOrEvolvingArrayType(f, loopInfo.types, UnionReductionLiteral), true /*incomplete*/)
 		}
 	}
-	// Add the flow loop junction and reference to the in-process stack and analyze
-	// each antecedent code path.
-	//
-	// When the declared type is a union, an assignment in the loop body narrows the declared
-	// type by the assigned type, and computing the assigned type may read the reference itself
-	// (e.g. 'x = x.next'). Such a read re-enters this junction and observes the in-process
-	// (partial) union, and the incomplete marker on that observation is lost once it crosses
-	// the expression checker boundary. A single pass therefore computes only one application
-	// of the loop's transfer function. To reach a fixpoint, we re-run the antecedent pass with
-	// the current result as the in-process approximation whenever a looping antecedent re-entered
-	// this junction and the result grew. Each pass can only add constituents of the declared
-	// union, so the number of passes is bounded by the union's size; if the bound is reached,
-	// we fall back to the declared type.
-	iterate := f.declaredType.flags&TypeFlagsUnion != 0
-	maxPasses := 1
-	if iterate {
-		maxPasses = len(f.declaredType.Types()) + 1
-	}
-	sharedFlowsAtEntry := len(c.sharedFlows)
-	flowLoopStackDepthAtEntry := len(c.flowLoopStack)
+	// The first antecedent of a loop junction is always the non-looping control
+	// flow path that leads to the top.
+	firstAntecedentType := c.getTypeAtFlowNode(f, flow.Antecedents.Flow)
 	antecedentTypes := make([]*Type, 0, 4)
-	subtypeReduction := false
-	var firstAntecedentType FlowType
-	var result *Type
-	for pass := 1; ; pass++ {
-		reentered := false
-		firstAntecedentType = FlowType{}
-		for list := flow.Antecedents; list != nil; list = list.Next {
-			var flowType FlowType
-			if firstAntecedentType.isNil() {
-				// The first antecedent of a loop junction is always the non-looping control
-				// flow path that leads to the top.
-				firstAntecedentType = c.getTypeAtFlowNode(f, list.Flow)
-				flowType = firstAntecedentType
-			} else {
-				// All but the first antecedent are the looping control flow paths that lead
-				// back to the loop junction. We track these on the flow loop stack.
+	antecedentTypes = append(antecedentTypes, firstAntecedentType.t)
+	// If an antecedent type is not a subset of the declared type, we need to perform
+	// subtype reduction. This happens when a "foreign" type is injected into the control
+	// flow using the instanceof operator or a user defined type predicate.
+	subtypeReduction := !c.isTypeSubsetOf(firstAntecedentType.t, f.initialType)
+	// If the type at a particular antecedent path is the declared type there is no
+	// reason to process more antecedents since the only possible outcome is subtypes
+	// that will be removed in the final union type anyway.
+	if firstAntecedentType.t != f.declaredType {
+		var lastResult *Type
+	loop:
+		for {
+			reentryCount := c.flowLoopReentryCount
+			sharedFlowStart := len(c.sharedFlows)
+			// All but the first antecedent are the looping control flow paths that lead
+			// back to the loop junction. We track these on the flow loop stack.
+			for list := flow.Antecedents.Next; list != nil; list = list.Next {
 				c.flowLoopStack = append(c.flowLoopStack, FlowLoopInfo{key: key, types: antecedentTypes})
 				saveFlowTypeCache := c.flowTypeCache
 				c.flowTypeCache = nil
-				flowType = c.getTypeAtFlowNode(f, list.Flow)
+				flowType := c.getTypeAtFlowNode(f, list.Flow)
 				c.flowTypeCache = saveFlowTypeCache
-				top := len(c.flowLoopStack) - 1
-				reentered = reentered || c.flowLoopStack[top].reentered
-				c.flowLoopStack = c.flowLoopStack[:top]
+				c.flowLoopStack = c.flowLoopStack[:len(c.flowLoopStack)-1]
 				// If we see a value appear in the cache it is a sign that control flow analysis
 				// was restarted and completed by checkExpressionCached. We can simply pick up
 				// the resulting type and bail out.
 				if cached := c.flowLoopCache[key]; cached != nil {
 					return FlowType{t: cached}
 				}
+				antecedentTypes = core.AppendIfUnique(antecedentTypes, flowType.t)
+				if !c.isTypeSubsetOf(flowType.t, f.initialType) {
+					subtypeReduction = true
+				}
+				if flowType.t == f.declaredType {
+					break loop
+				}
 			}
-			antecedentTypes = core.AppendIfUnique(antecedentTypes, flowType.t)
-			// If an antecedent type is not a subset of the declared type, we need to perform
-			// subtype reduction. This happens when a "foreign" type is injected into the control
-			// flow using the instanceof operator or a user defined type predicate.
-			if !c.isTypeSubsetOf(flowType.t, f.initialType) {
-				subtypeReduction = true
-			}
-			// If the type at a particular antecedent path is the declared type there is no
-			// reason to process more antecedents since the only possible outcome is subtypes
-			// that will be removed in the final union type anyway.
-			if flowType.t == f.declaredType {
+			// The types computed for the looping paths are based on the in-process types
+			// available at the time. When a nested flow analysis observed those types (for
+			// example, to compute the assigned type in 'x = x.next'), the computed types may
+			// change once the in-process types include what was found in this pass, so we
+			// repeat the analysis until the result no longer changes. We only do this when the
+			// declared type is a union type, in which case assignments narrow to constituents
+			// of the declared type and the set of possible types is finite. For evolving types
+			// the assigned types are unbounded (e.g. 'x = [x]') and we keep the single pass.
+			if c.flowLoopReentryCount == reentryCount || f.declaredType.flags&TypeFlagsUnion == 0 {
 				break
 			}
+			// Results that differ only in the freshness of literal types are considered equal
+			// since another pass would observe the same constituents.
+			result := c.getRegularTypeOfLiteralType(c.getUnionOrEvolvingArrayType(f, antecedentTypes, core.IfElse(subtypeReduction, UnionReductionSubtype, UnionReductionLiteral)))
+			if result == lastResult {
+				break
+			}
+			lastResult = result
+			// The types recorded for shared flow nodes in this pass were computed from the
+			// in-process types of this pass, so they must not be reused in the next pass.
+			c.sharedFlows = c.sharedFlows[:sharedFlowStart]
 		}
-		previous := result
-		result = c.getUnionOrEvolvingArrayType(f, antecedentTypes, core.IfElse(subtypeReduction, UnionReductionSubtype, UnionReductionLiteral))
-		// Stop once the result no longer grows. Results that differ only in literal freshness are
-		// considered equal, since another pass would observe the same set of constituents.
-		if !iterate || !reentered || firstAntecedentType.incomplete || previous != nil && c.getRegularTypeOfLiteralType(result) == c.getRegularTypeOfLiteralType(previous) {
-			break
-		}
-		if pass >= maxPasses {
-			result = f.declaredType
-			break
-		}
-		// Discard shared flow node types computed from the partial result during this pass.
-		c.sharedFlows = c.sharedFlows[:sharedFlowsAtEntry]
-		antecedentTypes = []*Type{result}
 	}
 	// The result is incomplete if the first antecedent (the non-looping control flow path)
 	// is incomplete.
+	result := c.getUnionOrEvolvingArrayType(f, antecedentTypes, core.IfElse(subtypeReduction, UnionReductionSubtype, UnionReductionLiteral))
 	if firstAntecedentType.incomplete {
 		return c.newFlowType(result, true /*incomplete*/)
-	}
-	// If an enclosing loop junction's in-process types were observed while this junction was
-	// being computed, the result may derive from a partial union whose incomplete marker was
-	// lost across an expression boundary. Don't cache it: the enclosing junction may retry,
-	// and once it completes a later query recomputes this junction from the final type.
-	for i := range c.flowLoopStack[:flowLoopStackDepthAtEntry] {
-		if c.flowLoopStack[i].reentered {
-			return FlowType{t: result}
-		}
 	}
 	c.flowLoopCache[key] = result
 	return FlowType{t: result}
@@ -1464,6 +1454,7 @@ func (c *Checker) getTypeAtFlowArrayMutation(f *FlowState, flow *ast.FlowNode) F
 		if c.isMatchingReference(f.reference, c.getReferenceCandidate(expr)) {
 			flowType := c.getTypeAtFlowNode(f, flow.Antecedent)
 			if flowType.t.objectFlags&ObjectFlagsEvolvingArray != 0 {
+				reentryCount := c.flowLoopReentryCount
 				evolvedType := flowType.t
 				if ast.IsCallExpression(node) {
 					for _, arg := range node.Arguments() {
@@ -1476,7 +1467,7 @@ func (c *Checker) getTypeAtFlowArrayMutation(f *FlowState, flow *ast.FlowNode) F
 						evolvedType = c.addEvolvingArrayElementType(evolvedType, node.AsBinaryExpression().Right)
 					}
 				}
-				return c.newFlowType(evolvedType, flowType.incomplete)
+				return c.newFlowType(evolvedType, flowType.incomplete || c.flowLoopReentryCount != reentryCount)
 			}
 			return flowType
 		}
