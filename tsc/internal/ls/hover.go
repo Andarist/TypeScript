@@ -872,7 +872,7 @@ func getQuickInfoAndDeclarationAtLocation(c *checker.Checker, symbol *ast.Symbol
 			dpw.WritePunctuation("(")
 			dpw.Write("type parameter")
 			dpw.WritePunctuation(") ")
-			if ast.IsIdentifier(node) && ast.IsTypeReferenceNode(node.Parent) && checker.IsDistributedTypeParameter(c.GetTypeAtLocation(node.Parent)) {
+			if isDistributedTypeParameterReference(c, node) {
 				dpw.WritePunctuation("(")
 				dpw.Write("distributed")
 				dpw.WritePunctuation(") ")
@@ -945,6 +945,19 @@ func getQuickInfoAndDeclarationAtLocation(c *checker.Checker, symbol *ast.Symbol
 	writeSymbol(symbol)
 
 	return symbolDisplayInfo{displayParts: dpw, declaration: firstDeclaration}
+}
+
+func isDistributedTypeParameterReference(c *checker.Checker, node *ast.Node) bool {
+	if !ast.IsIdentifier(node) || !ast.IsTypeReferenceNode(node.Parent) {
+		return false
+	}
+	t := c.GetTypeAtLocation(node.Parent)
+	// In the true branch of a conditional type, a reference to the check type is a substitution type
+	// that wraps the type parameter.
+	if t.Flags()&checker.TypeFlagsSubstitution != 0 {
+		t = t.AsSubstitutionType().BaseType()
+	}
+	return checker.IsDistributedTypeParameter(t)
 }
 
 // typeParameterToString renders a type parameter declaration (e.g., "T extends FooType").
