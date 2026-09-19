@@ -17,17 +17,9 @@ inferTypes1.ts(84,43): error TS2304: Cannot find name 'U'.
 inferTypes1.ts(91,44): error TS2344: Type 'U' does not satisfy the constraint 'string'.
   Type 'number' is not assignable to type 'string'.
 inferTypes1.ts(153,40): error TS2322: Type 'T' is not assignable to type 'string | number | symbol'.
-inferTypes1.ts(202,11): error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
-  'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
-inferTypes1.ts(211,11): error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
-  'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
-inferTypes1.ts(218,11): error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
-  'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
-inferTypes1.ts(225,11): error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
-  'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
 
 
-==== inferTypes1.ts (18 errors) ====
+==== inferTypes1.ts (14 errors) ====
     type Unpacked<T> =
         T extends (infer U)[] ? U :
         T extends (...args: any[]) => infer U ? U :
@@ -264,9 +256,6 @@ inferTypes1.ts(225,11): error TS2719: Type 'U' is not assignable to type 'U'. Tw
     function f101<U>(value: U extends unknown ? Boxed<U> : never, ordinary: U) {
         const inferred = inferFromNestedConditional(value);
         const accept: typeof inferred = ordinary;
-              ~~~~~~
-!!! error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
-!!! error TS2719:   'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
     }
     
     // The same should hold when the distributed type parameter is nested in an
@@ -276,9 +265,6 @@ inferTypes1.ts(225,11): error TS2719: Type 'U' is not assignable to type 'U'. Tw
     function f102<U>(value: U extends unknown ? { value: U } : never, ordinary: U) {
         const inferred = inferFromInlineConditional(value);
         const accept: typeof inferred = ordinary;
-              ~~~~~~
-!!! error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
-!!! error TS2719:   'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
     }
     
     declare function inferFromFunctionConditional<X, T>(value: X extends unknown ? () => T : never): T;
@@ -286,9 +272,6 @@ inferTypes1.ts(225,11): error TS2719: Type 'U' is not assignable to type 'U'. Tw
     function f103<U>(value: U extends unknown ? () => U : never, ordinary: U) {
         const inferred = inferFromFunctionConditional(value);
         const accept: typeof inferred = ordinary;
-              ~~~~~~
-!!! error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
-!!! error TS2719:   'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
     }
     
     declare function inferFromNestedConditional2<X, T>(value: X extends unknown ? (X extends string ? { value: T } : never) : never): T;
@@ -296,8 +279,5 @@ inferTypes1.ts(225,11): error TS2719: Type 'U' is not assignable to type 'U'. Tw
     function f104<U>(value: U extends unknown ? (U extends string ? { value: U } : never) : never, ordinary: U) {
         const inferred = inferFromNestedConditional2(value);
         const accept: typeof inferred = ordinary;
-              ~~~~~~
-!!! error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
-!!! error TS2719:   'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
     }
     

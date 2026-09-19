@@ -37,8 +37,44 @@ type TypeMapperData interface {
 
 // Factory functions
 
-func getMappedType(t *Type, mapper *TypeMapper) *Type {
-	return mapper.Map(getNonDistributedTypeParameter(t))
+// Maps a type parameter through a mapper. A distributed type parameter that isn't mapped directly maps like
+// its non-distributed form, except that it is preserved when that form isn't mapped either (an instantiation
+// that doesn't touch the type parameter doesn't un-distribute it). Conversely, a type parameter that isn't
+// mapped directly maps like its distributed form, as a mapper keyed on the distributed form (an instantiation
+// of a type declared in a distributive context) applies to the type parameter itself too.
+func (c *Checker) getMappedType(t *Type, mapper *TypeMapper) *Type {
+	mapped := mapper.Map(t)
+	if mapped != t || t.flags&TypeFlagsTypeParameter == 0 {
+		return mapped
+	}
+	tp := t.AsTypeParameter()
+	if tp.isDistributed {
+		if mapped = mapper.Map(tp.constraint); mapped != tp.constraint {
+			return mapped
+		}
+	} else if tp.distributedType != nil {
+		if mapped = mapper.Map(tp.distributedType); mapped != tp.distributedType {
+			return mapped
+		}
+	}
+	return t
+}
+
+// Returns a mapper that maps the distributed forms of the given type parameters to their non-distributed forms.
+func newNonDistributingTypeMapper(typeParameters []*Type) *TypeMapper {
+	var sources, targets []*Type
+	for _, tp := range typeParameters {
+		if tp.flags&TypeFlagsTypeParameter != 0 {
+			if distributed := tp.AsTypeParameter().distributedType; distributed != nil {
+				sources = append(sources, distributed)
+				targets = append(targets, tp)
+			}
+		}
+	}
+	if len(sources) == 0 {
+		return nil
+	}
+	return newTypeMapper(sources, targets)
 }
 
 func newTypeMapper(sources []*Type, targets []*Type) *TypeMapper {
@@ -57,13 +93,13 @@ func (c *Checker) combineTypeMappers(m1 *TypeMapper, m2 *TypeMapper) *TypeMapper
 
 func (c *Checker) mapTypeWithCompositeMapper(t *Type, m1 *TypeMapper, m2 *TypeMapper) *Type {
 	if m1 == nil {
-		return getMappedType(t, m2)
+		return c.getMappedType(t, m2)
 	}
-	t1 := getMappedType(t, m1)
+	t1 := c.getMappedType(t, m1)
 	if t1 != t {
 		return c.instantiateType(t1, m2)
 	}
-	return getMappedType(t, m2)
+	return c.getMappedType(t, m2)
 }
 
 func mergeTypeMappers(m1 *TypeMapper, m2 *TypeMapper) *TypeMapper {
@@ -75,16 +111,16 @@ func mergeTypeMappers(m1 *TypeMapper, m2 *TypeMapper) *TypeMapper {
 
 func prependTypeMapping(source *Type, target *Type, mapper *TypeMapper) *TypeMapper {
 	if mapper == nil {
-		return newSimpleTypeMapper(getNonDistributedTypeParameter(source), target)
+		return newSimpleTypeMapper(source, target)
 	}
-	return newMergedTypeMapper(newSimpleTypeMapper(getNonDistributedTypeParameter(source), target), mapper)
+	return newMergedTypeMapper(newSimpleTypeMapper(source, target), mapper)
 }
 
 func appendTypeMapping(mapper *TypeMapper, source *Type, target *Type) *TypeMapper {
 	if mapper == nil {
-		return newSimpleTypeMapper(getNonDistributedTypeParameter(source), target)
+		return newSimpleTypeMapper(source, target)
 	}
-	return newMergedTypeMapper(mapper, newSimpleTypeMapper(getNonDistributedTypeParameter(source), target))
+	return newMergedTypeMapper(mapper, newSimpleTypeMapper(source, target))
 }
 
 // Maps forward-references to later types parameters to the empty object type.

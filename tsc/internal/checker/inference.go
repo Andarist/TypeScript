@@ -553,10 +553,15 @@ func (c *Checker) inferToMultipleTypesWithPriority(n *InferenceState, source *Ty
 
 func (c *Checker) inferToConditionalType(n *InferenceState, source *Type, target *Type) {
 	if source.flags&TypeFlagsConditional != 0 {
-		c.inferFromTypes(n, getNonDistributedTypeParameter(source.AsConditionalType().checkType), target.AsConditionalType().checkType)
-		c.inferFromTypes(n, getNonDistributedTypeParameter(source.AsConditionalType().extendsType), target.AsConditionalType().extendsType)
-		c.inferFromTypes(n, getNonDistributedTypeParameter(c.getTrueTypeFromConditionalType(source)), c.getTrueTypeFromConditionalType(target))
-		c.inferFromTypes(n, getNonDistributedTypeParameter(c.getFalseTypeFromConditionalType(source)), c.getFalseTypeFromConditionalType(target))
+		// The constituent types of a distributive source reference the distributed forms of its check type
+		// parameter and its infer type parameters. Map those back to the non-distributed forms so that we
+		// infer the original type parameters.
+		root := source.AsConditionalType().root
+		mapper := newNonDistributingTypeMapper(append([]*Type{getNonDistributedTypeParameter(source.AsConditionalType().checkType)}, root.inferTypeParameters...))
+		c.inferFromTypes(n, c.instantiateType(source.AsConditionalType().checkType, mapper), target.AsConditionalType().checkType)
+		c.inferFromTypes(n, c.instantiateType(source.AsConditionalType().extendsType, mapper), target.AsConditionalType().extendsType)
+		c.inferFromTypes(n, c.instantiateType(c.getTrueTypeFromConditionalType(source), mapper), c.getTrueTypeFromConditionalType(target))
+		c.inferFromTypes(n, c.instantiateType(c.getFalseTypeFromConditionalType(source), mapper), c.getFalseTypeFromConditionalType(target))
 	} else {
 		targetTypes := []*Type{c.getTrueTypeFromConditionalType(target), c.getFalseTypeFromConditionalType(target)}
 		c.inferToMultipleTypesWithPriority(n, source, targetTypes, target.flags, core.IfElse(n.contravariant, InferencePriorityContravariantConditional, 0))

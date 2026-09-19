@@ -1229,3 +1229,55 @@ function conditionalRelations6<T>(x: T extends { self: T } ? { t: T } : never) {
 >1 : 1
 }
 
+// An instantiation that doesn't touch the distributed type parameter should behave
+// like the declared type, including in the constituent types accessed through it.
+function conditionalRelations7<T>(x: T extends string ? { t: T } : never) {
+>conditionalRelations7 : <T>(x: T extends string ? { t: T; } : never) => void
+>x : T extends string ? { t: T; } : never
+>t : T
+
+    const make = <V>(v: V): T extends string ? { t: T, v: V } : never => null!;
+>make : <V>(v: V) => T extends string ? { t: T; v: V; } : never
+><V>(v: V): T extends string ? { t: T, v: V } : never => null! : <V>(v: V) => T extends string ? { t: T; v: V; } : never
+>v : V
+>t : T
+>v : V
+>null! : never
+
+    const m = make(1);
+>m : T extends string ? { t: T; v: number; } : never
+>make(1) : T extends string ? { t: T; v: number; } : never
+>make : <V>(v: V) => T extends string ? { t: T; v: V; } : never
+>1 : 1
+
+    x = m;
+>x = m : T extends string ? { t: T; v: number; } : never
+>x : T extends string ? { t: T; } : never
+>m : T extends string ? { t: T; v: number; } : never
+
+    x.t = m.t;
+>x.t = m.t : T
+>x.t : T
+>x : T extends string ? { t: T; } : never
+>t : T
+>m.t : T
+>m : T extends string ? { t: T; v: number; } : never
+>t : T
+
+    m.t = x.t;
+>m.t = x.t : T
+>m.t : T
+>m : T extends string ? { t: T; v: number; } : never
+>t : T
+>x.t : T
+>x : T extends string ? { t: T; } : never
+>t : T
+
+    const a: (typeof x)["t"] = m.t;
+>a : (T extends string ? { t: T; } : never)["t"]
+>x : T extends string ? { t: T; } : never
+>m.t : T
+>m : T extends string ? { t: T; v: number; } : never
+>t : T
+}
+

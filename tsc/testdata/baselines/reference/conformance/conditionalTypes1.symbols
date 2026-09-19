@@ -1598,3 +1598,56 @@ function conditionalRelations6<T>(x: T extends { self: T } ? { t: T } : never) {
 >make : Symbol(make, Decl(conditionalTypes1.ts, 405, 9))
 }
 
+// An instantiation that doesn't touch the distributed type parameter should behave
+// like the declared type, including in the constituent types accessed through it.
+function conditionalRelations7<T>(x: T extends string ? { t: T } : never) {
+>conditionalRelations7 : Symbol(conditionalRelations7, Decl(conditionalTypes1.ts, 407, 1))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+
+    const make = <V>(v: V): T extends string ? { t: T, v: V } : never => null!;
+>make : Symbol(make, Decl(conditionalTypes1.ts, 412, 9))
+>V : Symbol(V, Decl(conditionalTypes1.ts, 412, 18))
+>v : Symbol(v, Decl(conditionalTypes1.ts, 412, 21))
+>V : Symbol(V, Decl(conditionalTypes1.ts, 412, 18))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+>v : Symbol(v, Decl(conditionalTypes1.ts, 412, 54))
+>V : Symbol(V, Decl(conditionalTypes1.ts, 412, 18))
+
+    const m = make(1);
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+>make : Symbol(make, Decl(conditionalTypes1.ts, 412, 9))
+
+    x = m;
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+
+    x.t = m.t;
+>x.t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+>m.t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+
+    m.t = x.t;
+>m.t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>x.t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+
+    const a: (typeof x)["t"] = m.t;
+>a : Symbol(a, Decl(conditionalTypes1.ts, 417, 9))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>m.t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+}
+

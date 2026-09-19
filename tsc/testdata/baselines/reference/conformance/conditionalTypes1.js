@@ -410,6 +410,17 @@ function conditionalRelations6<T>(x: T extends { self: T } ? { t: T } : never) {
     x = make(1);
 }
 
+// An instantiation that doesn't touch the distributed type parameter should behave
+// like the declared type, including in the constituent types accessed through it.
+function conditionalRelations7<T>(x: T extends string ? { t: T } : never) {
+    const make = <V>(v: V): T extends string ? { t: T, v: V } : never => null!;
+    const m = make(1);
+    x = m;
+    x.t = m.t;
+    m.t = x.t;
+    const a: (typeof x)["t"] = m.t;
+}
+
 
 //// [conditionalTypes1.js]
 "use strict";
@@ -536,6 +547,16 @@ function conditionalRelations5(x) {
 function conditionalRelations6(x) {
     const make = (v) => null;
     x = make(1);
+}
+// An instantiation that doesn't touch the distributed type parameter should behave
+// like the declared type, including in the constituent types accessed through it.
+function conditionalRelations7(x) {
+    const make = (v) => null;
+    const m = make(1);
+    x = m;
+    x.t = m.t;
+    m.t = x.t;
+    const a = m.t;
 }
 
 
@@ -849,5 +870,8 @@ declare function conditionalRelations5<T>(x: T extends {
 declare function conditionalRelations6<T>(x: T extends {
     self: T;
 } ? {
+    t: T;
+} : never): void;
+declare function conditionalRelations7<T>(x: T extends string ? {
     t: T;
 } : never): void;
