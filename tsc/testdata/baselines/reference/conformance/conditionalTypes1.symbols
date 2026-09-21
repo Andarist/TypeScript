@@ -1598,3 +1598,136 @@ function conditionalRelations6<T>(x: T extends { self: T } ? { t: T } : never) {
 >make : Symbol(make, Decl(conditionalTypes1.ts, 405, 9))
 }
 
+// An instantiation that doesn't touch the distributed type parameter should behave
+// like the declared type, including in the constituent types accessed through it.
+function conditionalRelations7<T>(x: T extends string ? { t: T } : never) {
+>conditionalRelations7 : Symbol(conditionalRelations7, Decl(conditionalTypes1.ts, 407, 1))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+
+    const make = <V>(v: V): T extends string ? { t: T, v: V } : never => null!;
+>make : Symbol(make, Decl(conditionalTypes1.ts, 412, 9))
+>V : Symbol(V, Decl(conditionalTypes1.ts, 412, 18))
+>v : Symbol(v, Decl(conditionalTypes1.ts, 412, 21))
+>V : Symbol(V, Decl(conditionalTypes1.ts, 412, 18))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 411, 31))
+>v : Symbol(v, Decl(conditionalTypes1.ts, 412, 54))
+>V : Symbol(V, Decl(conditionalTypes1.ts, 412, 18))
+
+    const m = make(1);
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+>make : Symbol(make, Decl(conditionalTypes1.ts, 412, 9))
+
+    x = m;
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+
+    x.t = m.t;
+>x.t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+>m.t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+
+    m.t = x.t;
+>m.t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>x.t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 411, 57))
+
+    const a: (typeof x)["t"] = m.t;
+>a : Symbol(a, Decl(conditionalTypes1.ts, 417, 9))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 411, 34))
+>m.t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+>m : Symbol(m, Decl(conditionalTypes1.ts, 413, 9))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 412, 48))
+}
+
+// A non-distributed type parameter isn't assignable to its distributed form, including
+// when the distributed form is reached through a constituent of the conditional type.
+function conditionalRelations8<T>(
+>conditionalRelations8 : Symbol(conditionalRelations8, Decl(conditionalTypes1.ts, 418, 1))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 422, 31))
+
+    x: T extends unknown ? { t: T } : never,
+>x : Symbol(x, Decl(conditionalTypes1.ts, 422, 34))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 422, 31))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 423, 28))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 422, 31))
+
+    y: T extends unknown ? [T] : never,
+>y : Symbol(y, Decl(conditionalTypes1.ts, 423, 44))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 422, 31))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 422, 31))
+
+    z: T extends unknown ? T : never,
+>z : Symbol(z, Decl(conditionalTypes1.ts, 424, 39))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 422, 31))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 422, 31))
+
+    p: T,
+>p : Symbol(p, Decl(conditionalTypes1.ts, 425, 37))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 422, 31))
+
+) {
+    x.t = p;
+>x.t : Symbol(t, Decl(conditionalTypes1.ts, 423, 28))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 422, 34))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 423, 28))
+>p : Symbol(p, Decl(conditionalTypes1.ts, 425, 37))
+
+    y[0] = p;
+>y : Symbol(y, Decl(conditionalTypes1.ts, 423, 44))
+>0 : Symbol(0)
+>p : Symbol(p, Decl(conditionalTypes1.ts, 425, 37))
+
+    let w: typeof z = p;
+>w : Symbol(w, Decl(conditionalTypes1.ts, 430, 7))
+>z : Symbol(z, Decl(conditionalTypes1.ts, 424, 39))
+>p : Symbol(p, Decl(conditionalTypes1.ts, 425, 37))
+
+    const c: { t: T } = x;
+>c : Symbol(c, Decl(conditionalTypes1.ts, 431, 9))
+>t : Symbol(t, Decl(conditionalTypes1.ts, 431, 14))
+>T : Symbol(T, Decl(conditionalTypes1.ts, 422, 31))
+>x : Symbol(x, Decl(conditionalTypes1.ts, 422, 34))
+}
+
+// keyof of the distributed type parameter flowing into keyof of the type parameter.
+function conditionalRelations9<O>(
+>conditionalRelations9 : Symbol(conditionalRelations9, Decl(conditionalTypes1.ts, 432, 1))
+>O : Symbol(O, Decl(conditionalTypes1.ts, 435, 31))
+
+    k: O extends readonly any[] ? keyof O & `${number}` : keyof O & (string | number),
+>k : Symbol(k, Decl(conditionalTypes1.ts, 435, 34))
+>O : Symbol(O, Decl(conditionalTypes1.ts, 435, 31))
+>O : Symbol(O, Decl(conditionalTypes1.ts, 435, 31))
+>O : Symbol(O, Decl(conditionalTypes1.ts, 435, 31))
+
+    m: { [K in keyof O & (string | number)]: 1 },
+>m : Symbol(m, Decl(conditionalTypes1.ts, 436, 86))
+>K : Symbol(K, Decl(conditionalTypes1.ts, 437, 10))
+>O : Symbol(O, Decl(conditionalTypes1.ts, 435, 31))
+
+    kk: keyof O,
+>kk : Symbol(kk, Decl(conditionalTypes1.ts, 437, 49))
+>O : Symbol(O, Decl(conditionalTypes1.ts, 435, 31))
+
+) {
+    kk = k;
+>kk : Symbol(kk, Decl(conditionalTypes1.ts, 437, 49))
+>k : Symbol(k, Decl(conditionalTypes1.ts, 435, 34))
+
+    m[k];
+>m : Symbol(m, Decl(conditionalTypes1.ts, 436, 86))
+>k : Symbol(k, Decl(conditionalTypes1.ts, 435, 34))
+}
+

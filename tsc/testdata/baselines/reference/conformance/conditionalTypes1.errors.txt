@@ -77,9 +77,11 @@ conditionalTypes1.ts(288,43): error TS2322: Type 'T95<U>' is not assignable to t
   Type 'number | boolean' is not assignable to type 'T94<U>'.
     Type 'number' is not assignable to type 'T94<U>'.
       Type 'boolean' is not assignable to type 'true'.
+conditionalTypes1.ts(431,9): error TS2719: Type 'T' is not assignable to type 'T'. Two different types with this name exist, but they are unrelated.
+  'T' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
 
 
-==== conditionalTypes1.ts (20 errors) ====
+==== conditionalTypes1.ts (21 errors) ====
     type T00 = Exclude<"a" | "b" | "c" | "d", "a" | "c" | "f">;  // "b" | "d"
     type T01 = Extract<"a" | "b" | "c" | "d", "a" | "c" | "f">;  // "a" | "c"
     
@@ -589,5 +591,43 @@ conditionalTypes1.ts(288,43): error TS2322: Type 'T95<U>' is not assignable to t
     function conditionalRelations6<T>(x: T extends { self: T } ? { t: T } : never) {
         const make = <V>(v: V): T extends { self: T } ? { t: T, v: V } : never => null!;
         x = make(1);
+    }
+    
+    // An instantiation that doesn't touch the distributed type parameter should behave
+    // like the declared type, including in the constituent types accessed through it.
+    function conditionalRelations7<T>(x: T extends string ? { t: T } : never) {
+        const make = <V>(v: V): T extends string ? { t: T, v: V } : never => null!;
+        const m = make(1);
+        x = m;
+        x.t = m.t;
+        m.t = x.t;
+        const a: (typeof x)["t"] = m.t;
+    }
+    
+    // A non-distributed type parameter isn't assignable to its distributed form, including
+    // when the distributed form is reached through a constituent of the conditional type.
+    function conditionalRelations8<T>(
+        x: T extends unknown ? { t: T } : never,
+        y: T extends unknown ? [T] : never,
+        z: T extends unknown ? T : never,
+        p: T,
+    ) {
+        x.t = p;
+        y[0] = p;
+        let w: typeof z = p;
+            ~
+!!! error TS2719: Type 'T' is not assignable to type 'T'. Two different types with this name exist, but they are unrelated.
+!!! error TS2719:   'T' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
+        const c: { t: T } = x;
+    }
+    
+    // keyof of the distributed type parameter flowing into keyof of the type parameter.
+    function conditionalRelations9<O>(
+        k: O extends readonly any[] ? keyof O & `${number}` : keyof O & (string | number),
+        m: { [K in keyof O & (string | number)]: 1 },
+        kk: keyof O,
+    ) {
+        kk = k;
+        m[k];
     }
     

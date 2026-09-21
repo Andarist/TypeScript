@@ -188,6 +188,30 @@ const result = invoker('test', true)({ test: (a: boolean) => 123 })
 
 type Foo2<A extends any[]> = ReturnType<(...args: A) => string>;
 
+// Inference between distributive conditional types should infer the original
+// type parameter, also when it is nested in an inline object literal, a function
+// type, or a nested conditional type.
+declare function inferFromInlineConditional<X, T>(value: X extends unknown ? { value: T } : never): T;
+
+function f102<U>(value: U extends unknown ? { value: U } : never, ordinary: U) {
+    const inferred = inferFromInlineConditional(value);
+    const accept: typeof inferred = ordinary;
+}
+
+declare function inferFromFunctionConditional<X, T>(value: X extends unknown ? () => T : never): T;
+
+function f103<U>(value: U extends unknown ? () => U : never, ordinary: U) {
+    const inferred = inferFromFunctionConditional(value);
+    const accept: typeof inferred = ordinary;
+}
+
+declare function inferFromNestedConditional2<X, T>(value: X extends unknown ? (X extends string ? { value: T } : never) : never): T;
+
+function f104<U>(value: U extends unknown ? (U extends string ? { value: U } : never) : never, ordinary: U) {
+    const inferred = inferFromNestedConditional2(value);
+    const accept: typeof inferred = ordinary;
+}
+
 
 //// [inferTypes1.js]
 "use strict";
@@ -213,6 +237,18 @@ function invoker(key, ...args) {
     return (obj) => obj[key](...args);
 }
 const result = invoker('test', true)({ test: (a) => 123 });
+function f102(value, ordinary) {
+    const inferred = inferFromInlineConditional(value);
+    const accept = ordinary;
+}
+function f103(value, ordinary) {
+    const inferred = inferFromFunctionConditional(value);
+    const accept = ordinary;
+}
+function f104(value, ordinary) {
+    const inferred = inferFromNestedConditional2(value);
+    const accept = ordinary;
+}
 
 
 //// [inferTypes1.d.ts]
@@ -407,3 +443,17 @@ type Test2 = EnsureIsString<42>;
 declare function invoker<K extends string | number | symbol, A extends any[]>(key: K, ...args: A): <T extends Record<K, (...args: A) => any>>(obj: T) => ReturnType<T[K]>;
 declare const result: number;
 type Foo2<A extends any[]> = ReturnType<(...args: A) => string>;
+declare function inferFromInlineConditional<X, T>(value: X extends unknown ? {
+    value: T;
+} : never): T;
+declare function f102<U>(value: U extends unknown ? {
+    value: U;
+} : never, ordinary: U): void;
+declare function inferFromFunctionConditional<X, T>(value: X extends unknown ? () => T : never): T;
+declare function f103<U>(value: U extends unknown ? () => U : never, ordinary: U): void;
+declare function inferFromNestedConditional2<X, T>(value: X extends unknown ? (X extends string ? {
+    value: T;
+} : never) : never): T;
+declare function f104<U>(value: U extends unknown ? (U extends string ? {
+    value: U;
+} : never) : never, ordinary: U): void;

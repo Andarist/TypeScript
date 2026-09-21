@@ -17,9 +17,24 @@ inferTypes1.ts(84,43): error TS2304: Cannot find name 'U'.
 inferTypes1.ts(91,44): error TS2344: Type 'U' does not satisfy the constraint 'string'.
   Type 'number' is not assignable to type 'string'.
 inferTypes1.ts(153,40): error TS2322: Type 'T' is not assignable to type 'string | number | symbol'.
+inferTypes1.ts(195,11): error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
+  'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
+inferTypes1.ts(202,11): error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
+  'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
+inferTypes1.ts(208,50): error TS2345: Argument of type 'U extends unknown ? U extends string ? { value: U; } : never : never' is not assignable to parameter of type 'U extends unknown ? U extends string ? { value: U; } : never : never'.
+  Type 'U extends string ? { value: U; } : never' is not assignable to type 'U extends unknown ? U extends string ? { value: U; } : never : never'.
+    Type '{ value: U; }' is not assignable to type 'U extends unknown ? U extends string ? { value: U; } : never : never'.
+      Type 'U extends string ? { value: U; } : never' is not assignable to type 'U extends string ? { value: U; } : never'. Two different types with this name exist, but they are unrelated.
+        Type '{ value: U; }' is not assignable to type 'U extends string ? { value: U; } : never'.
+          Type '{ value: U; }' is not assignable to type '{ value: U; }'. Two different types with this name exist, but they are unrelated.
+            Types of property 'value' are incompatible.
+              Type 'string & U' is not assignable to type 'U'.
+                'string & U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
+inferTypes1.ts(209,11): error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
+  'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
 
 
-==== inferTypes1.ts (14 errors) ====
+==== inferTypes1.ts (18 errors) ====
     type Unpacked<T> =
         T extends (infer U)[] ? U :
         T extends (...args: any[]) => infer U ? U :
@@ -240,4 +255,47 @@ inferTypes1.ts(153,40): error TS2322: Type 'T' is not assignable to type 'string
     const result = invoker('test', true)({ test: (a: boolean) => 123 })
     
     type Foo2<A extends any[]> = ReturnType<(...args: A) => string>;
+    
+    // Inference between distributive conditional types should infer the original
+    // type parameter, also when it is nested in an inline object literal, a function
+    // type, or a nested conditional type.
+    declare function inferFromInlineConditional<X, T>(value: X extends unknown ? { value: T } : never): T;
+    
+    function f102<U>(value: U extends unknown ? { value: U } : never, ordinary: U) {
+        const inferred = inferFromInlineConditional(value);
+        const accept: typeof inferred = ordinary;
+              ~~~~~~
+!!! error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
+!!! error TS2719:   'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
+    }
+    
+    declare function inferFromFunctionConditional<X, T>(value: X extends unknown ? () => T : never): T;
+    
+    function f103<U>(value: U extends unknown ? () => U : never, ordinary: U) {
+        const inferred = inferFromFunctionConditional(value);
+        const accept: typeof inferred = ordinary;
+              ~~~~~~
+!!! error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
+!!! error TS2719:   'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
+    }
+    
+    declare function inferFromNestedConditional2<X, T>(value: X extends unknown ? (X extends string ? { value: T } : never) : never): T;
+    
+    function f104<U>(value: U extends unknown ? (U extends string ? { value: U } : never) : never, ordinary: U) {
+        const inferred = inferFromNestedConditional2(value);
+                                                     ~~~~~
+!!! error TS2345: Argument of type 'U extends unknown ? U extends string ? { value: U; } : never : never' is not assignable to parameter of type 'U extends unknown ? U extends string ? { value: U; } : never : never'.
+!!! error TS2345:   Type 'U extends string ? { value: U; } : never' is not assignable to type 'U extends unknown ? U extends string ? { value: U; } : never : never'.
+!!! error TS2345:     Type '{ value: U; }' is not assignable to type 'U extends unknown ? U extends string ? { value: U; } : never : never'.
+!!! error TS2345:       Type 'U extends string ? { value: U; } : never' is not assignable to type 'U extends string ? { value: U; } : never'. Two different types with this name exist, but they are unrelated.
+!!! error TS2345:         Type '{ value: U; }' is not assignable to type 'U extends string ? { value: U; } : never'.
+!!! error TS2345:           Type '{ value: U; }' is not assignable to type '{ value: U; }'. Two different types with this name exist, but they are unrelated.
+!!! error TS2345:             Types of property 'value' are incompatible.
+!!! error TS2345:               Type 'string & U' is not assignable to type 'U'.
+!!! error TS2345:                 'string & U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
+        const accept: typeof inferred = ordinary;
+              ~~~~~~
+!!! error TS2719: Type 'U' is not assignable to type 'U'. Two different types with this name exist, but they are unrelated.
+!!! error TS2719:   'U' is only assignable to the non-distributed 'U', but 'U' has been distributed here.
+    }
     

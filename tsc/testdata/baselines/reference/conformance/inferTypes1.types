@@ -493,3 +493,73 @@ type Foo2<A extends any[]> = ReturnType<(...args: A) => string>;
 >Foo2 : string
 >args : A
 
+// Inference between distributive conditional types should infer the original
+// type parameter, also when it is nested in an inline object literal, a function
+// type, or a nested conditional type.
+declare function inferFromInlineConditional<X, T>(value: X extends unknown ? { value: T } : never): T;
+>inferFromInlineConditional : <X, T>(value: X extends unknown ? { value: T; } : never) => T
+>value : X extends unknown ? { value: T; } : never
+>value : T
+
+function f102<U>(value: U extends unknown ? { value: U } : never, ordinary: U) {
+>f102 : <U>(value: U extends unknown ? { value: U; } : never, ordinary: U) => void
+>value : U extends unknown ? { value: U; } : never
+>value : U
+>ordinary : U
+
+    const inferred = inferFromInlineConditional(value);
+>inferred : U
+>inferFromInlineConditional(value) : U
+>inferFromInlineConditional : <X, T>(value: X extends unknown ? { value: T; } : never) => T
+>value : U extends unknown ? { value: U; } : never
+
+    const accept: typeof inferred = ordinary;
+>accept : U
+>inferred : U
+>ordinary : U
+}
+
+declare function inferFromFunctionConditional<X, T>(value: X extends unknown ? () => T : never): T;
+>inferFromFunctionConditional : <X, T>(value: X extends unknown ? () => T : never) => T
+>value : X extends unknown ? () => T : never
+
+function f103<U>(value: U extends unknown ? () => U : never, ordinary: U) {
+>f103 : <U>(value: U extends unknown ? () => U : never, ordinary: U) => void
+>value : U extends unknown ? () => U : never
+>ordinary : U
+
+    const inferred = inferFromFunctionConditional(value);
+>inferred : U
+>inferFromFunctionConditional(value) : U
+>inferFromFunctionConditional : <X, T>(value: X extends unknown ? () => T : never) => T
+>value : U extends unknown ? () => U : never
+
+    const accept: typeof inferred = ordinary;
+>accept : U
+>inferred : U
+>ordinary : U
+}
+
+declare function inferFromNestedConditional2<X, T>(value: X extends unknown ? (X extends string ? { value: T } : never) : never): T;
+>inferFromNestedConditional2 : <X, T>(value: X extends unknown ? (X extends string ? { value: T; } : never) : never) => T
+>value : X extends unknown ? X extends string ? { value: T; } : never : never
+>value : T
+
+function f104<U>(value: U extends unknown ? (U extends string ? { value: U } : never) : never, ordinary: U) {
+>f104 : <U>(value: U extends unknown ? (U extends string ? { value: U; } : never) : never, ordinary: U) => void
+>value : U extends unknown ? U extends string ? { value: U; } : never : never
+>value : U
+>ordinary : U
+
+    const inferred = inferFromNestedConditional2(value);
+>inferred : U
+>inferFromNestedConditional2(value) : U
+>inferFromNestedConditional2 : <X, T>(value: X extends unknown ? (X extends string ? { value: T; } : never) : never) => T
+>value : U extends unknown ? U extends string ? { value: U; } : never : never
+
+    const accept: typeof inferred = ordinary;
+>accept : U
+>inferred : U
+>ordinary : U
+}
+

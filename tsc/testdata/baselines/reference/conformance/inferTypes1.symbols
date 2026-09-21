@@ -777,3 +777,99 @@ type Foo2<A extends any[]> = ReturnType<(...args: A) => string>;
 >args : Symbol(args, Decl(inferTypes1.ts, 185, 41))
 >A : Symbol(A, Decl(inferTypes1.ts, 185, 10))
 
+// Inference between distributive conditional types should infer the original
+// type parameter, also when it is nested in an inline object literal, a function
+// type, or a nested conditional type.
+declare function inferFromInlineConditional<X, T>(value: X extends unknown ? { value: T } : never): T;
+>inferFromInlineConditional : Symbol(inferFromInlineConditional, Decl(inferTypes1.ts, 185, 64))
+>X : Symbol(X, Decl(inferTypes1.ts, 190, 44))
+>T : Symbol(T, Decl(inferTypes1.ts, 190, 46))
+>value : Symbol(value, Decl(inferTypes1.ts, 190, 50))
+>X : Symbol(X, Decl(inferTypes1.ts, 190, 44))
+>value : Symbol(value, Decl(inferTypes1.ts, 190, 78))
+>T : Symbol(T, Decl(inferTypes1.ts, 190, 46))
+>T : Symbol(T, Decl(inferTypes1.ts, 190, 46))
+
+function f102<U>(value: U extends unknown ? { value: U } : never, ordinary: U) {
+>f102 : Symbol(f102, Decl(inferTypes1.ts, 190, 102))
+>U : Symbol(U, Decl(inferTypes1.ts, 192, 14))
+>value : Symbol(value, Decl(inferTypes1.ts, 192, 17))
+>U : Symbol(U, Decl(inferTypes1.ts, 192, 14))
+>value : Symbol(value, Decl(inferTypes1.ts, 192, 45))
+>U : Symbol(U, Decl(inferTypes1.ts, 192, 14))
+>ordinary : Symbol(ordinary, Decl(inferTypes1.ts, 192, 65))
+>U : Symbol(U, Decl(inferTypes1.ts, 192, 14))
+
+    const inferred = inferFromInlineConditional(value);
+>inferred : Symbol(inferred, Decl(inferTypes1.ts, 193, 9))
+>inferFromInlineConditional : Symbol(inferFromInlineConditional, Decl(inferTypes1.ts, 185, 64))
+>value : Symbol(value, Decl(inferTypes1.ts, 192, 17))
+
+    const accept: typeof inferred = ordinary;
+>accept : Symbol(accept, Decl(inferTypes1.ts, 194, 9))
+>inferred : Symbol(inferred, Decl(inferTypes1.ts, 193, 9))
+>ordinary : Symbol(ordinary, Decl(inferTypes1.ts, 192, 65))
+}
+
+declare function inferFromFunctionConditional<X, T>(value: X extends unknown ? () => T : never): T;
+>inferFromFunctionConditional : Symbol(inferFromFunctionConditional, Decl(inferTypes1.ts, 195, 1))
+>X : Symbol(X, Decl(inferTypes1.ts, 197, 46))
+>T : Symbol(T, Decl(inferTypes1.ts, 197, 48))
+>value : Symbol(value, Decl(inferTypes1.ts, 197, 52))
+>X : Symbol(X, Decl(inferTypes1.ts, 197, 46))
+>T : Symbol(T, Decl(inferTypes1.ts, 197, 48))
+>T : Symbol(T, Decl(inferTypes1.ts, 197, 48))
+
+function f103<U>(value: U extends unknown ? () => U : never, ordinary: U) {
+>f103 : Symbol(f103, Decl(inferTypes1.ts, 197, 99))
+>U : Symbol(U, Decl(inferTypes1.ts, 199, 14))
+>value : Symbol(value, Decl(inferTypes1.ts, 199, 17))
+>U : Symbol(U, Decl(inferTypes1.ts, 199, 14))
+>U : Symbol(U, Decl(inferTypes1.ts, 199, 14))
+>ordinary : Symbol(ordinary, Decl(inferTypes1.ts, 199, 60))
+>U : Symbol(U, Decl(inferTypes1.ts, 199, 14))
+
+    const inferred = inferFromFunctionConditional(value);
+>inferred : Symbol(inferred, Decl(inferTypes1.ts, 200, 9))
+>inferFromFunctionConditional : Symbol(inferFromFunctionConditional, Decl(inferTypes1.ts, 195, 1))
+>value : Symbol(value, Decl(inferTypes1.ts, 199, 17))
+
+    const accept: typeof inferred = ordinary;
+>accept : Symbol(accept, Decl(inferTypes1.ts, 201, 9))
+>inferred : Symbol(inferred, Decl(inferTypes1.ts, 200, 9))
+>ordinary : Symbol(ordinary, Decl(inferTypes1.ts, 199, 60))
+}
+
+declare function inferFromNestedConditional2<X, T>(value: X extends unknown ? (X extends string ? { value: T } : never) : never): T;
+>inferFromNestedConditional2 : Symbol(inferFromNestedConditional2, Decl(inferTypes1.ts, 202, 1))
+>X : Symbol(X, Decl(inferTypes1.ts, 204, 45))
+>T : Symbol(T, Decl(inferTypes1.ts, 204, 47))
+>value : Symbol(value, Decl(inferTypes1.ts, 204, 51))
+>X : Symbol(X, Decl(inferTypes1.ts, 204, 45))
+>X : Symbol(X, Decl(inferTypes1.ts, 204, 45))
+>value : Symbol(value, Decl(inferTypes1.ts, 204, 99))
+>T : Symbol(T, Decl(inferTypes1.ts, 204, 47))
+>T : Symbol(T, Decl(inferTypes1.ts, 204, 47))
+
+function f104<U>(value: U extends unknown ? (U extends string ? { value: U } : never) : never, ordinary: U) {
+>f104 : Symbol(f104, Decl(inferTypes1.ts, 204, 132))
+>U : Symbol(U, Decl(inferTypes1.ts, 206, 14))
+>value : Symbol(value, Decl(inferTypes1.ts, 206, 17))
+>U : Symbol(U, Decl(inferTypes1.ts, 206, 14))
+>U : Symbol(U, Decl(inferTypes1.ts, 206, 14))
+>value : Symbol(value, Decl(inferTypes1.ts, 206, 65))
+>U : Symbol(U, Decl(inferTypes1.ts, 206, 14))
+>ordinary : Symbol(ordinary, Decl(inferTypes1.ts, 206, 94))
+>U : Symbol(U, Decl(inferTypes1.ts, 206, 14))
+
+    const inferred = inferFromNestedConditional2(value);
+>inferred : Symbol(inferred, Decl(inferTypes1.ts, 207, 9))
+>inferFromNestedConditional2 : Symbol(inferFromNestedConditional2, Decl(inferTypes1.ts, 202, 1))
+>value : Symbol(value, Decl(inferTypes1.ts, 206, 17))
+
+    const accept: typeof inferred = ordinary;
+>accept : Symbol(accept, Decl(inferTypes1.ts, 208, 9))
+>inferred : Symbol(inferred, Decl(inferTypes1.ts, 207, 9))
+>ordinary : Symbol(ordinary, Decl(inferTypes1.ts, 206, 94))
+}
+

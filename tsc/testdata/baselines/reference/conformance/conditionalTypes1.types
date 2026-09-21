@@ -1229,3 +1229,124 @@ function conditionalRelations6<T>(x: T extends { self: T } ? { t: T } : never) {
 >1 : 1
 }
 
+// An instantiation that doesn't touch the distributed type parameter should behave
+// like the declared type, including in the constituent types accessed through it.
+function conditionalRelations7<T>(x: T extends string ? { t: T } : never) {
+>conditionalRelations7 : <T>(x: T extends string ? { t: T; } : never) => void
+>x : T extends string ? { t: T; } : never
+>t : T
+
+    const make = <V>(v: V): T extends string ? { t: T, v: V } : never => null!;
+>make : <V>(v: V) => T extends string ? { t: T; v: V; } : never
+><V>(v: V): T extends string ? { t: T, v: V } : never => null! : <V>(v: V) => T extends string ? { t: T; v: V; } : never
+>v : V
+>t : T
+>v : V
+>null! : never
+
+    const m = make(1);
+>m : T extends string ? { t: T; v: number; } : never
+>make(1) : T extends string ? { t: T; v: number; } : never
+>make : <V>(v: V) => T extends string ? { t: T; v: V; } : never
+>1 : 1
+
+    x = m;
+>x = m : T extends string ? { t: T; v: number; } : never
+>x : T extends string ? { t: T; } : never
+>m : T extends string ? { t: T; v: number; } : never
+
+    x.t = m.t;
+>x.t = m.t : T
+>x.t : T
+>x : T extends string ? { t: T; } : never
+>t : T
+>m.t : T
+>m : T extends string ? { t: T; v: number; } : never
+>t : T
+
+    m.t = x.t;
+>m.t = x.t : T
+>m.t : T
+>m : T extends string ? { t: T; v: number; } : never
+>t : T
+>x.t : T
+>x : T extends string ? { t: T; } : never
+>t : T
+
+    const a: (typeof x)["t"] = m.t;
+>a : (T extends string ? { t: T; } : never)["t"]
+>x : T extends string ? { t: T; } : never
+>m.t : T
+>m : T extends string ? { t: T; v: number; } : never
+>t : T
+}
+
+// A non-distributed type parameter isn't assignable to its distributed form, including
+// when the distributed form is reached through a constituent of the conditional type.
+function conditionalRelations8<T>(
+>conditionalRelations8 : <T>(x: T extends unknown ? { t: T; } : never, y: T extends unknown ? [T] : never, z: T extends unknown ? T : never, p: T) => void
+
+    x: T extends unknown ? { t: T } : never,
+>x : T extends unknown ? { t: T; } : never
+>t : T
+
+    y: T extends unknown ? [T] : never,
+>y : T extends unknown ? [T] : never
+
+    z: T extends unknown ? T : never,
+>z : T extends unknown ? T : never
+
+    p: T,
+>p : T
+
+) {
+    x.t = p;
+>x.t = p : T
+>x.t : T
+>x : T extends unknown ? { t: T; } : never
+>t : T
+>p : T
+
+    y[0] = p;
+>y[0] = p : T
+>y[0] : T
+>y : T extends unknown ? [T] : never
+>0 : 0
+>p : T
+
+    let w: typeof z = p;
+>w : T extends unknown ? T : never
+>z : T extends unknown ? T : never
+>p : T
+
+    const c: { t: T } = x;
+>c : { t: T; }
+>t : T
+>x : T extends unknown ? { t: T; } : never
+}
+
+// keyof of the distributed type parameter flowing into keyof of the type parameter.
+function conditionalRelations9<O>(
+>conditionalRelations9 : <O>(k: O extends readonly any[] ? keyof O & `${number}` : keyof O & (string | number), m: { [K in keyof O & (string | number)]: 1; }, kk: keyof O) => void
+
+    k: O extends readonly any[] ? keyof O & `${number}` : keyof O & (string | number),
+>k : O extends readonly any[] ? keyof O & `${number}` : keyof O & (string | number)
+
+    m: { [K in keyof O & (string | number)]: 1 },
+>m : { [K in keyof O & (string | number)]: 1; }
+
+    kk: keyof O,
+>kk : keyof O
+
+) {
+    kk = k;
+>kk = k : O extends readonly any[] ? keyof O & `${number}` : keyof O & (string | number)
+>kk : keyof O
+>k : O extends readonly any[] ? keyof O & `${number}` : keyof O & (string | number)
+
+    m[k];
+>m[k] : { [K in keyof O & (string | number)]: 1; }[O extends readonly any[] ? keyof O & `${number}` : keyof O & (string | number)]
+>m : { [K in keyof O & (string | number)]: 1; }
+>k : O extends readonly any[] ? keyof O & `${number}` : keyof O & (string | number)
+}
+
