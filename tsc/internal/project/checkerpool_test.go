@@ -2,17 +2,20 @@ package project
 
 import (
 	"context"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"testing/synctest"
 	"time"
 
+	"github.com/microsoft/TypeScript/tsc/internal/ast"
 	"github.com/microsoft/TypeScript/tsc/internal/bundled"
 	"github.com/microsoft/TypeScript/tsc/internal/checker"
 	"github.com/microsoft/TypeScript/tsc/internal/compiler"
 	"github.com/microsoft/TypeScript/tsc/internal/core"
 	"github.com/microsoft/TypeScript/tsc/internal/lsp/lsproto"
 	"github.com/microsoft/TypeScript/tsc/internal/project/logging"
+	"github.com/microsoft/TypeScript/tsc/internal/tsoptions"
 	"github.com/microsoft/TypeScript/tsc/internal/vfs/vfstest"
 	"gotest.tools/v3/assert"
 )
@@ -1280,4 +1283,184 @@ func TestCheckerPoolCleanupAfterDiscardIsNoop(t *testing.T) {
 		assert.Assert(t, hasChecker, "idle checkers must survive cleanup on a discarded pool")
 		pool.mu.Unlock()
 	})
+}
+
+// gatedCheckerPool pauses every caller right after it acquires a checker, until
+// the test lets it through, and records how many callers hold each checker.
+type gatedCheckerPool struct {
+	inner compiler.CheckerPool
+	gate  chan struct{}
+
+	mu   sync.Mutex
+	held map[*checker.Checker]int
+}
+
+func (g *gatedCheckerPool) GetChecker(ctx context.Context, file *ast.SourceFile) (*checker.Checker, func()) {
+	c, release := g.inner.GetChecker(ctx, file)
+	g.mu.Lock()
+	g.held[c]++
+	g.mu.Unlock()
+	<-g.gate
+	return c, func() {
+		g.mu.Lock()
+		g.held[c]--
+		g.mu.Unlock()
+		release()
+	}
+}
+
+func (g *gatedCheckerPool) maxHolders() int {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	result := 0
+	for _, n := range g.held {
+		result = max(result, n)
+	}
+	return result
+}
+
+// programFanOuts are the Program operations that fan out over files, running one
+// worker per file that each acquire a checker.
+var programFanOuts = []struct {
+	name string
+	run  func(ctx context.Context, program *compiler.Program)
+}{
+	{"semantic diagnostics", func(ctx context.Context, program *compiler.Program) {
+		program.GetSemanticDiagnostics(ctx, nil)
+	}},
+	{"declaration diagnostics", func(ctx context.Context, program *compiler.Program) {
+		program.GetDeclarationDiagnostics(ctx, nil)
+	}},
+	{"emit", func(ctx context.Context, program *compiler.Program) {
+		program.Emit(ctx, compiler.EmitOptions{
+			WriteFile: func(string, string, *compiler.WriteFileData) error { return nil },
+		})
+	}},
+}
+
+// newFanOutTestProgram creates a three-file program whose checker pool is created
+// by createPool. Must be called inside the synctest bubble that uses the pool.
+func newFanOutTestProgram(singleThreaded bool, createPool func(p *compiler.Program) compiler.CheckerPool) *compiler.Program {
+	fs := bundled.WrapFS(vfstest.FromMap(map[string]string{
+		"/src/a.ts": "export const a = 1;",
+		"/src/b.ts": "export const b = 2;",
+		"/src/c.ts": "export const c = 3;",
+	}, false /*useCaseSensitiveFileNames*/))
+	return compiler.NewProgram(compiler.ProgramOptions{
+		Config: &tsoptions.ParsedCommandLine{
+			ParsedConfig: &tsoptions.ParsedOptions{
+				FileNames: []string{"/src/a.ts", "/src/b.ts", "/src/c.ts"},
+				CompilerOptions: &core.CompilerOptions{
+					NoLib:       core.TSTrue,
+					Declaration: core.TSTrue,
+					OutDir:      "/out",
+				},
+			},
+		},
+		Host:              compiler.NewCompilerHost("/", fs, bundled.LibPath(), nil, nil, nil),
+		SingleThreaded:    core.BoolToTristate(singleThreaded),
+		CreateCheckerPool: createPool,
+	})
+}
+
+// newFanOutTestContext returns a cancelable diagnostics context for a request.
+func newFanOutTestContext(t *testing.T) context.Context {
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+	ctx = core.WithRequestID(ctx, "diag-fan-out")
+	return core.WithCheckerLifetime(ctx, core.CheckerLifetimeDiagnostics)
+}
+
+// Regression test for https://github.com/microsoft/TypeScript/issues/64458.
+// When a fan-out runs on behalf of a request, the pool's request affinity must
+// not hand the checker held by one worker to its concurrently running siblings.
+func TestCheckerPoolProgramFanOutDoesNotShareChecker(t *testing.T) {
+	t.Parallel()
+	if !bundled.Embedded {
+		t.Skip("bundled files are not embedded")
+	}
+
+	for _, fanOut := range programFanOuts {
+		t.Run(fanOut.name, func(t *testing.T) {
+			t.Parallel()
+			synctest.Test(t, func(t *testing.T) {
+				pool := &gatedCheckerPool{gate: make(chan struct{}), held: map[*checker.Checker]int{}}
+				program := newFanOutTestProgram(false /*singleThreaded*/, func(p *compiler.Program) compiler.CheckerPool {
+					pool.inner = newTestCheckerPool(p, CheckerPoolOptions{MaxCheckers: 4, IdleTimeout: 30 * time.Second})
+					return pool
+				})
+				ctx := newFanOutTestContext(t)
+
+				done := make(chan struct{})
+				go func() {
+					defer close(done)
+					fanOut.run(ctx, program)
+				}()
+
+				// Whenever the bubble settles, every worker is either paused holding a checker
+				// or waiting for one. Only one may hold the diagnostics checker. Let the paused
+				// workers through one at a time, and check only once all of them have finished,
+				// so that a failure doesn't leave workers blocked in the bubble.
+				acquisitions, maxHolders := 0, 0
+			drain:
+				for {
+					synctest.Wait()
+					maxHolders = max(maxHolders, pool.maxHolders())
+					select {
+					case <-done:
+						break drain
+					case pool.gate <- struct{}{}:
+						acquisitions++
+					}
+				}
+				assert.Assert(t, acquisitions > 1, "expected one checker acquisition per file")
+				assert.Equal(t, maxHolders, 1, "a checker was handed to concurrent workers of one request")
+			})
+		})
+	}
+}
+
+// Single-threaded fan-outs run their workers one after another on the caller's
+// goroutine, so the workers are still the request itself and keep its request
+// affinity. A request that holds the diagnostics checker can therefore run a
+// fan-out without waiting on itself.
+func TestCheckerPoolSingleThreadedFanOutKeepsRequestAffinity(t *testing.T) {
+	t.Parallel()
+	if !bundled.Embedded {
+		t.Skip("bundled files are not embedded")
+	}
+
+	for _, fanOut := range programFanOuts {
+		t.Run(fanOut.name, func(t *testing.T) {
+			t.Parallel()
+			synctest.Test(t, func(t *testing.T) {
+				var pool *checkerPool
+				program := newFanOutTestProgram(true /*singleThreaded*/, func(p *compiler.Program) compiler.CheckerPool {
+					pool = newTestCheckerPool(p, CheckerPoolOptions{MaxCheckers: 4, IdleTimeout: 30 * time.Second})
+					return pool
+				})
+				ctx := newFanOutTestContext(t)
+
+				_, release := pool.GetChecker(ctx, nil)
+				done := make(chan struct{})
+				go func() {
+					defer close(done)
+					fanOut.run(ctx, program)
+				}()
+				synctest.Wait()
+				var finished bool
+				select {
+				case <-done:
+					finished = true
+				default:
+					// Still waiting for the checker held above.
+				}
+
+				// Release before asserting, so a failure doesn't leave the fan-out blocked in the bubble.
+				release()
+				<-done
+				assert.Assert(t, finished, "a single-threaded fan-out waited for a checker its own request holds")
+			})
+		})
+	}
 }
