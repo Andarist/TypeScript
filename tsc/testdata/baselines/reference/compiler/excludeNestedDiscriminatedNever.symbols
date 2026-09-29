@@ -1,0 +1,69 @@
+//// [tests/cases/compiler/excludeNestedDiscriminatedNever.ts] ////
+
+=== excludeNestedDiscriminatedNever.ts ===
+type S = { kind: "a" | "b"; value: number };
+>S : Symbol(S, Decl(excludeNestedDiscriminatedNever.ts, 0, 0))
+>kind : Symbol(kind, Decl(excludeNestedDiscriminatedNever.ts, 0, 10))
+>value : Symbol(value, Decl(excludeNestedDiscriminatedNever.ts, 0, 27))
+
+type A = { kind: "a"; value: number };
+>A : Symbol(A, Decl(excludeNestedDiscriminatedNever.ts, 0, 44))
+>kind : Symbol(kind, Decl(excludeNestedDiscriminatedNever.ts, 1, 10))
+>value : Symbol(value, Decl(excludeNestedDiscriminatedNever.ts, 1, 21))
+
+type B = { kind: "b"; value: number };
+>B : Symbol(B, Decl(excludeNestedDiscriminatedNever.ts, 1, 38))
+>kind : Symbol(kind, Decl(excludeNestedDiscriminatedNever.ts, 2, 10))
+>value : Symbol(value, Decl(excludeNestedDiscriminatedNever.ts, 2, 21))
+
+type Nested = Exclude<Exclude<S, B>, A>;
+>Nested : Symbol(Nested, Decl(excludeNestedDiscriminatedNever.ts, 2, 38))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>S : Symbol(S, Decl(excludeNestedDiscriminatedNever.ts, 0, 0))
+>B : Symbol(B, Decl(excludeNestedDiscriminatedNever.ts, 1, 38))
+>A : Symbol(A, Decl(excludeNestedDiscriminatedNever.ts, 0, 44))
+
+type Merged = Exclude<S, A | B>;
+>Merged : Symbol(Merged, Decl(excludeNestedDiscriminatedNever.ts, 4, 40))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>S : Symbol(S, Decl(excludeNestedDiscriminatedNever.ts, 0, 0))
+>A : Symbol(A, Decl(excludeNestedDiscriminatedNever.ts, 0, 44))
+>B : Symbol(B, Decl(excludeNestedDiscriminatedNever.ts, 1, 38))
+
+type IsNever<T> = [T] extends [never] ? true : false;
+>IsNever : Symbol(IsNever, Decl(excludeNestedDiscriminatedNever.ts, 5, 32))
+>T : Symbol(T, Decl(excludeNestedDiscriminatedNever.ts, 7, 13))
+>T : Symbol(T, Decl(excludeNestedDiscriminatedNever.ts, 7, 13))
+
+const nestedIsNever: IsNever<Nested> = true;
+>nestedIsNever : Symbol(nestedIsNever, Decl(excludeNestedDiscriminatedNever.ts, 9, 5))
+>IsNever : Symbol(IsNever, Decl(excludeNestedDiscriminatedNever.ts, 5, 32))
+>Nested : Symbol(Nested, Decl(excludeNestedDiscriminatedNever.ts, 2, 38))
+
+const mergedIsNever: IsNever<Merged> = true;
+>mergedIsNever : Symbol(mergedIsNever, Decl(excludeNestedDiscriminatedNever.ts, 10, 5))
+>IsNever : Symbol(IsNever, Decl(excludeNestedDiscriminatedNever.ts, 5, 32))
+>Merged : Symbol(Merged, Decl(excludeNestedDiscriminatedNever.ts, 4, 40))
+
+const partialIsNotNever: IsNever<Exclude<S, B>> = false;
+>partialIsNotNever : Symbol(partialIsNotNever, Decl(excludeNestedDiscriminatedNever.ts, 11, 5))
+>IsNever : Symbol(IsNever, Decl(excludeNestedDiscriminatedNever.ts, 5, 32))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>S : Symbol(S, Decl(excludeNestedDiscriminatedNever.ts, 0, 0))
+>B : Symbol(B, Decl(excludeNestedDiscriminatedNever.ts, 1, 38))
+
+declare const s: S;
+>s : Symbol(s, Decl(excludeNestedDiscriminatedNever.ts, 13, 13))
+>S : Symbol(S, Decl(excludeNestedDiscriminatedNever.ts, 0, 0))
+
+const nested: Nested = s; // error
+>nested : Symbol(nested, Decl(excludeNestedDiscriminatedNever.ts, 14, 5))
+>Nested : Symbol(Nested, Decl(excludeNestedDiscriminatedNever.ts, 2, 38))
+>s : Symbol(s, Decl(excludeNestedDiscriminatedNever.ts, 13, 13))
+
+const merged: Merged = s; // error
+>merged : Symbol(merged, Decl(excludeNestedDiscriminatedNever.ts, 15, 5))
+>Merged : Symbol(Merged, Decl(excludeNestedDiscriminatedNever.ts, 4, 40))
+>s : Symbol(s, Decl(excludeNestedDiscriminatedNever.ts, 13, 13))
+

@@ -1,0 +1,374 @@
+//// [tests/cases/compiler/nestedIntersectionAliasRepacking.ts] ////
+
+=== nestedIntersectionAliasRepacking.ts ===
+interface A {
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+
+  a: string;
+>a : Symbol(A.a, Decl(nestedIntersectionAliasRepacking.ts, 0, 13))
+}
+interface B {
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+  b: number;
+>b : Symbol(B.b, Decl(nestedIntersectionAliasRepacking.ts, 3, 13))
+}
+interface C {
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+
+  c: boolean;
+>c : Symbol(C.c, Decl(nestedIntersectionAliasRepacking.ts, 6, 13))
+}
+
+// Repacked: user-defined aliases with the same shapes as Exclude and Extract.
+type Without<T, U> = T & not U;
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 11, 13))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 11, 15))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 11, 13))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 11, 15))
+
+type Both<T, U> = T & U;
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 12, 10))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 12, 12))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 12, 10))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 12, 12))
+
+// Repacked in the second position, the only non-negated one.
+type Swapped<U, T> = not U & T;
+>Swapped : Symbol(Swapped, Decl(nestedIntersectionAliasRepacking.ts, 12, 24))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 14, 13))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 14, 15))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 14, 13))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 14, 15))
+
+function repacked<T>(
+>repacked : Symbol(repacked, Decl(nestedIntersectionAliasRepacking.ts, 14, 31))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 16, 18))
+
+  without: Without<Without<Without<T, A>, B>, C>,
+>without : Symbol(without, Decl(nestedIntersectionAliasRepacking.ts, 16, 21))
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 16, 18))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+
+  both: Both<Both<Both<T, A>, B>, C>,
+>both : Symbol(both, Decl(nestedIntersectionAliasRepacking.ts, 17, 49))
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 16, 18))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+
+  swapped: Swapped<C, Swapped<B, Swapped<A, T>>>,
+>swapped : Symbol(swapped, Decl(nestedIntersectionAliasRepacking.ts, 18, 37))
+>Swapped : Symbol(Swapped, Decl(nestedIntersectionAliasRepacking.ts, 12, 24))
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+>Swapped : Symbol(Swapped, Decl(nestedIntersectionAliasRepacking.ts, 12, 24))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+>Swapped : Symbol(Swapped, Decl(nestedIntersectionAliasRepacking.ts, 12, 24))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 16, 18))
+
+  bothSecond: Both<T, Both<A, B>>,
+>bothSecond : Symbol(bothSecond, Decl(nestedIntersectionAliasRepacking.ts, 19, 49))
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 16, 18))
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+) {
+  const withoutMerged: Without<T, A | B | C> = without;
+>withoutMerged : Symbol(withoutMerged, Decl(nestedIntersectionAliasRepacking.ts, 22, 7))
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 16, 18))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+>without : Symbol(without, Decl(nestedIntersectionAliasRepacking.ts, 16, 21))
+
+  const bothMerged: Both<T, A & B & C> = both;
+>bothMerged : Symbol(bothMerged, Decl(nestedIntersectionAliasRepacking.ts, 23, 7))
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 16, 18))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+>both : Symbol(both, Decl(nestedIntersectionAliasRepacking.ts, 17, 49))
+
+  const swappedMerged: Swapped<A | B | C, T> = swapped;
+>swappedMerged : Symbol(swappedMerged, Decl(nestedIntersectionAliasRepacking.ts, 24, 7))
+>Swapped : Symbol(Swapped, Decl(nestedIntersectionAliasRepacking.ts, 12, 24))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 16, 18))
+>swapped : Symbol(swapped, Decl(nestedIntersectionAliasRepacking.ts, 18, 37))
+
+  const bothSecondMerged: Both<T & A, B> = bothSecond;
+>bothSecondMerged : Symbol(bothSecondMerged, Decl(nestedIntersectionAliasRepacking.ts, 25, 7))
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 16, 18))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+>bothSecond : Symbol(bothSecond, Decl(nestedIntersectionAliasRepacking.ts, 19, 49))
+}
+
+function composed<T>(value: T) {
+>composed : Symbol(composed, Decl(nestedIntersectionAliasRepacking.ts, 26, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 28, 18))
+>value : Symbol(value, Decl(nestedIntersectionAliasRepacking.ts, 28, 21))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 28, 18))
+
+  const excluded = excludeB(excludeA(value));
+>excluded : Symbol(excluded, Decl(nestedIntersectionAliasRepacking.ts, 29, 7))
+>excludeB : Symbol(excludeB, Decl(nestedIntersectionAliasRepacking.ts, 33, 54))
+>excludeA : Symbol(excludeA, Decl(nestedIntersectionAliasRepacking.ts, 32, 1))
+>value : Symbol(value, Decl(nestedIntersectionAliasRepacking.ts, 28, 21))
+
+  const extracted = extractB(extractA(value));
+>extracted : Symbol(extracted, Decl(nestedIntersectionAliasRepacking.ts, 30, 7))
+>extractB : Symbol(extractB, Decl(nestedIntersectionAliasRepacking.ts, 35, 51))
+>extractA : Symbol(extractA, Decl(nestedIntersectionAliasRepacking.ts, 34, 54))
+>value : Symbol(value, Decl(nestedIntersectionAliasRepacking.ts, 28, 21))
+
+  return { excluded, extracted };
+>excluded : Symbol(excluded, Decl(nestedIntersectionAliasRepacking.ts, 31, 10))
+>extracted : Symbol(extracted, Decl(nestedIntersectionAliasRepacking.ts, 31, 20))
+}
+declare function excludeA<T>(value: T): Without<T, A>;
+>excludeA : Symbol(excludeA, Decl(nestedIntersectionAliasRepacking.ts, 32, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 33, 26))
+>value : Symbol(value, Decl(nestedIntersectionAliasRepacking.ts, 33, 29))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 33, 26))
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 33, 26))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+
+declare function excludeB<T>(value: T): Without<T, B>;
+>excludeB : Symbol(excludeB, Decl(nestedIntersectionAliasRepacking.ts, 33, 54))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 34, 26))
+>value : Symbol(value, Decl(nestedIntersectionAliasRepacking.ts, 34, 29))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 34, 26))
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 34, 26))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+declare function extractA<T>(value: T): Both<T, A>;
+>extractA : Symbol(extractA, Decl(nestedIntersectionAliasRepacking.ts, 34, 54))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 35, 26))
+>value : Symbol(value, Decl(nestedIntersectionAliasRepacking.ts, 35, 29))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 35, 26))
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 35, 26))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+
+declare function extractB<T>(value: T): Both<T, B>;
+>extractB : Symbol(extractB, Decl(nestedIntersectionAliasRepacking.ts, 35, 51))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 36, 26))
+>value : Symbol(value, Decl(nestedIntersectionAliasRepacking.ts, 36, 29))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 36, 26))
+>Both : Symbol(Both, Decl(nestedIntersectionAliasRepacking.ts, 11, 31))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 36, 26))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+// Not repacked: nested in a negated position. The nested forms should still be assignable to their
+// expansions, but 'not (X & Y)' isn't related to 'not X | not Y' yet.
+type Neither<T, U> = not T & not U;
+>Neither : Symbol(Neither, Decl(nestedIntersectionAliasRepacking.ts, 36, 51))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 40, 13))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 40, 15))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 40, 13))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 40, 15))
+
+function neitherFirst<T>(
+>neitherFirst : Symbol(neitherFirst, Decl(nestedIntersectionAliasRepacking.ts, 40, 35))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 42, 22))
+
+  nested: Neither<Neither<T, A>, B>,
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 42, 25))
+>Neither : Symbol(Neither, Decl(nestedIntersectionAliasRepacking.ts, 36, 51))
+>Neither : Symbol(Neither, Decl(nestedIntersectionAliasRepacking.ts, 36, 51))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 42, 22))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+  expanded: (T | A) & not B,
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 43, 36))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 42, 22))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+) {
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 42, 25))
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 43, 36))
+
+  expanded = nested; // error, not yet related
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 43, 36))
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 42, 25))
+}
+
+function neitherSecond<T>(
+>neitherSecond : Symbol(neitherSecond, Decl(nestedIntersectionAliasRepacking.ts, 48, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 50, 23))
+
+  nested: Neither<A, Neither<T, B>>,
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 50, 26))
+>Neither : Symbol(Neither, Decl(nestedIntersectionAliasRepacking.ts, 36, 51))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>Neither : Symbol(Neither, Decl(nestedIntersectionAliasRepacking.ts, 36, 51))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 50, 23))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+  expanded: not A & (T | B),
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 51, 36))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 50, 23))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+) {
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 50, 26))
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 51, 36))
+
+  expanded = nested; // error, not yet related
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 51, 36))
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 50, 26))
+}
+
+function withoutSecond<T>(
+>withoutSecond : Symbol(withoutSecond, Decl(nestedIntersectionAliasRepacking.ts, 56, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 58, 23))
+
+  nested: Without<A, Without<T, B>>,
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 58, 26))
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 58, 23))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+  expanded: A & (not T | B),
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 59, 36))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 58, 23))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+) {
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 58, 26))
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 59, 36))
+
+  expanded = nested; // error, not yet related
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 59, 36))
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 58, 26))
+}
+
+function excludeSecond<T>(
+>excludeSecond : Symbol(excludeSecond, Decl(nestedIntersectionAliasRepacking.ts, 64, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 66, 23))
+
+  nested: Exclude<A, Exclude<T, B>>,
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 66, 26))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 66, 23))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+  expanded: A & (not T | B),
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 67, 36))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 66, 23))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+) {
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 66, 26))
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 67, 36))
+
+  expanded = nested; // error, not yet related
+>expanded : Symbol(expanded, Decl(nestedIntersectionAliasRepacking.ts, 67, 36))
+>nested : Symbol(nested, Decl(nestedIntersectionAliasRepacking.ts, 66, 26))
+}
+
+// Not repacked: more than two members, or members that are not bare type parameters.
+type ExtraMember<T, U> = T & not U & C;
+>ExtraMember : Symbol(ExtraMember, Decl(nestedIntersectionAliasRepacking.ts, 72, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 75, 17))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 75, 19))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 75, 17))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 75, 19))
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+
+type NotAParameter<T, U> = T & not U[];
+>NotAParameter : Symbol(NotAParameter, Decl(nestedIntersectionAliasRepacking.ts, 75, 39))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 76, 19))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 76, 21))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 76, 19))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 76, 21))
+
+type ThreeParameters<T, U, V> = T & not U;
+>ThreeParameters : Symbol(ThreeParameters, Decl(nestedIntersectionAliasRepacking.ts, 76, 39))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 77, 21))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 77, 23))
+>V : Symbol(V, Decl(nestedIntersectionAliasRepacking.ts, 77, 26))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 77, 21))
+>U : Symbol(U, Decl(nestedIntersectionAliasRepacking.ts, 77, 23))
+
+function otherShapes<T>(
+>otherShapes : Symbol(otherShapes, Decl(nestedIntersectionAliasRepacking.ts, 77, 42))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 79, 21))
+
+  extraMember: ExtraMember<ExtraMember<T, A>, B>,
+>extraMember : Symbol(extraMember, Decl(nestedIntersectionAliasRepacking.ts, 79, 24))
+>ExtraMember : Symbol(ExtraMember, Decl(nestedIntersectionAliasRepacking.ts, 72, 1))
+>ExtraMember : Symbol(ExtraMember, Decl(nestedIntersectionAliasRepacking.ts, 72, 1))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 79, 21))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+  notAParameter: NotAParameter<NotAParameter<T, A>, B>,
+>notAParameter : Symbol(notAParameter, Decl(nestedIntersectionAliasRepacking.ts, 80, 49))
+>NotAParameter : Symbol(NotAParameter, Decl(nestedIntersectionAliasRepacking.ts, 75, 39))
+>NotAParameter : Symbol(NotAParameter, Decl(nestedIntersectionAliasRepacking.ts, 75, 39))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 79, 21))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+  threeParameters: ThreeParameters<ThreeParameters<T, A, C>, B, C>,
+>threeParameters : Symbol(threeParameters, Decl(nestedIntersectionAliasRepacking.ts, 81, 55))
+>ThreeParameters : Symbol(ThreeParameters, Decl(nestedIntersectionAliasRepacking.ts, 76, 39))
+>ThreeParameters : Symbol(ThreeParameters, Decl(nestedIntersectionAliasRepacking.ts, 76, 39))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 79, 21))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+>C : Symbol(C, Decl(nestedIntersectionAliasRepacking.ts, 5, 1))
+
+) {}
+
+// Not repacked: an argument aliased by a different alias with the same shape.
+function differentAlias<T>(
+>differentAlias : Symbol(differentAlias, Decl(nestedIntersectionAliasRepacking.ts, 83, 4))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 86, 24))
+
+  mixed: Without<Exclude<T, A>, B>,
+>mixed : Symbol(mixed, Decl(nestedIntersectionAliasRepacking.ts, 86, 27))
+>Without : Symbol(Without, Decl(nestedIntersectionAliasRepacking.ts, 8, 1))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedIntersectionAliasRepacking.ts, 86, 24))
+>A : Symbol(A, Decl(nestedIntersectionAliasRepacking.ts, 0, 0))
+>B : Symbol(B, Decl(nestedIntersectionAliasRepacking.ts, 2, 1))
+
+) {}
+

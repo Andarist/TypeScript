@@ -1,0 +1,164 @@
+//// [tests/cases/compiler/excludeNestedHigherOrderInference.ts] ////
+
+=== excludeNestedHigherOrderInference.ts ===
+// Reduced from Effect's 'flow(Effect.provideService(A, ...), Effect.provideService(B, ...))'.
+
+interface Tag<in out Id, in out Service> {
+>Tag : Symbol(Tag, Decl(excludeNestedHigherOrderInference.ts, 0, 0))
+>Id : Symbol(Id, Decl(excludeNestedHigherOrderInference.ts, 2, 14))
+>Service : Symbol(Service, Decl(excludeNestedHigherOrderInference.ts, 2, 24))
+
+  readonly id: Id;
+>id : Symbol(Tag.id, Decl(excludeNestedHigherOrderInference.ts, 2, 42))
+>Id : Symbol(Id, Decl(excludeNestedHigherOrderInference.ts, 2, 14))
+
+  readonly service: Service;
+>service : Symbol(Tag.service, Decl(excludeNestedHigherOrderInference.ts, 3, 18))
+>Service : Symbol(Service, Decl(excludeNestedHigherOrderInference.ts, 2, 24))
+}
+
+interface Effect<out A, out E, out R> {
+>Effect : Symbol(Effect, Decl(excludeNestedHigherOrderInference.ts, 5, 1))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 7, 17))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 7, 23))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 7, 30))
+
+  readonly a: A;
+>a : Symbol(Effect.a, Decl(excludeNestedHigherOrderInference.ts, 7, 39))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 7, 17))
+
+  readonly e: E;
+>e : Symbol(Effect.e, Decl(excludeNestedHigherOrderInference.ts, 8, 16))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 7, 23))
+
+  readonly r: R;
+>r : Symbol(Effect.r, Decl(excludeNestedHigherOrderInference.ts, 9, 16))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 7, 30))
+}
+
+declare function provideService<I, S>(
+>provideService : Symbol(provideService, Decl(excludeNestedHigherOrderInference.ts, 11, 1))
+>I : Symbol(I, Decl(excludeNestedHigherOrderInference.ts, 13, 32))
+>S : Symbol(S, Decl(excludeNestedHigherOrderInference.ts, 13, 34))
+
+  tag: Tag<I, S>,
+>tag : Symbol(tag, Decl(excludeNestedHigherOrderInference.ts, 13, 38))
+>Tag : Symbol(Tag, Decl(excludeNestedHigherOrderInference.ts, 0, 0))
+>I : Symbol(I, Decl(excludeNestedHigherOrderInference.ts, 13, 32))
+>S : Symbol(S, Decl(excludeNestedHigherOrderInference.ts, 13, 34))
+
+  service: NoInfer<S>,
+>service : Symbol(service, Decl(excludeNestedHigherOrderInference.ts, 14, 17))
+>NoInfer : Symbol(NoInfer, Decl(lib.es5.d.ts, --, --))
+>S : Symbol(S, Decl(excludeNestedHigherOrderInference.ts, 13, 34))
+
+): <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, I>>;
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 16, 4))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 16, 6))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 16, 9))
+>self : Symbol(self, Decl(excludeNestedHigherOrderInference.ts, 16, 13))
+>Effect : Symbol(Effect, Decl(excludeNestedHigherOrderInference.ts, 5, 1))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 16, 4))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 16, 6))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 16, 9))
+>Effect : Symbol(Effect, Decl(excludeNestedHigherOrderInference.ts, 5, 1))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 16, 4))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 16, 6))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 16, 9))
+>I : Symbol(I, Decl(excludeNestedHigherOrderInference.ts, 13, 32))
+
+declare function flow<A extends ReadonlyArray<unknown>, B, C>(
+>flow : Symbol(flow, Decl(excludeNestedHigherOrderInference.ts, 16, 67))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 18, 22))
+>ReadonlyArray : Symbol(ReadonlyArray, Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.core.d.ts, --, --), Decl(lib.es2015.iterable.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.es2016.array.include.d.ts, --, --) ... and 3 more)
+>B : Symbol(B, Decl(excludeNestedHigherOrderInference.ts, 18, 55))
+>C : Symbol(C, Decl(excludeNestedHigherOrderInference.ts, 18, 58))
+
+  ab: (...a: A) => B,
+>ab : Symbol(ab, Decl(excludeNestedHigherOrderInference.ts, 18, 62))
+>a : Symbol(a, Decl(excludeNestedHigherOrderInference.ts, 19, 7))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 18, 22))
+>B : Symbol(B, Decl(excludeNestedHigherOrderInference.ts, 18, 55))
+
+  bc: (b: B) => C,
+>bc : Symbol(bc, Decl(excludeNestedHigherOrderInference.ts, 19, 21))
+>b : Symbol(b, Decl(excludeNestedHigherOrderInference.ts, 20, 7))
+>B : Symbol(B, Decl(excludeNestedHigherOrderInference.ts, 18, 55))
+>C : Symbol(C, Decl(excludeNestedHigherOrderInference.ts, 18, 58))
+
+): (...a: A) => C;
+>a : Symbol(a, Decl(excludeNestedHigherOrderInference.ts, 21, 4))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 18, 22))
+>C : Symbol(C, Decl(excludeNestedHigherOrderInference.ts, 18, 58))
+
+interface ServiceA {
+>ServiceA : Symbol(ServiceA, Decl(excludeNestedHigherOrderInference.ts, 21, 18))
+
+  readonly a: unique symbol;
+>a : Symbol(ServiceA.a, Decl(excludeNestedHigherOrderInference.ts, 23, 20))
+}
+interface ServiceB {
+>ServiceB : Symbol(ServiceB, Decl(excludeNestedHigherOrderInference.ts, 25, 1))
+
+  readonly b: unique symbol;
+>b : Symbol(ServiceB.b, Decl(excludeNestedHigherOrderInference.ts, 26, 20))
+}
+
+declare const TagA: Tag<ServiceA, {}>;
+>TagA : Symbol(TagA, Decl(excludeNestedHigherOrderInference.ts, 30, 13))
+>Tag : Symbol(Tag, Decl(excludeNestedHigherOrderInference.ts, 0, 0))
+>ServiceA : Symbol(ServiceA, Decl(excludeNestedHigherOrderInference.ts, 21, 18))
+
+declare const TagB: Tag<ServiceB, {}>;
+>TagB : Symbol(TagB, Decl(excludeNestedHigherOrderInference.ts, 31, 13))
+>Tag : Symbol(Tag, Decl(excludeNestedHigherOrderInference.ts, 0, 0))
+>ServiceB : Symbol(ServiceB, Decl(excludeNestedHigherOrderInference.ts, 25, 1))
+
+const provideAll = flow(provideService(TagA, {}), provideService(TagB, {}));
+>provideAll : Symbol(provideAll, Decl(excludeNestedHigherOrderInference.ts, 33, 5))
+>flow : Symbol(flow, Decl(excludeNestedHigherOrderInference.ts, 16, 67))
+>provideService : Symbol(provideService, Decl(excludeNestedHigherOrderInference.ts, 11, 1))
+>TagA : Symbol(TagA, Decl(excludeNestedHigherOrderInference.ts, 30, 13))
+>provideService : Symbol(provideService, Decl(excludeNestedHigherOrderInference.ts, 11, 1))
+>TagB : Symbol(TagB, Decl(excludeNestedHigherOrderInference.ts, 31, 13))
+
+const provideAllMerged: <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, ServiceA | ServiceB>> = provideAll;
+>provideAllMerged : Symbol(provideAllMerged, Decl(excludeNestedHigherOrderInference.ts, 35, 5))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 35, 25))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 35, 27))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 35, 30))
+>self : Symbol(self, Decl(excludeNestedHigherOrderInference.ts, 35, 34))
+>Effect : Symbol(Effect, Decl(excludeNestedHigherOrderInference.ts, 5, 1))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 35, 25))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 35, 27))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 35, 30))
+>Effect : Symbol(Effect, Decl(excludeNestedHigherOrderInference.ts, 5, 1))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 35, 25))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 35, 27))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 35, 30))
+>ServiceA : Symbol(ServiceA, Decl(excludeNestedHigherOrderInference.ts, 21, 18))
+>ServiceB : Symbol(ServiceB, Decl(excludeNestedHigherOrderInference.ts, 25, 1))
+>provideAll : Symbol(provideAll, Decl(excludeNestedHigherOrderInference.ts, 33, 5))
+
+const provideAllNested: <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<Exclude<R, ServiceA>, ServiceB>> = provideAll;
+>provideAllNested : Symbol(provideAllNested, Decl(excludeNestedHigherOrderInference.ts, 36, 5))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 36, 25))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 36, 27))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 36, 30))
+>self : Symbol(self, Decl(excludeNestedHigherOrderInference.ts, 36, 34))
+>Effect : Symbol(Effect, Decl(excludeNestedHigherOrderInference.ts, 5, 1))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 36, 25))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 36, 27))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 36, 30))
+>Effect : Symbol(Effect, Decl(excludeNestedHigherOrderInference.ts, 5, 1))
+>A : Symbol(A, Decl(excludeNestedHigherOrderInference.ts, 36, 25))
+>E : Symbol(E, Decl(excludeNestedHigherOrderInference.ts, 36, 27))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>R : Symbol(R, Decl(excludeNestedHigherOrderInference.ts, 36, 30))
+>ServiceA : Symbol(ServiceA, Decl(excludeNestedHigherOrderInference.ts, 21, 18))
+>ServiceB : Symbol(ServiceB, Decl(excludeNestedHigherOrderInference.ts, 25, 1))
+>provideAll : Symbol(provideAll, Decl(excludeNestedHigherOrderInference.ts, 33, 5))
+

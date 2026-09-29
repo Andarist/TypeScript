@@ -1,0 +1,52 @@
+//// [tests/cases/compiler/excludeNestedDiscriminatedNever.ts] ////
+
+=== excludeNestedDiscriminatedNever.ts ===
+type S = { kind: "a" | "b"; value: number };
+>S : S
+>kind : "a" | "b"
+>value : number
+
+type A = { kind: "a"; value: number };
+>A : A
+>kind : "a"
+>value : number
+
+type B = { kind: "b"; value: number };
+>B : B
+>kind : "b"
+>value : number
+
+type Nested = Exclude<Exclude<S, B>, A>;
+>Nested : never
+
+type Merged = Exclude<S, A | B>;
+>Merged : never
+
+type IsNever<T> = [T] extends [never] ? true : false;
+>IsNever : IsNever<T>
+>true : true
+>false : false
+
+const nestedIsNever: IsNever<Nested> = true;
+>nestedIsNever : true
+>true : true
+
+const mergedIsNever: IsNever<Merged> = true;
+>mergedIsNever : true
+>true : true
+
+const partialIsNotNever: IsNever<Exclude<S, B>> = false;
+>partialIsNotNever : false
+>false : false
+
+declare const s: S;
+>s : S
+
+const nested: Nested = s; // error
+>nested : never
+>s : S
+
+const merged: Merged = s; // error
+>merged : never
+>s : S
+

@@ -371,3 +371,82 @@ func (c *Checker) getTypeDomains(t *Type) TypeFlags {
 func isRequiredProperty(prop *ast.Symbol) bool {
 	return prop != nil && prop.Flags&ast.SymbolFlagsOptional == 0 && prop.CheckFlags&ast.CheckFlagsPartial == 0
 }
+
+// getIntersectionAliasShape reports whether the alias 'symbol' is declared as an intersection of its two
+// type parameters, each possibly negated (as in 'T & not U'), and which of them are negated. Only an
+// already resolved declared type is inspected, to avoid circular resolution of the alias.
+func (c *Checker) getIntersectionAliasShape(symbol *ast.Symbol) (negated [2]bool, ok bool) {
+	links := c.typeAliasLinks.Get(symbol)
+	declaredType := links.declaredType
+	if declaredType == nil || len(links.typeParameters) != 2 || declaredType.flags&TypeFlagsIntersection == 0 || len(declaredType.Types()) != 2 {
+		return negated, false
+	}
+	members := declaredType.Types()
+	first := members[0]
+	if isNegatedType(first) {
+		first = first.AsNegatedType().baseType
+	}
+	index := slices.Index(links.typeParameters, first)
+	if index < 0 {
+		return negated, false
+	}
+	second := members[1]
+	if isNegatedType(second) {
+		second = second.AsNegatedType().baseType
+	}
+	if second != links.typeParameters[1-index] {
+		return negated, false
+	}
+	negated[index] = isNegatedType(members[0])
+	negated[1-index] = isNegatedType(members[1])
+	return negated, true
+}
+
+// repackNestedAliasTypeArguments rewrites a nested application of an alias recognized by
+// getIntersectionAliasShape into a single one, merging the arguments of the other position with '&',
+// or with '|' when that position is negated:
+//
+//	Exclude<Exclude<T, A>, B>  =>  Exclude<T, A | B>
+//	Extract<Extract<T, A>, B>  =>  Extract<T, A & B>
+//	Extract<T, Extract<A, B>>  =>  Extract<T & A, B>
+//
+// A nested application in a negated position can't be unwrapped, as 'not (X & not Y)' is 'not X | Y'.
+// The nested application was itself repacked when it was instantiated, so one level suffices.
+func (c *Checker) repackNestedAliasTypeArguments(symbol *ast.Symbol, typeArguments []*Type) []*Type {
+	if len(typeArguments) != 2 || typeArguments[0].alias.Symbol() != symbol && typeArguments[1].alias.Symbol() != symbol {
+		return typeArguments
+	}
+	negated, ok := c.getIntersectionAliasShape(symbol)
+	if !ok {
+		return typeArguments
+	}
+	var nested int
+	switch {
+	case !negated[0] && typeArguments[0].alias.Symbol() == symbol:
+		nested = 0
+	case !negated[1] && typeArguments[1].alias.Symbol() == symbol:
+		nested = 1
+	default:
+		return typeArguments
+	}
+	inner := typeArguments[nested].alias
+	if len(inner.TypeArguments()) != 2 {
+		return typeArguments
+	}
+	other := 1 - nested
+	result := slices.Clone(inner.TypeArguments())
+	// Keep the source order ('T & A', not 'A & T', in the last example above). The repacked arguments are
+	// what gets instantiated, and the member order of an intersection of function types determines
+	// overload resolution.
+	operands := []*Type{result[other], typeArguments[other]}
+	if nested != 0 {
+		operands[0], operands[1] = operands[1], operands[0]
+	}
+	if negated[other] {
+		// Without reduction, 'not (A | B)' yields exactly the negated members of the nested form.
+		result[other] = c.getUnionTypeEx(operands, UnionReductionNone, nil, nil)
+	} else {
+		result[other] = c.getIntersectionType(operands)
+	}
+	return result
+}

@@ -23161,7 +23161,7 @@ func (c *Checker) instantiateTypeAlias(alias *TypeAlias, m *TypeMapper) *TypeAli
 	if alias == nil {
 		return nil
 	}
-	return &TypeAlias{symbol: alias.symbol, typeArguments: c.instantiateTypes(alias.typeArguments, m)}
+	return &TypeAlias{symbol: alias.symbol, typeArguments: c.repackNestedAliasTypeArguments(alias.symbol, c.instantiateTypes(alias.typeArguments, m))}
 }
 
 func (c *Checker) instantiateTypes(types []*Type, m *TypeMapper) []*Type {
@@ -24090,6 +24090,7 @@ func (c *Checker) getTypeAliasInstantiation(symbol *ast.Symbol, typeArguments []
 	}
 	links := c.typeAliasLinks.Get(symbol)
 	typeParameters := links.typeParameters
+	typeArguments = c.repackNestedAliasTypeArguments(symbol, typeArguments)
 	key := getTypeAliasInstantiationKey(typeArguments, alias)
 	instantiation := links.instantiations[key]
 	if instantiation == nil {

@@ -1,0 +1,423 @@
+//// [tests/cases/compiler/nestedExcludeExtractOperands.ts] ////
+
+=== nestedExcludeExtractOperands.ts ===
+interface A {
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+
+  a: string;
+>a : Symbol(A.a, Decl(nestedExcludeExtractOperands.ts, 0, 13))
+}
+interface B {
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  b: number;
+>b : Symbol(B.b, Decl(nestedExcludeExtractOperands.ts, 3, 13))
+}
+interface C {
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+
+  c: boolean;
+>c : Symbol(C.c, Decl(nestedExcludeExtractOperands.ts, 6, 13))
+}
+
+// Each nested form must be mutually assignable with its repacked form and with its expansion.
+
+function extractNegatedOuter<T>(
+>extractNegatedOuter : Symbol(extractNegatedOuter, Decl(nestedExcludeExtractOperands.ts, 8, 1))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 12, 29))
+
+  nested: Extract<Extract<T, A>, not B>,
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 12, 32))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 12, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  repacked: Extract<T, A & not B>,
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 13, 40))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 12, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  expanded: T & A & not B,
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 14, 34))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 12, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+) {
+  nested = repacked;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 12, 32))
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 13, 40))
+
+  repacked = nested;
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 13, 40))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 12, 32))
+
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 12, 32))
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 14, 34))
+
+  expanded = nested;
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 14, 34))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 12, 32))
+}
+
+function extractNegatedInner<T>(
+>extractNegatedInner : Symbol(extractNegatedInner, Decl(nestedExcludeExtractOperands.ts, 21, 1))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 23, 29))
+
+  nested: Extract<Extract<T, not A>, B>,
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 23, 32))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 23, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  repacked: Extract<T, not A & B>,
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 24, 40))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 23, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  expanded: T & not A & B,
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 25, 34))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 23, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+) {
+  nested = repacked;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 23, 32))
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 24, 40))
+
+  repacked = nested;
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 24, 40))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 23, 32))
+
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 23, 32))
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 25, 34))
+
+  expanded = nested;
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 25, 34))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 23, 32))
+}
+
+function excludeNegatedOuter<T>(
+>excludeNegatedOuter : Symbol(excludeNegatedOuter, Decl(nestedExcludeExtractOperands.ts, 32, 1))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 34, 29))
+
+  nested: Exclude<Exclude<T, A>, not B>,
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 34, 32))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 34, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  repacked: Exclude<T, A | not B>,
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 35, 40))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 34, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  expanded: T & not A & B,
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 36, 34))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 34, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+) {
+  nested = repacked;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 34, 32))
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 35, 40))
+
+  repacked = nested;
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 35, 40))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 34, 32))
+
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 34, 32))
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 36, 34))
+
+  expanded = nested;
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 36, 34))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 34, 32))
+}
+
+function excludeNegatedInner<T>(
+>excludeNegatedInner : Symbol(excludeNegatedInner, Decl(nestedExcludeExtractOperands.ts, 43, 1))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 45, 29))
+
+  nested: Exclude<Exclude<T, not A>, B>,
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 45, 32))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 45, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  repacked: Exclude<T, not A | B>,
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 46, 40))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 45, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  expanded: T & A & not B,
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 47, 34))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 45, 29))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+) {
+  nested = repacked;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 45, 32))
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 46, 40))
+
+  repacked = nested;
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 46, 40))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 45, 32))
+
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 45, 32))
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 47, 34))
+
+  expanded = nested;
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 47, 34))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 45, 32))
+}
+
+function extractIntersectionOuter<T>(
+>extractIntersectionOuter : Symbol(extractIntersectionOuter, Decl(nestedExcludeExtractOperands.ts, 54, 1))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 56, 34))
+
+  nested: Extract<Extract<T, A>, B & C>,
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 56, 37))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 56, 34))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+
+  repacked: Extract<T, A & B & C>,
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 57, 40))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 56, 34))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+
+  expanded: T & A & B & C,
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 58, 34))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 56, 34))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+
+) {
+  nested = repacked;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 56, 37))
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 57, 40))
+
+  repacked = nested;
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 57, 40))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 56, 37))
+
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 56, 37))
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 58, 34))
+
+  expanded = nested;
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 58, 34))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 56, 37))
+}
+
+function extractIntersectionInner<T>(
+>extractIntersectionInner : Symbol(extractIntersectionInner, Decl(nestedExcludeExtractOperands.ts, 65, 1))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 67, 34))
+
+  nested: Extract<Extract<T, A & C>, B>,
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 67, 37))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 67, 34))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  repacked: Extract<T, A & C & B>,
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 68, 40))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 67, 34))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  expanded: T & A & C & B,
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 69, 34))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 67, 34))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+) {
+  nested = repacked;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 67, 37))
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 68, 40))
+
+  repacked = nested;
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 68, 40))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 67, 37))
+
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 67, 37))
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 69, 34))
+
+  expanded = nested;
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 69, 34))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 67, 37))
+}
+
+function excludeIntersectionOuter<T>(
+>excludeIntersectionOuter : Symbol(excludeIntersectionOuter, Decl(nestedExcludeExtractOperands.ts, 76, 1))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 78, 34))
+
+  nested: Exclude<Exclude<T, A>, B & C>,
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 78, 37))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 78, 34))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+
+  repacked: Exclude<T, A | (B & C)>,
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 79, 40))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 78, 34))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+
+  expanded: T & not A & not (B & C),
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 80, 36))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 78, 34))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+
+) {
+  nested = repacked;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 78, 37))
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 79, 40))
+
+  repacked = nested;
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 79, 40))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 78, 37))
+
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 78, 37))
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 80, 36))
+
+  expanded = nested;
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 80, 36))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 78, 37))
+}
+
+function excludeUnionInner<T>(
+>excludeUnionInner : Symbol(excludeUnionInner, Decl(nestedExcludeExtractOperands.ts, 87, 1))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 89, 27))
+
+  nested: Exclude<Exclude<T, A | C>, B>,
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 89, 30))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 89, 27))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  repacked: Exclude<T, A | C | B>,
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 90, 40))
+>Exclude : Symbol(Exclude, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 89, 27))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+  expanded: T & not A & not C & not B,
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 91, 34))
+>T : Symbol(T, Decl(nestedExcludeExtractOperands.ts, 89, 27))
+>A : Symbol(A, Decl(nestedExcludeExtractOperands.ts, 0, 0))
+>C : Symbol(C, Decl(nestedExcludeExtractOperands.ts, 5, 1))
+>B : Symbol(B, Decl(nestedExcludeExtractOperands.ts, 2, 1))
+
+) {
+  nested = repacked;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 89, 30))
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 90, 40))
+
+  repacked = nested;
+>repacked : Symbol(repacked, Decl(nestedExcludeExtractOperands.ts, 90, 40))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 89, 30))
+
+  nested = expanded;
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 89, 30))
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 91, 34))
+
+  expanded = nested;
+>expanded : Symbol(expanded, Decl(nestedExcludeExtractOperands.ts, 91, 34))
+>nested : Symbol(nested, Decl(nestedExcludeExtractOperands.ts, 89, 30))
+}
+
+// Repacking must preserve member order, which determines overload order. Both nested forms are
+// 'F1 & F2 & F3', so the call resolves to the signature of 'F1'.
+type F1 = (x: 1) => "one";
+>F1 : Symbol(F1, Decl(nestedExcludeExtractOperands.ts, 98, 1))
+>x : Symbol(x, Decl(nestedExcludeExtractOperands.ts, 102, 11))
+
+type F2 = (x: 2) => "two";
+>F2 : Symbol(F2, Decl(nestedExcludeExtractOperands.ts, 102, 26))
+>x : Symbol(x, Decl(nestedExcludeExtractOperands.ts, 103, 11))
+
+type F3 = (x: 3) => "three";
+>F3 : Symbol(F3, Decl(nestedExcludeExtractOperands.ts, 103, 26))
+>x : Symbol(x, Decl(nestedExcludeExtractOperands.ts, 104, 11))
+
+declare const anyArgument: any;
+>anyArgument : Symbol(anyArgument, Decl(nestedExcludeExtractOperands.ts, 106, 13))
+
+declare const extractFirstPosition: Extract<Extract<F1, F2>, F3>;
+>extractFirstPosition : Symbol(extractFirstPosition, Decl(nestedExcludeExtractOperands.ts, 107, 13))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>F1 : Symbol(F1, Decl(nestedExcludeExtractOperands.ts, 98, 1))
+>F2 : Symbol(F2, Decl(nestedExcludeExtractOperands.ts, 102, 26))
+>F3 : Symbol(F3, Decl(nestedExcludeExtractOperands.ts, 103, 26))
+
+declare const extractSecondPosition: Extract<F1, Extract<F2, F3>>;
+>extractSecondPosition : Symbol(extractSecondPosition, Decl(nestedExcludeExtractOperands.ts, 108, 13))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>F1 : Symbol(F1, Decl(nestedExcludeExtractOperands.ts, 98, 1))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>F2 : Symbol(F2, Decl(nestedExcludeExtractOperands.ts, 102, 26))
+>F3 : Symbol(F3, Decl(nestedExcludeExtractOperands.ts, 103, 26))
+
+const extractFirstPositionResult: "one" = extractFirstPosition(anyArgument);
+>extractFirstPositionResult : Symbol(extractFirstPositionResult, Decl(nestedExcludeExtractOperands.ts, 109, 5))
+>extractFirstPosition : Symbol(extractFirstPosition, Decl(nestedExcludeExtractOperands.ts, 107, 13))
+>anyArgument : Symbol(anyArgument, Decl(nestedExcludeExtractOperands.ts, 106, 13))
+
+const extractSecondPositionResult: "one" = extractSecondPosition(anyArgument);
+>extractSecondPositionResult : Symbol(extractSecondPositionResult, Decl(nestedExcludeExtractOperands.ts, 110, 5))
+>extractSecondPosition : Symbol(extractSecondPosition, Decl(nestedExcludeExtractOperands.ts, 108, 13))
+>anyArgument : Symbol(anyArgument, Decl(nestedExcludeExtractOperands.ts, 106, 13))
+

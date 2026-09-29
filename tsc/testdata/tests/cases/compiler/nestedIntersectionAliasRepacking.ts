@@ -1,0 +1,92 @@
+// @strict: true
+// @noEmit: true
+
+interface A {
+  a: string;
+}
+interface B {
+  b: number;
+}
+interface C {
+  c: boolean;
+}
+
+// Repacked: user-defined aliases with the same shapes as Exclude and Extract.
+type Without<T, U> = T & not U;
+type Both<T, U> = T & U;
+// Repacked in the second position, the only non-negated one.
+type Swapped<U, T> = not U & T;
+
+function repacked<T>(
+  without: Without<Without<Without<T, A>, B>, C>,
+  both: Both<Both<Both<T, A>, B>, C>,
+  swapped: Swapped<C, Swapped<B, Swapped<A, T>>>,
+  bothSecond: Both<T, Both<A, B>>,
+) {
+  const withoutMerged: Without<T, A | B | C> = without;
+  const bothMerged: Both<T, A & B & C> = both;
+  const swappedMerged: Swapped<A | B | C, T> = swapped;
+  const bothSecondMerged: Both<T & A, B> = bothSecond;
+}
+
+function composed<T>(value: T) {
+  const excluded = excludeB(excludeA(value));
+  const extracted = extractB(extractA(value));
+  return { excluded, extracted };
+}
+declare function excludeA<T>(value: T): Without<T, A>;
+declare function excludeB<T>(value: T): Without<T, B>;
+declare function extractA<T>(value: T): Both<T, A>;
+declare function extractB<T>(value: T): Both<T, B>;
+
+// Not repacked: nested in a negated position. The nested forms should still be assignable to their
+// expansions, but 'not (X & Y)' isn't related to 'not X | not Y' yet.
+type Neither<T, U> = not T & not U;
+
+function neitherFirst<T>(
+  nested: Neither<Neither<T, A>, B>,
+  expanded: (T | A) & not B,
+) {
+  nested = expanded;
+  expanded = nested; // error, not yet related
+}
+
+function neitherSecond<T>(
+  nested: Neither<A, Neither<T, B>>,
+  expanded: not A & (T | B),
+) {
+  nested = expanded;
+  expanded = nested; // error, not yet related
+}
+
+function withoutSecond<T>(
+  nested: Without<A, Without<T, B>>,
+  expanded: A & (not T | B),
+) {
+  nested = expanded;
+  expanded = nested; // error, not yet related
+}
+
+function excludeSecond<T>(
+  nested: Exclude<A, Exclude<T, B>>,
+  expanded: A & (not T | B),
+) {
+  nested = expanded;
+  expanded = nested; // error, not yet related
+}
+
+// Not repacked: more than two members, or members that are not bare type parameters.
+type ExtraMember<T, U> = T & not U & C;
+type NotAParameter<T, U> = T & not U[];
+type ThreeParameters<T, U, V> = T & not U;
+
+function otherShapes<T>(
+  extraMember: ExtraMember<ExtraMember<T, A>, B>,
+  notAParameter: NotAParameter<NotAParameter<T, A>, B>,
+  threeParameters: ThreeParameters<ThreeParameters<T, A, C>, B, C>,
+) {}
+
+// Not repacked: an argument aliased by a different alias with the same shape.
+function differentAlias<T>(
+  mixed: Without<Exclude<T, A>, B>,
+) {}

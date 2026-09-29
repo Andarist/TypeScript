@@ -167,14 +167,14 @@ type Extract2<T, U, V> = T extends U ? T extends V ? T : never : never;
 
 function f20<T>(x: Extract<Extract<T, Foo>, Bar>, y: Extract<T, Foo & Bar>, z: Extract2<T, Foo, Bar>) {
 >f20 : <T>(x: Extract<Extract<T, Foo>, Bar>, y: Extract<T, Foo & Bar>, z: Extract2<T, Foo, Bar>) => void
->x : Extract<Extract<T, Foo>, Bar>
+>x : Extract<T, Foo & Bar>
 >y : Extract<T, Foo & Bar>
 >z : Extract2<T, Foo, Bar>
 
     fooBar(x);
 >fooBar(x) : void
 >fooBar : (x: { foo: string; bar: string; }) => void
->x : Extract<Extract<T, Foo>, Bar>
+>x : Extract<T, Foo & Bar>
 
     fooBar(y);
 >fooBar(y) : void
@@ -189,14 +189,14 @@ function f20<T>(x: Extract<Extract<T, Foo>, Bar>, y: Extract<T, Foo & Bar>, z: E
 
 function f21<T>(x: Extract<Extract<T, Foo>, Bar>, y: Extract<T, Foo & Bar>, z: Extract2<T, Foo, Bar>) {
 >f21 : <T>(x: Extract<Extract<T, Foo>, Bar>, y: Extract<T, Foo & Bar>, z: Extract2<T, Foo, Bar>) => void
->x : Extract<Extract<T, Foo>, Bar>
+>x : Extract<T, Foo & Bar>
 >y : Extract<T, Foo & Bar>
 >z : Extract2<T, Foo, Bar>
 
     fooBat(x);  // Error
 >fooBat(x) : void
 >fooBat : (x: { foo: string; bat: string; }) => void
->x : Extract<Extract<T, Foo>, Bar>
+>x : Extract<T, Foo & Bar>
 
     fooBat(y);  // Error
 >fooBat(y) : void

@@ -1,0 +1,88 @@
+//// [tests/cases/compiler/excludeNestedHigherOrderInference.ts] ////
+
+=== excludeNestedHigherOrderInference.ts ===
+// Reduced from Effect's 'flow(Effect.provideService(A, ...), Effect.provideService(B, ...))'.
+
+interface Tag<in out Id, in out Service> {
+  readonly id: Id;
+>id : Id
+
+  readonly service: Service;
+>service : Service
+}
+
+interface Effect<out A, out E, out R> {
+  readonly a: A;
+>a : A
+
+  readonly e: E;
+>e : E
+
+  readonly r: R;
+>r : R
+}
+
+declare function provideService<I, S>(
+>provideService : <I, S>(tag: Tag<I, S>, service: NoInfer<S>) => <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, I>>
+
+  tag: Tag<I, S>,
+>tag : Tag<I, S>
+
+  service: NoInfer<S>,
+>service : NoInfer<S>
+
+): <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, I>>;
+>self : Effect<A, E, R>
+
+declare function flow<A extends ReadonlyArray<unknown>, B, C>(
+>flow : <A extends ReadonlyArray<unknown>, B, C>(ab: (...a: A) => B, bc: (b: B) => C) => (...a: A) => C
+
+  ab: (...a: A) => B,
+>ab : (...a: A) => B
+>a : A
+
+  bc: (b: B) => C,
+>bc : (b: B) => C
+>b : B
+
+): (...a: A) => C;
+>a : A
+
+interface ServiceA {
+  readonly a: unique symbol;
+>a : unique symbol
+}
+interface ServiceB {
+  readonly b: unique symbol;
+>b : unique symbol
+}
+
+declare const TagA: Tag<ServiceA, {}>;
+>TagA : Tag<ServiceA, {}>
+
+declare const TagB: Tag<ServiceB, {}>;
+>TagB : Tag<ServiceB, {}>
+
+const provideAll = flow(provideService(TagA, {}), provideService(TagB, {}));
+>provideAll : <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, ServiceA | ServiceB>>
+>flow(provideService(TagA, {}), provideService(TagB, {})) : <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, ServiceA | ServiceB>>
+>flow : <A extends ReadonlyArray<unknown>, B, C>(ab: (...a: A) => B, bc: (b: B) => C) => (...a: A) => C
+>provideService(TagA, {}) : <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, ServiceA>>
+>provideService : <I, S>(tag: Tag<I, S>, service: NoInfer<S>) => <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, I>>
+>TagA : Tag<ServiceA, {}>
+>{} : {}
+>provideService(TagB, {}) : <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, ServiceB>>
+>provideService : <I, S>(tag: Tag<I, S>, service: NoInfer<S>) => <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, I>>
+>TagB : Tag<ServiceB, {}>
+>{} : {}
+
+const provideAllMerged: <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, ServiceA | ServiceB>> = provideAll;
+>provideAllMerged : <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, ServiceA | ServiceB>>
+>self : Effect<A, E, R>
+>provideAll : <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, ServiceA | ServiceB>>
+
+const provideAllNested: <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<Exclude<R, ServiceA>, ServiceB>> = provideAll;
+>provideAllNested : <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<Exclude<R, ServiceA>, ServiceB>>
+>self : Effect<A, E, R>
+>provideAll : <A, E, R>(self: Effect<A, E, R>) => Effect<A, E, Exclude<R, ServiceA | ServiceB>>
+

@@ -1,0 +1,223 @@
+//// [tests/cases/compiler/nestedIntersectionAliasRepacking.ts] ////
+
+=== nestedIntersectionAliasRepacking.ts ===
+interface A {
+  a: string;
+>a : string
+}
+interface B {
+  b: number;
+>b : number
+}
+interface C {
+  c: boolean;
+>c : boolean
+}
+
+// Repacked: user-defined aliases with the same shapes as Exclude and Extract.
+type Without<T, U> = T & not U;
+>Without : Without<T, U>
+
+type Both<T, U> = T & U;
+>Both : Both<T, U>
+
+// Repacked in the second position, the only non-negated one.
+type Swapped<U, T> = not U & T;
+>Swapped : Swapped<U, T>
+
+function repacked<T>(
+>repacked : <T>(without: Without<Without<Without<T, A>, B>, C>, both: Both<Both<Both<T, A>, B>, C>, swapped: Swapped<C, Swapped<B, Swapped<A, T>>>, bothSecond: Both<T, Both<A, B>>) => void
+
+  without: Without<Without<Without<T, A>, B>, C>,
+>without : Without<T, A | B | C>
+
+  both: Both<Both<Both<T, A>, B>, C>,
+>both : Both<T, A & B & C>
+
+  swapped: Swapped<C, Swapped<B, Swapped<A, T>>>,
+>swapped : Swapped<A | B | C, T>
+
+  bothSecond: Both<T, Both<A, B>>,
+>bothSecond : Both<T & A, B>
+
+) {
+  const withoutMerged: Without<T, A | B | C> = without;
+>withoutMerged : Without<T, A | B | C>
+>without : Without<T, A | B | C>
+
+  const bothMerged: Both<T, A & B & C> = both;
+>bothMerged : Both<T, A & B & C>
+>both : Both<T, A & B & C>
+
+  const swappedMerged: Swapped<A | B | C, T> = swapped;
+>swappedMerged : Swapped<A | B | C, T>
+>swapped : Swapped<A | B | C, T>
+
+  const bothSecondMerged: Both<T & A, B> = bothSecond;
+>bothSecondMerged : Both<T & A, B>
+>bothSecond : Both<T & A, B>
+}
+
+function composed<T>(value: T) {
+>composed : <T>(value: T) => { excluded: Without<T, A | B>; extracted: Both<T, A & B>; }
+>value : T
+
+  const excluded = excludeB(excludeA(value));
+>excluded : Without<T, A | B>
+>excludeB(excludeA(value)) : Without<T, A | B>
+>excludeB : <T_1>(value: T_1) => Without<T_1, B>
+>excludeA(value) : Without<T, A>
+>excludeA : <T_1>(value: T_1) => Without<T_1, A>
+>value : T
+
+  const extracted = extractB(extractA(value));
+>extracted : Both<T, A & B>
+>extractB(extractA(value)) : Both<T, A & B>
+>extractB : <T_1>(value: T_1) => Both<T_1, B>
+>extractA(value) : Both<T, A>
+>extractA : <T_1>(value: T_1) => Both<T_1, A>
+>value : T
+
+  return { excluded, extracted };
+>{ excluded, extracted } : { excluded: Without<T, A | B>; extracted: Both<T, A & B>; }
+>excluded : Without<T, A | B>
+>extracted : Both<T, A & B>
+}
+declare function excludeA<T>(value: T): Without<T, A>;
+>excludeA : <T>(value: T) => Without<T, A>
+>value : T
+
+declare function excludeB<T>(value: T): Without<T, B>;
+>excludeB : <T>(value: T) => Without<T, B>
+>value : T
+
+declare function extractA<T>(value: T): Both<T, A>;
+>extractA : <T>(value: T) => Both<T, A>
+>value : T
+
+declare function extractB<T>(value: T): Both<T, B>;
+>extractB : <T>(value: T) => Both<T, B>
+>value : T
+
+// Not repacked: nested in a negated position. The nested forms should still be assignable to their
+// expansions, but 'not (X & Y)' isn't related to 'not X | not Y' yet.
+type Neither<T, U> = not T & not U;
+>Neither : Neither<T, U>
+
+function neitherFirst<T>(
+>neitherFirst : <T>(nested: Neither<Neither<T, A>, B>, expanded: (T | A) & not B) => void
+
+  nested: Neither<Neither<T, A>, B>,
+>nested : Neither<Neither<T, A>, B>
+
+  expanded: (T | A) & not B,
+>expanded : (T | A) & not B
+
+) {
+  nested = expanded;
+>nested = expanded : (T | A) & not B
+>nested : Neither<Neither<T, A>, B>
+>expanded : (T | A) & not B
+
+  expanded = nested; // error, not yet related
+>expanded = nested : Neither<Neither<T, A>, B>
+>expanded : (T | A) & not B
+>nested : Neither<Neither<T, A>, B>
+}
+
+function neitherSecond<T>(
+>neitherSecond : <T>(nested: Neither<A, Neither<T, B>>, expanded: not A & (T | B)) => void
+
+  nested: Neither<A, Neither<T, B>>,
+>nested : Neither<A, Neither<T, B>>
+
+  expanded: not A & (T | B),
+>expanded : not A & (T | B)
+
+) {
+  nested = expanded;
+>nested = expanded : not A & (T | B)
+>nested : Neither<A, Neither<T, B>>
+>expanded : not A & (T | B)
+
+  expanded = nested; // error, not yet related
+>expanded = nested : Neither<A, Neither<T, B>>
+>expanded : not A & (T | B)
+>nested : Neither<A, Neither<T, B>>
+}
+
+function withoutSecond<T>(
+>withoutSecond : <T>(nested: Without<A, Without<T, B>>, expanded: A & (not T | B)) => void
+
+  nested: Without<A, Without<T, B>>,
+>nested : Without<A, Without<T, B>>
+
+  expanded: A & (not T | B),
+>expanded : A & (B | not T)
+
+) {
+  nested = expanded;
+>nested = expanded : A & (B | not T)
+>nested : Without<A, Without<T, B>>
+>expanded : A & (B | not T)
+
+  expanded = nested; // error, not yet related
+>expanded = nested : Without<A, Without<T, B>>
+>expanded : A & (B | not T)
+>nested : Without<A, Without<T, B>>
+}
+
+function excludeSecond<T>(
+>excludeSecond : <T>(nested: Exclude<A, Exclude<T, B>>, expanded: A & (not T | B)) => void
+
+  nested: Exclude<A, Exclude<T, B>>,
+>nested : Exclude<A, Exclude<T, B>>
+
+  expanded: A & (not T | B),
+>expanded : A & (B | not T)
+
+) {
+  nested = expanded;
+>nested = expanded : A & (B | not T)
+>nested : Exclude<A, Exclude<T, B>>
+>expanded : A & (B | not T)
+
+  expanded = nested; // error, not yet related
+>expanded = nested : Exclude<A, Exclude<T, B>>
+>expanded : A & (B | not T)
+>nested : Exclude<A, Exclude<T, B>>
+}
+
+// Not repacked: more than two members, or members that are not bare type parameters.
+type ExtraMember<T, U> = T & not U & C;
+>ExtraMember : ExtraMember<T, U>
+
+type NotAParameter<T, U> = T & not U[];
+>NotAParameter : NotAParameter<T, U>
+
+type ThreeParameters<T, U, V> = T & not U;
+>ThreeParameters : ThreeParameters<T, U, V>
+
+function otherShapes<T>(
+>otherShapes : <T>(extraMember: ExtraMember<ExtraMember<T, A>, B>, notAParameter: NotAParameter<NotAParameter<T, A>, B>, threeParameters: ThreeParameters<ThreeParameters<T, A, C>, B, C>) => void
+
+  extraMember: ExtraMember<ExtraMember<T, A>, B>,
+>extraMember : ExtraMember<ExtraMember<T, A>, B>
+
+  notAParameter: NotAParameter<NotAParameter<T, A>, B>,
+>notAParameter : NotAParameter<NotAParameter<T, A>, B>
+
+  threeParameters: ThreeParameters<ThreeParameters<T, A, C>, B, C>,
+>threeParameters : ThreeParameters<ThreeParameters<T, A, C>, B, C>
+
+) {}
+
+// Not repacked: an argument aliased by a different alias with the same shape.
+function differentAlias<T>(
+>differentAlias : <T>(mixed: Without<Exclude<T, A>, B>) => void
+
+  mixed: Without<Exclude<T, A>, B>,
+>mixed : Without<Exclude<T, A>, B>
+
+) {}
+

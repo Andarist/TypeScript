@@ -1,0 +1,26 @@
+excludeNestedDiscriminatedNever.ts(15,7): error TS2322: Type 'S' is not assignable to type 'never'.
+excludeNestedDiscriminatedNever.ts(16,7): error TS2322: Type 'S' is not assignable to type 'never'.
+
+
+==== excludeNestedDiscriminatedNever.ts (2 errors) ====
+    type S = { kind: "a" | "b"; value: number };
+    type A = { kind: "a"; value: number };
+    type B = { kind: "b"; value: number };
+    
+    type Nested = Exclude<Exclude<S, B>, A>;
+    type Merged = Exclude<S, A | B>;
+    
+    type IsNever<T> = [T] extends [never] ? true : false;
+    
+    const nestedIsNever: IsNever<Nested> = true;
+    const mergedIsNever: IsNever<Merged> = true;
+    const partialIsNotNever: IsNever<Exclude<S, B>> = false;
+    
+    declare const s: S;
+    const nested: Nested = s; // error
+          ~~~~~~
+!!! error TS2322: Type 'S' is not assignable to type 'never'.
+    const merged: Merged = s; // error
+          ~~~~~~
+!!! error TS2322: Type 'S' is not assignable to type 'never'.
+    

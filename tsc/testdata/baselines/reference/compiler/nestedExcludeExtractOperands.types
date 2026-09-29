@@ -1,0 +1,325 @@
+//// [tests/cases/compiler/nestedExcludeExtractOperands.ts] ////
+
+=== nestedExcludeExtractOperands.ts ===
+interface A {
+  a: string;
+>a : string
+}
+interface B {
+  b: number;
+>b : number
+}
+interface C {
+  c: boolean;
+>c : boolean
+}
+
+// Each nested form must be mutually assignable with its repacked form and with its expansion.
+
+function extractNegatedOuter<T>(
+>extractNegatedOuter : <T>(nested: Extract<Extract<T, A>, not B>, repacked: Extract<T, A & not B>, expanded: T & A & not B) => void
+
+  nested: Extract<Extract<T, A>, not B>,
+>nested : Extract<T, A & not B>
+
+  repacked: Extract<T, A & not B>,
+>repacked : Extract<T, A & not B>
+
+  expanded: T & A & not B,
+>expanded : T & A & not B
+
+) {
+  nested = repacked;
+>nested = repacked : Extract<T, A & not B>
+>nested : Extract<T, A & not B>
+>repacked : Extract<T, A & not B>
+
+  repacked = nested;
+>repacked = nested : Extract<T, A & not B>
+>repacked : Extract<T, A & not B>
+>nested : Extract<T, A & not B>
+
+  nested = expanded;
+>nested = expanded : T & A & not B
+>nested : Extract<T, A & not B>
+>expanded : T & A & not B
+
+  expanded = nested;
+>expanded = nested : Extract<T, A & not B>
+>expanded : T & A & not B
+>nested : Extract<T, A & not B>
+}
+
+function extractNegatedInner<T>(
+>extractNegatedInner : <T>(nested: Extract<Extract<T, not A>, B>, repacked: Extract<T, not A & B>, expanded: T & not A & B) => void
+
+  nested: Extract<Extract<T, not A>, B>,
+>nested : Extract<T, not A & B>
+
+  repacked: Extract<T, not A & B>,
+>repacked : Extract<T, not A & B>
+
+  expanded: T & not A & B,
+>expanded : T & not A & B
+
+) {
+  nested = repacked;
+>nested = repacked : Extract<T, not A & B>
+>nested : Extract<T, not A & B>
+>repacked : Extract<T, not A & B>
+
+  repacked = nested;
+>repacked = nested : Extract<T, not A & B>
+>repacked : Extract<T, not A & B>
+>nested : Extract<T, not A & B>
+
+  nested = expanded;
+>nested = expanded : T & not A & B
+>nested : Extract<T, not A & B>
+>expanded : T & not A & B
+
+  expanded = nested;
+>expanded = nested : Extract<T, not A & B>
+>expanded : T & not A & B
+>nested : Extract<T, not A & B>
+}
+
+function excludeNegatedOuter<T>(
+>excludeNegatedOuter : <T>(nested: Exclude<Exclude<T, A>, not B>, repacked: Exclude<T, A | not B>, expanded: T & not A & B) => void
+
+  nested: Exclude<Exclude<T, A>, not B>,
+>nested : Exclude<T, A | not B>
+
+  repacked: Exclude<T, A | not B>,
+>repacked : Exclude<T, A | not B>
+
+  expanded: T & not A & B,
+>expanded : T & not A & B
+
+) {
+  nested = repacked;
+>nested = repacked : Exclude<T, A | not B>
+>nested : Exclude<T, A | not B>
+>repacked : Exclude<T, A | not B>
+
+  repacked = nested;
+>repacked = nested : Exclude<T, A | not B>
+>repacked : Exclude<T, A | not B>
+>nested : Exclude<T, A | not B>
+
+  nested = expanded;
+>nested = expanded : T & not A & B
+>nested : Exclude<T, A | not B>
+>expanded : T & not A & B
+
+  expanded = nested;
+>expanded = nested : Exclude<T, A | not B>
+>expanded : T & not A & B
+>nested : Exclude<T, A | not B>
+}
+
+function excludeNegatedInner<T>(
+>excludeNegatedInner : <T>(nested: Exclude<Exclude<T, not A>, B>, repacked: Exclude<T, not A | B>, expanded: T & A & not B) => void
+
+  nested: Exclude<Exclude<T, not A>, B>,
+>nested : Exclude<T, B | not A>
+
+  repacked: Exclude<T, not A | B>,
+>repacked : Exclude<T, B | not A>
+
+  expanded: T & A & not B,
+>expanded : T & A & not B
+
+) {
+  nested = repacked;
+>nested = repacked : Exclude<T, B | not A>
+>nested : Exclude<T, B | not A>
+>repacked : Exclude<T, B | not A>
+
+  repacked = nested;
+>repacked = nested : Exclude<T, B | not A>
+>repacked : Exclude<T, B | not A>
+>nested : Exclude<T, B | not A>
+
+  nested = expanded;
+>nested = expanded : T & A & not B
+>nested : Exclude<T, B | not A>
+>expanded : T & A & not B
+
+  expanded = nested;
+>expanded = nested : Exclude<T, B | not A>
+>expanded : T & A & not B
+>nested : Exclude<T, B | not A>
+}
+
+function extractIntersectionOuter<T>(
+>extractIntersectionOuter : <T>(nested: Extract<Extract<T, A>, B & C>, repacked: Extract<T, A & B & C>, expanded: T & A & B & C) => void
+
+  nested: Extract<Extract<T, A>, B & C>,
+>nested : Extract<T, A & B & C>
+
+  repacked: Extract<T, A & B & C>,
+>repacked : Extract<T, A & B & C>
+
+  expanded: T & A & B & C,
+>expanded : T & A & B & C
+
+) {
+  nested = repacked;
+>nested = repacked : Extract<T, A & B & C>
+>nested : Extract<T, A & B & C>
+>repacked : Extract<T, A & B & C>
+
+  repacked = nested;
+>repacked = nested : Extract<T, A & B & C>
+>repacked : Extract<T, A & B & C>
+>nested : Extract<T, A & B & C>
+
+  nested = expanded;
+>nested = expanded : T & A & B & C
+>nested : Extract<T, A & B & C>
+>expanded : T & A & B & C
+
+  expanded = nested;
+>expanded = nested : Extract<T, A & B & C>
+>expanded : T & A & B & C
+>nested : Extract<T, A & B & C>
+}
+
+function extractIntersectionInner<T>(
+>extractIntersectionInner : <T>(nested: Extract<Extract<T, A & C>, B>, repacked: Extract<T, A & C & B>, expanded: T & A & C & B) => void
+
+  nested: Extract<Extract<T, A & C>, B>,
+>nested : Extract<T, A & C & B>
+
+  repacked: Extract<T, A & C & B>,
+>repacked : Extract<T, A & C & B>
+
+  expanded: T & A & C & B,
+>expanded : T & A & C & B
+
+) {
+  nested = repacked;
+>nested = repacked : Extract<T, A & C & B>
+>nested : Extract<T, A & C & B>
+>repacked : Extract<T, A & C & B>
+
+  repacked = nested;
+>repacked = nested : Extract<T, A & C & B>
+>repacked : Extract<T, A & C & B>
+>nested : Extract<T, A & C & B>
+
+  nested = expanded;
+>nested = expanded : T & A & C & B
+>nested : Extract<T, A & C & B>
+>expanded : T & A & C & B
+
+  expanded = nested;
+>expanded = nested : Extract<T, A & C & B>
+>expanded : T & A & C & B
+>nested : Extract<T, A & C & B>
+}
+
+function excludeIntersectionOuter<T>(
+>excludeIntersectionOuter : <T>(nested: Exclude<Exclude<T, A>, B & C>, repacked: Exclude<T, A | (B & C)>, expanded: T & not A & not (B & C)) => void
+
+  nested: Exclude<Exclude<T, A>, B & C>,
+>nested : Exclude<T, A | (B & C)>
+
+  repacked: Exclude<T, A | (B & C)>,
+>repacked : Exclude<T, A | (B & C)>
+
+  expanded: T & not A & not (B & C),
+>expanded : T & not A & not (B & C)
+
+) {
+  nested = repacked;
+>nested = repacked : Exclude<T, A | (B & C)>
+>nested : Exclude<T, A | (B & C)>
+>repacked : Exclude<T, A | (B & C)>
+
+  repacked = nested;
+>repacked = nested : Exclude<T, A | (B & C)>
+>repacked : Exclude<T, A | (B & C)>
+>nested : Exclude<T, A | (B & C)>
+
+  nested = expanded;
+>nested = expanded : T & not A & not (B & C)
+>nested : Exclude<T, A | (B & C)>
+>expanded : T & not A & not (B & C)
+
+  expanded = nested;
+>expanded = nested : Exclude<T, A | (B & C)>
+>expanded : T & not A & not (B & C)
+>nested : Exclude<T, A | (B & C)>
+}
+
+function excludeUnionInner<T>(
+>excludeUnionInner : <T>(nested: Exclude<Exclude<T, A | C>, B>, repacked: Exclude<T, A | C | B>, expanded: T & not A & not C & not B) => void
+
+  nested: Exclude<Exclude<T, A | C>, B>,
+>nested : Exclude<T, A | B | C>
+
+  repacked: Exclude<T, A | C | B>,
+>repacked : Exclude<T, A | B | C>
+
+  expanded: T & not A & not C & not B,
+>expanded : T & not A & not C & not B
+
+) {
+  nested = repacked;
+>nested = repacked : Exclude<T, A | B | C>
+>nested : Exclude<T, A | B | C>
+>repacked : Exclude<T, A | B | C>
+
+  repacked = nested;
+>repacked = nested : Exclude<T, A | B | C>
+>repacked : Exclude<T, A | B | C>
+>nested : Exclude<T, A | B | C>
+
+  nested = expanded;
+>nested = expanded : T & not A & not C & not B
+>nested : Exclude<T, A | B | C>
+>expanded : T & not A & not C & not B
+
+  expanded = nested;
+>expanded = nested : Exclude<T, A | B | C>
+>expanded : T & not A & not C & not B
+>nested : Exclude<T, A | B | C>
+}
+
+// Repacking must preserve member order, which determines overload order. Both nested forms are
+// 'F1 & F2 & F3', so the call resolves to the signature of 'F1'.
+type F1 = (x: 1) => "one";
+>F1 : F1
+>x : 1
+
+type F2 = (x: 2) => "two";
+>F2 : F2
+>x : 2
+
+type F3 = (x: 3) => "three";
+>F3 : F3
+>x : 3
+
+declare const anyArgument: any;
+>anyArgument : any
+
+declare const extractFirstPosition: Extract<Extract<F1, F2>, F3>;
+>extractFirstPosition : Extract<F1, F2 & F3>
+
+declare const extractSecondPosition: Extract<F1, Extract<F2, F3>>;
+>extractSecondPosition : Extract<F1 & F2, F3>
+
+const extractFirstPositionResult: "one" = extractFirstPosition(anyArgument);
+>extractFirstPositionResult : "one"
+>extractFirstPosition(anyArgument) : "one"
+>extractFirstPosition : Extract<F1, F2 & F3>
+>anyArgument : any
+
+const extractSecondPositionResult: "one" = extractSecondPosition(anyArgument);
+>extractSecondPositionResult : "one"
+>extractSecondPosition(anyArgument) : "one"
+>extractSecondPosition : Extract<F1 & F2, F3>
+>anyArgument : any
+
