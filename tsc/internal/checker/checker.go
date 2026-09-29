@@ -10397,6 +10397,14 @@ func (c *Checker) contextuallyCheckFunctionExpressionOrObjectLiteralMethod(node 
 			}
 			c.checkSignatureDeclaration(node)
 		}
+	} else if checkMode&CheckModeInferential != 0 && c.getReturnTypeFromAnnotation(node) == nil {
+		signature := core.FirstOrNil(c.getSignaturesOfType(c.getTypeOfSymbol(c.getSymbolOfDeclaration(node)), SignatureKindCall))
+		if signature != nil && signature.resolvedReturnType == nil {
+			contextualSignature := c.getContextualSignature(node)
+			if contextualSignature != nil && c.couldContainTypeVariables(c.getReturnTypeOfSignature(contextualSignature)) {
+				c.getReturnTypeOfSignature(signature)
+			}
+		}
 	}
 }
 
