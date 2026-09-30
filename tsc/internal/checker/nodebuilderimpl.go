@@ -3309,6 +3309,8 @@ func (b *NodeBuilderImpl) typeToTypeNode(t *Type) *ast.TypeNode {
 		b.ctx.approximateLength += 3
 		return b.f.NewKeywordTypeNode(ast.KindAnyKeyword)
 	}
+	// Indexed accesses deferred by instantiations are printed as the property types they stand for.
+	t = b.ch.resolveDeferredReverseMappedIndexedAccess(t)
 
 	t = getNonDistributedTypeParameter(t)
 

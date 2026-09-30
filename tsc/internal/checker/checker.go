@@ -22642,7 +22642,7 @@ func (c *Checker) instantiateTypeWorker(t *Type, m *TypeMapper, alias *TypeAlias
 	flags := t.flags
 	switch {
 	case flags&TypeFlagsTypeParameter != 0:
-		return getMappedType(t, m)
+		return c.resolveDeferredReverseMappedIndexedAccess(getMappedType(t, m))
 	case flags&TypeFlagsObject != 0:
 		objectFlags := t.objectFlags
 		if objectFlags&(ObjectFlagsReference|ObjectFlagsAnonymous|ObjectFlagsMapped) != 0 {
@@ -22776,7 +22776,7 @@ func (c *Checker) getObjectTypeInstantiation(t *Type, m *TypeMapper, alias *Type
 	// instantiation cache key from the type IDs of the type arguments.
 	typeArguments := make([]*Type, len(typeParameters))
 	for i, tp := range typeParameters {
-		typeArguments[i] = c.mapTypeWithCompositeMapper(tp, t.Mapper(), m)
+		typeArguments[i] = c.mapIdentityTypeArgumentWithCompositeMapper(tp, t.Mapper(), m)
 	}
 	newAlias := alias
 	if newAlias == nil {
@@ -23182,7 +23182,41 @@ func (c *Checker) instantiateTypeAlias(alias *TypeAlias, m *TypeMapper) *TypeAli
 	if alias == nil {
 		return nil
 	}
-	return &TypeAlias{symbol: alias.symbol, typeArguments: c.instantiateTypes(alias.typeArguments, m)}
+	return &TypeAlias{symbol: alias.symbol, typeArguments: c.instantiateIdentityTypeArguments(alias.typeArguments, m)}
+}
+
+// Type arguments that only determine the identity of an instantiation (its cache key or its alias type arguments) don't
+// need their indexed accesses on reverse mapped types resolved right away. Resolving them would compute the reverse mapped
+// property types, so they are deferred until the instantiation's members are read.
+func (c *Checker) instantiateIdentityTypeArguments(types []*Type, m *TypeMapper) []*Type {
+	return c.instantiateList(types, m, (*Checker).instantiateIdentityTypeArgument)
+}
+
+func (c *Checker) instantiateIdentityTypeArgument(t *Type, m *TypeMapper) *Type {
+	if t == nil || m == nil {
+		return t
+	}
+	switch {
+	case t.flags&TypeFlagsTypeParameter != 0:
+		return getMappedType(t, m)
+	case t.flags&TypeFlagsIndexedAccess != 0 && t.alias == nil:
+		d := t.AsIndexedAccessType()
+		if deferred := c.getDeferredReverseMappedIndexedAccessType(c.instantiateType(d.objectType, m), c.instantiateType(d.indexType, m), d.accessFlags); deferred != nil {
+			return deferred
+		}
+	}
+	return c.instantiateType(t, m)
+}
+
+func (c *Checker) mapIdentityTypeArgumentWithCompositeMapper(t *Type, m1 *TypeMapper, m2 *TypeMapper) *Type {
+	if m1 == nil {
+		return getMappedType(t, m2)
+	}
+	t1 := getMappedType(t, m1)
+	if t1 != t {
+		return c.instantiateIdentityTypeArgument(t1, m2)
+	}
+	return getMappedType(t, m2)
 }
 
 func (c *Checker) instantiateTypes(types []*Type, m *TypeMapper) []*Type {
@@ -27464,6 +27498,37 @@ func (c *Checker) getIndexedAccessTypeOrUndefined(objectType *Type, indexType *T
 	return c.getPropertyTypeForIndexType(objectType, apparentObjectType, indexType, indexType, accessNode, accessFlags|AccessFlagsCacheSymbol|AccessFlagsReportDeprecated)
 }
 
+// Instantiating an indexed access on a reverse mapped type would compute the property type, and with it run the deferred
+// reverse inference. When that property type isn't computed yet, keep the indexed access deferred so that instantiations
+// only compute it when it's actually read.
+func (c *Checker) getDeferredReverseMappedIndexedAccessType(objectType *Type, indexType *Type, accessFlags AccessFlags) *Type {
+	if objectType.objectFlags&ObjectFlagsReverseMapped == 0 || !isTypeUsableAsPropertyName(indexType) {
+		return nil
+	}
+	prop := c.getPropertyOfType(objectType, getPropertyNameFromType(indexType))
+	if prop == nil || prop.CheckFlags&ast.CheckFlagsReverseMapped == 0 || c.valueSymbolLinks.Get(prop).resolvedType != nil {
+		return nil
+	}
+	persistentAccessFlags := accessFlags & AccessFlagsPersistent
+	key := getIndexedAccessKey(objectType, indexType, accessFlags, nil /*alias*/)
+	t := c.indexedAccessTypes[key]
+	if t == nil {
+		t = c.newIndexedAccessType(objectType, indexType, persistentAccessFlags)
+		c.indexedAccessTypes[key] = t
+	}
+	return t
+}
+
+// Resolve an indexed access deferred by getDeferredReverseMappedIndexedAccessType to the property type.
+func (c *Checker) resolveDeferredReverseMappedIndexedAccess(t *Type) *Type {
+	if t.flags&TypeFlagsIndexedAccess != 0 {
+		if d := t.AsIndexedAccessType(); d.objectType.objectFlags&ObjectFlagsReverseMapped != 0 && isTypeUsableAsPropertyName(d.indexType) {
+			return c.getIndexedAccessTypeEx(d.objectType, d.indexType, d.accessFlags, nil /*accessNode*/, nil /*alias*/)
+		}
+	}
+	return t
+}
+
 func (c *Checker) getPropertyTypeForIndexType(originalObjectType *Type, objectType *Type, indexType *Type, fullIndexType *Type, accessNode *ast.Node, accessFlags AccessFlags) *Type {
 	var accessExpression *ast.Node
 	if accessNode != nil && ast.IsElementAccessExpression(accessNode) {
@@ -28394,6 +28459,9 @@ func (c *Checker) getSimplifiedIndexedAccessType(t *Type, writing bool) *Type {
 }
 
 func (c *Checker) getSimplifiedIndexedAccessTypeWorker(t *Type, writing bool) *Type {
+	if resolved := c.resolveDeferredReverseMappedIndexedAccess(t); resolved != t {
+		return resolved
+	}
 	// We recursively simplify the object type as it may in turn be an indexed access type. For example, with
 	// '{ [P in T]: { [Q in U]: number } }[T][U]' we want to first simplify the inner indexed access type.
 	objectType := c.getSimplifiedType(t.AsIndexedAccessType().objectType, writing)
