@@ -1,0 +1,15 @@
+//// [tests/cases/compiler/noFlakyDiagnosticsJsThisPropertyImplicitAny.ts] ////
+
+=== /a.js ===
+export class C {
+>C : Symbol(C, Decl(a.js, 0, 0))
+
+    constructor() {
+        this.x = undefined;
+>this.x : Symbol(C.x, Decl(a.js, 1, 19))
+>this : Symbol(C, Decl(a.js, 0, 0))
+>x : Symbol(C.x, Decl(a.js, 1, 19))
+>undefined : Symbol(undefined)
+    }
+}
+

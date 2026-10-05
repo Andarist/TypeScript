@@ -12741,6 +12741,13 @@ func (c *Checker) checkBinaryLikeExpression(left *ast.Node, operatorToken *ast.N
 		return resultType
 	case ast.KindEqualsToken:
 		c.checkAssignmentOperator(left, operator, right, leftType, rightType)
+		// Resolve the type of a `this.x = ...` property declaration here, so that an implicit any is reported while
+		// checking the declaration, instead of by whichever later request (e.g. declaration emit) resolves it first
+		if declaration := left.Parent; ast.IsBinaryExpression(declaration) && ast.GetAssignmentDeclarationKind(declaration) == ast.JSDeclarationKindThisProperty {
+			if symbol := declaration.Symbol(); symbol != nil && symbol.ValueDeclaration == declaration {
+				c.getTypeOfSymbol(symbol)
+			}
+		}
 		return rightType
 	case ast.KindCommaToken:
 		if !c.compilerOptions.AllowUnreachableCode.IsTrue() && c.isSideEffectFree(left) && !c.isIndirectCall(left.Parent) {

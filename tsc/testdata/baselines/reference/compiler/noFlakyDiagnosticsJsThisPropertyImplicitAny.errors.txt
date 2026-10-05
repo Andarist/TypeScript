@@ -1,0 +1,12 @@
+/a.js(3,9): error TS7008: Member 'x' implicitly has an 'any' type.
+
+
+==== /a.js (1 errors) ====
+    export class C {
+        constructor() {
+            this.x = undefined;
+            ~~~~~~~~~~~~~~~~~~
+!!! error TS7008: Member 'x' implicitly has an 'any' type.
+        }
+    }
+    
