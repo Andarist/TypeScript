@@ -1,0 +1,477 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpers.ts] ////
+
+=== self.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<M, K extends keyof M> = show<{
+>resolve : { [P in keyof M[K]]: M[K][P] extends "ref" ? any extends infer T_1 ? { [K_1 in keyof T_1]: T_1[K_1]; } : never : M[K][P]; } extends infer T ? { [K_1 in keyof T]: T[K_1]; } : never
+
+    [P in keyof M[K]]: M[K][P] extends "ref" ? resolve<M, K> : M[K][P];
+}>;
+declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+
+// Issue #64656: close the cycle through the declaration already being emitted.
+// Ideal self.d.ts (no helper needed):
+// export declare const n: {
+//     Node: { value: number; next: typeof n.Node };
+// };
+export const n = mod<{ Node: { value: number; next: "ref" } }>();
+>n : { Node: { value: number; next: any; }; }
+>mod<{ Node: { value: number; next: "ref" } }>() : { Node: { value: number; next: any; }; }
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+>Node : { value: number; next: "ref"; }
+>value : number
+>next : "ref"
+
+=== mutual.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<M, K extends keyof M> = show<{
+>resolve : { [P in keyof M[K]]: M[K][P] extends keyof M ? { [P_1 in keyof M[M[K][P]]]: M[M[K][P]][P_1] extends keyof M ? { [P_2 in keyof M[M[M[K][P]][P_1]]]: M[M[M[K][P]][P_1]][P_2] extends keyof M ? { [P_3 in keyof M[M[M[M[K][P]][P_1]][P_2]]]: M[M[M[M[K][P]][P_1]][P_2]][P_3] extends keyof M ? { [P_4 in keyof M[M[M[M[M[K][P]][P_1]][P_2]][P_3]]]: M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4] extends keyof M ? { [P_5 in keyof M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]]]: M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5] extends keyof M ? { [P_6 in keyof M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]]]: M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6] extends keyof M ? { [P_7 in keyof M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]]]: M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7] extends keyof M ? { [P_8 in keyof M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]]]: M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8] extends keyof M ? { [P_9 in keyof M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]]]: M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9] extends keyof M ? { [P_10 in keyof M[M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9]]]: M[M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9]][P_10] extends keyof M ? any : M[M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9]][P_10]; } extends infer T_10 ? { [K_1 in keyof T_10]: T_10[K_1]; } : never : M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9]; } extends infer T_9 ? { [K_1 in keyof T_9]: T_9[K_1]; } : never : M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]; } extends infer T_8 ? { [K_1 in keyof T_8]: T_8[K_1]; } : never : M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]; } extends infer T_7 ? { [K_1 in keyof T_7]: T_7[K_1]; } : never : M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]; } extends infer T_6 ? { [K_1 in keyof T_6]: T_6[K_1]; } : never : M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]; } extends infer T_5 ? { [K_1 in keyof T_5]: T_5[K_1]; } : never : M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]; } extends infer T_4 ? { [K_1 in keyof T_4]: T_4[K_1]; } : never : M[M[M[M[K][P]][P_1]][P_2]][P_3]; } extends infer T_3 ? { [K_1 in keyof T_3]: T_3[K_1]; } : never : M[M[M[K][P]][P_1]][P_2]; } extends infer T_2 ? { [K_1 in keyof T_2]: T_2[K_1]; } : never : M[M[K][P]][P_1]; } extends infer T_1 ? { [K_1 in keyof T_1]: T_1[K_1]; } : never : M[K][P]; } extends infer T ? { [K_1 in keyof T]: T[K_1]; } : never
+
+    [P in keyof M[K]]: M[K][P] extends keyof M ? resolve<M, M[K][P]> : M[K][P];
+}>;
+declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+
+// Both types have existing paths. Keep both recursive edges without expanding forever.
+// Ideal mutual.d.ts:
+// export declare const pair: {
+//     Left: { leftValue: number; right: typeof pair.Right };
+//     Right: { rightValue: string; left: typeof pair.Left };
+// };
+export const pair = mod<{
+>pair : { Left: { leftValue: number; right: { rightValue: string; left: any; }; }; Right: { rightValue: string; left: any; }; }
+>mod<{    Left: { leftValue: number; right: "Right" };    Right: { rightValue: string; left: "Left" };}>() : { Left: { leftValue: number; right: { rightValue: string; left: any; }; }; Right: { rightValue: string; left: any; }; }
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+
+    Left: { leftValue: number; right: "Right" };
+>Left : { leftValue: number; right: "Right"; }
+>leftValue : number
+>right : "Right"
+
+    Right: { rightValue: string; left: "Left" };
+>Right : { rightValue: string; left: "Left"; }
+>rightValue : string
+>left : "Left"
+
+}>();
+
+// If a helper is needed for a mutually recursive return type, promote only the
+// back-edge target. The intermediate Right object can remain inline.
+// Ideal declaration (in addition to pair above):
+// type left_Result = {
+//     leftValue: number;
+//     right: { rightValue: string; left: left_Result };
+// };
+// export declare function left(): left_Result;
+export function left() {
+>left : () => { leftValue: number; right: { rightValue: string; left: any; }; }
+
+    return mod<{
+>mod<{        Left: { leftValue: number; right: "Right" };        Right: { rightValue: string; left: "Left" };    }>().Left : { leftValue: number; right: { rightValue: string; left: any; }; }
+>mod<{        Left: { leftValue: number; right: "Right" };        Right: { rightValue: string; left: "Left" };    }>() : { Left: { leftValue: number; right: { rightValue: string; left: any; }; }; Right: { rightValue: string; left: any; }; }
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+
+        Left: { leftValue: number; right: "Right" };
+>Left : { leftValue: number; right: "Right"; }
+>leftValue : number
+>right : "Right"
+
+        Right: { rightValue: string; left: "Left" };
+>Right : { rightValue: string; left: "Left"; }
+>rightValue : string
+>left : "Left"
+
+    }>().Left;
+>Left : { leftValue: number; right: { rightValue: string; left: any; }; }
+}
+
+=== optional.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{
+>resolve : { [K in keyof { [P in keyof T]: NonNullable<T[P]> extends "ref" ? { [K in keyof any]: any[K]; } | Extract<T[P], undefined> : T[P]; }]: { [P in keyof T]: NonNullable<T[P]> extends "ref" ? { [K_1 in keyof any]: any[K_1]; } | Extract<T[P], undefined> : T[P]; }[K]; }
+
+    [P in keyof T]: NonNullable<T[P]> extends "ref"
+        ? resolve<T> | Extract<T[P], undefined>
+        : T[P];
+}>;
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }]: { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }[K]; } | undefined
+
+// The optional entry path includes undefined; using typeof optional.node directly
+// for the recursive edge would incorrectly make the node itself possibly undefined.
+// A helper is an acceptable fallback to a validated, non-nullable existing reference.
+// Ideal optional.d.ts:
+// type optional_Node = {
+//     readonly value: number;
+//     next?: optional_Node;
+// };
+// export declare const optional: { node?: optional_Node };
+export const optional = maybe<{ readonly value: number; next?: "ref" }>();
+>optional : { node?: { readonly value: number; next?: any | undefined; } | undefined; }
+>maybe<{ readonly value: number; next?: "ref" }>() : { node?: { readonly value: number; next?: any | undefined; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>value : number
+>next : "ref" | undefined
+
+// Both optional entry points reach the same instantiated recursive type. Reuse
+// the helper discovered for the first entry instead of synthesizing a second one.
+// Ideal declaration (in addition to optional above):
+// type shared_Node = { next: shared_Node };
+// export declare const shared: { left?: shared_Node; right?: shared_Node };
+declare function both<T>(): { left?: resolve<T>; right?: resolve<T> };
+>both : <T>() => { left?: resolve<T>; right?: resolve<T>; }
+>left : { [K in keyof { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }]: { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }[K]; } | undefined
+>right : { [K in keyof { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }]: { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }[K]; } | undefined
+
+export const shared = both<{ next: "ref" }>();
+>shared : { left?: { next: any; } | undefined; right?: { next: any; } | undefined; }
+>both<{ next: "ref" }>() : { left?: { next: any; } | undefined; right?: { next: any; } | undefined; }
+>both : <T>() => { left?: resolve<T>; right?: resolve<T>; }
+>next : "ref"
+
+=== containers.ts ===
+// A cycle can pass through a union and array rather than a direct object property.
+// The local alias cannot be referenced from the emitted declaration's scope.
+// Ideal containers.d.ts:
+// type tree_Result = string | tree_Result[];
+// export declare function tree(): tree_Result;
+export function tree() {
+>tree : () => string | (string | any)[]
+
+    type Local = string | Local[];
+>Local : string | (string | any)[]
+
+    return null as unknown as Local;
+>null as unknown as Local : string | (string | any)[]
+>null as unknown : unknown
+}
+
+// Preserve readonly tuple structure at the recursive edge.
+// Ideal declaration (in addition to tree above):
+// type tuple_Result = readonly [number, tuple_Result];
+// export declare function tuple(): tuple_Result;
+export function tuple() {
+>tuple : () => readonly [number, any]
+
+    type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+}
+
+=== signatures.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+// A generic signature inside the helper binds its own T. This does not capture T
+// from the enclosing scope and must not be rejected with the scoped-types cases.
+// Ideal signatures.d.ts:
+// type signatures_Node = {
+//     next: signatures_Node;
+//     identity: <T>(value: T) => T;
+//     unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;
+//     copy: <T>(value: T) => { [K in keyof T]: T[K] };
+// };
+// export declare const signatures: { node?: signatures_Node };
+export const signatures = maybe<{
+>signatures : { node?: { next: any; identity: <T>(value: T) => T; unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T; copy: <T>(value: T) => { [K in keyof T]: T[K]; }; } | undefined; }
+>maybe<{    next: "ref";    identity: <T>(value: T) => T;    unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;    copy: <T>(value: T) => { [K in keyof T]: T[K] };}>() : { node?: { next: any; identity: <T>(value: T) => T; unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T; copy: <T>(value: T) => { [K in keyof T]: T[K]; }; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+
+    next: "ref";
+>next : "ref"
+
+    identity: <T>(value: T) => T;
+>identity : <T>(value: T) => T
+>value : T
+
+    unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;
+>unwrap : <T>(value: T) => T extends readonly (infer U)[] ? U : T
+>value : T
+
+    copy: <T>(value: T) => { [K in keyof T]: T[K] };
+>copy : <T>(value: T) => { [K in keyof T]: T[K]; }
+>value : T
+
+}>();
+
+=== collisions.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+// A generated helper must not collide with an existing type or value name.
+// Ideal collisions.d.ts:
+// export interface collision_recursive { occupied: true; }
+// type collision_recursive_1 = { next: collision_recursive_1 };
+// export declare const collision: { node?: collision_recursive_1 };
+export interface collision_recursive {
+    occupied: true;
+>occupied : true
+>true : true
+}
+export const collision = maybe<{ next: "ref" }>();
+>collision : { node?: { next: any; } | undefined; }
+>maybe<{ next: "ref" }>() : { node?: { next: any; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+
+=== symbols.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+// A helper may reference a top-level symbol, including in a computed property name.
+// Ideal symbols.d.ts:
+// export declare const key: unique symbol;
+// type keyed_Node = { next: keyed_Node; [key]: number };
+// export declare const keyed: { node?: keyed_Node };
+export declare const key: unique symbol;
+>key : unique symbol
+
+export const keyed = maybe<{ next: "ref"; [key]: number }>();
+>keyed : { node?: { next: any; [key]: number; } | undefined; }
+>maybe<{ next: "ref"; [key]: number }>() : { node?: { next: any; [key]: number; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+>[key] : number
+>key : unique symbol
+
+=== payload.ts ===
+export interface Payload {
+    name: string;
+>name : string
+}
+
+=== imported.ts ===
+import { Payload as Input } from "./payload";
+>Payload : any
+>Input : any
+
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+// A top-level import remains available to the helper. Its late-painted import
+// declaration must survive even though only the synthesized body references it.
+// Ideal imported.d.ts:
+// import { Payload as Input } from "./payload";
+// type imported_Node = { value: Input; next: imported_Node };
+// export declare const imported: { node?: imported_Node };
+export const imported = maybe<{ value: Input; next: "ref" }>();
+>imported : { node?: { value: Input; next: any; } | undefined; }
+>maybe<{ value: Input; next: "ref" }>() : { node?: { value: Input; next: any; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>value : Input
+>next : "ref"
+
+=== recursiveArray.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+function source() {
+>source : () => { next: any[]; }[]
+
+    type Local = show<{ next: Local[] }>;
+>Local : { next: any[]; }
+>next : { next: any[]; }[]
+
+    return null as unknown as Local["next"];
+>null as unknown as Local["next"] : { next: any[]; }[]
+>null as unknown : unknown
+}
+
+// Array roots cannot safely close the cycle with typeof nodes in their own array
+// annotation. A helper at the array's back-edge target is a safe fallback.
+// Ideal recursiveArray.d.ts:
+// type nodes_Result = { next: nodes_Result }[];
+// export declare const nodes: nodes_Result;
+export const nodes = source();
+>nodes : { next: any[]; }[]
+>source() : { next: any[]; }[]
+>source : () => { next: any[]; }[]
+
+=== shadowedAnchor.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ value: T; read: (node: string) => resolve<T> }>;
+>resolve : { value: T; read: (node: string) => resolve<T>; }
+>value : T
+>read : (node: string) => resolve<T>
+>node : string
+
+declare function mod<T>(): resolve<T>;
+>mod : <T>() => resolve<T>
+
+// The parameter named node shadows the variable at the recursive return type.
+// typeof node would mean string there, so use a closed helper instead.
+// Ideal shadowedAnchor.d.ts:
+// type node_Result = { value: number; read: (node: string) => node_Result };
+// export declare const node: node_Result;
+export const node = mod<number>();
+>node : { value: number; read: (node: string) => any; }
+>mod<number>() : { value: number; read: (node: string) => any; }
+>mod : <T>() => resolve<T>
+
+=== classAnchor.ts ===
+// The checker gives a class a synthetic prototype property. A structural
+// constructor declaration does not retain that property, so ctor.prototype is
+// not a safe recursive anchor for the emitted instance type.
+// Ideal classAnchor.d.ts:
+// type ctor_Instance = { next(): ctor_Instance };
+// export declare const ctor: { new (): ctor_Instance };
+export const ctor = class Inner {
+>ctor : typeof Inner
+>class Inner {    next(): Inner {        return this;    }} : typeof Inner
+>Inner : typeof Inner
+
+    next(): Inner {
+>next : () => Inner
+
+        return this;
+>this : this
+    }
+};
+
+=== instantiations.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function mod<T>(): resolve<T>;
+>mod : <T>() => resolve<T>
+
+// The same mapped declaration produces distinct cycles and shares no output anchor.
+// Cached serialization must not reuse the first declaration's recursive reference.
+// Ideal instantiations.d.ts:
+// export declare const numbers: { value: number; next: typeof numbers };
+// export declare const strings: { value: string; next: typeof strings };
+// export declare const numbersAgain: { value: number; next: typeof numbersAgain };
+export const numbers = mod<{ value: number; next: "ref" }>();
+>numbers : { value: number; next: any; }
+>mod<{ value: number; next: "ref" }>() : { value: number; next: any; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : "ref"
+
+export const strings = mod<{ value: string; next: "ref" }>();
+>strings : { value: string; next: any; }
+>mod<{ value: string; next: "ref" }>() : { value: string; next: any; }
+>mod : <T>() => resolve<T>
+>value : string
+>next : "ref"
+
+export const numbersAgain = mod<{ value: number; next: "ref" }>();
+>numbersAgain : { value: number; next: any; }
+>mod<{ value: number; next: "ref" }>() : { value: number; next: any; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : "ref"
+
+=== acyclic.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function mod<T>(): resolve<T>;
+>mod : <T>() => resolve<T>
+
+// The mapper can produce recursion, but these instantiations never encounter it.
+// Repeated sibling shapes and finite nesting are also not cycles.
+// Ideal acyclic.d.ts (no synthesized helpers anywhere in this file):
+// export declare const leaf: { value: number; next: null };
+// export declare const siblings: {
+//     left: { value: number; next: null };
+//     right: { value: number; next: null };
+// };
+// export declare const finite: { value: number[][][] };
+export const leaf = mod<{ value: number; next: null }>();
+>leaf : { value: number; next: null; }
+>mod<{ value: number; next: null }>() : { value: number; next: null; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : null
+
+export const siblings = {
+>siblings : { left: { value: number; next: null; }; right: { value: number; next: null; }; }
+>{    left: mod<{ value: number; next: null }>(),    right: mod<{ value: number; next: null }>(),} : { left: { value: number; next: null; }; right: { value: number; next: null; }; }
+
+    left: mod<{ value: number; next: null }>(),
+>left : { value: number; next: null; }
+>mod<{ value: number; next: null }>() : { value: number; next: null; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : null
+
+    right: mod<{ value: number; next: null }>(),
+>right : { value: number; next: null; }
+>mod<{ value: number; next: null }>() : { value: number; next: null; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : null
+
+};
+export const finite = mod<{ value: number[][][] }>();
+>finite : { value: number[][][]; }
+>mod<{ value: number[][][] }>() : { value: number[][][]; }
+>mod : <T>() => resolve<T>
+>value : number[][][]
+
+// An existing name that already closes a cycle must keep being reused.
+// Ideal declaration (in addition to the acyclic exports above):
+// export interface Named { value: number; next: Named; }
+// export declare const named: Named;
+export interface Named {
+    value: number;
+>value : number
+
+    next: Named;
+>next : Named
+}
+declare const source: Named;
+>source : Named
+
+export const named = source;
+>named : Named
+>source : Named
+

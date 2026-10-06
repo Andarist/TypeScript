@@ -1,14 +1,6 @@
-// @strict: true
-// @declaration: true
-// @emitDeclarationOnly: true
-// @removeComments: true
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpers.ts] ////
 
-// These are declaration-emit design targets, including currently unsupported cases.
-// Ideal outputs below describe type structure and helper placement, not helper spelling.
-// Reuse a safe existing reference when possible. Otherwise synthesize a helper only
-// after encountering a cycle; acyclic instantiations must continue to emit inline.
-
-// @filename: self.ts
+//// [self.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<M, K extends keyof M> = show<{
     [P in keyof M[K]]: M[K][P] extends "ref" ? resolve<M, K> : M[K][P];
@@ -22,7 +14,7 @@ declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
 // };
 export const n = mod<{ Node: { value: number; next: "ref" } }>();
 
-// @filename: mutual.ts
+//// [mutual.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<M, K extends keyof M> = show<{
     [P in keyof M[K]]: M[K][P] extends keyof M ? resolve<M, M[K][P]> : M[K][P];
@@ -55,7 +47,7 @@ export function left() {
     }>().Left;
 }
 
-// @filename: optional.ts
+//// [optional.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{
     [P in keyof T]: NonNullable<T[P]> extends "ref"
@@ -83,7 +75,7 @@ export const optional = maybe<{ readonly value: number; next?: "ref" }>();
 declare function both<T>(): { left?: resolve<T>; right?: resolve<T> };
 export const shared = both<{ next: "ref" }>();
 
-// @filename: containers.ts
+//// [containers.ts]
 // A cycle can pass through a union and array rather than a direct object property.
 // The local alias cannot be referenced from the emitted declaration's scope.
 // Ideal containers.d.ts:
@@ -103,7 +95,7 @@ export function tuple() {
     return null as unknown as Local;
 }
 
-// @filename: signatures.ts
+//// [signatures.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
 declare function maybe<T>(): { node?: resolve<T> };
@@ -125,7 +117,7 @@ export const signatures = maybe<{
     copy: <T>(value: T) => { [K in keyof T]: T[K] };
 }>();
 
-// @filename: collisions.ts
+//// [collisions.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
 declare function maybe<T>(): { node?: resolve<T> };
@@ -140,7 +132,7 @@ export interface collision_recursive {
 }
 export const collision = maybe<{ next: "ref" }>();
 
-// @filename: symbols.ts
+//// [symbols.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
 declare function maybe<T>(): { node?: resolve<T> };
@@ -153,12 +145,12 @@ declare function maybe<T>(): { node?: resolve<T> };
 export declare const key: unique symbol;
 export const keyed = maybe<{ next: "ref"; [key]: number }>();
 
-// @filename: payload.ts
+//// [payload.ts]
 export interface Payload {
     name: string;
 }
 
-// @filename: imported.ts
+//// [imported.ts]
 import { Payload as Input } from "./payload";
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
@@ -172,7 +164,7 @@ declare function maybe<T>(): { node?: resolve<T> };
 // export declare const imported: { node?: imported_Node };
 export const imported = maybe<{ value: Input; next: "ref" }>();
 
-// @filename: recursiveArray.ts
+//// [recursiveArray.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 function source() {
     type Local = show<{ next: Local[] }>;
@@ -186,7 +178,7 @@ function source() {
 // export declare const nodes: nodes_Result;
 export const nodes = source();
 
-// @filename: shadowedAnchor.ts
+//// [shadowedAnchor.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{ value: T; read: (node: string) => resolve<T> }>;
 declare function mod<T>(): resolve<T>;
@@ -198,7 +190,7 @@ declare function mod<T>(): resolve<T>;
 // export declare const node: node_Result;
 export const node = mod<number>();
 
-// @filename: classAnchor.ts
+//// [classAnchor.ts]
 // The checker gives a class a synthetic prototype property. A structural
 // constructor declaration does not retain that property, so ctor.prototype is
 // not a safe recursive anchor for the emitted instance type.
@@ -211,7 +203,7 @@ export const ctor = class Inner {
     }
 };
 
-// @filename: instantiations.ts
+//// [instantiations.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
 declare function mod<T>(): resolve<T>;
@@ -226,7 +218,7 @@ export const numbers = mod<{ value: number; next: "ref" }>();
 export const strings = mod<{ value: string; next: "ref" }>();
 export const numbersAgain = mod<{ value: number; next: "ref" }>();
 
-// @filename: acyclic.ts
+//// [acyclic.ts]
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
 declare function mod<T>(): resolve<T>;
@@ -257,3 +249,165 @@ export interface Named {
 }
 declare const source: Named;
 export const named = source;
+
+
+
+
+//// [self.d.ts]
+export declare const n: {
+    Node: {
+        value: number;
+        next: typeof n.Node;
+    };
+};
+//// [mutual.d.ts]
+type left_recursive = {
+    leftValue: number;
+    right: {
+        rightValue: string;
+        left: left_recursive;
+    };
+};
+export declare const pair: {
+    Left: {
+        leftValue: number;
+        right: {
+            rightValue: string;
+            left: typeof pair.Left;
+        };
+    };
+    Right: {
+        rightValue: string;
+        left: {
+            leftValue: number;
+            right: typeof pair.Right;
+        };
+    };
+};
+export declare function left(): left_recursive;
+export {};
+//// [optional.d.ts]
+type optional_recursive = {
+    readonly value: number;
+    next?: optional_recursive | undefined;
+};
+type shared_recursive = {
+    next: shared_recursive;
+};
+export declare const optional: {
+    node?: optional_recursive | undefined;
+};
+export declare const shared: {
+    left?: shared_recursive | undefined;
+    right?: shared_recursive | undefined;
+};
+export {};
+//// [containers.d.ts]
+type tree_recursive = (string | tree_recursive)[];
+type tuple_recursive = readonly [number, tuple_recursive];
+export declare function tree(): string | tree_recursive;
+export declare function tuple(): tuple_recursive;
+export {};
+//// [signatures.d.ts]
+type signatures_recursive = {
+    next: signatures_recursive;
+    identity: <T>(value: T) => T;
+    unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;
+    copy: <T>(value: T) => { [K in keyof T]: T[K]; };
+};
+export declare const signatures: {
+    node?: signatures_recursive | undefined;
+};
+export {};
+//// [collisions.d.ts]
+type collision_recursive_1 = {
+    next: collision_recursive_1;
+};
+export interface collision_recursive {
+    occupied: true;
+}
+export declare const collision: {
+    node?: collision_recursive_1 | undefined;
+};
+export {};
+//// [symbols.d.ts]
+type keyed_recursive = {
+    next: keyed_recursive;
+    [key]: number;
+};
+export declare const key: unique symbol;
+export declare const keyed: {
+    node?: keyed_recursive | undefined;
+};
+export {};
+//// [payload.d.ts]
+export interface Payload {
+    name: string;
+}
+//// [imported.d.ts]
+type imported_recursive = {
+    value: Input;
+    next: imported_recursive;
+};
+import { Payload as Input } from "./payload";
+export declare const imported: {
+    node?: imported_recursive | undefined;
+};
+export {};
+//// [recursiveArray.d.ts]
+type nodes_recursive = {
+    next: nodes_recursive[];
+};
+export declare const nodes: nodes_recursive[];
+export {};
+//// [shadowedAnchor.d.ts]
+type node_recursive = {
+    value: number;
+    read: (node: string) => node_recursive;
+};
+export declare const node: node_recursive;
+export {};
+//// [classAnchor.d.ts]
+type ctor_recursive = {
+    next(): ctor_recursive;
+};
+export declare const ctor: {
+    new (): ctor_recursive;
+};
+export {};
+//// [instantiations.d.ts]
+export declare const numbers: {
+    value: number;
+    next: typeof numbers;
+};
+export declare const strings: {
+    value: string;
+    next: typeof strings;
+};
+export declare const numbersAgain: {
+    value: number;
+    next: typeof numbersAgain;
+};
+//// [acyclic.d.ts]
+export declare const leaf: {
+    value: number;
+    next: null;
+};
+export declare const siblings: {
+    left: {
+        value: number;
+        next: null;
+    };
+    right: {
+        value: number;
+        next: null;
+    };
+};
+export declare const finite: {
+    value: number[][][];
+};
+export interface Named {
+    value: number;
+    next: Named;
+}
+export declare const named: Named;

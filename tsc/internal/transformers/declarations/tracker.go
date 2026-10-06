@@ -41,6 +41,10 @@ func (s *SymbolTrackerImpl) ReportCyclicStructureError() {
 	}
 }
 
+func (s *SymbolTrackerImpl) TrackRecursiveTypeDeclarations(declarations []*ast.Node) {
+	s.state.recursiveTypeDeclarations = append(s.state.recursiveTypeDeclarations, declarations...)
+}
+
 // ReportInaccessibleThisError implements checker.SymbolTracker.
 func (s *SymbolTrackerImpl) ReportInaccessibleThisError() {
 	location := s.errorLocation()
@@ -238,6 +242,7 @@ func createDiagnosticForNode(node *ast.Node, message *diagnostics.Message, args 
 
 type SymbolTrackerSharedState struct {
 	lateMarkedStatements             []*ast.Node
+	recursiveTypeDeclarations        []*ast.Node
 	diagnostics                      []*ast.Diagnostic
 	getSymbolAccessibilityDiagnostic GetSymbolAccessibilityDiagnostic
 	errorNameNode                    *ast.Node

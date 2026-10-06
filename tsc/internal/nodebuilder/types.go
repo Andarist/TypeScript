@@ -22,6 +22,12 @@ type SymbolTracker interface {
 	PopErrorFallbackNode()
 }
 
+// RecursiveTypeTracker is an optional declaration-emit capability. Other node
+// builder callers must not synthesize declarations to describe anonymous cycles.
+type RecursiveTypeTracker interface {
+	TrackRecursiveTypeDeclarations(declarations []*ast.Node)
+}
+
 // NOTE: If modifying this enum, must modify `TypeFormatFlags` too!
 type Flags uint32
 

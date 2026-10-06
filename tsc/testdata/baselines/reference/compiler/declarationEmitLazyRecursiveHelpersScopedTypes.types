@@ -1,0 +1,100 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpersScopedTypes.ts] ////
+
+=== generic.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function mod<T>(): resolve<T>;
+>mod : <T>() => resolve<T>
+
+// These two cases are future targets. For now, keep TS5088 rather than hoisting
+// helpers which would capture symbols from a function or returned signature scope.
+// A hoisted helper must capture the function's type parameter explicitly, including
+// its constraint. Only the node reached by the back edge needs to become a helper.
+// Ideal generic.d.ts:
+// type make_Node<T extends { id: string }> = {
+//     value: T;
+//     next: make_Node<T>;
+// };
+// export declare function make<T extends { id: string }>(value: T): {
+//     node: make_Node<T>;
+//     label: string;
+// };
+export function make<T extends { id: string }>(value: T) {
+>make : <T extends { id: string; }>(value: T) => { node: { value: T; next: any; }; label: string; }
+>id : string
+>value : T
+
+    return { node: mod<{ value: T; next: "ref" }>(), label: value.id };
+>{ node: mod<{ value: T; next: "ref" }>(), label: value.id } : { node: { value: T; next: any; }; label: string; }
+>node : { value: T; next: any; }
+>mod<{ value: T; next: "ref" }>() : { value: T; next: any; }
+>mod : <T_1>() => resolve<T_1>
+>value : T
+>next : "ref"
+>label : string
+>value.id : string
+>value : T
+>id : string
+}
+
+// A parameter introduced by a returned call signature is not in the enclosing
+// function's scope. The helper must be generic and instantiated inside that signature.
+// Ideal declaration (in addition to make above):
+// type factory_Node<T> = { value: T; next: factory_Node<T> };
+// export declare function factory(): <T>(value: T) => factory_Node<T>;
+export function factory() {
+>factory : () => <T>(value: T) => { value: T; next: any; }
+
+    return <T>(value: T) => mod<{ value: T; next: "ref" }>();
+><T>(value: T) => mod<{ value: T; next: "ref" }>() : <T>(value: T) => { value: T; next: any; }
+>value : T
+>mod<{ value: T; next: "ref" }>() : { value: T; next: any; }
+>mod : <T_1>() => resolve<T_1>
+>value : T
+>next : "ref"
+}
+
+=== nested.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+// U belongs to the signature inside the helper, but the return type captures T
+// from outside it. Keep TS5088 and emit no orphan helper for this declaration.
+export function nested<T>() {
+>nested : <T>() => { node?: { next: any; read: <U>(value: U) => T; } | undefined; }
+
+    return maybe<{ next: "ref"; read: <U>(value: U) => T }>();
+>maybe<{ next: "ref"; read: <U>(value: U) => T }>() : { node?: { next: any; read: <U>(value: U) => T; } | undefined; }
+>maybe : <T_1>() => { node?: resolve<T_1>; }
+>next : "ref"
+>read : <U>(value: U) => T
+>value : U
+}
+
+// A top-level name with the same spelling must not make a captured parameter
+// appear available in the helper's insertion scope. Keep TS5088 here as well.
+export interface Captured {
+    id: number;
+>id : number
+}
+export function shadowed<Captured>() {
+>shadowed : <Captured>() => { node?: { next: any; value: Captured; } | undefined; }
+
+    return maybe<{ next: "ref"; value: Captured }>();
+>maybe<{ next: "ref"; value: Captured }>() : { node?: { next: any; value: Captured; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+>value : Captured
+}
+

@@ -71,6 +71,22 @@ export function local() {
 }
 
 
+//// [local.d.ts]
+type localArrow_recursive = () => localArrow_recursive;
+type localDeclaration_recursive = () => localDeclaration_recursive;
+type localInstantiation_recursive = () => localInstantiation_recursive;
+export declare function localArrow(): localArrow_recursive;
+export declare function localDeclaration(): localDeclaration_recursive;
+export declare function localInstantiation(): () => localInstantiation_recursive;
+export declare const object: {
+    self(): {
+        self(): typeof object;
+    };
+};
+export declare const annotatedObject: {
+    self(): typeof annotatedObject;
+};
+export {};
 //// [annotatedLocal.d.ts]
 interface Recursive {
     (): Recursive;

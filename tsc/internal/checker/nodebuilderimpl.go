@@ -87,6 +87,13 @@ type NodeBuilderContext struct {
 	enclosingSymbolTypes            map[ast.SymbolId]*Type
 	suppressReportInferenceFallback bool
 	remappedSymbolReferences        map[ast.SymbolId]*ast.Symbol
+	recursiveTypeTracker            nodebuilder.RecursiveTypeTracker
+	recursiveTypeFrames             map[TypeId]*recursiveTypeFrame
+	recursiveTypeReferences         map[TypeId]*ast.Node
+	recursiveTypeHelpers            []*recursiveTypeFrame
+	recursiveTypeReferenceUsed      bool
+	recursiveTypeRoot               *Type
+	recursiveTypeRootDeclaration    *ast.Node
 
 	// per signature scope state
 	typeParameterNames                    collections.CopyOnWriteMap[TypeId, *ast.Identifier]
@@ -2933,7 +2940,7 @@ func (b *NodeBuilderImpl) createAnonymousTypeNodeEx(t *Type, forceClassExpansion
 				// in turn try to reuse the same node again. Mark the type as visited around the reuse
 				// attempt so the inner recursion bottoms out via the visitedTypes guard below.
 				if b.ctx.visitedTypes.Has(typeId) {
-					return b.createCyclicStructurePlaceholder()
+					return b.createCyclicStructurePlaceholder(t)
 				}
 				b.ctx.visitedTypes.Add(typeId)
 				typeNode := b.tryReuseExistingNonParameterTypeNode(existing, t, nil, nil)
@@ -2943,7 +2950,7 @@ func (b *NodeBuilderImpl) createAnonymousTypeNodeEx(t *Type, forceClassExpansion
 				}
 			}
 			if b.ctx.visitedTypes.Has(typeId) {
-				return b.createCyclicStructurePlaceholder()
+				return b.createCyclicStructurePlaceholder(t)
 			}
 			return b.visitAndTransformType(t, (*NodeBuilderImpl).createTypeNodeFromObjectType)
 		}
@@ -2973,14 +2980,14 @@ func (b *NodeBuilderImpl) createAnonymousTypeNodeEx(t *Type, forceClassExpansion
 				// The specified symbol flags need to be reinterpreted as type flags
 				return b.symbolToTypeNode(typeAlias, ast.SymbolFlagsType, nil)
 			} else {
-				return b.createCyclicStructurePlaceholder()
+				return b.createCyclicStructurePlaceholder(t)
 			}
 		} else {
 			return b.visitAndTransformType(t, (*NodeBuilderImpl).createTypeNodeFromObjectType)
 		}
 	} else if t.objectFlags&ObjectFlagsReverseMapped != 0 && b.ctx.flags&nodebuilder.FlagsAllowAnonymousIdentifier == 0 {
 		if b.ctx.visitedTypes.Has(typeId) {
-			return b.createCyclicStructurePlaceholder()
+			return b.createCyclicStructurePlaceholder(t)
 		}
 		return b.visitAndTransformType(t, (*NodeBuilderImpl).createTypeNodeFromObjectType)
 	} else {
@@ -3009,14 +3016,19 @@ func (b *NodeBuilderImpl) getTypeFromTypeNode(node *ast.TypeNode, noMappedTypes 
 func (b *NodeBuilderImpl) typeToTypeNodeOrCircularityElision(t *Type) *ast.TypeNode {
 	if t.flags&TypeFlagsUnion != 0 {
 		if b.ctx.visitedTypes.Has(t.id) {
-			return b.createCyclicStructurePlaceholder()
+			return b.createCyclicStructurePlaceholder(t)
 		}
 		return b.visitAndTransformType(t, (*NodeBuilderImpl).typeToTypeNode)
 	}
 	return b.typeToTypeNode(t)
 }
 
-func (b *NodeBuilderImpl) createCyclicStructurePlaceholder() *ast.TypeNode {
+func (b *NodeBuilderImpl) createCyclicStructurePlaceholder(t *Type) *ast.TypeNode {
+	if b.ctx.recursiveTypeTracker != nil {
+		if reference := b.tryCreateRecursiveTypeReference(t); reference != nil {
+			return reference
+		}
+	}
 	if b.ctx.flags&nodebuilder.FlagsAllowAnonymousIdentifier == 0 {
 		b.ctx.encounteredError = true
 		b.ctx.tracker.ReportCyclicStructureError()
@@ -3245,7 +3257,11 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 		typeId = b.ch.createTypeReference(t.Target(), b.ch.getTypeArguments(t)).id
 	}
 	if b.ctx.visitedTypes.Has(typeId) {
-		return b.createCyclicStructurePlaceholder()
+		return b.createCyclicStructurePlaceholder(t)
+	}
+	if reference := b.ctx.recursiveTypeReferences[typeId]; reference != nil {
+		b.ctx.approximateLength += len(reference.AsTypeReferenceNode().TypeName.Text())
+		return b.f.DeepCloneNode(reference)
 	}
 
 	isConstructorObject := t.objectFlags&ObjectFlagsAnonymous != 0 && t.symbol != nil && t.symbol.Flags&ast.SymbolFlagsClass != 0
@@ -3275,7 +3291,7 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 		key.inferTypeParameters = getTypeListKey(b.ctx.inferTypeParameters)
 	}
 	// Don't rely on type cache if we're expanding a type, because we need to compute `canIncreaseExpansionDepth`.
-	canUseCache := b.ctx.maxExpansionDepth < 0
+	canUseCache := b.ctx.maxExpansionDepth < 0 && !b.ctx.recursiveTypeReferenceUsed
 	if canUseCache && b.ctx.enclosingDeclaration != nil && b.links.Has(b.ctx.enclosingDeclaration) {
 		links := b.links.Get(b.ctx.enclosingDeclaration)
 		cachedResult, ok := links.serializedTypes[key]
@@ -3315,12 +3331,35 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 		b.ctx.symbolDepth[*id] = depth + 1
 	}
 	b.ctx.visitedTypes.Add(typeId)
+	var recursiveFrame *recursiveTypeFrame
+	if b.ctx.recursiveTypeTracker != nil {
+		recursiveFrame = &recursiveTypeFrame{enclosingDeclaration: b.ctx.enclosingDeclaration}
+		b.ctx.recursiveTypeFrames[typeId] = recursiveFrame
+	}
 	prevTrackedSymbols := b.ctx.trackedSymbols
 	b.ctx.trackedSymbols = nil
 	startLength := b.ctx.approximateLength
 	result := transform(b, t)
+	if recursiveFrame != nil {
+		delete(b.ctx.recursiveTypeFrames, typeId)
+		if recursiveFrame.name != nil {
+			recursiveFrame.body = result
+			if !b.ctx.encounteredError && !b.recursiveTypeBodyIsClosed(recursiveFrame) {
+				b.ctx.encounteredError = true
+				b.ctx.tracker.ReportCyclicStructureError()
+			}
+			result = b.f.NewTypeReferenceNode(b.f.DeepCloneNode(recursiveFrame.name), nil)
+			b.ctx.approximateLength += len(recursiveFrame.name.Text())
+			if !b.ctx.encounteredError {
+				if b.ctx.recursiveTypeReferences == nil {
+					b.ctx.recursiveTypeReferences = make(map[TypeId]*ast.Node)
+				}
+				b.ctx.recursiveTypeReferences[typeId] = result
+			}
+		}
+	}
 	addedLength := b.ctx.approximateLength - startLength
-	if canUseCache && !b.ctx.reportedDiagnostic && !b.ctx.encounteredError {
+	if canUseCache && !b.ctx.recursiveTypeReferenceUsed && !b.ctx.reportedDiagnostic && !b.ctx.encounteredError {
 		links := b.links.Get(b.ctx.enclosingDeclaration)
 		if links.serializedTypes == nil {
 			links.serializedTypes = make(map[CompositeTypeCacheIdentity]*SerializedTypeEntry)
