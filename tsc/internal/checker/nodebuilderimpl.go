@@ -89,10 +89,12 @@ type NodeBuilderContext struct {
 	remappedSymbolReferences        map[ast.SymbolId]*ast.Symbol
 	recursiveTypeTracker            nodebuilder.RecursiveTypeTracker
 	recursiveTypeFrames             map[TypeId]*recursiveTypeFrame
-	recursiveTypeReferences         map[TypeId]*ast.Node
+	recursiveTypeReferences         map[CompositeTypeCacheIdentity]*ast.Node
 	recursiveTypeHelpers            []*recursiveTypeFrame
 	recursiveTypeReferenceUsed      bool
-	recursiveTypeRoot               *Type
+	recursiveTypePath               *recursiveTypePath
+	recursiveTypePathType           *Type
+	recursiveTypeCurrentFrame       *recursiveTypeFrame
 	recursiveTypeRootDeclaration    *ast.Node
 
 	// per signature scope state
@@ -2706,7 +2708,11 @@ func (b *NodeBuilderImpl) addPropertyToElementList(propertySymbol *ast.Symbol, t
 			b.ctx.reverseMappedStack = append(b.ctx.reverseMappedStack, propertySymbol)
 		}
 		if propertyType != nil {
+			previousPath, previousPathType := b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType
+			b.ctx.recursiveTypePath = b.recursiveTypePathForProperty(propertySymbol, propertyName)
+			b.ctx.recursiveTypePathType = propertyType
 			propertyTypeNode = b.serializeTypeForDeclaration(nil /*declaration*/, propertyType, propertySymbol, true)
+			b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType = previousPath, previousPathType
 		} else {
 			propertyTypeNode = b.f.NewKeywordTypeNode(ast.KindAnyKeyword)
 		}
@@ -3259,10 +3265,6 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 	if b.ctx.visitedTypes.Has(typeId) {
 		return b.createCyclicStructurePlaceholder(t)
 	}
-	if reference := b.ctx.recursiveTypeReferences[typeId]; reference != nil {
-		b.ctx.approximateLength += len(reference.AsTypeReferenceNode().TypeName.Text())
-		return b.f.DeepCloneNode(reference)
-	}
 
 	isConstructorObject := t.objectFlags&ObjectFlagsAnonymous != 0 && t.symbol != nil && t.symbol.Flags&ast.SymbolFlagsClass != 0
 	var id *CompositeSymbolIdentity
@@ -3289,6 +3291,12 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 	}
 	if len(b.ctx.inferTypeParameters) != 0 {
 		key.inferTypeParameters = getTypeListKey(b.ctx.inferTypeParameters)
+	}
+	// Helpers are closed over their insertion scope, so they can be shared across
+	// signatures. The serialization flags and infer parameters must still match.
+	if reference := b.ctx.recursiveTypeReferences[key]; reference != nil {
+		b.ctx.approximateLength += len(reference.AsTypeReferenceNode().TypeName.Text())
+		return b.f.DeepCloneNode(reference)
 	}
 	// Don't rely on type cache if we're expanding a type, because we need to compute `canIncreaseExpansionDepth`.
 	canUseCache := b.ctx.maxExpansionDepth < 0 && !b.ctx.recursiveTypeReferenceUsed
@@ -3332,14 +3340,25 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 	}
 	b.ctx.visitedTypes.Add(typeId)
 	var recursiveFrame *recursiveTypeFrame
+	previousFrame := b.ctx.recursiveTypeCurrentFrame
 	if b.ctx.recursiveTypeTracker != nil {
-		recursiveFrame = &recursiveTypeFrame{enclosingDeclaration: b.ctx.enclosingDeclaration}
+		recursiveFrame = &recursiveTypeFrame{enclosingDeclaration: b.ctx.enclosingDeclaration, type_: t}
+		if b.ctx.recursiveTypePathType != nil && b.recursiveTypeIdentity(b.ctx.recursiveTypePathType) == typeId {
+			recursiveFrame.path = b.ctx.recursiveTypePath
+		}
 		b.ctx.recursiveTypeFrames[typeId] = recursiveFrame
+		b.ctx.recursiveTypeCurrentFrame = recursiveFrame
 	}
+	// A pending path belongs only to this type, not to signatures, index types,
+	// or other descendants serialized by its transform.
+	previousPath, previousPathType := b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType
+	b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType = nil, nil
 	prevTrackedSymbols := b.ctx.trackedSymbols
 	b.ctx.trackedSymbols = nil
 	startLength := b.ctx.approximateLength
 	result := transform(b, t)
+	b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType = previousPath, previousPathType
+	b.ctx.recursiveTypeCurrentFrame = previousFrame
 	if recursiveFrame != nil {
 		delete(b.ctx.recursiveTypeFrames, typeId)
 		if recursiveFrame.name != nil {
@@ -3352,9 +3371,9 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 			b.ctx.approximateLength += len(recursiveFrame.name.Text())
 			if !b.ctx.encounteredError {
 				if b.ctx.recursiveTypeReferences == nil {
-					b.ctx.recursiveTypeReferences = make(map[TypeId]*ast.Node)
+					b.ctx.recursiveTypeReferences = make(map[CompositeTypeCacheIdentity]*ast.Node)
 				}
-				b.ctx.recursiveTypeReferences[typeId] = result
+				b.ctx.recursiveTypeReferences[key] = result
 			}
 		}
 	}

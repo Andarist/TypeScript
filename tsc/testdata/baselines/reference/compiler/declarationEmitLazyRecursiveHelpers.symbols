@@ -52,6 +52,100 @@ export const n = mod<{ Node: { value: number; next: "ref" } }>();
 >value : Symbol(value, Decl(self.ts, 11, 30))
 >next : Symbol(next, Decl(self.ts, 11, 45))
 
+=== quotedAnchor.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(quotedAnchor.ts, 0, 0))
+>T : Symbol(T, Decl(quotedAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(quotedAnchor.ts, 0, 18))
+>T : Symbol(T, Decl(quotedAnchor.ts, 0, 10))
+>T : Symbol(T, Decl(quotedAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(quotedAnchor.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(quotedAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>show : Symbol(show, Decl(quotedAnchor.ts, 0, 0))
+>P : Symbol(P, Decl(quotedAnchor.ts, 1, 26))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>P : Symbol(P, Decl(quotedAnchor.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(quotedAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>P : Symbol(P, Decl(quotedAnchor.ts, 1, 26))
+
+declare function mod<T>(): { "node": resolve<T> };
+>mod : Symbol(mod, Decl(quotedAnchor.ts, 1, 83))
+>T : Symbol(T, Decl(quotedAnchor.ts, 2, 21))
+>"node" : Symbol("node", Decl(quotedAnchor.ts, 2, 28))
+>resolve : Symbol(resolve, Decl(quotedAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(quotedAnchor.ts, 2, 21))
+
+// A quoted property whose text is a valid identifier still supplies an exact path.
+// Ideal quotedAnchor.d.ts (no helper needed):
+// export declare const quoted: { "node": { next: typeof quoted.node } };
+export const quoted = mod<{ next: "ref" }>();
+>quoted : Symbol(quoted, Decl(quotedAnchor.ts, 7, 12))
+>mod : Symbol(mod, Decl(quotedAnchor.ts, 1, 83))
+>next : Symbol(next, Decl(quotedAnchor.ts, 7, 27))
+
+=== wideAnchor.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(wideAnchor.ts, 0, 0))
+>T : Symbol(T, Decl(wideAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(wideAnchor.ts, 0, 18))
+>T : Symbol(T, Decl(wideAnchor.ts, 0, 10))
+>T : Symbol(T, Decl(wideAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(wideAnchor.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(wideAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>show : Symbol(show, Decl(wideAnchor.ts, 0, 0))
+>P : Symbol(P, Decl(wideAnchor.ts, 1, 26))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>P : Symbol(P, Decl(wideAnchor.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(wideAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>P : Symbol(P, Decl(wideAnchor.ts, 1, 26))
+
+type Bit = "0" | "1";
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+
+type Keys = `${Bit}${Bit}${Bit}${Bit}${Bit}${Bit}${Bit}`;
+>Keys : Symbol(Keys, Decl(wideAnchor.ts, 2, 21))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+
+declare function mod<T>(): { [K in Keys | "node"]: K extends "node" ? resolve<T> : { key: K } };
+>mod : Symbol(mod, Decl(wideAnchor.ts, 3, 57))
+>T : Symbol(T, Decl(wideAnchor.ts, 4, 21))
+>K : Symbol(K, Decl(wideAnchor.ts, 4, 30))
+>Keys : Symbol(Keys, Decl(wideAnchor.ts, 2, 21))
+>K : Symbol(K, Decl(wideAnchor.ts, 4, 30))
+>resolve : Symbol(resolve, Decl(wideAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(wideAnchor.ts, 4, 21))
+>key : Symbol(key, Decl(wideAnchor.ts, 4, 84))
+>K : Symbol(K, Decl(wideAnchor.ts, 4, 30))
+
+// Unrelated sibling properties must not consume a search budget and force a helper.
+// Ideal wideAnchor.d.ts (no helper needed):
+// export declare const wide: {
+//     "0000000": { key: "0000000" }; // ... all other Keys properties ...
+//     node: { next: typeof wide.node };
+// };
+export const wide = mod<{ next: "ref" }>();
+>wide : Symbol(wide, Decl(wideAnchor.ts, 12, 12))
+>mod : Symbol(mod, Decl(wideAnchor.ts, 3, 57))
+>next : Symbol(next, Decl(wideAnchor.ts, 12, 25))
+
 === mutual.ts ===
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 >show : Symbol(show, Decl(mutual.ts, 0, 0))

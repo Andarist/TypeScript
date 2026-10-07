@@ -145,7 +145,8 @@ func (b *NodeBuilder) SerializeTypeForDeclaration(declaration *ast.Node, symbol 
 	b.enterContext(enclosingDeclaration, flags, internalFlags, tracker)
 	if b.impl.ctx.recursiveTypeTracker != nil && ast.IsVariableDeclaration(declaration) && ast.IsIdentifier(declaration.Name()) && symbol != nil {
 		b.impl.ctx.recursiveTypeRootDeclaration = declaration
-		b.impl.ctx.recursiveTypeRoot = b.impl.ch.getWidenedLiteralType(b.impl.ch.getTypeOfSymbol(symbol))
+		b.impl.ctx.recursiveTypePathType = b.impl.ch.getWidenedLiteralType(b.impl.ch.getTypeOfSymbol(symbol))
+		b.impl.ctx.recursiveTypePath = &recursiveTypePath{name: declaration.Name().Text()}
 	}
 	return b.exitContext(b.impl.serializeTypeForDeclaration(declaration, nil, symbol, true))
 }

@@ -22,6 +22,31 @@ declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
 // };
 export const n = mod<{ Node: { value: number; next: "ref" } }>();
 
+// @filename: quotedAnchor.ts
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+declare function mod<T>(): { "node": resolve<T> };
+
+// A quoted property whose text is a valid identifier still supplies an exact path.
+// Ideal quotedAnchor.d.ts (no helper needed):
+// export declare const quoted: { "node": { next: typeof quoted.node } };
+export const quoted = mod<{ next: "ref" }>();
+
+// @filename: wideAnchor.ts
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+type Bit = "0" | "1";
+type Keys = `${Bit}${Bit}${Bit}${Bit}${Bit}${Bit}${Bit}`;
+declare function mod<T>(): { [K in Keys | "node"]: K extends "node" ? resolve<T> : { key: K } };
+
+// Unrelated sibling properties must not consume a search budget and force a helper.
+// Ideal wideAnchor.d.ts (no helper needed):
+// export declare const wide: {
+//     "0000000": { key: "0000000" }; // ... all other Keys properties ...
+//     node: { next: typeof wide.node };
+// };
+export const wide = mod<{ next: "ref" }>();
+
 // @filename: mutual.ts
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<M, K extends keyof M> = show<{

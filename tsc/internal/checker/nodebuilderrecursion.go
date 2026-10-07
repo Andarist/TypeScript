@@ -13,6 +13,15 @@ type recursiveTypeFrame struct {
 	name                 *ast.Node
 	body                 *ast.Node
 	enclosingDeclaration *ast.Node
+	path                 *recursiveTypePath
+	type_                *Type
+}
+
+// Keep path tracking cheap for acyclic types. Entity-name nodes are allocated
+// only when an actual back edge needs a reference to the output declaration.
+type recursiveTypePath struct {
+	parent *recursiveTypePath
+	name   string
 }
 
 func (b *NodeBuilderImpl) recursiveTypeIdentity(t *Type) TypeId {
@@ -49,13 +58,30 @@ func (b *NodeBuilderImpl) tryCreateRecursiveTypeReference(t *Type) *ast.Node {
 	return b.f.NewTypeReferenceNode(b.f.DeepCloneNode(frame.name), nil)
 }
 
-// Search required object properties lazily, when a cycle is discovered. Optional
-// properties and unions do not provide an exact reference to their constituents.
+// Extend an output path only while emitting a required, public property signature.
+// Optional properties include undefined, and a class's structural constructor
+// declaration need not retain the checker's synthetic prototype property.
+func (b *NodeBuilderImpl) recursiveTypePathForProperty(property *ast.Symbol, name *ast.Node) *recursiveTypePath {
+	frame := b.ctx.recursiveTypeCurrentFrame
+	if frame == nil || frame.path == nil || property.Flags&ast.SymbolFlagsOptional != 0 ||
+		!(ast.IsIdentifier(name) || ast.IsStringLiteral(name)) || !scanner.IsIdentifierText(name.Text(), core.LanguageVariantStandard) ||
+		frame.type_.flags&TypeFlagsObject == 0 || b.ch.isArrayOrTupleType(frame.type_) ||
+		frame.type_.symbol != nil && frame.type_.symbol.Flags&ast.SymbolFlagsClass != 0 ||
+		getDeclarationModifierFlagsFromSymbol(property)&ast.ModifierFlagsNonPublicAccessibilityModifier != 0 {
+		return nil
+	}
+	return &recursiveTypePath{parent: frame.path, name: name.Text()}
+}
+
+// Only paths through required properties actually serialized into the declaration
+// can close a cycle. Searching the checker type would also find properties omitted
+// by structural serialization, such as a class constructor's prototype.
 func (b *NodeBuilderImpl) tryCreateRecursiveDeclarationReference(target *Type) *ast.Node {
+	frame := b.ctx.recursiveTypeFrames[b.recursiveTypeIdentity(target)]
 	declaration := b.ctx.recursiveTypeRootDeclaration
 	// A type literal supplies a lazy object boundary. A type query directly in
 	// an array or union's own annotation can instead produce TS2502 on recheck.
-	if declaration == nil || b.ctx.enclosingFile == nil || target.flags&TypeFlagsObject == 0 ||
+	if frame == nil || frame.path == nil || declaration == nil || target.flags&TypeFlagsObject == 0 ||
 		b.ch.isArrayOrTupleType(target) || target.symbol != nil && target.symbol.Flags&ast.SymbolFlagsClass != 0 ||
 		len(b.ch.getPropertiesOfType(target)) == 0 {
 		return nil
@@ -68,49 +94,17 @@ func (b *NodeBuilderImpl) tryCreateRecursiveDeclarationReference(target *Type) *
 	if resolved == nil || b.ch.getExportSymbolOfValueSymbolIfExported(resolved) != b.ch.getExportSymbolOfValueSymbolIfExported(symbol) {
 		return nil // A parameter in the current signature may shadow the root variable.
 	}
-	type pathEntry struct {
-		type_ *Type
-		path  *ast.Node
+	var names []string
+	for path := frame.path; path != nil; path = path.parent {
+		names = append(names, path.name)
+		b.ctx.approximateLength += len(path.name) + 1
 	}
-	queue := []pathEntry{{b.ctx.recursiveTypeRoot, b.newIdentifier(declaration.Name().Text(), symbol)}}
-	visited := make(map[TypeId]bool)
-	for len(queue) > 0 && len(visited) < 100 {
-		entry := queue[0]
-		queue = queue[1:]
-		id := b.recursiveTypeIdentity(entry.type_)
-		if id == b.recursiveTypeIdentity(target) {
-			b.ctx.approximateLength += 7 // "typeof "
-			for name := entry.path; name != nil; {
-				if ast.IsQualifiedName(name) {
-					b.ctx.approximateLength += len(name.AsQualifiedName().Right.Text()) + 1
-					name = name.AsQualifiedName().Left
-				} else {
-					b.ctx.approximateLength += len(name.Text())
-					break
-				}
-			}
-			return b.f.NewTypeQueryNode(entry.path, nil)
-		}
-		if visited[id] || entry.type_.flags&TypeFlagsObject == 0 || b.ch.isArrayOrTupleType(entry.type_) {
-			continue
-		}
-		if entry.type_.symbol != nil && entry.type_.symbol.Flags&ast.SymbolFlagsClass != 0 {
-			continue // A serialized constructor need not retain its synthetic prototype property.
-		}
-		visited[id] = true
-		for _, property := range b.ch.getPropertiesOfType(entry.type_) {
-			if property.Flags&ast.SymbolFlagsOptional != 0 ||
-				getDeclarationModifierFlagsFromSymbol(property)&ast.ModifierFlagsNonPublicAccessibilityModifier != 0 ||
-				!scanner.IsIdentifierText(property.Name, core.LanguageVariantStandard) {
-				continue
-			}
-			queue = append(queue, pathEntry{
-				b.ch.getNonMissingTypeOfSymbol(property),
-				b.f.NewQualifiedName(b.f.DeepCloneNode(entry.path), b.f.NewIdentifier(property.Name)),
-			})
-		}
+	b.ctx.approximateLength += 6 // "typeof " minus the root's separator counted above
+	name := b.newIdentifier(names[len(names)-1], symbol)
+	for i := len(names) - 2; i >= 0; i-- {
+		name = b.f.NewQualifiedName(name, b.f.NewIdentifier(names[i]))
 	}
-	return nil
+	return b.f.NewTypeQueryNode(name, nil)
 }
 
 // Hoisting a completed body must not capture names from the original function or
