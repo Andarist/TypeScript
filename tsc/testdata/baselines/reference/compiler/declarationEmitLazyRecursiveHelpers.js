@@ -282,6 +282,20 @@ export function other() {
     return null as unknown as Local;
 }
 
+//// [helperNameCollisions.ts]
+// Occupied type and value names both reserve numbers before helper emission.
+// Ideal declaration (in addition to the original exports):
+// type makePair_3 = readonly [number, makePair_3];
+// type makePair_4 = readonly [string, makePair_4];
+// export declare function makePair(): { left: makePair_3; right: makePair_4 };
+export interface makePair_1 { occupied: true; }
+export const makePair_2 = 0;
+export function makePair() {
+    type Left = readonly [number, Left];
+    type Right = readonly [string, Right];
+    return { left: null as unknown as Left, right: null as unknown as Right };
+}
+
 //// [defaultValue.ts]
 function source() {
     type Local = readonly [number, Local];
@@ -926,6 +940,18 @@ export declare function makePair(): {
 };
 type other_1 = readonly [boolean, other_1];
 export declare function other(): other_1;
+export {};
+//// [helperNameCollisions.d.ts]
+export interface makePair_1 {
+    occupied: true;
+}
+export declare const makePair_2 = 0;
+type makePair_3 = readonly [number, makePair_3];
+type makePair_4 = readonly [string, makePair_4];
+export declare function makePair(): {
+    left: makePair_3;
+    right: makePair_4;
+};
 export {};
 //// [defaultValue.d.ts]
 type _default_1 = readonly [number, _default_1];

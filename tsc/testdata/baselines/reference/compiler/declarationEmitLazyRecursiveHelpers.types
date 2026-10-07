@@ -544,6 +544,39 @@ export function other() {
 >null as unknown : unknown
 }
 
+=== helperNameCollisions.ts ===
+// Occupied type and value names both reserve numbers before helper emission.
+// Ideal declaration (in addition to the original exports):
+// type makePair_3 = readonly [number, makePair_3];
+// type makePair_4 = readonly [string, makePair_4];
+// export declare function makePair(): { left: makePair_3; right: makePair_4 };
+export interface makePair_1 { occupied: true; }
+>occupied : true
+>true : true
+
+export const makePair_2 = 0;
+>makePair_2 : 0
+>0 : 0
+
+export function makePair() {
+>makePair : () => { left: readonly [number, any]; right: readonly [string, any]; }
+
+    type Left = readonly [number, Left];
+>Left : readonly [number, any]
+
+    type Right = readonly [string, Right];
+>Right : readonly [string, any]
+
+    return { left: null as unknown as Left, right: null as unknown as Right };
+>{ left: null as unknown as Left, right: null as unknown as Right } : { left: readonly [number, any]; right: readonly [string, any]; }
+>left : readonly [number, any]
+>null as unknown as Left : readonly [number, any]
+>null as unknown : unknown
+>right : readonly [string, any]
+>null as unknown as Right : readonly [string, any]
+>null as unknown : unknown
+}
+
 === defaultValue.ts ===
 function source() {
 >source : () => readonly [number, any]

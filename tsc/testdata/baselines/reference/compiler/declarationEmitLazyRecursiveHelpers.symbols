@@ -805,6 +805,37 @@ export function other() {
 >Local : Symbol(Local, Decl(helperNames.ts, 12, 25))
 }
 
+=== helperNameCollisions.ts ===
+// Occupied type and value names both reserve numbers before helper emission.
+// Ideal declaration (in addition to the original exports):
+// type makePair_3 = readonly [number, makePair_3];
+// type makePair_4 = readonly [string, makePair_4];
+// export declare function makePair(): { left: makePair_3; right: makePair_4 };
+export interface makePair_1 { occupied: true; }
+>makePair_1 : Symbol(makePair_1, Decl(helperNameCollisions.ts, 0, 0))
+>occupied : Symbol(makePair_1.occupied, Decl(helperNameCollisions.ts, 5, 29))
+
+export const makePair_2 = 0;
+>makePair_2 : Symbol(makePair_2, Decl(helperNameCollisions.ts, 6, 12))
+
+export function makePair() {
+>makePair : Symbol(makePair, Decl(helperNameCollisions.ts, 6, 28))
+
+    type Left = readonly [number, Left];
+>Left : Symbol(Left, Decl(helperNameCollisions.ts, 7, 28))
+>Left : Symbol(Left, Decl(helperNameCollisions.ts, 7, 28))
+
+    type Right = readonly [string, Right];
+>Right : Symbol(Right, Decl(helperNameCollisions.ts, 8, 40))
+>Right : Symbol(Right, Decl(helperNameCollisions.ts, 8, 40))
+
+    return { left: null as unknown as Left, right: null as unknown as Right };
+>left : Symbol(left, Decl(helperNameCollisions.ts, 10, 12))
+>Left : Symbol(Left, Decl(helperNameCollisions.ts, 7, 28))
+>right : Symbol(right, Decl(helperNameCollisions.ts, 10, 43))
+>Right : Symbol(Right, Decl(helperNameCollisions.ts, 8, 40))
+}
+
 === defaultValue.ts ===
 function source() {
 >source : Symbol(source, Decl(defaultValue.ts, 0, 0))
