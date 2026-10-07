@@ -40,6 +40,10 @@ func (b *NodeBuilderImpl) pseudoTypeToNodeWithCheckerFallback(t *pseudochecker.P
 			b.ctx.suppressReportInferenceFallback = oldSuppress
 			return result
 		}
+	} else if (t.Kind == pseudochecker.PseudoTypeKindSingleCallSignature || t.Kind == pseudochecker.PseudoTypeKindObjectLiteral) &&
+		b.getTypeDefinitionReference(checkerType).symbol != nil {
+		// Reusing structural syntax must not unfold an already available back-reference.
+		return b.typeToTypeNode(checkerType)
 	}
 	return b.pseudoTypeToNode(t)
 }
@@ -47,6 +51,12 @@ func (b *NodeBuilderImpl) pseudoTypeToNodeWithCheckerFallback(t *pseudochecker.P
 // Maps a pseudochecker's pseudotypes into ast nodes and reports any inference fallback errors the pseudotype structure implies
 func (b *NodeBuilderImpl) pseudoTypeToNode(t *pseudochecker.PseudoType) *ast.Node {
 	debug.Assert(t != nil, "Attempted to serialize nil pseudotype")
+	if t.Kind == pseudochecker.PseudoTypeKindObjectLiteral || t.Kind == pseudochecker.PseudoTypeKindSingleCallSignature {
+		// Members of type literals and signatures are resolved lazily. Tuple and
+		// array elements are not, so those alone cannot guard a self-reference.
+		b.ctx.deferredTypeDepth++
+		defer func() { b.ctx.deferredTypeDepth-- }()
+	}
 	switch t.Kind {
 	case pseudochecker.PseudoTypeKindDirect:
 		return b.reuseTypeNode(t.AsPseudoTypeDirect().TypeNode)

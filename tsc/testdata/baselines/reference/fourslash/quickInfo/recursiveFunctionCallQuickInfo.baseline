@@ -29,7 +29,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const arrow: () => () => typeof arrow
+// | const arrow: () => typeof arrow
 // | ```
 // | 
 // | (verbosity level: 2)
@@ -37,7 +37,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const arrow: () => () => typeof arrow
+// | const arrow: () => typeof arrow
 // | ```
 // | 
 // | (verbosity level: 1)
@@ -45,7 +45,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const arrow: () => () => typeof arrow
+// | const arrow: () => typeof arrow
 // | ```
 // | 
 // | (verbosity level: 0)
@@ -55,7 +55,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const named: () => () => typeof named
+// | const named: () => typeof named
 // | ```
 // | 
 // | (verbosity level: 2)
@@ -63,7 +63,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const named: () => () => typeof named
+// | const named: () => typeof named
 // | ```
 // | 
 // | (verbosity level: 1)
@@ -71,7 +71,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const named: () => () => typeof named
+// | const named: () => typeof named
 // | ```
 // | 
 // | (verbosity level: 0)
@@ -81,7 +81,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | function recur(): () => typeof recur
+// | function recur(): typeof recur
 // | ```
 // | 
 // | (verbosity level: 2)
@@ -89,7 +89,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | function recur(): () => typeof recur
+// | function recur(): typeof recur
 // | ```
 // | 
 // | (verbosity level: 1)
@@ -97,7 +97,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | function recur(): () => typeof recur
+// | function recur(): typeof recur
 // | ```
 // | 
 // | (verbosity level: 0)
@@ -127,7 +127,7 @@
 //               ^^^^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | let narrowed: () => () => typeof arrow
+// | let narrowed: () => typeof arrow
 // | ```
 // | 
 // | (verbosity level: 2)
@@ -135,7 +135,7 @@
 //               ^^^^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | let narrowed: () => () => typeof arrow
+// | let narrowed: () => typeof arrow
 // | ```
 // | 
 // | (verbosity level: 1)
@@ -143,7 +143,7 @@
 //               ^^^^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | let narrowed: () => () => typeof arrow
+// | let narrowed: () => typeof arrow
 // | ```
 // | 
 // | (verbosity level: 0)
@@ -211,6 +211,22 @@
 // | function overloaded(value: number): typeof overloaded
 // | ```
 // | 
+// | (verbosity level: 2)
+// | ----------------------------------------------------------------------
+// ^^^^^^^^^^
+// | ----------------------------------------------------------------------
+// | ```typescript
+// | function overloaded(value: number): typeof overloaded
+// | ```
+// | 
+// | (verbosity level: 1)
+// | ----------------------------------------------------------------------
+// ^^^^^^^^^^
+// | ----------------------------------------------------------------------
+// | ```typescript
+// | function overloaded(value: number): typeof overloaded
+// | ```
+// | 
 // | (verbosity level: 0)
 // | ----------------------------------------------------------------------
 // const object = { recur() { return object.recur; } };
@@ -218,7 +234,7 @@
 //        ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | (method) recur(): () => ...
+// | (method) recur(): (typeof object)["recur"]
 // | ```
 // | 
 // | (verbosity level: 2)
@@ -226,7 +242,7 @@
 //        ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | (method) recur(): () => ...
+// | (method) recur(): (typeof object)["recur"]
 // | ```
 // | 
 // | (verbosity level: 1)
@@ -234,7 +250,7 @@
 //        ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | (method) recur(): () => ...
+// | (method) recur(): (typeof object)["recur"]
 // | ```
 // | 
 // | (verbosity level: 0)
@@ -269,7 +285,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const first: () => () => () => typeof second
+// | const first: () => () => typeof first
 // | ```
 // | 
 // | (verbosity level: 2)
@@ -277,7 +293,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const first: () => () => () => typeof second
+// | const first: () => () => typeof first
 // | ```
 // | 
 // | (verbosity level: 1)
@@ -285,7 +301,7 @@
 // ^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const first: () => () => () => typeof second
+// | const first: () => () => typeof first
 // | ```
 // | 
 // | (verbosity level: 0)
@@ -306,10 +322,7 @@
 // ^^^^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const callable: () => {
-// |     (): typeof callable;
-// |     property: number;
-// | }
+// | const callable: () => typeof callable
 // | ```
 // | 
 // | (verbosity level: 2)
@@ -317,10 +330,7 @@
 // ^^^^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const callable: () => {
-// |     (): typeof callable;
-// |     property: number;
-// | }
+// | const callable: () => typeof callable
 // | ```
 // | 
 // | (verbosity level: 1)
@@ -328,10 +338,7 @@
 // ^^^^^^^^
 // | ----------------------------------------------------------------------
 // | ```typescript
-// | const callable: () => {
-// |     (): typeof callable;
-// |     property: number;
-// | }
+// | const callable: () => typeof callable
 // | ```
 // | 
 // | (verbosity level: 0)
@@ -492,7 +499,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst arrow: () => () => typeof arrow\n```\n"
+          "value": "```typescript\nconst arrow: () => typeof arrow\n```\n"
         },
         "range": {
           "start": {
@@ -522,7 +529,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst arrow: () => () => typeof arrow\n```\n"
+          "value": "```typescript\nconst arrow: () => typeof arrow\n```\n"
         },
         "range": {
           "start": {
@@ -552,7 +559,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst arrow: () => () => typeof arrow\n```\n"
+          "value": "```typescript\nconst arrow: () => typeof arrow\n```\n"
         },
         "range": {
           "start": {
@@ -582,7 +589,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst named: () => () => typeof named\n```\n"
+          "value": "```typescript\nconst named: () => typeof named\n```\n"
         },
         "range": {
           "start": {
@@ -612,7 +619,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst named: () => () => typeof named\n```\n"
+          "value": "```typescript\nconst named: () => typeof named\n```\n"
         },
         "range": {
           "start": {
@@ -642,7 +649,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst named: () => () => typeof named\n```\n"
+          "value": "```typescript\nconst named: () => typeof named\n```\n"
         },
         "range": {
           "start": {
@@ -672,7 +679,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nfunction recur(): () => typeof recur\n```\n"
+          "value": "```typescript\nfunction recur(): typeof recur\n```\n"
         },
         "range": {
           "start": {
@@ -702,7 +709,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nfunction recur(): () => typeof recur\n```\n"
+          "value": "```typescript\nfunction recur(): typeof recur\n```\n"
         },
         "range": {
           "start": {
@@ -732,7 +739,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nfunction recur(): () => typeof recur\n```\n"
+          "value": "```typescript\nfunction recur(): typeof recur\n```\n"
         },
         "range": {
           "start": {
@@ -822,7 +829,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nlet narrowed: () => () => typeof arrow\n```\n"
+          "value": "```typescript\nlet narrowed: () => typeof arrow\n```\n"
         },
         "range": {
           "start": {
@@ -852,7 +859,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nlet narrowed: () => () => typeof arrow\n```\n"
+          "value": "```typescript\nlet narrowed: () => typeof arrow\n```\n"
         },
         "range": {
           "start": {
@@ -882,7 +889,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nlet narrowed: () => () => typeof arrow\n```\n"
+          "value": "```typescript\nlet narrowed: () => typeof arrow\n```\n"
         },
         "range": {
           "start": {
@@ -1110,6 +1117,66 @@
   },
   {
     "marker": {
+      "Position": 632,
+      "LSPosition": {
+        "line": 20,
+        "character": 10
+      },
+      "Name": "numberCall",
+      "Data": {}
+    },
+    "item": {
+      "hover": {
+        "contents": {
+          "kind": "markdown",
+          "value": "```typescript\nfunction overloaded(value: number): typeof overloaded\n```\n"
+        },
+        "range": {
+          "start": {
+            "line": 20,
+            "character": 0
+          },
+          "end": {
+            "line": 20,
+            "character": 10
+          }
+        }
+      },
+      "verbosityLevel": 1
+    }
+  },
+  {
+    "marker": {
+      "Position": 632,
+      "LSPosition": {
+        "line": 20,
+        "character": 10
+      },
+      "Name": "numberCall",
+      "Data": {}
+    },
+    "item": {
+      "hover": {
+        "contents": {
+          "kind": "markdown",
+          "value": "```typescript\nfunction overloaded(value: number): typeof overloaded\n```\n"
+        },
+        "range": {
+          "start": {
+            "line": 20,
+            "character": 0
+          },
+          "end": {
+            "line": 20,
+            "character": 10
+          }
+        }
+      },
+      "verbosityLevel": 2
+    }
+  },
+  {
+    "marker": {
       "Position": 702,
       "LSPosition": {
         "line": 22,
@@ -1122,7 +1189,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\n(method) recur(): () => ...\n```\n"
+          "value": "```typescript\n(method) recur(): (typeof object)[\"recur\"]\n```\n"
         },
         "range": {
           "start": {
@@ -1152,7 +1219,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\n(method) recur(): () => ...\n```\n"
+          "value": "```typescript\n(method) recur(): (typeof object)[\"recur\"]\n```\n"
         },
         "range": {
           "start": {
@@ -1182,7 +1249,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\n(method) recur(): () => ...\n```\n"
+          "value": "```typescript\n(method) recur(): (typeof object)[\"recur\"]\n```\n"
         },
         "range": {
           "start": {
@@ -1302,7 +1369,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst first: () => () => () => typeof second\n```\n"
+          "value": "```typescript\nconst first: () => () => typeof first\n```\n"
         },
         "range": {
           "start": {
@@ -1332,7 +1399,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst first: () => () => () => typeof second\n```\n"
+          "value": "```typescript\nconst first: () => () => typeof first\n```\n"
         },
         "range": {
           "start": {
@@ -1362,7 +1429,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst first: () => () => () => typeof second\n```\n"
+          "value": "```typescript\nconst first: () => () => typeof first\n```\n"
         },
         "range": {
           "start": {
@@ -1422,7 +1489,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst callable: () => {\n    (): typeof callable;\n    property: number;\n}\n```\n"
+          "value": "```typescript\nconst callable: () => typeof callable\n```\n"
         },
         "range": {
           "start": {
@@ -1452,7 +1519,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst callable: () => {\n    (): typeof callable;\n    property: number;\n}\n```\n"
+          "value": "```typescript\nconst callable: () => typeof callable\n```\n"
         },
         "range": {
           "start": {
@@ -1482,7 +1549,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nconst callable: () => {\n    (): typeof callable;\n    property: number;\n}\n```\n"
+          "value": "```typescript\nconst callable: () => typeof callable\n```\n"
         },
         "range": {
           "start": {

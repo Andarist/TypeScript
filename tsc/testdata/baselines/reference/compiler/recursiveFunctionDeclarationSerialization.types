@@ -59,8 +59,8 @@ export const finite = () => () => 1;
 >1 : 1
 
 export const wrapped = { arrow };
->wrapped : { arrow: () => typeof arrow; }
->{ arrow } : { arrow: () => typeof arrow; }
+>wrapped : { arrow: () => (typeof wrapped)["arrow"]; }
+>{ arrow } : { arrow: () => (typeof wrapped)["arrow"]; }
 >arrow : () => typeof arrow
 
 export const tuple = [arrow] as const;
@@ -70,22 +70,22 @@ export const tuple = [arrow] as const;
 >arrow : () => typeof arrow
 
 export const named = function self() { return self; };
->named : () => typeof self
->function self() { return self; } : () => typeof self
+>named : () => typeof named
+>function self() { return self; } : () => typeof named
 >self : () => typeof named
 >self : () => typeof named
 
 export const broad: unknown = function self() { return self; };
 >broad : unknown
->function self() { return self; } : () => typeof self
->self : () => typeof broad
->self : () => typeof broad
+>function self() { return self; } : () => any
+>self : () => typeof self
+>self : () => typeof self
 
 export const contextual: () => unknown = function self() { return self; };
 >contextual : () => unknown
->function self() { return self; } : () => typeof self
->self : () => typeof contextual
->self : () => typeof contextual
+>function self() { return self; } : () => any
+>self : () => typeof self
+>self : () => typeof self
 
 export const specialized = generic<number>;
 >specialized : (value: number) => <T>(value: number) => typeof generic
@@ -195,7 +195,7 @@ import { arrow, expression, declaration, first, generic, finite, wrapped, tuple 
 >first : () => () => typeof first
 >generic : <T>(value: T) => typeof generic
 >finite : () => () => number
->wrapped : { arrow: () => typeof arrow; }
+>wrapped : { arrow: () => (typeof wrapped)["arrow"]; }
 >tuple : readonly [() => typeof arrow]
 
 import { instantiatedNested, objectReturn, tupleReturn, shadowed } from "./exported";
@@ -259,7 +259,7 @@ const g: typeof arrow = wrapped.arrow()();
 >wrapped.arrow()() : () => typeof arrow
 >wrapped.arrow() : () => typeof arrow
 >wrapped.arrow : () => typeof arrow
->wrapped : { arrow: () => typeof arrow; }
+>wrapped : { arrow: () => (typeof wrapped)["arrow"]; }
 >arrow : () => typeof arrow
 
 const h: typeof arrow = tuple[0]()();
@@ -326,27 +326,27 @@ const shadowedCall: typeof shadowed = shadowed(1)(2);
 
 === recursiveObject.ts ===
 export function recursiveObject<T>() {
->recursiveObject : <T>() => { call: <U>(arg: U) => any; consume: (arg: T) => any; }
+>recursiveObject : <T>() => { call: <U>(arg: U) => typeof value; consume: (arg: T) => typeof value; }
 
     const value = {
->value : { call: <U>(arg: U) => any; consume: (arg: T) => any; }
->{        call: <U>(arg: U) => value,        consume: (arg: T) => value,    } : { call: <U>(arg: U) => { call: <U>(arg: U) => any; consume: (arg: T) => any; }; consume: (arg: T) => { call: <U>(arg: U) => any; consume: (arg: T) => any; }; }
+>value : { call: <U>(arg: U) => typeof value; consume: (arg: T) => typeof value; }
+>{        call: <U>(arg: U) => value,        consume: (arg: T) => value,    } : { call: <U>(arg: U) => { call: (typeof value)["call"]; consume: (arg: T) => typeof value; }; consume: (arg: T) => { call: <U>(arg: U) => typeof value; consume: (typeof value)["consume"]; }; }
 
         call: <U>(arg: U) => value,
->call : <U>(arg: U) => { call: <U>(arg: U) => any; consume: (arg: T) => any; }
-><U>(arg: U) => value : <U>(arg: U) => { call: <U>(arg: U) => any; consume: (arg: T) => any; }
+>call : <U>(arg: U) => { call: (typeof value)["call"]; consume: (arg: T) => typeof value; }
+><U>(arg: U) => value : <U>(arg: U) => { call: (typeof value)["call"]; consume: (arg: T) => typeof value; }
 >arg : U
->value : { call: <U>(arg: U) => any; consume: (arg: T) => any; }
+>value : { call: <U>(arg: U) => typeof value; consume: (arg: T) => typeof value; }
 
         consume: (arg: T) => value,
->consume : (arg: T) => { call: <U>(arg: U) => any; consume: (arg: T) => any; }
->(arg: T) => value : (arg: T) => { call: <U>(arg: U) => any; consume: (arg: T) => any; }
+>consume : (arg: T) => { call: <U>(arg: U) => typeof value; consume: (typeof value)["consume"]; }
+>(arg: T) => value : (arg: T) => { call: <U>(arg: U) => typeof value; consume: (typeof value)["consume"]; }
 >arg : T
->value : { call: <U>(arg: U) => any; consume: (arg: T) => any; }
+>value : { call: <U>(arg: U) => typeof value; consume: (arg: T) => typeof value; }
 
     };
     return value;
->value : { call: <U>(arg: U) => any; consume: (arg: T) => any; }
+>value : { call: <U>(arg: U) => typeof value; consume: (arg: T) => typeof value; }
 }
 
 const result = recursiveObject<number>().call("hello").consume(1);
@@ -391,180 +391,180 @@ result.consume("wrong");
 
 === nestedNamedFunctions.ts ===
 export const nestedObject = { recur: () => nestedObject.recur };
->nestedObject : { recur: () => () => any; }
->{ recur: () => nestedObject.recur } : { recur: () => () => any; }
->recur : () => any
->() => nestedObject.recur : () => any
->nestedObject.recur : () => any
->nestedObject : { recur: () => () => any; }
->recur : () => any
+>nestedObject : { recur: () => (typeof nestedObject)["recur"]; }
+>{ recur: () => nestedObject.recur } : { recur: () => (typeof nestedObject)["recur"]; }
+>recur : () => (typeof nestedObject)["recur"]
+>() => nestedObject.recur : () => (typeof nestedObject)["recur"]
+>nestedObject.recur : () => (typeof nestedObject)["recur"]
+>nestedObject : { recur: () => (typeof nestedObject)["recur"]; }
+>recur : () => (typeof nestedObject)["recur"]
 
 export const nestedTuple = [() => nestedTuple[0]] as const;
->nestedTuple : readonly [() => any]
->[() => nestedTuple[0]] as const : readonly [() => any]
->[() => nestedTuple[0]] : readonly [() => any]
->() => nestedTuple[0] : () => any
->nestedTuple[0] : () => any
->nestedTuple : readonly [() => any]
+>nestedTuple : readonly [() => (typeof nestedTuple)[0]]
+>[() => nestedTuple[0]] as const : readonly [() => (typeof nestedTuple)[0]]
+>[() => nestedTuple[0]] : readonly [() => (typeof nestedTuple)[0]]
+>() => nestedTuple[0] : () => (typeof nestedTuple)[0]
+>nestedTuple[0] : () => (typeof nestedTuple)[0]
+>nestedTuple : readonly [() => (typeof nestedTuple)[0]]
 >0 : 0
 
 export const object = { recur: function self() { return self; } };
->object : { recur: () => () => any; }
->{ recur: function self() { return self; } } : { recur: () => () => any; }
->recur : () => any
->function self() { return self; } : () => any
->self : () => any
->self : () => any
+>object : { recur: () => (typeof object)["recur"]; }
+>{ recur: function self() { return self; } } : { recur: () => (typeof object)["recur"]; }
+>recur : () => (typeof object)["recur"]
+>function self() { return self; } : () => (typeof object)["recur"]
+>self : () => (typeof object)["recur"]
+>self : () => (typeof object)["recur"]
 
 export const tuple = [function self() { return self; }] as const;
->tuple : readonly [() => any]
->[function self() { return self; }] as const : readonly [() => any]
->[function self() { return self; }] : readonly [() => any]
->function self() { return self; } : () => any
->self : () => any
->self : () => any
+>tuple : readonly [() => (typeof tuple)[0]]
+>[function self() { return self; }] as const : readonly [() => (typeof tuple)[0]]
+>[function self() { return self; }] : readonly [() => (typeof tuple)[0]]
+>function self() { return self; } : () => (typeof tuple)[0]
+>self : () => (typeof tuple)[0]
+>self : () => (typeof tuple)[0]
 
 export const factory = () => function self() { return self; };
 >factory : () => () => () => any
 >() => function self() { return self; } : () => () => () => any
 >function self() { return self; } : () => any
->self : () => any
->self : () => any
+>self : () => typeof self
+>self : () => typeof self
 
 export const method = { recur() { return method; } };
->method : { recur(): any; }
->{ recur() { return method; } } : { recur(): { recur(): any; }; }
->recur : () => { recur(): any; }
->method : { recur(): any; }
+>method : { recur(): typeof method; }
+>{ recur() { return method; } } : { recur(): { recur(): typeof method; }; }
+>recur : () => { recur(): typeof method; }
+>method : { recur(): typeof method; }
 
 export const accessor = { get recur() { return accessor; } };
->accessor : { readonly recur: any; }
->{ get recur() { return accessor; } } : { readonly recur: { readonly recur: any; }; }
->recur : { readonly recur: any; }
->accessor : { readonly recur: any; }
+>accessor : { readonly recur: typeof accessor; }
+>{ get recur() { return accessor; } } : { readonly recur: { readonly recur: (typeof accessor)["recur"]; }; }
+>recur : { readonly recur: typeof accessor; }
+>accessor : { readonly recur: typeof accessor; }
 
 export function local() {
->local : () => () => any
+>local : () => () => typeof recur
 
     function recur() { return recur; }
->recur : () => any
->recur : () => any
+>recur : () => typeof recur
+>recur : () => typeof recur
 
     return recur;
->recur : () => any
+>recur : () => typeof recur
 }
 
 === recursiveStructures.ts ===
 export const object = { value: 1, next: () => object };
->object : { value: number; next: () => any; }
->{ value: 1, next: () => object } : { value: number; next: () => { value: number; next: () => any; }; }
+>object : { value: number; next: () => typeof object; }
+>{ value: 1, next: () => object } : { value: number; next: () => { value: number; next: (typeof object)["next"]; }; }
 >value : number
 >1 : 1
->next : () => { value: number; next: () => any; }
->() => object : () => { value: number; next: () => any; }
->object : { value: number; next: () => any; }
+>next : () => { value: number; next: (typeof object)["next"]; }
+>() => object : () => { value: number; next: (typeof object)["next"]; }
+>object : { value: number; next: () => typeof object; }
 
 export const method = { value: 1, next() { return method; } };
->method : { value: number; next(): any; }
->{ value: 1, next() { return method; } } : { value: number; next(): { value: number; next(): any; }; }
+>method : { value: number; next(): typeof method; }
+>{ value: 1, next() { return method; } } : { value: number; next(): { value: number; next(): typeof method; }; }
 >value : number
 >1 : 1
->next : () => { value: number; next(): any; }
->method : { value: number; next(): any; }
+>next : () => { value: number; next(): typeof method; }
+>method : { value: number; next(): typeof method; }
 
 export const accessor = { value: 1, get next() { return accessor; } };
->accessor : { value: number; readonly next: any; }
->{ value: 1, get next() { return accessor; } } : { value: number; readonly next: { value: number; readonly next: any; }; }
+>accessor : { value: number; readonly next: typeof accessor; }
+>{ value: 1, get next() { return accessor; } } : { value: number; readonly next: { value: number; readonly next: (typeof accessor)["next"]; }; }
 >value : number
 >1 : 1
->next : { value: number; readonly next: any; }
->accessor : { value: number; readonly next: any; }
+>next : { value: number; readonly next: typeof accessor; }
+>accessor : { value: number; readonly next: typeof accessor; }
 
 export const tuple = [() => tuple] as const;
 >tuple : readonly [() => any]
 >[() => tuple] as const : readonly [() => any]
 >[() => tuple] : readonly [() => any]
->() => tuple : () => readonly [any]
+>() => tuple : () => readonly [(typeof tuple)[0]]
 >tuple : readonly [() => any]
 
 export const tupleObject = [{ next: () => tupleObject }] as const;
 >tupleObject : readonly [{ readonly next: () => any; }]
->[{ next: () => tupleObject }] as const : readonly [{ readonly next: () => readonly [{ readonly next: () => any; }]; }]
->[{ next: () => tupleObject }] : readonly [{ readonly next: () => readonly [{ readonly next: () => any; }]; }]
->{ next: () => tupleObject } : { readonly next: () => readonly [{ readonly next: () => any; }]; }
->next : () => readonly [{ readonly next: () => any; }]
->() => tupleObject : () => readonly [{ readonly next: () => any; }]
+>[{ next: () => tupleObject }] as const : readonly [{ readonly next: () => readonly [{ readonly next: (typeof tupleObject)[0]["next"]; }]; }]
+>[{ next: () => tupleObject }] : readonly [{ readonly next: () => readonly [{ readonly next: (typeof tupleObject)[0]["next"]; }]; }]
+>{ next: () => tupleObject } : { readonly next: () => readonly [{ readonly next: (typeof tupleObject)[0]["next"]; }]; }
+>next : () => readonly [{ readonly next: (typeof tupleObject)[0]["next"]; }]
+>() => tupleObject : () => readonly [{ readonly next: (typeof tupleObject)[0]["next"]; }]
 >tupleObject : readonly [{ readonly next: () => any; }]
 
 export const array = [() => array];
 >array : (() => any)[]
 >[() => array] : (() => any)[]
->() => array : () => any[]
+>() => array : () => (typeof array)[0][]
 >array : (() => any)[]
 
 export const first = { next: () => second };
->first : { next: () => { next: () => any; }; }
->{ next: () => second } : { next: () => { next: () => { next: () => any; }; }; }
->next : () => { next: () => { next: () => any; }; }
->() => second : () => { next: () => { next: () => any; }; }
->second : { next: () => { next: () => any; }; }
+>first : { next: () => { next: () => typeof first; }; }
+>{ next: () => second } : { next: () => { next: () => { next: (typeof first)["next"]; }; }; }
+>next : () => { next: () => { next: (typeof first)["next"]; }; }
+>() => second : () => { next: () => { next: (typeof first)["next"]; }; }
+>second : { next: () => { next: () => typeof second; }; }
 
 export const second = { next: () => first };
->second : { next: () => { next: () => any; }; }
->{ next: () => first } : { next: () => { next: () => { next: () => any; }; }; }
->next : () => { next: () => { next: () => any; }; }
->() => first : () => { next: () => { next: () => any; }; }
->first : { next: () => { next: () => any; }; }
+>second : { next: () => { next: () => typeof second; }; }
+>{ next: () => first } : { next: () => { next: () => { next: (typeof second)["next"]; }; }; }
+>next : () => { next: () => { next: (typeof second)["next"]; }; }
+>() => first : () => { next: () => { next: (typeof second)["next"]; }; }
+>first : { next: () => { next: () => typeof first; }; }
 
 export const nested = { inner: { next() { return nested.inner; } } };
->nested : { inner: { next(): { next(): any; }; }; }
->{ inner: { next() { return nested.inner; } } } : { inner: { next(): { next(): any; }; }; }
->inner : { next(): { next(): any; }; }
->{ next() { return nested.inner; } } : { next(): { next(): any; }; }
->next : () => { next(): any; }
->nested.inner : { next(): any; }
->nested : { inner: { next(): { next(): any; }; }; }
->inner : { next(): any; }
+>nested : { inner: { next(): (typeof nested)["inner"]; }; }
+>{ inner: { next() { return nested.inner; } } } : { inner: { next(): { next(): (typeof nested)["inner"]; }; }; }
+>inner : { next(): { next(): (typeof nested)["inner"]; }; }
+>{ next() { return nested.inner; } } : { next(): { next(): (typeof nested)["inner"]; }; }
+>next : () => { next(): (typeof nested)["inner"]; }
+>nested.inner : { next(): (typeof nested)["inner"]; }
+>nested : { inner: { next(): (typeof nested)["inner"]; }; }
+>inner : { next(): (typeof nested)["inner"]; }
 
 export const shadowed = { next: function self(shadowed: number) { return self; } };
->shadowed : { next: (shadowed: number) => (shadowed: number) => any; }
->{ next: function self(shadowed: number) { return self; } } : { next: (shadowed: number) => (shadowed: number) => any; }
->next : (shadowed: number) => any
->function self(shadowed: number) { return self; } : (shadowed: number) => any
->self : (shadowed: number) => any
+>shadowed : { next: (shadowed: number) => typeof import("./recursiveStructures").shadowed["next"]; }
+>{ next: function self(shadowed: number) { return self; } } : { next: (shadowed: number) => typeof import("./recursiveStructures").shadowed["next"]; }
+>next : (shadowed: number) => typeof import("./recursiveStructures").shadowed["next"]
+>function self(shadowed: number) { return self; } : (shadowed: number) => typeof import("./recursiveStructures").shadowed["next"]
+>self : (shadowed: number) => typeof import("./recursiveStructures").shadowed["next"]
 >shadowed : number
->self : (shadowed: number) => any
+>self : (shadowed: number) => typeof import("./recursiveStructures").shadowed["next"]
 
 export const memberTuple = [function self() { return self; }] as const;
->memberTuple : readonly [() => any]
->[function self() { return self; }] as const : readonly [() => any]
->[function self() { return self; }] : readonly [() => any]
->function self() { return self; } : () => any
->self : () => any
->self : () => any
+>memberTuple : readonly [() => (typeof memberTuple)[0]]
+>[function self() { return self; }] as const : readonly [() => (typeof memberTuple)[0]]
+>[function self() { return self; }] : readonly [() => (typeof memberTuple)[0]]
+>function self() { return self; } : () => (typeof memberTuple)[0]
+>self : () => (typeof memberTuple)[0]
+>self : () => (typeof memberTuple)[0]
 
 export const memberArray = [function self() { return self; }];
->memberArray : (() => any)[]
->[function self() { return self; }] : (() => any)[]
->function self() { return self; } : () => any
->self : () => any
->self : () => any
+>memberArray : (() => (typeof memberArray)[0])[]
+>[function self() { return self; }] : (() => (typeof memberArray)[0])[]
+>function self() { return self; } : () => (typeof memberArray)[0]
+>self : () => (typeof memberArray)[0]
+>self : () => (typeof memberArray)[0]
 
 export const quoted = { "a-b": function self() { return self; } };
->quoted : { "a-b": () => () => any; }
->{ "a-b": function self() { return self; } } : { "a-b": () => () => any; }
->"a-b" : () => any
->function self() { return self; } : () => any
->self : () => any
->self : () => any
+>quoted : { "a-b": () => (typeof quoted)["a-b"]; }
+>{ "a-b": function self() { return self; } } : { "a-b": () => (typeof quoted)["a-b"]; }
+>"a-b" : () => (typeof quoted)["a-b"]
+>function self() { return self; } : () => (typeof quoted)["a-b"]
+>self : () => (typeof quoted)["a-b"]
+>self : () => (typeof quoted)["a-b"]
 
 export const numeric = { 0: function self() { return self; } };
->numeric : { 0: () => () => any; }
->{ 0: function self() { return self; } } : { 0: () => () => any; }
->0 : () => any
->function self() { return self; } : () => any
->self : () => any
->self : () => any
+>numeric : { 0: () => (typeof numeric)[0]; }
+>{ 0: function self() { return self; } } : { 0: () => (typeof numeric)[0]; }
+>0 : () => (typeof numeric)[0]
+>function self() { return self; } : () => (typeof numeric)[0]
+>self : () => (typeof numeric)[0]
+>self : () => (typeof numeric)[0]
 
 export const key = Symbol();
 >key : unique symbol
@@ -572,13 +572,13 @@ export const key = Symbol();
 >Symbol : SymbolConstructor
 
 export const computed = { [key]: function self() { return self; } };
->computed : { [key]: () => () => any; }
->{ [key]: function self() { return self; } } : { [key]: () => () => any; }
->[key] : () => any
+>computed : { [key]: () => (typeof computed)[typeof key]; }
+>{ [key]: function self() { return self; } } : { [key]: () => (typeof computed)[typeof key]; }
+>[key] : () => (typeof computed)[typeof key]
 >key : unique symbol
->function self() { return self; } : () => any
->self : () => any
->self : () => any
+>function self() { return self; } : () => (typeof computed)[typeof key]
+>self : () => (typeof computed)[typeof key]
+>self : () => (typeof computed)[typeof key]
 
 export const union = Math.random() ? { next: () => union } : undefined;
 >union : { next: () => any | undefined; } | undefined
@@ -594,19 +594,19 @@ export const union = Math.random() ? { next: () => union } : undefined;
 >undefined : undefined
 
 function create<T>(value: T) {
->create : <T>(value: T) => { value: T; next: () => any; }
+>create : <T>(value: T) => { value: T; next: () => typeof result; }
 >value : T
 
     const result = { value, next: () => result };
->result : { value: T; next: () => any; }
->{ value, next: () => result } : { value: T; next: () => { value: T; next: () => any; }; }
+>result : { value: T; next: () => typeof result; }
+>{ value, next: () => result } : { value: T; next: () => { value: T; next: (typeof result)["next"]; }; }
 >value : T
->next : () => { value: T; next: () => any; }
->() => result : () => { value: T; next: () => any; }
->result : { value: T; next: () => any; }
+>next : () => { value: T; next: (typeof result)["next"]; }
+>() => result : () => { value: T; next: (typeof result)["next"]; }
+>result : { value: T; next: () => typeof result; }
 
     return result;
->result : { value: T; next: () => any; }
+>result : { value: T; next: () => typeof result; }
 }
 export const specialized = create("text");
 >specialized : { value: string; next: () => any; }
@@ -681,22 +681,22 @@ export const viaAnnotation = createAnnotated("text");
 const objectValue: number = object.next().next().value;
 >objectValue : number
 >object.next().next().value : number
->object.next().next() : { value: number; next: () => any; }
->object.next().next : () => { value: number; next: () => any; }
->object.next() : { value: number; next: () => any; }
->object.next : () => { value: number; next: () => any; }
->object : { value: number; next: () => any; }
->next : () => { value: number; next: () => any; }
->next : () => { value: number; next: () => any; }
+>object.next().next() : { value: number; next: () => typeof object; }
+>object.next().next : () => { value: number; next: (typeof object)["next"]; }
+>object.next() : { value: number; next: () => typeof object; }
+>object.next : () => { value: number; next: (typeof object)["next"]; }
+>object : { value: number; next: () => typeof object; }
+>next : () => { value: number; next: (typeof object)["next"]; }
+>next : () => { value: number; next: (typeof object)["next"]; }
 >value : number
 
 const tupleValue: typeof tuple = tuple[0]()[0]();
 >tupleValue : readonly [() => any]
 >tuple : readonly [() => any]
 >tuple[0]()[0]() : readonly [() => any]
->tuple[0]()[0] : () => readonly [any]
+>tuple[0]()[0] : () => readonly [(typeof tuple)[0]]
 >tuple[0]() : readonly [() => any]
->tuple[0] : () => readonly [any]
+>tuple[0] : () => readonly [(typeof tuple)[0]]
 >tuple : readonly [() => any]
 >0 : 0
 >0 : 0
@@ -705,37 +705,37 @@ const tupleObjectValue: typeof tupleObject = tupleObject[0].next();
 >tupleObjectValue : readonly [{ readonly next: () => any; }]
 >tupleObject : readonly [{ readonly next: () => any; }]
 >tupleObject[0].next() : readonly [{ readonly next: () => any; }]
->tupleObject[0].next : () => readonly [{ readonly next: () => any; }]
->tupleObject[0] : { readonly next: () => readonly [any]; }
+>tupleObject[0].next : () => readonly [{ readonly next: (typeof tupleObject)[0]["next"]; }]
+>tupleObject[0] : { readonly next: () => readonly [(typeof tupleObject)[0]]; }
 >tupleObject : readonly [{ readonly next: () => any; }]
 >0 : 0
->next : () => readonly [{ readonly next: () => any; }]
+>next : () => readonly [{ readonly next: (typeof tupleObject)[0]["next"]; }]
 
 const arrayValue: typeof array = array[0]()[0]();
 >arrayValue : (() => any)[]
 >array : (() => any)[]
 >array[0]()[0]() : (() => any)[]
->array[0]()[0] : () => any[]
+>array[0]()[0] : () => (typeof array)[0][]
 >array[0]() : (() => any)[]
->array[0] : () => any[]
+>array[0] : () => (typeof array)[0][]
 >array : (() => any)[]
 >0 : 0
 >0 : 0
 
 const nestedValue: typeof nested.inner = nested.inner.next().next();
->nestedValue : { next(): any; }
->nested.inner : { next(): any; }
->nested : { inner: { next(): { next(): any; }; }; }
->inner : { next(): any; }
->nested.inner.next().next() : { next(): any; }
->nested.inner.next().next : () => { next(): any; }
->nested.inner.next() : { next(): any; }
->nested.inner.next : () => { next(): any; }
->nested.inner : { next(): any; }
->nested : { inner: { next(): { next(): any; }; }; }
->inner : { next(): any; }
->next : () => { next(): any; }
->next : () => { next(): any; }
+>nestedValue : { next(): (typeof nested)["inner"]; }
+>nested.inner : { next(): (typeof nested)["inner"]; }
+>nested : { inner: { next(): (typeof nested)["inner"]; }; }
+>inner : { next(): (typeof nested)["inner"]; }
+>nested.inner.next().next() : { next(): (typeof nested)["inner"]; }
+>nested.inner.next().next : () => { next(): (typeof nested)["inner"]; }
+>nested.inner.next() : { next(): (typeof nested)["inner"]; }
+>nested.inner.next : () => { next(): (typeof nested)["inner"]; }
+>nested.inner : { next(): (typeof nested)["inner"]; }
+>nested : { inner: { next(): (typeof nested)["inner"]; }; }
+>inner : { next(): (typeof nested)["inner"]; }
+>next : () => { next(): (typeof nested)["inner"]; }
+>next : () => { next(): (typeof nested)["inner"]; }
 
 const specializedValue: string = specialized.next().next().value;
 >specializedValue : string
@@ -834,53 +834,53 @@ export const nextCallable = callable(1);
 >1 : 1
 
 export const parenthesized = (function self() { return self; });
->parenthesized : () => any
->(function self() { return self; }) : () => any
->function self() { return self; } : () => any
->self : () => any
->self : () => any
+>parenthesized : () => typeof parenthesized
+>(function self() { return self; }) : () => typeof parenthesized
+>function self() { return self; } : () => typeof parenthesized
+>self : () => typeof parenthesized
+>self : () => typeof parenthesized
 
 export const asserted = (function self() { return self; }) satisfies () => unknown;
->asserted : () => any
->(function self() { return self; }) satisfies () => unknown : () => any
->(function self() { return self; }) : () => any
->function self() { return self; } : () => any
->self : () => any
->self : () => any
+>asserted : () => typeof asserted
+>(function self() { return self; }) satisfies () => unknown : () => typeof asserted
+>(function self() { return self; }) : () => typeof asserted
+>function self() { return self; } : () => typeof asserted
+>self : () => typeof asserted
+>self : () => typeof asserted
 
 export const widened: () => unknown = (function self() { return self; });
 >widened : () => unknown
 >(function self() { return self; }) : () => any
 >function self() { return self; } : () => any
->self : () => any
->self : () => any
+>self : () => typeof self
+>self : () => typeof self
 
 function createHidden<T>(value: T) {
->createHidden : <T>(value: T) => { value: T; next: Hidden; }
+>createHidden : <T>(value: T) => { value: T; next: any; }
 >value : T
 
     type Hidden = { value: T; next: Hidden };
->Hidden : { value: T; next: Hidden; }
+>Hidden : { value: T; next: any; }
 >value : T
->next : { value: T; next: Hidden; }
+>next : { value: T; next: any; }
 
     return null! as Hidden;
->null! as Hidden : { value: T; next: Hidden; }
+>null! as Hidden : { value: T; next: any; }
 >null! : never
 }
 export const hiddenAlias = createHidden("text");
->hiddenAlias : { value: string; next: Hidden; }
->createHidden("text") : { value: string; next: Hidden; }
->createHidden : <T>(value: T) => { value: T; next: Hidden; }
+>hiddenAlias : { value: string; next: any; }
+>createHidden("text") : { value: string; next: any; }
+>createHidden : <T>(value: T) => { value: T; next: any; }
 >"text" : "text"
 
 export const siblingHiddenAliases = { first: hiddenAlias, second: hiddenAlias };
->siblingHiddenAliases : { first: { value: string; next: Hidden; }; second: { value: string; next: Hidden; }; }
->{ first: hiddenAlias, second: hiddenAlias } : { first: { value: string; next: Hidden; }; second: { value: string; next: Hidden; }; }
->first : { value: string; next: Hidden; }
->hiddenAlias : { value: string; next: Hidden; }
->second : { value: string; next: Hidden; }
->hiddenAlias : { value: string; next: Hidden; }
+>siblingHiddenAliases : { first: { value: string; next: (typeof siblingHiddenAliases)["first"]; }; second: { value: string; next: (typeof siblingHiddenAliases)["second"]; }; }
+>{ first: hiddenAlias, second: hiddenAlias } : { first: { value: string; next: (typeof siblingHiddenAliases)["first"]; }; second: { value: string; next: (typeof siblingHiddenAliases)["second"]; }; }
+>first : { value: string; next: any; }
+>hiddenAlias : { value: string; next: any; }
+>second : { value: string; next: any; }
+>hiddenAlias : { value: string; next: any; }
 
 export const methodKey = Symbol();
 >methodKey : unique symbol
@@ -891,29 +891,29 @@ export class Methods {
 >Methods : Methods
 
     static recur() { return Methods.recur; }
->recur : () => typeof Methods.recur
->Methods.recur : () => typeof Methods.recur
+>recur : () => (typeof Methods)["recur"]
+>Methods.recur : () => (typeof Methods)["recur"]
 >Methods : typeof Methods
->recur : () => typeof Methods.recur
+>recur : () => (typeof Methods)["recur"]
 
     static "a-b"() { return Methods["a-b"]; }
->"a-b" : () => any
->Methods["a-b"] : () => any
+>"a-b" : () => (typeof Methods)["a-b"]
+>Methods["a-b"] : () => (typeof Methods)["a-b"]
 >Methods : typeof Methods
 >"a-b" : "a-b"
 
     static [methodKey]() { return Methods[methodKey]; }
->[methodKey] : () => any
+>[methodKey] : () => (typeof Methods)[typeof methodKey]
 >methodKey : unique symbol
->Methods[methodKey] : () => any
+>Methods[methodKey] : () => (typeof Methods)[typeof methodKey]
 >Methods : typeof Methods
 >methodKey : unique symbol
 
     recur() { return this.recur; }
->recur : () => any
->this.recur : () => any
+>recur : () => Methods["recur"]
+>this.recur : () => Methods["recur"]
 >this : this
->recur : () => any
+>recur : () => Methods["recur"]
 }
 export function overloaded(value: string): typeof overloaded;
 >overloaded : { (value: string): typeof overloaded; (value: number): typeof overloaded; }
@@ -956,27 +956,27 @@ export class Hidden {
 >Hidden : Hidden
 
     private static recur() { return Hidden.recur; }
->recur : () => typeof Hidden.recur
->Hidden.recur : () => typeof Hidden.recur
+>recur : () => (typeof Hidden)["recur"]
+>Hidden.recur : () => (typeof Hidden)["recur"]
 >Hidden : typeof Hidden
->recur : () => typeof Hidden.recur
+>recur : () => (typeof Hidden)["recur"]
 
     static expose() { return Hidden.recur; }
->expose : () => () => typeof Hidden.recur
->Hidden.recur : () => typeof Hidden.recur
+>expose : () => () => (typeof Hidden)["recur"]
+>Hidden.recur : () => (typeof Hidden)["recur"]
 >Hidden : typeof Hidden
->recur : () => typeof Hidden.recur
+>recur : () => (typeof Hidden)["recur"]
 
     protected next() { return this.next; }
->next : () => any
->this.next : () => any
+>next : () => Hidden["next"]
+>this.next : () => Hidden["next"]
 >this : this
->next : () => any
+>next : () => Hidden["next"]
 
     expose() { return this.next; }
->expose : () => () => any
->this.next : () => any
+>expose : () => () => Hidden["next"]
+>this.next : () => Hidden["next"]
 >this : this
->next : () => any
+>next : () => Hidden["next"]
 }
 
