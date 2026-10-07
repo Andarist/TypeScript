@@ -41,6 +41,7 @@ func (s *SymbolTrackerImpl) ReportCyclicStructureError() {
 	}
 }
 
+// TrackRecursiveTypeDeclarations implements nodebuilder.RecursiveTypeTracker.
 func (s *SymbolTrackerImpl) TrackRecursiveTypeDeclarations(scope *ast.Node, declarations []*ast.Node) {
 	if s.state.recursiveTypeDeclarations == nil {
 		s.state.recursiveTypeDeclarations = make(map[*ast.Node][]*ast.Node)

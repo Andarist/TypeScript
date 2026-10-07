@@ -14,7 +14,7 @@ type recursiveTypeFrame struct {
 	body                 *ast.Node
 	enclosingDeclaration *ast.Node
 	path                 *recursiveTypePath
-	type_                *Type
+	typ                  *Type
 }
 
 // Keep path tracking cheap for acyclic types. Entity-name nodes are allocated
@@ -50,19 +50,44 @@ func (b *NodeBuilderImpl) tryCreateRecursiveTypeReference(t *Type) *ast.Node {
 		return nil
 	}
 	if frame.name == nil {
-		name := "recursive"
-		for enclosing := b.ctx.enclosingDeclaration; enclosing != nil && !ast.IsSourceFile(enclosing); enclosing = enclosing.Parent {
-			if enclosing.Name() != nil && ast.IsIdentifier(enclosing.Name()) {
-				name = enclosing.Name().Text()
-				break
-			}
-		}
-		frame.name = b.e.Factory.NewUniqueNameEx(name+"_recursive", printer.AutoGenerateOptions{Flags: printer.GeneratedIdentifierFlagsOptimistic})
+		frame.name = b.e.Factory.NewUniqueNameEx(b.recursiveTypeHelperName(t), printer.AutoGenerateOptions{Flags: printer.GeneratedIdentifierFlagsOptimistic})
 		b.ctx.recursiveTypeHelpers = append(b.ctx.recursiveTypeHelpers, frame)
 	}
 	b.ctx.recursiveTypeReferenceUsed = true
 	b.ctx.approximateLength += len(frame.name.Text())
 	return b.f.NewTypeReferenceNode(b.f.DeepCloneNode(frame.name), nil)
+}
+
+func (b *NodeBuilderImpl) recursiveTypeHelperName(t *Type) string {
+	if root := b.ctx.recursiveTypeRootDeclaration; root != nil && ast.IsExportAssignment(root) {
+		if root.AsExportAssignment().IsExportEquals && ast.IsSourceFileJS(b.ctx.enclosingFile) {
+			return "_exports_recursive"
+		}
+		return "_default_recursive"
+	}
+	for enclosing := b.ctx.enclosingDeclaration; enclosing != nil && !ast.IsSourceFile(enclosing); enclosing = enclosing.Parent {
+		if name := enclosing.Name(); name != nil && ast.IsIdentifier(name) {
+			return name.Text() + "_recursive"
+		}
+		if ast.IsExportAssignment(enclosing) || ast.HasSyntacticModifier(enclosing, ast.ModifierFlagsDefault) {
+			if ast.IsExportAssignment(enclosing) && enclosing.AsExportAssignment().IsExportEquals && ast.IsSourceFileJS(b.ctx.enclosingFile) {
+				return "_exports_recursive"
+			}
+			return "_default_recursive"
+		}
+	}
+	// CommonJS serialization may use the source file as its enclosing scope.
+	// An assigned class still supplies the property name of its original root.
+	if t.symbol != nil && t.symbol.ValueDeclaration != nil {
+		parent := t.symbol.ValueDeclaration.Parent
+		if parent != nil && ast.IsAssignmentExpression(parent, true) && ast.IsPropertyAccessExpression(parent.AsBinaryExpression().Left) {
+			return parent.AsBinaryExpression().Left.Name().Text() + "_recursive"
+		}
+		if parent != nil && ast.IsExportAssignment(parent) {
+			return "_default_recursive"
+		}
+	}
+	return "_recursive"
 }
 
 // Extend an output path only while emitting a required, public property signature.
@@ -72,8 +97,8 @@ func (b *NodeBuilderImpl) recursiveTypePathForProperty(property *ast.Symbol, nam
 	frame := b.ctx.recursiveTypeCurrentFrame
 	if frame == nil || frame.path == nil || property.Flags&ast.SymbolFlagsOptional != 0 ||
 		!(ast.IsIdentifier(name) || ast.IsStringLiteral(name)) || !scanner.IsIdentifierText(name.Text(), core.LanguageVariantStandard) ||
-		frame.type_.flags&TypeFlagsObject == 0 || b.ch.isArrayOrTupleType(frame.type_) ||
-		frame.type_.symbol != nil && frame.type_.symbol.Flags&ast.SymbolFlagsClass != 0 ||
+		frame.typ.flags&TypeFlagsObject == 0 || b.ch.isArrayOrTupleType(frame.typ) ||
+		frame.typ.symbol != nil && frame.typ.symbol.Flags&ast.SymbolFlagsClass != 0 ||
 		getDeclarationModifierFlagsFromSymbol(property)&ast.ModifierFlagsNonPublicAccessibilityModifier != 0 {
 		return nil
 	}
@@ -88,7 +113,7 @@ func (b *NodeBuilderImpl) tryCreateRecursiveDeclarationReference(target *Type) *
 	declaration := b.ctx.recursiveTypeRootDeclaration
 	// A type literal supplies a lazy object boundary. A type query directly in
 	// an array or union's own annotation can instead produce TS2502 on recheck.
-	if frame == nil || frame.path == nil || declaration == nil || target.flags&TypeFlagsObject == 0 ||
+	if frame == nil || frame.path == nil || declaration == nil || !ast.IsVariableDeclaration(declaration) || target.flags&TypeFlagsObject == 0 ||
 		b.ch.isArrayOrTupleType(target) || target.symbol != nil && target.symbol.Flags&ast.SymbolFlagsClass != 0 ||
 		len(b.ch.getPropertiesOfType(target)) == 0 {
 		return nil

@@ -17,33 +17,48 @@ func (tx *DeclarationTransformer) addRecursiveTypeDeclarations(scope *ast.Node, 
 		id := tx.EmitContext().GetAutoGenerateInfo(declaration.Name()).Id
 		helpers[id] = declaration
 	}
-	reachable := make(map[printer.AutoGenerateId]bool)
+	firstUse := make(map[printer.AutoGenerateId]int)
+	statementIndex := 0
 	var visit func(*ast.Node) bool
 	visit = func(node *ast.Node) bool {
 		if ast.IsIdentifier(node) {
 			if info := tx.EmitContext().GetAutoGenerateInfo(node); info != nil {
-				if helper := helpers[info.Id]; helper != nil && !reachable[info.Id] {
-					reachable[info.Id] = true
-					visit(helper.AsTypeAliasDeclaration().Type)
+				if helper := helpers[info.Id]; helper != nil {
+					if _, seen := firstUse[info.Id]; !seen {
+						firstUse[info.Id] = statementIndex
+						visit(helper.AsTypeAliasDeclaration().Type)
+					}
 				}
 			}
 		}
 		node.ForEachChild(visit)
 		return false
 	}
-	for _, statement := range statements.Nodes {
+	for i, statement := range statements.Nodes {
+		statementIndex = i
 		visit(statement)
 	}
-	var result []*ast.Node
-	for _, declaration := range declarations {
-		id := tx.EmitContext().GetAutoGenerateInfo(declaration.Name()).Id
-		if reachable[id] {
-			result = append(result, declaration)
-			tx.needsScopeFixMarker = true
-		}
-	}
-	if len(result) == 0 {
+	if len(firstUse) == 0 {
 		return statements
 	}
-	return tx.Factory().NewNodeList(append(result, statements.Nodes...))
+	// Insert each reachable helper immediately before its first accepted use.
+	// Preserve helper encounter order within that statement, including cycles
+	// between helper bodies, and leave the existing import order intact.
+	before := make([][]*ast.Node, len(statements.Nodes))
+	for _, declaration := range declarations {
+		id := tx.EmitContext().GetAutoGenerateInfo(declaration.Name()).Id
+		if i, reachable := firstUse[id]; reachable {
+			before[i] = append(before[i], declaration)
+		}
+	}
+	result := make([]*ast.Node, 0, len(statements.Nodes)+len(firstUse))
+	for i, statement := range statements.Nodes {
+		result = append(result, before[i]...)
+		result = append(result, statement)
+	}
+	tx.needsScopeFixMarker = true
+	// CommonJS exports can set the scope flag even when they become variable
+	// declarations. Only a real export declaration or assignment hides helpers.
+	tx.resultHasScopeMarker = hasScopeMarker(statements)
+	return tx.Factory().NewNodeList(result)
 }

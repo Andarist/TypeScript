@@ -3257,12 +3257,8 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 		return b.createElidedInformationPlaceholder()
 	}
 
-	typeId := t.id
+	typeId := b.recursiveTypeIdentity(t)
 	isArrayOrTuple := b.ch.isArrayOrTupleType(t)
-	if isArrayOrTuple {
-		// Deferred and regular references share a cycle identity.
-		typeId = b.ch.createTypeReference(t.Target(), b.ch.getTypeArguments(t)).id
-	}
 	if b.ctx.visitedTypes.Has(typeId) {
 		return b.createCyclicStructurePlaceholder(t)
 	}
@@ -3296,11 +3292,12 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 	// Helpers are closed over their insertion scope, so they can be shared across
 	// signatures. The serialization flags and infer parameters must still match.
 	if reference := b.ctx.recursiveTypeReferences[key]; reference != nil {
+		b.ctx.recursiveTypeReferenceUsed = true
 		b.ctx.approximateLength += len(reference.AsTypeReferenceNode().TypeName.Text())
 		return b.f.DeepCloneNode(reference)
 	}
 	// Don't rely on type cache if we're expanding a type, because we need to compute `canIncreaseExpansionDepth`.
-	canUseCache := b.ctx.maxExpansionDepth < 0 && !b.ctx.recursiveTypeReferenceUsed
+	canUseCache := b.ctx.maxExpansionDepth < 0
 	if canUseCache && b.ctx.enclosingDeclaration != nil && b.links.Has(b.ctx.enclosingDeclaration) {
 		links := b.links.Get(b.ctx.enclosingDeclaration)
 		cachedResult, ok := links.serializedTypes[key]
@@ -3343,9 +3340,12 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 	var recursiveFrame *recursiveTypeFrame
 	previousFrame := b.ctx.recursiveTypeCurrentFrame
 	if b.ctx.recursiveTypeTracker != nil {
-		recursiveFrame = &recursiveTypeFrame{enclosingDeclaration: b.ctx.enclosingDeclaration, type_: t}
+		recursiveFrame = &recursiveTypeFrame{enclosingDeclaration: b.ctx.enclosingDeclaration, typ: t}
 		if b.ctx.recursiveTypePathType != nil && b.recursiveTypeIdentity(b.ctx.recursiveTypePathType) == typeId {
 			recursiveFrame.path = b.ctx.recursiveTypePath
+		}
+		if b.ctx.recursiveTypeFrames == nil {
+			b.ctx.recursiveTypeFrames = make(map[TypeId]*recursiveTypeFrame)
 		}
 		b.ctx.recursiveTypeFrames[typeId] = recursiveFrame
 		b.ctx.recursiveTypeCurrentFrame = recursiveFrame
@@ -3356,6 +3356,10 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 	b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType = nil, nil
 	prevTrackedSymbols := b.ctx.trackedSymbols
 	b.ctx.trackedSymbols = nil
+	// Only output containing a declaration-specific reference must stay out of
+	// serializedTypes. A recursive sibling does not invalidate this subtree.
+	previousRecursiveReferenceUsed := b.ctx.recursiveTypeReferenceUsed
+	b.ctx.recursiveTypeReferenceUsed = false
 	startLength := b.ctx.approximateLength
 	result := transform(b, t)
 	b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType = previousPath, previousPathType
@@ -3396,6 +3400,7 @@ func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeB
 		b.ctx.symbolDepth[*id] = depth
 	}
 	b.ctx.trackedSymbols = prevTrackedSymbols
+	b.ctx.recursiveTypeReferenceUsed = previousRecursiveReferenceUsed || b.ctx.recursiveTypeReferenceUsed
 	return result
 
 	// !!! TODO: Attempt node reuse or parse nodes to minimize copying once text range setting is set up

@@ -67,14 +67,14 @@ test.tags();
 
 
 //// [emitClassExpressionInDeclarationFile.d.ts]
-type circularReference_recursive = {
-    tags(c: circularReference_recursive): circularReference_recursive;
-};
 export declare var simpleExample: {
     new (): {
         tags(): void;
     };
     getTags(): void;
+};
+type circularReference_recursive = {
+    tags(c: circularReference_recursive): circularReference_recursive;
 };
 export declare var circularReference: {
     new (): circularReference_recursive;

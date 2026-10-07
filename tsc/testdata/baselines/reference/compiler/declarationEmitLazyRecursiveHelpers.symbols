@@ -699,6 +699,110 @@ export const numbersAgain = mod<{ value: number; next: "ref" }>();
 >value : Symbol(value, Decl(instantiations.ts, 12, 33))
 >next : Symbol(next, Decl(instantiations.ts, 12, 48))
 
+=== cacheSiblings.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(cacheSiblings.ts, 0, 0))
+>T : Symbol(T, Decl(cacheSiblings.ts, 0, 10))
+>K : Symbol(K, Decl(cacheSiblings.ts, 0, 18))
+>T : Symbol(T, Decl(cacheSiblings.ts, 0, 10))
+>T : Symbol(T, Decl(cacheSiblings.ts, 0, 10))
+>K : Symbol(K, Decl(cacheSiblings.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(cacheSiblings.ts, 0, 50))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>show : Symbol(show, Decl(cacheSiblings.ts, 0, 0))
+>P : Symbol(P, Decl(cacheSiblings.ts, 1, 26))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>P : Symbol(P, Decl(cacheSiblings.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(cacheSiblings.ts, 0, 50))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>P : Symbol(P, Decl(cacheSiblings.ts, 1, 26))
+
+declare function batch<T>(): {
+>batch : Symbol(batch, Decl(cacheSiblings.ts, 1, 83))
+>T : Symbol(T, Decl(cacheSiblings.ts, 2, 23))
+
+    first?: resolve<T>;
+>first : Symbol(first, Decl(cacheSiblings.ts, 2, 30))
+>resolve : Symbol(resolve, Decl(cacheSiblings.ts, 0, 50))
+>T : Symbol(T, Decl(cacheSiblings.ts, 2, 23))
+
+    second: { node: resolve<T>; leaf: { value: string; nested: { id: number } } };
+>second : Symbol(second, Decl(cacheSiblings.ts, 3, 23))
+>node : Symbol(node, Decl(cacheSiblings.ts, 4, 13))
+>resolve : Symbol(resolve, Decl(cacheSiblings.ts, 0, 50))
+>T : Symbol(T, Decl(cacheSiblings.ts, 2, 23))
+>leaf : Symbol(leaf, Decl(cacheSiblings.ts, 4, 31))
+>value : Symbol(value, Decl(cacheSiblings.ts, 4, 39))
+>nested : Symbol(nested, Decl(cacheSiblings.ts, 4, 54))
+>id : Symbol(id, Decl(cacheSiblings.ts, 4, 64))
+
+    leaf: { value: string; nested: { id: number } };
+>leaf : Symbol(leaf, Decl(cacheSiblings.ts, 4, 82))
+>value : Symbol(value, Decl(cacheSiblings.ts, 5, 11))
+>nested : Symbol(nested, Decl(cacheSiblings.ts, 5, 26))
+>id : Symbol(id, Decl(cacheSiblings.ts, 5, 36))
+
+};
+
+// Reuse the helper inside a later subtree, while keeping unrelated leaves inline.
+// Neither subtree may retain a helper or variable anchor from a previous context.
+// Ideal declaration (apart from the second variable's separate helper):
+// type mixed_Node = { value: number; next: mixed_Node };
+// export declare const mixed: {
+//     first?: mixed_Node;
+//     second: { node: mixed_Node; leaf: { value: string; nested: { id: number } } };
+//     leaf: { value: string; nested: { id: number } };
+// };
+export const mixed = batch<{ value: number; next: "ref" }>();
+>mixed : Symbol(mixed, Decl(cacheSiblings.ts, 17, 12))
+>batch : Symbol(batch, Decl(cacheSiblings.ts, 1, 83))
+>value : Symbol(value, Decl(cacheSiblings.ts, 17, 28))
+>next : Symbol(next, Decl(cacheSiblings.ts, 17, 43))
+
+export const mixedAgain = batch<{ value: number; next: "ref" }>();
+>mixedAgain : Symbol(mixedAgain, Decl(cacheSiblings.ts, 18, 12))
+>batch : Symbol(batch, Decl(cacheSiblings.ts, 1, 83))
+>value : Symbol(value, Decl(cacheSiblings.ts, 18, 33))
+>next : Symbol(next, Decl(cacheSiblings.ts, 18, 48))
+
+=== defaultValue.ts ===
+function source() {
+>source : Symbol(source, Decl(defaultValue.ts, 0, 0))
+
+    type Local = readonly [number, Local];
+>Local : Symbol(Local, Decl(defaultValue.ts, 0, 19))
+>Local : Symbol(Local, Decl(defaultValue.ts, 0, 19))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(defaultValue.ts, 0, 19))
+}
+
+// A helper for an unnamed default follows the emitter's _default naming convention.
+// Ideal declaration:
+// type _default_recursive = readonly [number, _default_recursive];
+// declare const _default: _default_recursive;
+// export default _default;
+export default source();
+>source : Symbol(source, Decl(defaultValue.ts, 0, 0))
+
+=== defaultFunction.ts ===
+// Preserve the same convention when the unnamed default is a function declaration.
+// Ideal declaration:
+// type _default_recursive = readonly [string, _default_recursive];
+// export default function (): _default_recursive;
+export default function () {
+    type Local = readonly [string, Local];
+>Local : Symbol(Local, Decl(defaultFunction.ts, 4, 28))
+>Local : Symbol(Local, Decl(defaultFunction.ts, 4, 28))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(defaultFunction.ts, 4, 28))
+}
+
 === acyclic.ts ===
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 >show : Symbol(show, Decl(acyclic.ts, 0, 0))

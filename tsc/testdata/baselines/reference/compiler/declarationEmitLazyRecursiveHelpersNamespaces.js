@@ -120,19 +120,19 @@ declare namespace B {
 }
 //// [mergedA.d.ts]
 declare namespace Shared {
-    type numbers_recursive = readonly [Payload, numbers_recursive];
     interface Payload {
         value: number;
     }
+    type numbers_recursive = readonly [Payload, numbers_recursive];
     export function numbers(): numbers_recursive;
     export {};
 }
 //// [mergedB.d.ts]
 declare namespace Shared {
-    type strings_recursive = readonly [Payload, strings_recursive];
     interface Payload {
         value: string;
     }
+    type strings_recursive = readonly [Payload, strings_recursive];
     export function strings(): strings_recursive;
     export {};
 }
@@ -163,25 +163,25 @@ export interface Payload {
     name: string;
 }
 //// [namespaceImport.d.ts]
+import * as Model from "./model";
 type result_recursive = {
     next: result_recursive;
     value: Model.Payload;
 };
-import * as Model from "./model";
 export declare const result: {
     node?: result_recursive | undefined;
 };
 export {};
 //// [namespaceType.d.ts]
-type result_recursive = {
-    next: result_recursive;
-    value: N.Payload;
-};
 export declare namespace N {
     interface Payload {
         name: string;
     }
 }
+type result_recursive = {
+    next: result_recursive;
+    value: N.Payload;
+};
 export declare const result: {
     node?: result_recursive | undefined;
 };

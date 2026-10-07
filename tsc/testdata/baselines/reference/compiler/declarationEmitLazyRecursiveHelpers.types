@@ -455,6 +455,93 @@ export const numbersAgain = mod<{ value: number; next: "ref" }>();
 >value : number
 >next : "ref"
 
+=== cacheSiblings.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function batch<T>(): {
+>batch : <T>() => { first?: resolve<T>; second: { node: resolve<T>; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+
+    first?: resolve<T>;
+>first : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }[K]; } | undefined
+
+    second: { node: resolve<T>; leaf: { value: string; nested: { id: number } } };
+>second : { node: resolve<T>; leaf: { value: string; nested: { id: number; }; }; }
+>node : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }[K]; }
+>leaf : { value: string; nested: { id: number; }; }
+>value : string
+>nested : { id: number; }
+>id : number
+
+    leaf: { value: string; nested: { id: number } };
+>leaf : { value: string; nested: { id: number; }; }
+>value : string
+>nested : { id: number; }
+>id : number
+
+};
+
+// Reuse the helper inside a later subtree, while keeping unrelated leaves inline.
+// Neither subtree may retain a helper or variable anchor from a previous context.
+// Ideal declaration (apart from the second variable's separate helper):
+// type mixed_Node = { value: number; next: mixed_Node };
+// export declare const mixed: {
+//     first?: mixed_Node;
+//     second: { node: mixed_Node; leaf: { value: string; nested: { id: number } } };
+//     leaf: { value: string; nested: { id: number } };
+// };
+export const mixed = batch<{ value: number; next: "ref" }>();
+>mixed : { first?: { value: number; next: any; } | undefined; second: { node: { value: number; next: any; }; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>batch<{ value: number; next: "ref" }>() : { first?: { value: number; next: any; } | undefined; second: { node: { value: number; next: any; }; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>batch : <T>() => { first?: resolve<T>; second: { node: resolve<T>; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>value : number
+>next : "ref"
+
+export const mixedAgain = batch<{ value: number; next: "ref" }>();
+>mixedAgain : { first?: { value: number; next: any; } | undefined; second: { node: { value: number; next: any; }; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>batch<{ value: number; next: "ref" }>() : { first?: { value: number; next: any; } | undefined; second: { node: { value: number; next: any; }; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>batch : <T>() => { first?: resolve<T>; second: { node: resolve<T>; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>value : number
+>next : "ref"
+
+=== defaultValue.ts ===
+function source() {
+>source : () => readonly [number, any]
+
+    type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+}
+
+// A helper for an unnamed default follows the emitter's _default naming convention.
+// Ideal declaration:
+// type _default_recursive = readonly [number, _default_recursive];
+// declare const _default: _default_recursive;
+// export default _default;
+export default source();
+>source() : readonly [number, any]
+>source : () => readonly [number, any]
+
+=== defaultFunction.ts ===
+// Preserve the same convention when the unnamed default is a function declaration.
+// Ideal declaration:
+// type _default_recursive = readonly [string, _default_recursive];
+// export default function (): _default_recursive;
+export default function () {
+    type Local = readonly [string, Local];
+>Local : readonly [string, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [string, any]
+>null as unknown : unknown
+}
+
 === acyclic.ts ===
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 >show : { [K in keyof T]: T[K]; }

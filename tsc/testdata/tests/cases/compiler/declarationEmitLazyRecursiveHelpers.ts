@@ -251,6 +251,50 @@ export const numbers = mod<{ value: number; next: "ref" }>();
 export const strings = mod<{ value: string; next: "ref" }>();
 export const numbersAgain = mod<{ value: number; next: "ref" }>();
 
+// @filename: cacheSiblings.ts
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+declare function batch<T>(): {
+    first?: resolve<T>;
+    second: { node: resolve<T>; leaf: { value: string; nested: { id: number } } };
+    leaf: { value: string; nested: { id: number } };
+};
+
+// Reuse the helper inside a later subtree, while keeping unrelated leaves inline.
+// Neither subtree may retain a helper or variable anchor from a previous context.
+// Ideal declaration (apart from the second variable's separate helper):
+// type mixed_Node = { value: number; next: mixed_Node };
+// export declare const mixed: {
+//     first?: mixed_Node;
+//     second: { node: mixed_Node; leaf: { value: string; nested: { id: number } } };
+//     leaf: { value: string; nested: { id: number } };
+// };
+export const mixed = batch<{ value: number; next: "ref" }>();
+export const mixedAgain = batch<{ value: number; next: "ref" }>();
+
+// @filename: defaultValue.ts
+function source() {
+    type Local = readonly [number, Local];
+    return null as unknown as Local;
+}
+
+// A helper for an unnamed default follows the emitter's _default naming convention.
+// Ideal declaration:
+// type _default_recursive = readonly [number, _default_recursive];
+// declare const _default: _default_recursive;
+// export default _default;
+export default source();
+
+// @filename: defaultFunction.ts
+// Preserve the same convention when the unnamed default is a function declaration.
+// Ideal declaration:
+// type _default_recursive = readonly [string, _default_recursive];
+// export default function (): _default_recursive;
+export default function () {
+    type Local = readonly [string, Local];
+    return null as unknown as Local;
+}
+
 // @filename: acyclic.ts
 type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;

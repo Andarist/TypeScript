@@ -23,7 +23,8 @@ type SymbolTracker interface {
 }
 
 // RecursiveTypeTracker is an optional declaration-emit capability. Other node
-// builder callers must not synthesize declarations to describe anonymous cycles.
+// builder callers, such as diagnostic and hover serialization, have no statement
+// insertion scope and must not synthesize declarations to describe anonymous cycles.
 type RecursiveTypeTracker interface {
 	TrackRecursiveTypeDeclarations(scope *ast.Node, declarations []*ast.Node)
 }
