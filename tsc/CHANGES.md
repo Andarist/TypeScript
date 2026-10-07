@@ -53,11 +53,6 @@ We've fundamentally rewritten core parts of the declaration emit *and* JavaScrip
 As a result, declaration (`.d.ts`) emit based on `.js` input files has substantially changed behavior.
 While it's still expected that supported tags (see below) are emitted with correct semantics in Corsa, it's a non-goal to exactly match Strada's output.
 
-Anonymous recursive types can now be emitted in some cases that previously reported TS5088 or lost the recursive reference in TypeScript 6.
-Declaration emit first uses a safe existing name or variable property path; when a cycle has no such reference, it can introduce a private type alias in an external module or namespace declaration.
-These helpers are introduced only for cycles encountered during serialization. Reachable helpers are named after their related declaration and numbered after discarded output is removed. Helper names and placement may differ from TypeScript 6 output.
-Types that would require a helper to capture a function or signature type parameter still report TS5088, as do global scripts that require a helper without a private insertion scope.
-
 This also has effects on how `.d.ts` is emitted in the presence of errors, which tends to be more common in `.js` and JSDoc scenarios.
 Declaration file generation isn't well-defined in the presence of errors (including those suppressed with `ts-ignore`/`ts-expect-error`), and you can expect Corsa and Strada to be quite different depending on the situation.
 

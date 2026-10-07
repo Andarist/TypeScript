@@ -1,97 +1,76 @@
 //// [tests/cases/compiler/declarationEmitLazyRecursiveHelpersNamespaces.ts] ////
 
 === globalA.ts ===
-// Helpers must remain private to this namespace declaration, rather than becoming
-// global aliases which collide with globalB.d.ts.
-// Ideal globalA.d.ts:
-// declare namespace A {
-//     type make_Result = readonly [number, make_Result];
-//     export function make(): make_Result;
-//     export {};
-// }
 namespace A {
 >A : Symbol(A, Decl(globalA.ts, 0, 0))
 
     export function make() {
->make : Symbol(make, Decl(globalA.ts, 8, 13))
+>make : Symbol(make, Decl(globalA.ts, 0, 13))
 
         type Local = readonly [number, Local];
->Local : Symbol(Local, Decl(globalA.ts, 9, 28))
->Local : Symbol(Local, Decl(globalA.ts, 9, 28))
+>Local : Symbol(Local, Decl(globalA.ts, 1, 28))
+>Local : Symbol(Local, Decl(globalA.ts, 1, 28))
 
         return null as unknown as Local;
->Local : Symbol(Local, Decl(globalA.ts, 9, 28))
+>Local : Symbol(Local, Decl(globalA.ts, 1, 28))
     }
 }
 
 === globalB.ts ===
-// Ideal globalB.d.ts: the same structure as A, with string instead of number.
-// B.make()[0] must remain string even when consumers enable skipLibCheck.
 namespace B {
 >B : Symbol(B, Decl(globalB.ts, 0, 0))
 
     export function make() {
->make : Symbol(make, Decl(globalB.ts, 2, 13))
+>make : Symbol(make, Decl(globalB.ts, 0, 13))
 
         type Local = readonly [string, Local];
->Local : Symbol(Local, Decl(globalB.ts, 3, 28))
->Local : Symbol(Local, Decl(globalB.ts, 3, 28))
+>Local : Symbol(Local, Decl(globalB.ts, 1, 28))
+>Local : Symbol(Local, Decl(globalB.ts, 1, 28))
 
         return null as unknown as Local;
->Local : Symbol(Local, Decl(globalB.ts, 3, 28))
+>Local : Symbol(Local, Decl(globalB.ts, 1, 28))
     }
 }
 
 === mergedA.ts ===
-// A helper may use a name private to its namespace block. The original private
-// interface must be late-painted alongside the helper, without exporting either.
-// Ideal mergedA.d.ts:
-// declare namespace Shared {
-//     type numbers_Result = readonly [Payload, numbers_Result];
-//     interface Payload { value: number; }
-//     export function numbers(): numbers_Result;
-//     export {};
-// }
 namespace Shared {
 >Shared : Symbol(Shared, Decl(mergedA.ts, 0, 0), Decl(mergedB.ts, 0, 0))
 
     interface Payload { value: number; }
->Payload : Symbol(Payload, Decl(mergedA.ts, 9, 18))
->value : Symbol(Payload.value, Decl(mergedA.ts, 10, 23))
+>Payload : Symbol(Payload, Decl(mergedA.ts, 0, 18))
+>value : Symbol(Payload.value, Decl(mergedA.ts, 1, 23))
 
     export function numbers() {
->numbers : Symbol(numbers, Decl(mergedA.ts, 10, 40))
+>numbers : Symbol(numbers, Decl(mergedA.ts, 1, 40))
 
         type Local = readonly [Payload, Local];
->Local : Symbol(Local, Decl(mergedA.ts, 11, 31))
->Payload : Symbol(Payload, Decl(mergedA.ts, 9, 18))
->Local : Symbol(Local, Decl(mergedA.ts, 11, 31))
+>Local : Symbol(Local, Decl(mergedA.ts, 2, 31))
+>Payload : Symbol(Payload, Decl(mergedA.ts, 0, 18))
+>Local : Symbol(Local, Decl(mergedA.ts, 2, 31))
 
         return null as unknown as Local;
->Local : Symbol(Local, Decl(mergedA.ts, 11, 31))
+>Local : Symbol(Local, Decl(mergedA.ts, 2, 31))
     }
 }
 
 === mergedB.ts ===
-// This declaration's private Payload is distinct from mergedA.ts's Payload.
-// Ideal mergedB.d.ts: the same structure as above for strings(), with string payloads.
 namespace Shared {
 >Shared : Symbol(Shared, Decl(mergedA.ts, 0, 0), Decl(mergedB.ts, 0, 0))
 
     interface Payload { value: string; }
->Payload : Symbol(Payload, Decl(mergedB.ts, 2, 18))
->value : Symbol(Payload.value, Decl(mergedB.ts, 3, 23))
+>Payload : Symbol(Payload, Decl(mergedB.ts, 0, 18))
+>value : Symbol(Payload.value, Decl(mergedB.ts, 1, 23))
 
     export function strings() {
->strings : Symbol(strings, Decl(mergedB.ts, 3, 40))
+>strings : Symbol(strings, Decl(mergedB.ts, 1, 40))
 
         type Local = readonly [Payload, Local];
->Local : Symbol(Local, Decl(mergedB.ts, 4, 31))
->Payload : Symbol(Payload, Decl(mergedB.ts, 2, 18))
->Local : Symbol(Local, Decl(mergedB.ts, 4, 31))
+>Local : Symbol(Local, Decl(mergedB.ts, 2, 31))
+>Payload : Symbol(Payload, Decl(mergedB.ts, 0, 18))
+>Local : Symbol(Local, Decl(mergedB.ts, 2, 31))
 
         return null as unknown as Local;
->Local : Symbol(Local, Decl(mergedB.ts, 4, 31))
+>Local : Symbol(Local, Decl(mergedB.ts, 2, 31))
     }
 }
 
@@ -127,57 +106,54 @@ declare function globalMod<T>(): { node: globalResolve<T> };
 >globalResolve : Symbol(globalResolve, Decl(globalRoot.ts, 0, 56))
 >T : Symbol(T, Decl(globalRoot.ts, 4, 27))
 
-// Global scripts can still close a cycle through an existing variable path.
-// Ideal declaration (in addition to the existing source declarations above):
-// declare const globalRoot: { node: { value: number; next: typeof globalRoot.node } };
 const globalRoot = globalMod<{ value: number; next: "ref" }>();
->globalRoot : Symbol(globalRoot, Decl(globalRoot.ts, 9, 5))
+>globalRoot : Symbol(globalRoot, Decl(globalRoot.ts, 6, 5))
 >globalMod : Symbol(globalMod, Decl(globalRoot.ts, 3, 3))
->value : Symbol(value, Decl(globalRoot.ts, 9, 30))
->next : Symbol(next, Decl(globalRoot.ts, 9, 45))
+>value : Symbol(value, Decl(globalRoot.ts, 6, 30))
+>next : Symbol(next, Decl(globalRoot.ts, 6, 45))
 
 === consumer.ts ===
 const rootValue: number = globalRoot.node.next.value;
 >rootValue : Symbol(rootValue, Decl(consumer.ts, 0, 5))
->globalRoot.node.next.value : Symbol(value, Decl(globalRoot.ts, 9, 30))
->globalRoot.node.next : Symbol(next, Decl(globalRoot.ts, 9, 45))
+>globalRoot.node.next.value : Symbol(value, Decl(globalRoot.ts, 6, 30))
+>globalRoot.node.next : Symbol(next, Decl(globalRoot.ts, 6, 45))
 >globalRoot.node : Symbol(node, Decl(globalRoot.ts, 4, 34))
->globalRoot : Symbol(globalRoot, Decl(globalRoot.ts, 9, 5))
+>globalRoot : Symbol(globalRoot, Decl(globalRoot.ts, 6, 5))
 >node : Symbol(node, Decl(globalRoot.ts, 4, 34))
->next : Symbol(next, Decl(globalRoot.ts, 9, 45))
->value : Symbol(value, Decl(globalRoot.ts, 9, 30))
+>next : Symbol(next, Decl(globalRoot.ts, 6, 45))
+>value : Symbol(value, Decl(globalRoot.ts, 6, 30))
 
 const a: number = A.make()[0];
 >a : Symbol(a, Decl(consumer.ts, 1, 5))
->A.make : Symbol(A.make, Decl(globalA.ts, 8, 13))
+>A.make : Symbol(A.make, Decl(globalA.ts, 0, 13))
 >A : Symbol(A, Decl(globalA.ts, 0, 0))
->make : Symbol(A.make, Decl(globalA.ts, 8, 13))
+>make : Symbol(A.make, Decl(globalA.ts, 0, 13))
 >0 : Symbol(0)
 
 const b: string = B.make()[0];
 >b : Symbol(b, Decl(consumer.ts, 2, 5))
->B.make : Symbol(B.make, Decl(globalB.ts, 2, 13))
+>B.make : Symbol(B.make, Decl(globalB.ts, 0, 13))
 >B : Symbol(B, Decl(globalB.ts, 0, 0))
->make : Symbol(B.make, Decl(globalB.ts, 2, 13))
+>make : Symbol(B.make, Decl(globalB.ts, 0, 13))
 >0 : Symbol(0)
 
 const sharedNumber: number = Shared.numbers()[0].value;
 >sharedNumber : Symbol(sharedNumber, Decl(consumer.ts, 3, 5))
->Shared.numbers()[0].value : Symbol(Payload.value, Decl(mergedA.ts, 10, 23))
->Shared.numbers : Symbol(Shared.numbers, Decl(mergedA.ts, 10, 40))
+>Shared.numbers()[0].value : Symbol(Payload.value, Decl(mergedA.ts, 1, 23))
+>Shared.numbers : Symbol(Shared.numbers, Decl(mergedA.ts, 1, 40))
 >Shared : Symbol(Shared, Decl(mergedA.ts, 0, 0), Decl(mergedB.ts, 0, 0))
->numbers : Symbol(Shared.numbers, Decl(mergedA.ts, 10, 40))
+>numbers : Symbol(Shared.numbers, Decl(mergedA.ts, 1, 40))
 >0 : Symbol(0)
->value : Symbol(Payload.value, Decl(mergedA.ts, 10, 23))
+>value : Symbol(Payload.value, Decl(mergedA.ts, 1, 23))
 
 const sharedString: string = Shared.strings()[0].value;
 >sharedString : Symbol(sharedString, Decl(consumer.ts, 4, 5))
->Shared.strings()[0].value : Symbol(Payload.value, Decl(mergedB.ts, 3, 23))
->Shared.strings : Symbol(Shared.strings, Decl(mergedB.ts, 3, 40))
+>Shared.strings()[0].value : Symbol(Payload.value, Decl(mergedB.ts, 1, 23))
+>Shared.strings : Symbol(Shared.strings, Decl(mergedB.ts, 1, 40))
 >Shared : Symbol(Shared, Decl(mergedA.ts, 0, 0), Decl(mergedB.ts, 0, 0))
->strings : Symbol(Shared.strings, Decl(mergedB.ts, 3, 40))
+>strings : Symbol(Shared.strings, Decl(mergedB.ts, 1, 40))
 >0 : Symbol(0)
->value : Symbol(Payload.value, Decl(mergedB.ts, 3, 23))
+>value : Symbol(Payload.value, Decl(mergedB.ts, 1, 23))
 
 === model.ts ===
 export interface Payload { name: string; }
@@ -215,16 +191,11 @@ declare function maybe<T>(): { node?: resolve<T> };
 >resolve : Symbol(resolve, Decl(namespaceImport.ts, 1, 50))
 >T : Symbol(T, Decl(namespaceImport.ts, 3, 23))
 
-// A namespace import is available at the helper's insertion scope.
-// Ideal namespaceImport.d.ts:
-// import * as Model from "./model";
-// type result_Node = { next: result_Node; value: Model.Payload };
-// export declare const result: { node?: result_Node };
 export const result = maybe<{ next: "ref"; value: Model.Payload }>();
->result : Symbol(result, Decl(namespaceImport.ts, 10, 12))
+>result : Symbol(result, Decl(namespaceImport.ts, 5, 12))
 >maybe : Symbol(maybe, Decl(namespaceImport.ts, 2, 81))
->next : Symbol(next, Decl(namespaceImport.ts, 10, 29))
->value : Symbol(value, Decl(namespaceImport.ts, 10, 42))
+>next : Symbol(next, Decl(namespaceImport.ts, 5, 29))
+>value : Symbol(value, Decl(namespaceImport.ts, 5, 42))
 >Model : Symbol(Model, Decl(namespaceImport.ts, 0, 6))
 >Payload : Symbol(Model.Payload, Decl(model.ts, 0, 0))
 
@@ -261,16 +232,11 @@ export namespace N { export interface Payload { name: string; } }
 >Payload : Symbol(Payload, Decl(namespaceType.ts, 3, 20))
 >name : Symbol(Payload.name, Decl(namespaceType.ts, 3, 47))
 
-// The root N has namespace meaning, whereas N.Payload has type meaning.
-// Ideal namespaceType.d.ts:
-// type result_Node = { next: result_Node; value: N.Payload };
-// export namespace N { interface Payload { name: string; } }
-// export declare const result: { node?: result_Node };
 export const result = maybe<{ next: "ref"; value: N.Payload }>();
->result : Symbol(result, Decl(namespaceType.ts, 10, 12))
+>result : Symbol(result, Decl(namespaceType.ts, 5, 12))
 >maybe : Symbol(maybe, Decl(namespaceType.ts, 1, 81))
->next : Symbol(next, Decl(namespaceType.ts, 10, 29))
->value : Symbol(value, Decl(namespaceType.ts, 10, 42))
+>next : Symbol(next, Decl(namespaceType.ts, 5, 29))
+>value : Symbol(value, Decl(namespaceType.ts, 5, 42))
 >N : Symbol(N, Decl(namespaceType.ts, 2, 51))
 >Payload : Symbol(N.Payload, Decl(namespaceType.ts, 3, 20))
 

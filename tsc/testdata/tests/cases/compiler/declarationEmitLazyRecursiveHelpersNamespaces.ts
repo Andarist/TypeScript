@@ -4,14 +4,6 @@
 // @removeComments: true
 
 // @filename: globalA.ts
-// Helpers must remain private to this namespace declaration, rather than becoming
-// global aliases which collide with globalB.d.ts.
-// Ideal globalA.d.ts:
-// declare namespace A {
-//     type make_Result = readonly [number, make_Result];
-//     export function make(): make_Result;
-//     export {};
-// }
 namespace A {
     export function make() {
         type Local = readonly [number, Local];
@@ -20,8 +12,6 @@ namespace A {
 }
 
 // @filename: globalB.ts
-// Ideal globalB.d.ts: the same structure as A, with string instead of number.
-// B.make()[0] must remain string even when consumers enable skipLibCheck.
 namespace B {
     export function make() {
         type Local = readonly [string, Local];
@@ -30,15 +20,6 @@ namespace B {
 }
 
 // @filename: mergedA.ts
-// A helper may use a name private to its namespace block. The original private
-// interface must be late-painted alongside the helper, without exporting either.
-// Ideal mergedA.d.ts:
-// declare namespace Shared {
-//     type numbers_Result = readonly [Payload, numbers_Result];
-//     interface Payload { value: number; }
-//     export function numbers(): numbers_Result;
-//     export {};
-// }
 namespace Shared {
     interface Payload { value: number; }
     export function numbers() {
@@ -48,8 +29,6 @@ namespace Shared {
 }
 
 // @filename: mergedB.ts
-// This declaration's private Payload is distinct from mergedA.ts's Payload.
-// Ideal mergedB.d.ts: the same structure as above for strings(), with string payloads.
 namespace Shared {
     interface Payload { value: string; }
     export function strings() {
@@ -65,9 +44,6 @@ type globalResolve<T> = globalShow<{
 }>;
 declare function globalMod<T>(): { node: globalResolve<T> };
 
-// Global scripts can still close a cycle through an existing variable path.
-// Ideal declaration (in addition to the existing source declarations above):
-// declare const globalRoot: { node: { value: number; next: typeof globalRoot.node } };
 const globalRoot = globalMod<{ value: number; next: "ref" }>();
 
 // @filename: consumer.ts
@@ -86,11 +62,6 @@ type show<T> = { [K in keyof T]: T[K] } & unknown;
 type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
 declare function maybe<T>(): { node?: resolve<T> };
 
-// A namespace import is available at the helper's insertion scope.
-// Ideal namespaceImport.d.ts:
-// import * as Model from "./model";
-// type result_Node = { next: result_Node; value: Model.Payload };
-// export declare const result: { node?: result_Node };
 export const result = maybe<{ next: "ref"; value: Model.Payload }>();
 
 // @filename: namespaceType.ts
@@ -99,9 +70,4 @@ type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>
 declare function maybe<T>(): { node?: resolve<T> };
 export namespace N { export interface Payload { name: string; } }
 
-// The root N has namespace meaning, whereas N.Payload has type meaning.
-// Ideal namespaceType.d.ts:
-// type result_Node = { next: result_Node; value: N.Payload };
-// export namespace N { interface Payload { name: string; } }
-// export declare const result: { node?: result_Node };
 export const result = maybe<{ next: "ref"; value: N.Payload }>();

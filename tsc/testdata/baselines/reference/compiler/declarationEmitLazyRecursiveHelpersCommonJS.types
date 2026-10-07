@@ -1,11 +1,6 @@
 //// [tests/cases/compiler/declarationEmitLazyRecursiveHelpersCommonJS.ts] ////
 
 === mod.js ===
-// Keep a named CommonJS root's helper next to its constructor declaration.
-// Ideal mod.d.ts:
-// type K_1 = { value: number; values(): K_1 };
-// export declare var K: { new (): K_1 };
-// export {};
 var NS = {};
 >NS : { K: typeof K; }
 >{} : { K: typeof K; }
@@ -44,7 +39,7 @@ exports.K = NS.K;
 import { K } from "./mod";
 >K : typeof K
 
-// @ts-expect-error The synthesized helper is private to its declaration module.
+// @ts-expect-error
 import type { K_1 } from "./mod";
 >K_1 : any
 

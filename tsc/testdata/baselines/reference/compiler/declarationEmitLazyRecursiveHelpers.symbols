@@ -40,17 +40,12 @@ declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
 >M : Symbol(M, Decl(self.ts, 4, 20))
 >K : Symbol(K, Decl(self.ts, 4, 31))
 
-// Issue #64656: close the cycle through the declaration already being emitted.
-// Ideal self.d.ts (no helper needed):
-// export declare const n: {
-//     Node: { value: number; next: typeof n.Node };
-// };
 export const n = mod<{ Node: { value: number; next: "ref" } }>();
->n : Symbol(n, Decl(self.ts, 11, 12))
+>n : Symbol(n, Decl(self.ts, 6, 12))
 >mod : Symbol(mod, Decl(self.ts, 4, 13))
->Node : Symbol(Node, Decl(self.ts, 11, 22))
->value : Symbol(value, Decl(self.ts, 11, 30))
->next : Symbol(next, Decl(self.ts, 11, 45))
+>Node : Symbol(Node, Decl(self.ts, 6, 22))
+>value : Symbol(value, Decl(self.ts, 6, 30))
+>next : Symbol(next, Decl(self.ts, 6, 45))
 
 === quotedAnchor.ts ===
 type show<T> = { [K in keyof T]: T[K] } & unknown;
@@ -81,13 +76,10 @@ declare function mod<T>(): { "node": resolve<T> };
 >resolve : Symbol(resolve, Decl(quotedAnchor.ts, 0, 50))
 >T : Symbol(T, Decl(quotedAnchor.ts, 2, 21))
 
-// A quoted property whose text is a valid identifier still supplies an exact path.
-// Ideal quotedAnchor.d.ts (no helper needed):
-// export declare const quoted: { "node": { next: typeof quoted.node } };
 export const quoted = mod<{ next: "ref" }>();
->quoted : Symbol(quoted, Decl(quotedAnchor.ts, 7, 12))
+>quoted : Symbol(quoted, Decl(quotedAnchor.ts, 4, 12))
 >mod : Symbol(mod, Decl(quotedAnchor.ts, 1, 83))
->next : Symbol(next, Decl(quotedAnchor.ts, 7, 27))
+>next : Symbol(next, Decl(quotedAnchor.ts, 4, 27))
 
 === wideAnchor.ts ===
 type show<T> = { [K in keyof T]: T[K] } & unknown;
@@ -135,16 +127,10 @@ declare function mod<T>(): { [K in Keys | "node"]: K extends "node" ? resolve<T>
 >key : Symbol(key, Decl(wideAnchor.ts, 4, 84))
 >K : Symbol(K, Decl(wideAnchor.ts, 4, 30))
 
-// Unrelated sibling properties must not consume a search budget and force a helper.
-// Ideal wideAnchor.d.ts (no helper needed):
-// export declare const wide: {
-//     "0000000": { key: "0000000" }; // ... all other Keys properties ...
-//     node: { next: typeof wide.node };
-// };
 export const wide = mod<{ next: "ref" }>();
->wide : Symbol(wide, Decl(wideAnchor.ts, 12, 12))
+>wide : Symbol(wide, Decl(wideAnchor.ts, 6, 12))
 >mod : Symbol(mod, Decl(wideAnchor.ts, 3, 57))
->next : Symbol(next, Decl(wideAnchor.ts, 12, 25))
+>next : Symbol(next, Decl(wideAnchor.ts, 6, 25))
 
 === mutual.ts ===
 type show<T> = { [K in keyof T]: T[K] } & unknown;
@@ -189,55 +175,41 @@ declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
 >M : Symbol(M, Decl(mutual.ts, 4, 20))
 >K : Symbol(K, Decl(mutual.ts, 4, 31))
 
-// Both types have existing paths. Keep both recursive edges without expanding forever.
-// Ideal mutual.d.ts:
-// export declare const pair: {
-//     Left: { leftValue: number; right: typeof pair.Right };
-//     Right: { rightValue: string; left: typeof pair.Left };
-// };
 export const pair = mod<{
->pair : Symbol(pair, Decl(mutual.ts, 12, 12))
+>pair : Symbol(pair, Decl(mutual.ts, 6, 12))
 >mod : Symbol(mod, Decl(mutual.ts, 4, 13))
 
     Left: { leftValue: number; right: "Right" };
->Left : Symbol(Left, Decl(mutual.ts, 12, 25))
->leftValue : Symbol(leftValue, Decl(mutual.ts, 13, 11))
->right : Symbol(right, Decl(mutual.ts, 13, 30))
+>Left : Symbol(Left, Decl(mutual.ts, 6, 25))
+>leftValue : Symbol(leftValue, Decl(mutual.ts, 7, 11))
+>right : Symbol(right, Decl(mutual.ts, 7, 30))
 
     Right: { rightValue: string; left: "Left" };
->Right : Symbol(Right, Decl(mutual.ts, 13, 48))
->rightValue : Symbol(rightValue, Decl(mutual.ts, 14, 12))
->left : Symbol(left, Decl(mutual.ts, 14, 32))
+>Right : Symbol(Right, Decl(mutual.ts, 7, 48))
+>rightValue : Symbol(rightValue, Decl(mutual.ts, 8, 12))
+>left : Symbol(left, Decl(mutual.ts, 8, 32))
 
 }>();
 
-// If a helper is needed for a mutually recursive return type, promote only the
-// back-edge target. The intermediate Right object can remain inline.
-// Ideal declaration (in addition to pair above):
-// type left_Result = {
-//     leftValue: number;
-//     right: { rightValue: string; left: left_Result };
-// };
-// export declare function left(): left_Result;
 export function left() {
->left : Symbol(left, Decl(mutual.ts, 15, 5))
+>left : Symbol(left, Decl(mutual.ts, 9, 5))
 
     return mod<{
->mod<{        Left: { leftValue: number; right: "Right" };        Right: { rightValue: string; left: "Left" };    }>().Left : Symbol(Left, Decl(mutual.ts, 26, 16))
+>mod<{        Left: { leftValue: number; right: "Right" };        Right: { rightValue: string; left: "Left" };    }>().Left : Symbol(Left, Decl(mutual.ts, 12, 16))
 >mod : Symbol(mod, Decl(mutual.ts, 4, 13))
 
         Left: { leftValue: number; right: "Right" };
->Left : Symbol(Left, Decl(mutual.ts, 26, 16))
->leftValue : Symbol(leftValue, Decl(mutual.ts, 27, 15))
->right : Symbol(right, Decl(mutual.ts, 27, 34))
+>Left : Symbol(Left, Decl(mutual.ts, 12, 16))
+>leftValue : Symbol(leftValue, Decl(mutual.ts, 13, 15))
+>right : Symbol(right, Decl(mutual.ts, 13, 34))
 
         Right: { rightValue: string; left: "Left" };
->Right : Symbol(Right, Decl(mutual.ts, 27, 52))
->rightValue : Symbol(rightValue, Decl(mutual.ts, 28, 16))
->left : Symbol(left, Decl(mutual.ts, 28, 36))
+>Right : Symbol(Right, Decl(mutual.ts, 13, 52))
+>rightValue : Symbol(rightValue, Decl(mutual.ts, 14, 16))
+>left : Symbol(left, Decl(mutual.ts, 14, 36))
 
     }>().Left;
->Left : Symbol(Left, Decl(mutual.ts, 26, 16))
+>Left : Symbol(Left, Decl(mutual.ts, 12, 16))
 }
 
 === optional.ts ===
@@ -280,71 +252,48 @@ declare function maybe<T>(): { node?: resolve<T> };
 >resolve : Symbol(resolve, Decl(optional.ts, 0, 50))
 >T : Symbol(T, Decl(optional.ts, 6, 23))
 
-// The optional entry path includes undefined; using typeof optional.node directly
-// for the recursive edge would incorrectly make the node itself possibly undefined.
-// A helper is an acceptable fallback to a validated, non-nullable existing reference.
-// Ideal optional.d.ts:
-// type optional_Node = {
-//     readonly value: number;
-//     next?: optional_Node;
-// };
-// export declare const optional: { node?: optional_Node };
 export const optional = maybe<{ readonly value: number; next?: "ref" }>();
->optional : Symbol(optional, Decl(optional.ts, 17, 12))
+>optional : Symbol(optional, Decl(optional.ts, 8, 12))
 >maybe : Symbol(maybe, Decl(optional.ts, 5, 3))
->value : Symbol(value, Decl(optional.ts, 17, 31))
->next : Symbol(next, Decl(optional.ts, 17, 55))
+>value : Symbol(value, Decl(optional.ts, 8, 31))
+>next : Symbol(next, Decl(optional.ts, 8, 55))
 
-// Both optional entry points reach the same instantiated recursive type. Reuse
-// the helper discovered for the first entry instead of synthesizing a second one.
-// Ideal declaration (in addition to optional above):
-// type shared_Node = { next: shared_Node };
-// export declare const shared: { left?: shared_Node; right?: shared_Node };
 declare function both<T>(): { left?: resolve<T>; right?: resolve<T> };
->both : Symbol(both, Decl(optional.ts, 17, 74))
->T : Symbol(T, Decl(optional.ts, 24, 22))
->left : Symbol(left, Decl(optional.ts, 24, 29))
+>both : Symbol(both, Decl(optional.ts, 8, 74))
+>T : Symbol(T, Decl(optional.ts, 10, 22))
+>left : Symbol(left, Decl(optional.ts, 10, 29))
 >resolve : Symbol(resolve, Decl(optional.ts, 0, 50))
->T : Symbol(T, Decl(optional.ts, 24, 22))
->right : Symbol(right, Decl(optional.ts, 24, 48))
+>T : Symbol(T, Decl(optional.ts, 10, 22))
+>right : Symbol(right, Decl(optional.ts, 10, 48))
 >resolve : Symbol(resolve, Decl(optional.ts, 0, 50))
->T : Symbol(T, Decl(optional.ts, 24, 22))
+>T : Symbol(T, Decl(optional.ts, 10, 22))
 
 export const shared = both<{ next: "ref" }>();
->shared : Symbol(shared, Decl(optional.ts, 25, 12))
->both : Symbol(both, Decl(optional.ts, 17, 74))
->next : Symbol(next, Decl(optional.ts, 25, 28))
+>shared : Symbol(shared, Decl(optional.ts, 11, 12))
+>both : Symbol(both, Decl(optional.ts, 8, 74))
+>next : Symbol(next, Decl(optional.ts, 11, 28))
 
 === containers.ts ===
-// A cycle can pass through a union and array rather than a direct object property.
-// The local alias cannot be referenced from the emitted declaration's scope.
-// Ideal containers.d.ts:
-// type tree_Result = string | tree_Result[];
-// export declare function tree(): tree_Result;
 export function tree() {
 >tree : Symbol(tree, Decl(containers.ts, 0, 0))
 
     type Local = string | Local[];
->Local : Symbol(Local, Decl(containers.ts, 5, 24))
->Local : Symbol(Local, Decl(containers.ts, 5, 24))
+>Local : Symbol(Local, Decl(containers.ts, 0, 24))
+>Local : Symbol(Local, Decl(containers.ts, 0, 24))
 
     return null as unknown as Local;
->Local : Symbol(Local, Decl(containers.ts, 5, 24))
+>Local : Symbol(Local, Decl(containers.ts, 0, 24))
 }
 
-// Preserve readonly tuple structure at the recursive edge.
-// Ideal declaration (in addition to tree above):
-// type tuple_Result = readonly [number, tuple_Result];
-// export declare function tuple(): tuple_Result;
 export function tuple() {
->tuple : Symbol(tuple, Decl(containers.ts, 8, 1))
+>tuple : Symbol(tuple, Decl(containers.ts, 3, 1))
 
     type Local = readonly [number, Local];
->Local : Symbol(Local, Decl(containers.ts, 14, 25))
->Local : Symbol(Local, Decl(containers.ts, 14, 25))
+>Local : Symbol(Local, Decl(containers.ts, 5, 25))
+>Local : Symbol(Local, Decl(containers.ts, 5, 25))
 
     return null as unknown as Local;
->Local : Symbol(Local, Decl(containers.ts, 14, 25))
+>Local : Symbol(Local, Decl(containers.ts, 5, 25))
 }
 
 === signatures.ts ===
@@ -375,49 +324,39 @@ declare function maybe<T>(): { node?: resolve<T> };
 >resolve : Symbol(resolve, Decl(signatures.ts, 0, 50))
 >T : Symbol(T, Decl(signatures.ts, 2, 23))
 
-// A generic signature inside the helper binds its own T. This does not capture T
-// from the enclosing scope and must not be rejected with the scoped-types cases.
-// Ideal signatures.d.ts:
-// type signatures_Node = {
-//     next: signatures_Node;
-//     identity: <T>(value: T) => T;
-//     unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;
-//     copy: <T>(value: T) => { [K in keyof T]: T[K] };
-// };
-// export declare const signatures: { node?: signatures_Node };
 export const signatures = maybe<{
->signatures : Symbol(signatures, Decl(signatures.ts, 14, 12))
+>signatures : Symbol(signatures, Decl(signatures.ts, 4, 12))
 >maybe : Symbol(maybe, Decl(signatures.ts, 1, 81))
 
     next: "ref";
->next : Symbol(next, Decl(signatures.ts, 14, 33))
+>next : Symbol(next, Decl(signatures.ts, 4, 33))
 
     identity: <T>(value: T) => T;
->identity : Symbol(identity, Decl(signatures.ts, 15, 16))
->T : Symbol(T, Decl(signatures.ts, 16, 15))
->value : Symbol(value, Decl(signatures.ts, 16, 18))
->T : Symbol(T, Decl(signatures.ts, 16, 15))
->T : Symbol(T, Decl(signatures.ts, 16, 15))
+>identity : Symbol(identity, Decl(signatures.ts, 5, 16))
+>T : Symbol(T, Decl(signatures.ts, 6, 15))
+>value : Symbol(value, Decl(signatures.ts, 6, 18))
+>T : Symbol(T, Decl(signatures.ts, 6, 15))
+>T : Symbol(T, Decl(signatures.ts, 6, 15))
 
     unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;
->unwrap : Symbol(unwrap, Decl(signatures.ts, 16, 33))
->T : Symbol(T, Decl(signatures.ts, 17, 13))
->value : Symbol(value, Decl(signatures.ts, 17, 16))
->T : Symbol(T, Decl(signatures.ts, 17, 13))
->T : Symbol(T, Decl(signatures.ts, 17, 13))
->U : Symbol(U, Decl(signatures.ts, 17, 54))
->U : Symbol(U, Decl(signatures.ts, 17, 54))
->T : Symbol(T, Decl(signatures.ts, 17, 13))
+>unwrap : Symbol(unwrap, Decl(signatures.ts, 6, 33))
+>T : Symbol(T, Decl(signatures.ts, 7, 13))
+>value : Symbol(value, Decl(signatures.ts, 7, 16))
+>T : Symbol(T, Decl(signatures.ts, 7, 13))
+>T : Symbol(T, Decl(signatures.ts, 7, 13))
+>U : Symbol(U, Decl(signatures.ts, 7, 54))
+>U : Symbol(U, Decl(signatures.ts, 7, 54))
+>T : Symbol(T, Decl(signatures.ts, 7, 13))
 
     copy: <T>(value: T) => { [K in keyof T]: T[K] };
->copy : Symbol(copy, Decl(signatures.ts, 17, 68))
->T : Symbol(T, Decl(signatures.ts, 18, 11))
->value : Symbol(value, Decl(signatures.ts, 18, 14))
->T : Symbol(T, Decl(signatures.ts, 18, 11))
->K : Symbol(K, Decl(signatures.ts, 18, 30))
->T : Symbol(T, Decl(signatures.ts, 18, 11))
->T : Symbol(T, Decl(signatures.ts, 18, 11))
->K : Symbol(K, Decl(signatures.ts, 18, 30))
+>copy : Symbol(copy, Decl(signatures.ts, 7, 68))
+>T : Symbol(T, Decl(signatures.ts, 8, 11))
+>value : Symbol(value, Decl(signatures.ts, 8, 14))
+>T : Symbol(T, Decl(signatures.ts, 8, 11))
+>K : Symbol(K, Decl(signatures.ts, 8, 30))
+>T : Symbol(T, Decl(signatures.ts, 8, 11))
+>T : Symbol(T, Decl(signatures.ts, 8, 11))
+>K : Symbol(K, Decl(signatures.ts, 8, 30))
 
 }>();
 
@@ -449,21 +388,16 @@ declare function maybe<T>(): { node?: resolve<T> };
 >resolve : Symbol(resolve, Decl(collisions.ts, 0, 50))
 >T : Symbol(T, Decl(collisions.ts, 2, 23))
 
-// A generated helper must not collide with an existing type or value name.
-// Ideal collisions.d.ts:
-// export interface collision_1 { occupied: true; }
-// type collision_2 = { next: collision_2 };
-// export declare const collision: { node?: collision_2 };
 export interface collision_1 {
 >collision_1 : Symbol(collision_1, Decl(collisions.ts, 2, 51))
 
     occupied: true;
->occupied : Symbol(collision_1.occupied, Decl(collisions.ts, 9, 30))
+>occupied : Symbol(collision_1.occupied, Decl(collisions.ts, 4, 30))
 }
 export const collision = maybe<{ next: "ref" }>();
->collision : Symbol(collision, Decl(collisions.ts, 12, 12))
+>collision : Symbol(collision, Decl(collisions.ts, 7, 12))
 >maybe : Symbol(maybe, Decl(collisions.ts, 1, 81))
->next : Symbol(next, Decl(collisions.ts, 12, 32))
+>next : Symbol(next, Decl(collisions.ts, 7, 32))
 
 === symbols.ts ===
 type show<T> = { [K in keyof T]: T[K] } & unknown;
@@ -493,20 +427,15 @@ declare function maybe<T>(): { node?: resolve<T> };
 >resolve : Symbol(resolve, Decl(symbols.ts, 0, 50))
 >T : Symbol(T, Decl(symbols.ts, 2, 23))
 
-// A helper may reference a top-level symbol, including in a computed property name.
-// Ideal symbols.d.ts:
-// export declare const key: unique symbol;
-// type keyed_Node = { next: keyed_Node; [key]: number };
-// export declare const keyed: { node?: keyed_Node };
 export declare const key: unique symbol;
->key : Symbol(key, Decl(symbols.ts, 9, 20))
+>key : Symbol(key, Decl(symbols.ts, 4, 20))
 
 export const keyed = maybe<{ next: "ref"; [key]: number }>();
->keyed : Symbol(keyed, Decl(symbols.ts, 10, 12))
+>keyed : Symbol(keyed, Decl(symbols.ts, 5, 12))
 >maybe : Symbol(maybe, Decl(symbols.ts, 1, 81))
->next : Symbol(next, Decl(symbols.ts, 10, 28))
->[key] : Symbol([key], Decl(symbols.ts, 10, 41))
->key : Symbol(key, Decl(symbols.ts, 9, 20))
+>next : Symbol(next, Decl(symbols.ts, 5, 28))
+>[key] : Symbol([key], Decl(symbols.ts, 5, 41))
+>key : Symbol(key, Decl(symbols.ts, 4, 20))
 
 === payload.ts ===
 export interface Payload {
@@ -548,18 +477,12 @@ declare function maybe<T>(): { node?: resolve<T> };
 >resolve : Symbol(resolve, Decl(imported.ts, 1, 50))
 >T : Symbol(T, Decl(imported.ts, 3, 23))
 
-// A top-level import remains available to the helper. Its late-painted import
-// declaration must survive even though only the synthesized body references it.
-// Ideal imported.d.ts:
-// import { Payload as Input } from "./payload";
-// type imported_Node = { value: Input; next: imported_Node };
-// export declare const imported: { node?: imported_Node };
 export const imported = maybe<{ value: Input; next: "ref" }>();
->imported : Symbol(imported, Decl(imported.ts, 11, 12))
+>imported : Symbol(imported, Decl(imported.ts, 5, 12))
 >maybe : Symbol(maybe, Decl(imported.ts, 2, 81))
->value : Symbol(value, Decl(imported.ts, 11, 31))
+>value : Symbol(value, Decl(imported.ts, 5, 31))
 >Input : Symbol(Input, Decl(imported.ts, 0, 8))
->next : Symbol(next, Decl(imported.ts, 11, 45))
+>next : Symbol(next, Decl(imported.ts, 5, 45))
 
 === recursiveArray.ts ===
 type show<T> = { [K in keyof T]: T[K] } & unknown;
@@ -583,13 +506,8 @@ function source() {
 >Local : Symbol(Local, Decl(recursiveArray.ts, 1, 19))
 }
 
-// Array roots cannot safely close the cycle with typeof nodes in their own array
-// annotation. A helper at the array's back-edge target is a safe fallback.
-// Ideal recursiveArray.d.ts:
-// type nodes_Result = { next: nodes_Result }[];
-// export declare const nodes: nodes_Result;
 export const nodes = source();
->nodes : Symbol(nodes, Decl(recursiveArray.ts, 11, 12))
+>nodes : Symbol(nodes, Decl(recursiveArray.ts, 6, 12))
 >source : Symbol(source, Decl(recursiveArray.ts, 0, 50))
 
 === shadowedAnchor.ts ===
@@ -618,32 +536,21 @@ declare function mod<T>(): resolve<T>;
 >resolve : Symbol(resolve, Decl(shadowedAnchor.ts, 0, 50))
 >T : Symbol(T, Decl(shadowedAnchor.ts, 2, 21))
 
-// The parameter named node shadows the variable at the recursive return type.
-// typeof node would mean string there, so use a closed helper instead.
-// Ideal shadowedAnchor.d.ts:
-// type node_Result = { value: number; read: (node: string) => node_Result };
-// export declare const node: node_Result;
 export const node = mod<number>();
->node : Symbol(node, Decl(shadowedAnchor.ts, 9, 12))
+>node : Symbol(node, Decl(shadowedAnchor.ts, 4, 12))
 >mod : Symbol(mod, Decl(shadowedAnchor.ts, 1, 73))
 
 === classAnchor.ts ===
-// The checker gives a class a synthetic prototype property. A structural
-// constructor declaration does not retain that property, so ctor.prototype is
-// not a safe recursive anchor for the emitted instance type.
-// Ideal classAnchor.d.ts:
-// type ctor_Instance = { next(): ctor_Instance };
-// export declare const ctor: { new (): ctor_Instance };
 export const ctor = class Inner {
->ctor : Symbol(ctor, Decl(classAnchor.ts, 6, 12))
->Inner : Symbol(Inner, Decl(classAnchor.ts, 6, 19))
+>ctor : Symbol(ctor, Decl(classAnchor.ts, 0, 12))
+>Inner : Symbol(Inner, Decl(classAnchor.ts, 0, 19))
 
     next(): Inner {
->next : Symbol(Inner.next, Decl(classAnchor.ts, 6, 33))
->Inner : Symbol(Inner, Decl(classAnchor.ts, 6, 19))
+>next : Symbol(Inner.next, Decl(classAnchor.ts, 0, 33))
+>Inner : Symbol(Inner, Decl(classAnchor.ts, 0, 19))
 
         return this;
->this : Symbol(Inner, Decl(classAnchor.ts, 6, 19))
+>this : Symbol(Inner, Decl(classAnchor.ts, 0, 19))
     }
 };
 
@@ -675,29 +582,23 @@ declare function mod<T>(): resolve<T>;
 >resolve : Symbol(resolve, Decl(instantiations.ts, 0, 50))
 >T : Symbol(T, Decl(instantiations.ts, 2, 21))
 
-// The same mapped declaration produces distinct cycles and shares no output anchor.
-// Cached serialization must not reuse the first declaration's recursive reference.
-// Ideal instantiations.d.ts:
-// export declare const numbers: { value: number; next: typeof numbers };
-// export declare const strings: { value: string; next: typeof strings };
-// export declare const numbersAgain: { value: number; next: typeof numbersAgain };
 export const numbers = mod<{ value: number; next: "ref" }>();
->numbers : Symbol(numbers, Decl(instantiations.ts, 10, 12))
+>numbers : Symbol(numbers, Decl(instantiations.ts, 4, 12))
 >mod : Symbol(mod, Decl(instantiations.ts, 1, 83))
->value : Symbol(value, Decl(instantiations.ts, 10, 28))
->next : Symbol(next, Decl(instantiations.ts, 10, 43))
+>value : Symbol(value, Decl(instantiations.ts, 4, 28))
+>next : Symbol(next, Decl(instantiations.ts, 4, 43))
 
 export const strings = mod<{ value: string; next: "ref" }>();
->strings : Symbol(strings, Decl(instantiations.ts, 11, 12))
+>strings : Symbol(strings, Decl(instantiations.ts, 5, 12))
 >mod : Symbol(mod, Decl(instantiations.ts, 1, 83))
->value : Symbol(value, Decl(instantiations.ts, 11, 28))
->next : Symbol(next, Decl(instantiations.ts, 11, 43))
+>value : Symbol(value, Decl(instantiations.ts, 5, 28))
+>next : Symbol(next, Decl(instantiations.ts, 5, 43))
 
 export const numbersAgain = mod<{ value: number; next: "ref" }>();
->numbersAgain : Symbol(numbersAgain, Decl(instantiations.ts, 12, 12))
+>numbersAgain : Symbol(numbersAgain, Decl(instantiations.ts, 6, 12))
 >mod : Symbol(mod, Decl(instantiations.ts, 1, 83))
->value : Symbol(value, Decl(instantiations.ts, 12, 33))
->next : Symbol(next, Decl(instantiations.ts, 12, 48))
+>value : Symbol(value, Decl(instantiations.ts, 6, 33))
+>next : Symbol(next, Decl(instantiations.ts, 6, 48))
 
 === cacheSiblings.ts ===
 type show<T> = { [K in keyof T]: T[K] } & unknown;
@@ -748,92 +649,71 @@ declare function batch<T>(): {
 
 };
 
-// Reuse the helper inside a later subtree, while keeping unrelated leaves inline.
-// Neither subtree may retain a helper or variable anchor from a previous context.
-// Ideal declaration (apart from the second variable's separate helper):
-// type mixed_Node = { value: number; next: mixed_Node };
-// export declare const mixed: {
-//     first?: mixed_Node;
-//     second: { node: mixed_Node; leaf: { value: string; nested: { id: number } } };
-//     leaf: { value: string; nested: { id: number } };
-// };
 export const mixed = batch<{ value: number; next: "ref" }>();
->mixed : Symbol(mixed, Decl(cacheSiblings.ts, 17, 12))
+>mixed : Symbol(mixed, Decl(cacheSiblings.ts, 8, 12))
 >batch : Symbol(batch, Decl(cacheSiblings.ts, 1, 83))
->value : Symbol(value, Decl(cacheSiblings.ts, 17, 28))
->next : Symbol(next, Decl(cacheSiblings.ts, 17, 43))
+>value : Symbol(value, Decl(cacheSiblings.ts, 8, 28))
+>next : Symbol(next, Decl(cacheSiblings.ts, 8, 43))
 
 export const mixedAgain = batch<{ value: number; next: "ref" }>();
->mixedAgain : Symbol(mixedAgain, Decl(cacheSiblings.ts, 18, 12))
+>mixedAgain : Symbol(mixedAgain, Decl(cacheSiblings.ts, 9, 12))
 >batch : Symbol(batch, Decl(cacheSiblings.ts, 1, 83))
->value : Symbol(value, Decl(cacheSiblings.ts, 18, 33))
->next : Symbol(next, Decl(cacheSiblings.ts, 18, 48))
+>value : Symbol(value, Decl(cacheSiblings.ts, 9, 33))
+>next : Symbol(next, Decl(cacheSiblings.ts, 9, 48))
 
 === helperNames.ts ===
-// Both helpers belong to this declaration; unrelated declarations restart at 1.
-// Ideal declaration:
-// type makePair_1 = readonly [number, makePair_1];
-// type makePair_2 = readonly [string, makePair_2];
-// export declare function makePair(): { left: makePair_1; right: makePair_2 };
-// type other_1 = readonly [boolean, other_1];
-// export declare function other(): other_1;
 export function makePair() {
 >makePair : Symbol(makePair, Decl(helperNames.ts, 0, 0))
 
     type Left = readonly [number, Left];
->Left : Symbol(Left, Decl(helperNames.ts, 7, 28))
->Left : Symbol(Left, Decl(helperNames.ts, 7, 28))
+>Left : Symbol(Left, Decl(helperNames.ts, 0, 28))
+>Left : Symbol(Left, Decl(helperNames.ts, 0, 28))
 
     type Right = readonly [string, Right];
->Right : Symbol(Right, Decl(helperNames.ts, 8, 40))
->Right : Symbol(Right, Decl(helperNames.ts, 8, 40))
+>Right : Symbol(Right, Decl(helperNames.ts, 1, 40))
+>Right : Symbol(Right, Decl(helperNames.ts, 1, 40))
 
     return { left: null as unknown as Left, right: null as unknown as Right };
->left : Symbol(left, Decl(helperNames.ts, 10, 12))
->Left : Symbol(Left, Decl(helperNames.ts, 7, 28))
->right : Symbol(right, Decl(helperNames.ts, 10, 43))
->Right : Symbol(Right, Decl(helperNames.ts, 8, 40))
+>left : Symbol(left, Decl(helperNames.ts, 3, 12))
+>Left : Symbol(Left, Decl(helperNames.ts, 0, 28))
+>right : Symbol(right, Decl(helperNames.ts, 3, 43))
+>Right : Symbol(Right, Decl(helperNames.ts, 1, 40))
 }
 export function other() {
->other : Symbol(other, Decl(helperNames.ts, 11, 1))
+>other : Symbol(other, Decl(helperNames.ts, 4, 1))
 
     type Local = readonly [boolean, Local];
->Local : Symbol(Local, Decl(helperNames.ts, 12, 25))
->Local : Symbol(Local, Decl(helperNames.ts, 12, 25))
+>Local : Symbol(Local, Decl(helperNames.ts, 5, 25))
+>Local : Symbol(Local, Decl(helperNames.ts, 5, 25))
 
     return null as unknown as Local;
->Local : Symbol(Local, Decl(helperNames.ts, 12, 25))
+>Local : Symbol(Local, Decl(helperNames.ts, 5, 25))
 }
 
 === helperNameCollisions.ts ===
-// Occupied type and value names both reserve numbers before helper emission.
-// Ideal declaration (in addition to the original exports):
-// type makePair_3 = readonly [number, makePair_3];
-// type makePair_4 = readonly [string, makePair_4];
-// export declare function makePair(): { left: makePair_3; right: makePair_4 };
 export interface makePair_1 { occupied: true; }
 >makePair_1 : Symbol(makePair_1, Decl(helperNameCollisions.ts, 0, 0))
->occupied : Symbol(makePair_1.occupied, Decl(helperNameCollisions.ts, 5, 29))
+>occupied : Symbol(makePair_1.occupied, Decl(helperNameCollisions.ts, 0, 29))
 
 export const makePair_2 = 0;
->makePair_2 : Symbol(makePair_2, Decl(helperNameCollisions.ts, 6, 12))
+>makePair_2 : Symbol(makePair_2, Decl(helperNameCollisions.ts, 1, 12))
 
 export function makePair() {
->makePair : Symbol(makePair, Decl(helperNameCollisions.ts, 6, 28))
+>makePair : Symbol(makePair, Decl(helperNameCollisions.ts, 1, 28))
 
     type Left = readonly [number, Left];
->Left : Symbol(Left, Decl(helperNameCollisions.ts, 7, 28))
->Left : Symbol(Left, Decl(helperNameCollisions.ts, 7, 28))
+>Left : Symbol(Left, Decl(helperNameCollisions.ts, 2, 28))
+>Left : Symbol(Left, Decl(helperNameCollisions.ts, 2, 28))
 
     type Right = readonly [string, Right];
->Right : Symbol(Right, Decl(helperNameCollisions.ts, 8, 40))
->Right : Symbol(Right, Decl(helperNameCollisions.ts, 8, 40))
+>Right : Symbol(Right, Decl(helperNameCollisions.ts, 3, 40))
+>Right : Symbol(Right, Decl(helperNameCollisions.ts, 3, 40))
 
     return { left: null as unknown as Left, right: null as unknown as Right };
->left : Symbol(left, Decl(helperNameCollisions.ts, 10, 12))
->Left : Symbol(Left, Decl(helperNameCollisions.ts, 7, 28))
->right : Symbol(right, Decl(helperNameCollisions.ts, 10, 43))
->Right : Symbol(Right, Decl(helperNameCollisions.ts, 8, 40))
+>left : Symbol(left, Decl(helperNameCollisions.ts, 5, 12))
+>Left : Symbol(Left, Decl(helperNameCollisions.ts, 2, 28))
+>right : Symbol(right, Decl(helperNameCollisions.ts, 5, 43))
+>Right : Symbol(Right, Decl(helperNameCollisions.ts, 3, 40))
 }
 
 === defaultValue.ts ===
@@ -848,26 +728,17 @@ function source() {
 >Local : Symbol(Local, Decl(defaultValue.ts, 0, 19))
 }
 
-// A helper for an unnamed default follows the emitter's _default naming convention.
-// Ideal declaration:
-// type _default_1 = readonly [number, _default_1];
-// declare const _default: _default_1;
-// export default _default;
 export default source();
 >source : Symbol(source, Decl(defaultValue.ts, 0, 0))
 
 === defaultFunction.ts ===
-// Preserve the same convention when the unnamed default is a function declaration.
-// Ideal declaration:
-// type _default_1 = readonly [string, _default_1];
-// export default function (): _default_1;
 export default function () {
     type Local = readonly [string, Local];
->Local : Symbol(Local, Decl(defaultFunction.ts, 4, 28))
->Local : Symbol(Local, Decl(defaultFunction.ts, 4, 28))
+>Local : Symbol(Local, Decl(defaultFunction.ts, 0, 28))
+>Local : Symbol(Local, Decl(defaultFunction.ts, 0, 28))
 
     return null as unknown as Local;
->Local : Symbol(Local, Decl(defaultFunction.ts, 4, 28))
+>Local : Symbol(Local, Decl(defaultFunction.ts, 0, 28))
 }
 
 === acyclic.ts ===
@@ -898,61 +769,48 @@ declare function mod<T>(): resolve<T>;
 >resolve : Symbol(resolve, Decl(acyclic.ts, 0, 50))
 >T : Symbol(T, Decl(acyclic.ts, 2, 21))
 
-// The mapper can produce recursion, but these instantiations never encounter it.
-// Repeated sibling shapes and finite nesting are also not cycles.
-// Ideal acyclic.d.ts (no synthesized helpers anywhere in this file):
-// export declare const leaf: { value: number; next: null };
-// export declare const siblings: {
-//     left: { value: number; next: null };
-//     right: { value: number; next: null };
-// };
-// export declare const finite: { value: number[][][] };
 export const leaf = mod<{ value: number; next: null }>();
->leaf : Symbol(leaf, Decl(acyclic.ts, 13, 12))
+>leaf : Symbol(leaf, Decl(acyclic.ts, 4, 12))
 >mod : Symbol(mod, Decl(acyclic.ts, 1, 83))
->value : Symbol(value, Decl(acyclic.ts, 13, 25))
->next : Symbol(next, Decl(acyclic.ts, 13, 40))
+>value : Symbol(value, Decl(acyclic.ts, 4, 25))
+>next : Symbol(next, Decl(acyclic.ts, 4, 40))
 
 export const siblings = {
->siblings : Symbol(siblings, Decl(acyclic.ts, 14, 12))
+>siblings : Symbol(siblings, Decl(acyclic.ts, 5, 12))
 
     left: mod<{ value: number; next: null }>(),
->left : Symbol(left, Decl(acyclic.ts, 14, 25))
+>left : Symbol(left, Decl(acyclic.ts, 5, 25))
 >mod : Symbol(mod, Decl(acyclic.ts, 1, 83))
->value : Symbol(value, Decl(acyclic.ts, 15, 15))
->next : Symbol(next, Decl(acyclic.ts, 15, 30))
+>value : Symbol(value, Decl(acyclic.ts, 6, 15))
+>next : Symbol(next, Decl(acyclic.ts, 6, 30))
 
     right: mod<{ value: number; next: null }>(),
->right : Symbol(right, Decl(acyclic.ts, 15, 47))
+>right : Symbol(right, Decl(acyclic.ts, 6, 47))
 >mod : Symbol(mod, Decl(acyclic.ts, 1, 83))
->value : Symbol(value, Decl(acyclic.ts, 16, 16))
->next : Symbol(next, Decl(acyclic.ts, 16, 31))
+>value : Symbol(value, Decl(acyclic.ts, 7, 16))
+>next : Symbol(next, Decl(acyclic.ts, 7, 31))
 
 };
 export const finite = mod<{ value: number[][][] }>();
->finite : Symbol(finite, Decl(acyclic.ts, 18, 12))
+>finite : Symbol(finite, Decl(acyclic.ts, 9, 12))
 >mod : Symbol(mod, Decl(acyclic.ts, 1, 83))
->value : Symbol(value, Decl(acyclic.ts, 18, 27))
+>value : Symbol(value, Decl(acyclic.ts, 9, 27))
 
-// An existing name that already closes a cycle must keep being reused.
-// Ideal declaration (in addition to the acyclic exports above):
-// export interface Named { value: number; next: Named; }
-// export declare const named: Named;
 export interface Named {
->Named : Symbol(Named, Decl(acyclic.ts, 18, 53))
+>Named : Symbol(Named, Decl(acyclic.ts, 9, 53))
 
     value: number;
->value : Symbol(Named.value, Decl(acyclic.ts, 24, 24))
+>value : Symbol(Named.value, Decl(acyclic.ts, 11, 24))
 
     next: Named;
->next : Symbol(Named.next, Decl(acyclic.ts, 25, 18))
->Named : Symbol(Named, Decl(acyclic.ts, 18, 53))
+>next : Symbol(Named.next, Decl(acyclic.ts, 12, 18))
+>Named : Symbol(Named, Decl(acyclic.ts, 9, 53))
 }
 declare const source: Named;
->source : Symbol(source, Decl(acyclic.ts, 28, 13))
->Named : Symbol(Named, Decl(acyclic.ts, 18, 53))
+>source : Symbol(source, Decl(acyclic.ts, 15, 13))
+>Named : Symbol(Named, Decl(acyclic.ts, 9, 53))
 
 export const named = source;
->named : Symbol(named, Decl(acyclic.ts, 29, 12))
->source : Symbol(source, Decl(acyclic.ts, 28, 13))
+>named : Symbol(named, Decl(acyclic.ts, 16, 12))
+>source : Symbol(source, Decl(acyclic.ts, 15, 13))
 

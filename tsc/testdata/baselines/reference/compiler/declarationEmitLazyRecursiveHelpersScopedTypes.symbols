@@ -27,54 +27,36 @@ declare function mod<T>(): resolve<T>;
 >resolve : Symbol(resolve, Decl(generic.ts, 0, 50))
 >T : Symbol(T, Decl(generic.ts, 2, 21))
 
-// These two cases are future targets. For now, keep TS5088 rather than hoisting
-// helpers which would capture symbols from a function or returned signature scope.
-// A hoisted helper must capture the function's type parameter explicitly, including
-// its constraint. Only the node reached by the back edge needs to become a helper.
-// Ideal generic.d.ts:
-// type make_Node<T extends { id: string }> = {
-//     value: T;
-//     next: make_Node<T>;
-// };
-// export declare function make<T extends { id: string }>(value: T): {
-//     node: make_Node<T>;
-//     label: string;
-// };
 export function make<T extends { id: string }>(value: T) {
 >make : Symbol(make, Decl(generic.ts, 2, 38))
->T : Symbol(T, Decl(generic.ts, 17, 21))
->id : Symbol(id, Decl(generic.ts, 17, 32))
->value : Symbol(value, Decl(generic.ts, 17, 47))
->T : Symbol(T, Decl(generic.ts, 17, 21))
+>T : Symbol(T, Decl(generic.ts, 4, 21))
+>id : Symbol(id, Decl(generic.ts, 4, 32))
+>value : Symbol(value, Decl(generic.ts, 4, 47))
+>T : Symbol(T, Decl(generic.ts, 4, 21))
 
     return { node: mod<{ value: T; next: "ref" }>(), label: value.id };
->node : Symbol(node, Decl(generic.ts, 18, 12))
+>node : Symbol(node, Decl(generic.ts, 5, 12))
 >mod : Symbol(mod, Decl(generic.ts, 1, 81))
->value : Symbol(value, Decl(generic.ts, 18, 24))
->T : Symbol(T, Decl(generic.ts, 17, 21))
->next : Symbol(next, Decl(generic.ts, 18, 34))
->label : Symbol(label, Decl(generic.ts, 18, 52))
->value.id : Symbol(id, Decl(generic.ts, 17, 32))
->value : Symbol(value, Decl(generic.ts, 17, 47))
->id : Symbol(id, Decl(generic.ts, 17, 32))
+>value : Symbol(value, Decl(generic.ts, 5, 24))
+>T : Symbol(T, Decl(generic.ts, 4, 21))
+>next : Symbol(next, Decl(generic.ts, 5, 34))
+>label : Symbol(label, Decl(generic.ts, 5, 52))
+>value.id : Symbol(id, Decl(generic.ts, 4, 32))
+>value : Symbol(value, Decl(generic.ts, 4, 47))
+>id : Symbol(id, Decl(generic.ts, 4, 32))
 }
 
-// A parameter introduced by a returned call signature is not in the enclosing
-// function's scope. The helper must be generic and instantiated inside that signature.
-// Ideal declaration (in addition to make above):
-// type factory_Node<T> = { value: T; next: factory_Node<T> };
-// export declare function factory(): <T>(value: T) => factory_Node<T>;
 export function factory() {
->factory : Symbol(factory, Decl(generic.ts, 19, 1))
+>factory : Symbol(factory, Decl(generic.ts, 6, 1))
 
     return <T>(value: T) => mod<{ value: T; next: "ref" }>();
->T : Symbol(T, Decl(generic.ts, 27, 12))
->value : Symbol(value, Decl(generic.ts, 27, 15))
->T : Symbol(T, Decl(generic.ts, 27, 12))
+>T : Symbol(T, Decl(generic.ts, 9, 12))
+>value : Symbol(value, Decl(generic.ts, 9, 15))
+>T : Symbol(T, Decl(generic.ts, 9, 12))
 >mod : Symbol(mod, Decl(generic.ts, 1, 81))
->value : Symbol(value, Decl(generic.ts, 27, 33))
->T : Symbol(T, Decl(generic.ts, 27, 12))
->next : Symbol(next, Decl(generic.ts, 27, 43))
+>value : Symbol(value, Decl(generic.ts, 9, 33))
+>T : Symbol(T, Decl(generic.ts, 9, 12))
+>next : Symbol(next, Decl(generic.ts, 9, 43))
 }
 
 === nested.ts ===
@@ -105,72 +87,64 @@ declare function maybe<T>(): { node?: resolve<T> };
 >resolve : Symbol(resolve, Decl(nested.ts, 0, 50))
 >T : Symbol(T, Decl(nested.ts, 2, 23))
 
-// U belongs to the signature inside the helper, but the return type captures T
-// from outside it. Keep TS5088 and emit no orphan helper for this declaration.
 export function nested<T>() {
 >nested : Symbol(nested, Decl(nested.ts, 2, 51))
->T : Symbol(T, Decl(nested.ts, 6, 23))
+>T : Symbol(T, Decl(nested.ts, 4, 23))
 
     return maybe<{ next: "ref"; read: <U>(value: U) => T }>();
 >maybe : Symbol(maybe, Decl(nested.ts, 1, 81))
->next : Symbol(next, Decl(nested.ts, 7, 18))
->read : Symbol(read, Decl(nested.ts, 7, 31))
->U : Symbol(U, Decl(nested.ts, 7, 39))
->value : Symbol(value, Decl(nested.ts, 7, 42))
->U : Symbol(U, Decl(nested.ts, 7, 39))
->T : Symbol(T, Decl(nested.ts, 6, 23))
+>next : Symbol(next, Decl(nested.ts, 5, 18))
+>read : Symbol(read, Decl(nested.ts, 5, 31))
+>U : Symbol(U, Decl(nested.ts, 5, 39))
+>value : Symbol(value, Decl(nested.ts, 5, 42))
+>U : Symbol(U, Decl(nested.ts, 5, 39))
+>T : Symbol(T, Decl(nested.ts, 4, 23))
 }
 
-// A top-level name with the same spelling must not make a captured parameter
-// appear available in the helper's insertion scope. Keep TS5088 here as well.
 export interface Captured {
->Captured : Symbol(Captured, Decl(nested.ts, 8, 1))
+>Captured : Symbol(Captured, Decl(nested.ts, 6, 1))
 
     id: number;
->id : Symbol(Captured.id, Decl(nested.ts, 12, 27))
+>id : Symbol(Captured.id, Decl(nested.ts, 8, 27))
 }
 export function shadowed<Captured>() {
->shadowed : Symbol(shadowed, Decl(nested.ts, 14, 1))
->Captured : Symbol(Captured, Decl(nested.ts, 15, 25))
+>shadowed : Symbol(shadowed, Decl(nested.ts, 10, 1))
+>Captured : Symbol(Captured, Decl(nested.ts, 11, 25))
 
     return maybe<{ next: "ref"; value: Captured }>();
 >maybe : Symbol(maybe, Decl(nested.ts, 1, 81))
->next : Symbol(next, Decl(nested.ts, 16, 18))
->value : Symbol(value, Decl(nested.ts, 16, 31))
->Captured : Symbol(Captured, Decl(nested.ts, 15, 25))
+>next : Symbol(next, Decl(nested.ts, 12, 18))
+>value : Symbol(value, Decl(nested.ts, 12, 31))
+>Captured : Symbol(Captured, Decl(nested.ts, 11, 25))
 }
 
 === global.ts ===
-// A source-file helper in a global script could collide with one from another
-// script. Until global helpers have a safe naming strategy, preserve TS5088.
 function globalTree() {
 >globalTree : Symbol(globalTree, Decl(global.ts, 0, 0))
 
     type Local = readonly [number, Local];
->Local : Symbol(Local, Decl(global.ts, 2, 23))
->Local : Symbol(Local, Decl(global.ts, 2, 23))
+>Local : Symbol(Local, Decl(global.ts, 0, 23))
+>Local : Symbol(Local, Decl(global.ts, 0, 23))
 
     return null as unknown as Local;
->Local : Symbol(Local, Decl(global.ts, 2, 23))
+>Local : Symbol(Local, Decl(global.ts, 0, 23))
 }
 
 === namespace.ts ===
-// An insertion scope inside a namespace does not make function type parameters
-// available to the helper. Keep TS5088 rather than lifting or capturing T.
 namespace Generic {
 >Generic : Symbol(Generic, Decl(namespace.ts, 0, 0))
 
     export function make<T>() {
->make : Symbol(make, Decl(namespace.ts, 2, 19))
->T : Symbol(T, Decl(namespace.ts, 3, 25))
+>make : Symbol(make, Decl(namespace.ts, 0, 19))
+>T : Symbol(T, Decl(namespace.ts, 1, 25))
 
         type Local = readonly [T, Local];
->Local : Symbol(Local, Decl(namespace.ts, 3, 31))
->T : Symbol(T, Decl(namespace.ts, 3, 25))
->Local : Symbol(Local, Decl(namespace.ts, 3, 31))
+>Local : Symbol(Local, Decl(namespace.ts, 1, 31))
+>T : Symbol(T, Decl(namespace.ts, 1, 25))
+>Local : Symbol(Local, Decl(namespace.ts, 1, 31))
 
         return null as unknown as Local;
->Local : Symbol(Local, Decl(namespace.ts, 3, 31))
+>Local : Symbol(Local, Decl(namespace.ts, 1, 31))
     }
 }
 

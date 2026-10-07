@@ -50,8 +50,6 @@ func TestRecursiveHelperNamesAfterDiscardedSerialization(t *testing.T) {
 					f.NewVariableDeclarationList(f.NewNodeList([]*ast.Node{f.NewVariableDeclaration(name, nil, typ, nil)}), ast.NodeFlagsConst),
 				)
 			}
-			// Simulate accepted output after an earlier serialization attempt allocated
-			// a helper but was discarded. Only the two used helpers consume first's counter.
 			statements := f.NewNodeList([]*ast.Node{
 				variable(f.NewIdentifier("first"), f.NewUnionTypeNode(f.NewNodeList([]*ast.Node{reference(left), reference(right)}))),
 				variable(f.NewIdentifier("second"), reference(next)),
