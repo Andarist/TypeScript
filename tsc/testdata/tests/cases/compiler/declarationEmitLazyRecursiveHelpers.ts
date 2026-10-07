@@ -157,10 +157,10 @@ declare function maybe<T>(): { node?: resolve<T> };
 
 // A generated helper must not collide with an existing type or value name.
 // Ideal collisions.d.ts:
-// export interface collision_recursive { occupied: true; }
-// type collision_recursive_1 = { next: collision_recursive_1 };
-// export declare const collision: { node?: collision_recursive_1 };
-export interface collision_recursive {
+// export interface collision_1 { occupied: true; }
+// type collision_2 = { next: collision_2 };
+// export declare const collision: { node?: collision_2 };
+export interface collision_1 {
     occupied: true;
 }
 export const collision = maybe<{ next: "ref" }>();
@@ -272,6 +272,24 @@ declare function batch<T>(): {
 export const mixed = batch<{ value: number; next: "ref" }>();
 export const mixedAgain = batch<{ value: number; next: "ref" }>();
 
+// @filename: helperNames.ts
+// Both helpers belong to this declaration; unrelated declarations restart at 1.
+// Ideal declaration:
+// type makePair_1 = readonly [number, makePair_1];
+// type makePair_2 = readonly [string, makePair_2];
+// export declare function makePair(): { left: makePair_1; right: makePair_2 };
+// type other_1 = readonly [boolean, other_1];
+// export declare function other(): other_1;
+export function makePair() {
+    type Left = readonly [number, Left];
+    type Right = readonly [string, Right];
+    return { left: null as unknown as Left, right: null as unknown as Right };
+}
+export function other() {
+    type Local = readonly [boolean, Local];
+    return null as unknown as Local;
+}
+
 // @filename: defaultValue.ts
 function source() {
     type Local = readonly [number, Local];
@@ -280,16 +298,16 @@ function source() {
 
 // A helper for an unnamed default follows the emitter's _default naming convention.
 // Ideal declaration:
-// type _default_recursive = readonly [number, _default_recursive];
-// declare const _default: _default_recursive;
+// type _default_1 = readonly [number, _default_1];
+// declare const _default: _default_1;
 // export default _default;
 export default source();
 
 // @filename: defaultFunction.ts
 // Preserve the same convention when the unnamed default is a function declaration.
 // Ideal declaration:
-// type _default_recursive = readonly [string, _default_recursive];
-// export default function (): _default_recursive;
+// type _default_1 = readonly [string, _default_1];
+// export default function (): _default_1;
 export default function () {
     type Local = readonly [string, Local];
     return null as unknown as Local;

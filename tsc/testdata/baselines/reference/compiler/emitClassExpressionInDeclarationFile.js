@@ -73,12 +73,12 @@ export declare var simpleExample: {
     };
     getTags(): void;
 };
-type circularReference_recursive = {
-    tags(c: circularReference_recursive): circularReference_recursive;
+type circularReference_1 = {
+    tags(c: circularReference_1): circularReference_1;
 };
 export declare var circularReference: {
-    new (): circularReference_recursive;
-    getTags(c: circularReference_recursive): circularReference_recursive;
+    new (): circularReference_1;
+    getTags(c: circularReference_1): circularReference_1;
 };
 export declare class FooItem {
     foo(): void;

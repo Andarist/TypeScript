@@ -3,8 +3,8 @@
 === mod.js ===
 // Keep a named CommonJS root's helper next to its constructor declaration.
 // Ideal mod.d.ts:
-// type K_recursive = { value: number; values(): K_recursive };
-// export declare var K: { new (): K_recursive };
+// type K_1 = { value: number; values(): K_1 };
+// export declare var K: { new (): K_1 };
 // export {};
 var NS = {};
 >NS : Symbol(NS, Decl(mod.js, 5, 3))
@@ -39,8 +39,8 @@ import { K } from "./mod";
 >K : Symbol(K, Decl(consumer.ts, 0, 8))
 
 // @ts-expect-error The synthesized helper is private to its declaration module.
-import type { K_recursive } from "./mod";
->K_recursive : Symbol(K_recursive, Decl(consumer.ts, 2, 13))
+import type { K_1 } from "./mod";
+>K_1 : Symbol(K_1, Decl(consumer.ts, 2, 13))
 
 const value: number = new K().values().values().value;
 >value : Symbol(value, Decl(consumer.ts, 3, 5))

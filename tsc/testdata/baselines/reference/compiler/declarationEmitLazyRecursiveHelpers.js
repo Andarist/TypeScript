@@ -149,10 +149,10 @@ declare function maybe<T>(): { node?: resolve<T> };
 
 // A generated helper must not collide with an existing type or value name.
 // Ideal collisions.d.ts:
-// export interface collision_recursive { occupied: true; }
-// type collision_recursive_1 = { next: collision_recursive_1 };
-// export declare const collision: { node?: collision_recursive_1 };
-export interface collision_recursive {
+// export interface collision_1 { occupied: true; }
+// type collision_2 = { next: collision_2 };
+// export declare const collision: { node?: collision_2 };
+export interface collision_1 {
     occupied: true;
 }
 export const collision = maybe<{ next: "ref" }>();
@@ -264,6 +264,24 @@ declare function batch<T>(): {
 export const mixed = batch<{ value: number; next: "ref" }>();
 export const mixedAgain = batch<{ value: number; next: "ref" }>();
 
+//// [helperNames.ts]
+// Both helpers belong to this declaration; unrelated declarations restart at 1.
+// Ideal declaration:
+// type makePair_1 = readonly [number, makePair_1];
+// type makePair_2 = readonly [string, makePair_2];
+// export declare function makePair(): { left: makePair_1; right: makePair_2 };
+// type other_1 = readonly [boolean, other_1];
+// export declare function other(): other_1;
+export function makePair() {
+    type Left = readonly [number, Left];
+    type Right = readonly [string, Right];
+    return { left: null as unknown as Left, right: null as unknown as Right };
+}
+export function other() {
+    type Local = readonly [boolean, Local];
+    return null as unknown as Local;
+}
+
 //// [defaultValue.ts]
 function source() {
     type Local = readonly [number, Local];
@@ -272,16 +290,16 @@ function source() {
 
 // A helper for an unnamed default follows the emitter's _default naming convention.
 // Ideal declaration:
-// type _default_recursive = readonly [number, _default_recursive];
-// declare const _default: _default_recursive;
+// type _default_1 = readonly [number, _default_1];
+// declare const _default: _default_1;
 // export default _default;
 export default source();
 
 //// [defaultFunction.ts]
 // Preserve the same convention when the unnamed default is a function declaration.
 // Ideal declaration:
-// type _default_recursive = readonly [string, _default_recursive];
-// export default function (): _default_recursive;
+// type _default_1 = readonly [string, _default_1];
+// export default function (): _default_1;
 export default function () {
     type Local = readonly [string, Local];
     return null as unknown as Local;
@@ -742,67 +760,67 @@ export declare const pair: {
         };
     };
 };
-type left_recursive = {
+type left_1 = {
     leftValue: number;
     right: {
         rightValue: string;
-        left: left_recursive;
+        left: left_1;
     };
 };
-export declare function left(): left_recursive;
+export declare function left(): left_1;
 export {};
 //// [optional.d.ts]
-type optional_recursive = {
+type optional_1 = {
     readonly value: number;
-    next?: optional_recursive | undefined;
+    next?: optional_1 | undefined;
 };
 export declare const optional: {
-    node?: optional_recursive | undefined;
+    node?: optional_1 | undefined;
 };
-type shared_recursive = {
-    next: shared_recursive;
+type shared_1 = {
+    next: shared_1;
 };
 export declare const shared: {
-    left?: shared_recursive | undefined;
-    right?: shared_recursive | undefined;
+    left?: shared_1 | undefined;
+    right?: shared_1 | undefined;
 };
 export {};
 //// [containers.d.ts]
-type tree_recursive = (string | tree_recursive)[];
-export declare function tree(): string | tree_recursive;
-type tuple_recursive = readonly [number, tuple_recursive];
-export declare function tuple(): tuple_recursive;
+type tree_1 = (string | tree_1)[];
+export declare function tree(): string | tree_1;
+type tuple_1 = readonly [number, tuple_1];
+export declare function tuple(): tuple_1;
 export {};
 //// [signatures.d.ts]
-type signatures_recursive = {
-    next: signatures_recursive;
+type signatures_1 = {
+    next: signatures_1;
     identity: <T>(value: T) => T;
     unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;
     copy: <T>(value: T) => { [K in keyof T]: T[K]; };
 };
 export declare const signatures: {
-    node?: signatures_recursive | undefined;
+    node?: signatures_1 | undefined;
 };
 export {};
 //// [collisions.d.ts]
-export interface collision_recursive {
+export interface collision_1 {
     occupied: true;
 }
-type collision_recursive_1 = {
-    next: collision_recursive_1;
+type collision_2 = {
+    next: collision_2;
 };
 export declare const collision: {
-    node?: collision_recursive_1 | undefined;
+    node?: collision_2 | undefined;
 };
 export {};
 //// [symbols.d.ts]
 export declare const key: unique symbol;
-type keyed_recursive = {
-    next: keyed_recursive;
+type keyed_1 = {
+    next: keyed_1;
     [key]: number;
 };
 export declare const keyed: {
-    node?: keyed_recursive | undefined;
+    node?: keyed_1 | undefined;
 };
 export {};
 //// [payload.d.ts]
@@ -811,33 +829,33 @@ export interface Payload {
 }
 //// [imported.d.ts]
 import { Payload as Input } from "./payload";
-type imported_recursive = {
+type imported_1 = {
     value: Input;
-    next: imported_recursive;
+    next: imported_1;
 };
 export declare const imported: {
-    node?: imported_recursive | undefined;
+    node?: imported_1 | undefined;
 };
 export {};
 //// [recursiveArray.d.ts]
-type nodes_recursive = {
-    next: nodes_recursive[];
+type nodes_1 = {
+    next: nodes_1[];
 };
-export declare const nodes: nodes_recursive[];
+export declare const nodes: nodes_1[];
 export {};
 //// [shadowedAnchor.d.ts]
-type node_recursive = {
+type node_1 = {
     value: number;
-    read: (node: string) => node_recursive;
+    read: (node: string) => node_1;
 };
-export declare const node: node_recursive;
+export declare const node: node_1;
 export {};
 //// [classAnchor.d.ts]
-type ctor_recursive = {
-    next(): ctor_recursive;
+type ctor_1 = {
+    next(): ctor_1;
 };
 export declare const ctor: {
-    new (): ctor_recursive;
+    new (): ctor_1;
 };
 export {};
 //// [instantiations.d.ts]
@@ -854,14 +872,14 @@ export declare const numbersAgain: {
     next: typeof numbersAgain;
 };
 //// [cacheSiblings.d.ts]
-type mixed_recursive = {
+type mixed_1 = {
     value: number;
-    next: mixed_recursive;
+    next: mixed_1;
 };
 export declare const mixed: {
-    first?: mixed_recursive | undefined;
+    first?: mixed_1 | undefined;
     second: {
-        node: mixed_recursive;
+        node: mixed_1;
         leaf: {
             value: string;
             nested: {
@@ -876,14 +894,14 @@ export declare const mixed: {
         };
     };
 };
-type mixedAgain_recursive = {
+type mixedAgain_1 = {
     value: number;
-    next: mixedAgain_recursive;
+    next: mixedAgain_1;
 };
 export declare const mixedAgain: {
-    first?: mixedAgain_recursive | undefined;
+    first?: mixedAgain_1 | undefined;
     second: {
-        node: mixedAgain_recursive;
+        node: mixedAgain_1;
         leaf: {
             value: string;
             nested: {
@@ -899,13 +917,23 @@ export declare const mixedAgain: {
     };
 };
 export {};
+//// [helperNames.d.ts]
+type makePair_1 = readonly [number, makePair_1];
+type makePair_2 = readonly [string, makePair_2];
+export declare function makePair(): {
+    left: makePair_1;
+    right: makePair_2;
+};
+type other_1 = readonly [boolean, other_1];
+export declare function other(): other_1;
+export {};
 //// [defaultValue.d.ts]
-type _default_recursive = readonly [number, _default_recursive];
-declare const _default: _default_recursive;
+type _default_1 = readonly [number, _default_1];
+declare const _default: _default_1;
 export default _default;
 //// [defaultFunction.d.ts]
-type _default_recursive = readonly [string, _default_recursive];
-export default function (): _default_recursive;
+type _default_1 = readonly [string, _default_1];
+export default function (): _default_1;
 export {};
 //// [acyclic.d.ts]
 export declare const leaf: {

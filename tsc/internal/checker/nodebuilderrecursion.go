@@ -50,7 +50,7 @@ func (b *NodeBuilderImpl) tryCreateRecursiveTypeReference(t *Type) *ast.Node {
 		return nil
 	}
 	if frame.name == nil {
-		frame.name = b.e.Factory.NewUniqueNameEx(b.recursiveTypeHelperName(t), printer.AutoGenerateOptions{Flags: printer.GeneratedIdentifierFlagsOptimistic})
+		frame.name = b.e.Factory.NewUniqueNameEx(b.recursiveTypeHelperBaseName(t), printer.AutoGenerateOptions{Flags: printer.GeneratedIdentifierFlagsOptimistic})
 		b.ctx.recursiveTypeHelpers = append(b.ctx.recursiveTypeHelpers, frame)
 	}
 	b.ctx.recursiveTypeReferenceUsed = true
@@ -58,22 +58,22 @@ func (b *NodeBuilderImpl) tryCreateRecursiveTypeReference(t *Type) *ast.Node {
 	return b.f.NewTypeReferenceNode(b.f.DeepCloneNode(frame.name), nil)
 }
 
-func (b *NodeBuilderImpl) recursiveTypeHelperName(t *Type) string {
+func (b *NodeBuilderImpl) recursiveTypeHelperBaseName(t *Type) string {
 	if root := b.ctx.recursiveTypeRootDeclaration; root != nil && ast.IsExportAssignment(root) {
 		if root.AsExportAssignment().IsExportEquals && ast.IsSourceFileJS(b.ctx.enclosingFile) {
-			return "_exports_recursive"
+			return "_exports"
 		}
-		return "_default_recursive"
+		return "_default"
 	}
 	for enclosing := b.ctx.enclosingDeclaration; enclosing != nil && !ast.IsSourceFile(enclosing); enclosing = enclosing.Parent {
 		if name := enclosing.Name(); name != nil && ast.IsIdentifier(name) {
-			return name.Text() + "_recursive"
+			return name.Text()
 		}
 		if ast.IsExportAssignment(enclosing) || ast.HasSyntacticModifier(enclosing, ast.ModifierFlagsDefault) {
 			if ast.IsExportAssignment(enclosing) && enclosing.AsExportAssignment().IsExportEquals && ast.IsSourceFileJS(b.ctx.enclosingFile) {
-				return "_exports_recursive"
+				return "_exports"
 			}
-			return "_default_recursive"
+			return "_default"
 		}
 	}
 	// CommonJS serialization may use the source file as its enclosing scope.
@@ -81,13 +81,13 @@ func (b *NodeBuilderImpl) recursiveTypeHelperName(t *Type) string {
 	if t.symbol != nil && t.symbol.ValueDeclaration != nil {
 		parent := t.symbol.ValueDeclaration.Parent
 		if parent != nil && ast.IsAssignmentExpression(parent, true) && ast.IsPropertyAccessExpression(parent.AsBinaryExpression().Left) {
-			return parent.AsBinaryExpression().Left.Name().Text() + "_recursive"
+			return parent.AsBinaryExpression().Left.Name().Text()
 		}
 		if parent != nil && ast.IsExportAssignment(parent) {
-			return "_default_recursive"
+			return "_default"
 		}
 	}
-	return "_recursive"
+	return "_type"
 }
 
 // Extend an output path only while emitting a required, public property signature.

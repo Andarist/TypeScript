@@ -451,14 +451,14 @@ declare function maybe<T>(): { node?: resolve<T> };
 
 // A generated helper must not collide with an existing type or value name.
 // Ideal collisions.d.ts:
-// export interface collision_recursive { occupied: true; }
-// type collision_recursive_1 = { next: collision_recursive_1 };
-// export declare const collision: { node?: collision_recursive_1 };
-export interface collision_recursive {
->collision_recursive : Symbol(collision_recursive, Decl(collisions.ts, 2, 51))
+// export interface collision_1 { occupied: true; }
+// type collision_2 = { next: collision_2 };
+// export declare const collision: { node?: collision_2 };
+export interface collision_1 {
+>collision_1 : Symbol(collision_1, Decl(collisions.ts, 2, 51))
 
     occupied: true;
->occupied : Symbol(collision_recursive.occupied, Decl(collisions.ts, 9, 38))
+>occupied : Symbol(collision_1.occupied, Decl(collisions.ts, 9, 30))
 }
 export const collision = maybe<{ next: "ref" }>();
 >collision : Symbol(collision, Decl(collisions.ts, 12, 12))
@@ -769,6 +769,42 @@ export const mixedAgain = batch<{ value: number; next: "ref" }>();
 >value : Symbol(value, Decl(cacheSiblings.ts, 18, 33))
 >next : Symbol(next, Decl(cacheSiblings.ts, 18, 48))
 
+=== helperNames.ts ===
+// Both helpers belong to this declaration; unrelated declarations restart at 1.
+// Ideal declaration:
+// type makePair_1 = readonly [number, makePair_1];
+// type makePair_2 = readonly [string, makePair_2];
+// export declare function makePair(): { left: makePair_1; right: makePair_2 };
+// type other_1 = readonly [boolean, other_1];
+// export declare function other(): other_1;
+export function makePair() {
+>makePair : Symbol(makePair, Decl(helperNames.ts, 0, 0))
+
+    type Left = readonly [number, Left];
+>Left : Symbol(Left, Decl(helperNames.ts, 7, 28))
+>Left : Symbol(Left, Decl(helperNames.ts, 7, 28))
+
+    type Right = readonly [string, Right];
+>Right : Symbol(Right, Decl(helperNames.ts, 8, 40))
+>Right : Symbol(Right, Decl(helperNames.ts, 8, 40))
+
+    return { left: null as unknown as Left, right: null as unknown as Right };
+>left : Symbol(left, Decl(helperNames.ts, 10, 12))
+>Left : Symbol(Left, Decl(helperNames.ts, 7, 28))
+>right : Symbol(right, Decl(helperNames.ts, 10, 43))
+>Right : Symbol(Right, Decl(helperNames.ts, 8, 40))
+}
+export function other() {
+>other : Symbol(other, Decl(helperNames.ts, 11, 1))
+
+    type Local = readonly [boolean, Local];
+>Local : Symbol(Local, Decl(helperNames.ts, 12, 25))
+>Local : Symbol(Local, Decl(helperNames.ts, 12, 25))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(helperNames.ts, 12, 25))
+}
+
 === defaultValue.ts ===
 function source() {
 >source : Symbol(source, Decl(defaultValue.ts, 0, 0))
@@ -783,8 +819,8 @@ function source() {
 
 // A helper for an unnamed default follows the emitter's _default naming convention.
 // Ideal declaration:
-// type _default_recursive = readonly [number, _default_recursive];
-// declare const _default: _default_recursive;
+// type _default_1 = readonly [number, _default_1];
+// declare const _default: _default_1;
 // export default _default;
 export default source();
 >source : Symbol(source, Decl(defaultValue.ts, 0, 0))
@@ -792,8 +828,8 @@ export default source();
 === defaultFunction.ts ===
 // Preserve the same convention when the unnamed default is a function declaration.
 // Ideal declaration:
-// type _default_recursive = readonly [string, _default_recursive];
-// export default function (): _default_recursive;
+// type _default_1 = readonly [string, _default_1];
+// export default function (): _default_1;
 export default function () {
     type Local = readonly [string, Local];
 >Local : Symbol(Local, Decl(defaultFunction.ts, 4, 28))

@@ -274,10 +274,10 @@ declare function maybe<T>(): { node?: resolve<T> };
 
 // A generated helper must not collide with an existing type or value name.
 // Ideal collisions.d.ts:
-// export interface collision_recursive { occupied: true; }
-// type collision_recursive_1 = { next: collision_recursive_1 };
-// export declare const collision: { node?: collision_recursive_1 };
-export interface collision_recursive {
+// export interface collision_1 { occupied: true; }
+// type collision_2 = { next: collision_2 };
+// export declare const collision: { node?: collision_2 };
+export interface collision_1 {
     occupied: true;
 >occupied : true
 >true : true
@@ -507,6 +507,43 @@ export const mixedAgain = batch<{ value: number; next: "ref" }>();
 >value : number
 >next : "ref"
 
+=== helperNames.ts ===
+// Both helpers belong to this declaration; unrelated declarations restart at 1.
+// Ideal declaration:
+// type makePair_1 = readonly [number, makePair_1];
+// type makePair_2 = readonly [string, makePair_2];
+// export declare function makePair(): { left: makePair_1; right: makePair_2 };
+// type other_1 = readonly [boolean, other_1];
+// export declare function other(): other_1;
+export function makePair() {
+>makePair : () => { left: readonly [number, any]; right: readonly [string, any]; }
+
+    type Left = readonly [number, Left];
+>Left : readonly [number, any]
+
+    type Right = readonly [string, Right];
+>Right : readonly [string, any]
+
+    return { left: null as unknown as Left, right: null as unknown as Right };
+>{ left: null as unknown as Left, right: null as unknown as Right } : { left: readonly [number, any]; right: readonly [string, any]; }
+>left : readonly [number, any]
+>null as unknown as Left : readonly [number, any]
+>null as unknown : unknown
+>right : readonly [string, any]
+>null as unknown as Right : readonly [string, any]
+>null as unknown : unknown
+}
+export function other() {
+>other : () => readonly [boolean, any]
+
+    type Local = readonly [boolean, Local];
+>Local : readonly [boolean, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [boolean, any]
+>null as unknown : unknown
+}
+
 === defaultValue.ts ===
 function source() {
 >source : () => readonly [number, any]
@@ -521,8 +558,8 @@ function source() {
 
 // A helper for an unnamed default follows the emitter's _default naming convention.
 // Ideal declaration:
-// type _default_recursive = readonly [number, _default_recursive];
-// declare const _default: _default_recursive;
+// type _default_1 = readonly [number, _default_1];
+// declare const _default: _default_1;
 // export default _default;
 export default source();
 >source() : readonly [number, any]
@@ -531,8 +568,8 @@ export default source();
 === defaultFunction.ts ===
 // Preserve the same convention when the unnamed default is a function declaration.
 // Ideal declaration:
-// type _default_recursive = readonly [string, _default_recursive];
-// export default function (): _default_recursive;
+// type _default_1 = readonly [string, _default_1];
+// export default function (): _default_1;
 export default function () {
     type Local = readonly [string, Local];
 >Local : readonly [string, any]

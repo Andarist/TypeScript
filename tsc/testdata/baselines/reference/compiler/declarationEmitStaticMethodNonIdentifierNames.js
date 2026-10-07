@@ -153,10 +153,10 @@ export declare class Generic {
     #private;
     static getPriv(): <T>(x: T) => T;
 }
-type getRec_recursive = () => getRec_recursive;
+type Recursive_1 = () => Recursive_1;
 export declare class Recursive {
     #private;
-    static getRec(): getRec_recursive;
+    static getRec(): Recursive_1;
 }
 export declare class Instance {
     #private;

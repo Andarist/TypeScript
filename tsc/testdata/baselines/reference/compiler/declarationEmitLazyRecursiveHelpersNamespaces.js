@@ -108,14 +108,14 @@ export const result = maybe<{ next: "ref"; value: N.Payload }>();
 
 //// [globalA.d.ts]
 declare namespace A {
-    type make_recursive = readonly [number, make_recursive];
-    export function make(): make_recursive;
+    type make_1 = readonly [number, make_1];
+    export function make(): make_1;
     export {};
 }
 //// [globalB.d.ts]
 declare namespace B {
-    type make_recursive = readonly [string, make_recursive];
-    export function make(): make_recursive;
+    type make_1 = readonly [string, make_1];
+    export function make(): make_1;
     export {};
 }
 //// [mergedA.d.ts]
@@ -123,8 +123,8 @@ declare namespace Shared {
     interface Payload {
         value: number;
     }
-    type numbers_recursive = readonly [Payload, numbers_recursive];
-    export function numbers(): numbers_recursive;
+    type numbers_1 = readonly [Payload, numbers_1];
+    export function numbers(): numbers_1;
     export {};
 }
 //// [mergedB.d.ts]
@@ -132,8 +132,8 @@ declare namespace Shared {
     interface Payload {
         value: string;
     }
-    type strings_recursive = readonly [Payload, strings_recursive];
-    export function strings(): strings_recursive;
+    type strings_1 = readonly [Payload, strings_1];
+    export function strings(): strings_1;
     export {};
 }
 //// [globalRoot.d.ts]
@@ -164,12 +164,12 @@ export interface Payload {
 }
 //// [namespaceImport.d.ts]
 import * as Model from "./model";
-type result_recursive = {
-    next: result_recursive;
+type result_1 = {
+    next: result_1;
     value: Model.Payload;
 };
 export declare const result: {
-    node?: result_recursive | undefined;
+    node?: result_1 | undefined;
 };
 export {};
 //// [namespaceType.d.ts]
@@ -178,11 +178,11 @@ export declare namespace N {
         name: string;
     }
 }
-type result_recursive = {
-    next: result_recursive;
+type result_1 = {
+    next: result_1;
     value: N.Payload;
 };
 export declare const result: {
-    node?: result_recursive | undefined;
+    node?: result_1 | undefined;
 };
 export {};

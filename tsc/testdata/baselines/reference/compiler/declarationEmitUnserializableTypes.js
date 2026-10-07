@@ -72,12 +72,12 @@ export function local() {
 
 
 //// [local.d.ts]
-type localArrow_recursive = () => localArrow_recursive;
-export declare function localArrow(): localArrow_recursive;
-type localDeclaration_recursive = () => localDeclaration_recursive;
-export declare function localDeclaration(): localDeclaration_recursive;
-type localInstantiation_recursive = () => localInstantiation_recursive;
-export declare function localInstantiation(): () => localInstantiation_recursive;
+type localArrow_1 = () => localArrow_1;
+export declare function localArrow(): localArrow_1;
+type localDeclaration_1 = () => localDeclaration_1;
+export declare function localDeclaration(): localDeclaration_1;
+type localInstantiation_1 = () => localInstantiation_1;
+export declare function localInstantiation(): () => localInstantiation_1;
 export declare const object: {
     self(): {
         self(): typeof object;
