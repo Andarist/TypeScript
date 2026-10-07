@@ -189,3 +189,50 @@ export const result = maybe<{ next: "ref"; value: N.Payload }>();
 >value : N.Payload
 >N : any
 
+=== sharedScopes.ts ===
+export function sharedSource() {
+>sharedSource : () => readonly [number, any]
+
+    type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+}
+export namespace First {
+>First : typeof First
+
+    export const node = sharedSource();
+>node : readonly [number, any]
+>sharedSource() : readonly [number, any]
+>sharedSource : () => readonly [number, any]
+}
+export namespace Second {
+>Second : typeof Second
+
+    export const node = sharedSource();
+>node : readonly [number, any]
+>sharedSource() : readonly [number, any]
+>sharedSource : () => readonly [number, any]
+}
+const firstNodeValue: number = First.node[1][0];
+>firstNodeValue : number
+>First.node[1][0] : number
+>First.node[1] : readonly [number, any]
+>First.node : readonly [number, any]
+>First : typeof First
+>node : readonly [number, any]
+>1 : 1
+>0 : 0
+
+const secondNodeValue: number = Second.node[1][0];
+>secondNodeValue : number
+>Second.node[1][0] : number
+>Second.node[1] : readonly [number, any]
+>Second.node : readonly [number, any]
+>Second : typeof Second
+>node : readonly [number, any]
+>1 : 1
+>0 : 0
+

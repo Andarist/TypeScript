@@ -231,3 +231,21 @@ export function local() {
     function recur() { return recur; }
     return recur;
 }
+
+// @filename: sharedMembers.ts
+export class Shared {
+    protected next() { return this.next; }
+    first() { return this.next; }
+    second() { return this.next; }
+}
+
+function source<T>() {
+    type Local = readonly [T, Local];
+    return null as unknown as Local;
+}
+export class Instantiations {
+    numbers() { return source<number>(); }
+    numbersAgain() { return source<number>(); }
+    strings() { return source<string>(); }
+    stringsAgain() { return source<string>(); }
+}

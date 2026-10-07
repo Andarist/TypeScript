@@ -240,3 +240,44 @@ export const result = maybe<{ next: "ref"; value: N.Payload }>();
 >N : Symbol(N, Decl(namespaceType.ts, 2, 51))
 >Payload : Symbol(N.Payload, Decl(namespaceType.ts, 3, 20))
 
+=== sharedScopes.ts ===
+export function sharedSource() {
+>sharedSource : Symbol(sharedSource, Decl(sharedScopes.ts, 0, 0))
+
+    type Local = readonly [number, Local];
+>Local : Symbol(Local, Decl(sharedScopes.ts, 0, 32))
+>Local : Symbol(Local, Decl(sharedScopes.ts, 0, 32))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(sharedScopes.ts, 0, 32))
+}
+export namespace First {
+>First : Symbol(First, Decl(sharedScopes.ts, 3, 1))
+
+    export const node = sharedSource();
+>node : Symbol(node, Decl(sharedScopes.ts, 5, 16))
+>sharedSource : Symbol(sharedSource, Decl(sharedScopes.ts, 0, 0))
+}
+export namespace Second {
+>Second : Symbol(Second, Decl(sharedScopes.ts, 6, 1))
+
+    export const node = sharedSource();
+>node : Symbol(node, Decl(sharedScopes.ts, 8, 16))
+>sharedSource : Symbol(sharedSource, Decl(sharedScopes.ts, 0, 0))
+}
+const firstNodeValue: number = First.node[1][0];
+>firstNodeValue : Symbol(firstNodeValue, Decl(sharedScopes.ts, 10, 5))
+>First.node : Symbol(First.node, Decl(sharedScopes.ts, 5, 16))
+>First : Symbol(First, Decl(sharedScopes.ts, 3, 1))
+>node : Symbol(First.node, Decl(sharedScopes.ts, 5, 16))
+>1 : Symbol(1)
+>0 : Symbol(0)
+
+const secondNodeValue: number = Second.node[1][0];
+>secondNodeValue : Symbol(secondNodeValue, Decl(sharedScopes.ts, 11, 5))
+>Second.node : Symbol(Second.node, Decl(sharedScopes.ts, 8, 16))
+>Second : Symbol(Second, Decl(sharedScopes.ts, 6, 1))
+>node : Symbol(Second.node, Decl(sharedScopes.ts, 8, 16))
+>1 : Symbol(1)
+>0 : Symbol(0)
+

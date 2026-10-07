@@ -69,6 +69,20 @@ export namespace N { export interface Payload { name: string; } }
 
 export const result = maybe<{ next: "ref"; value: N.Payload }>();
 
+//// [sharedScopes.ts]
+export function sharedSource() {
+    type Local = readonly [number, Local];
+    return null as unknown as Local;
+}
+export namespace First {
+    export const node = sharedSource();
+}
+export namespace Second {
+    export const node = sharedSource();
+}
+const firstNodeValue: number = First.node[1][0];
+const secondNodeValue: number = Second.node[1][0];
+
 
 
 
@@ -151,4 +165,18 @@ type result_1 = {
 export declare const result: {
     node?: result_1 | undefined;
 };
+export {};
+//// [sharedScopes.d.ts]
+type sharedSource_1 = readonly [number, sharedSource_1];
+export declare function sharedSource(): sharedSource_1;
+export declare namespace First {
+    type node_1 = readonly [number, node_1];
+    export const node: node_1;
+    export {};
+}
+export declare namespace Second {
+    type node_1_1 = readonly [number, node_1_1];
+    export const node: node_1_1;
+    export {};
+}
 export {};

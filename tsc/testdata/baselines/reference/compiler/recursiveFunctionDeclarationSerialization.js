@@ -531,11 +531,10 @@ export declare function overloaded(value: number): typeof overloaded;
 //// [hiddenReferences.d.ts]
 type Hidden_1 = () => Hidden_1;
 type Hidden_2 = () => Hidden_2;
-type Hidden_3 = () => Hidden_3;
 export declare class Hidden {
     private static recur;
     static expose(): Hidden_1;
     protected next(): Hidden_2;
-    expose(): Hidden_3;
+    expose(): Hidden_2;
 }
 export {};

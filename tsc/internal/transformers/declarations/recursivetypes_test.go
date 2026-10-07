@@ -6,6 +6,7 @@ import (
 
 	"github.com/microsoft/TypeScript/tsc/internal/ast"
 	"github.com/microsoft/TypeScript/tsc/internal/core"
+	"github.com/microsoft/TypeScript/tsc/internal/nodebuilder"
 	"github.com/microsoft/TypeScript/tsc/internal/printer"
 	"github.com/microsoft/TypeScript/tsc/internal/testutil/parsetestutil"
 	"gotest.tools/v3/assert"
@@ -14,14 +15,18 @@ import (
 func TestRecursiveHelperNamesAfterDiscardedSerialization(t *testing.T) {
 	t.Parallel()
 	for _, test := range []struct {
-		name      string
-		source    string
-		generated bool
-		first     string
-		second    string
-		prefix    string
+		name           string
+		source         string
+		generated      bool
+		reuse          bool
+		differentFlags bool
+		first          string
+		second         string
+		prefix         string
 	}{
 		{name: "discarded", first: "first_1", second: "first_2"},
+		{name: "reuse after discarded serialization", reuse: true},
+		{name: "different serialization flags", differentFlags: true, first: "first_1", second: "first_2"},
 		{name: "source type and value", source: "export interface first_1 {} export const first_2 = 0;", first: "first_3", second: "first_4"},
 		{name: "generated name", generated: true, first: "first_1_1", second: "first_2", prefix: "export declare const first_1: number;\n"},
 	} {
@@ -40,7 +45,17 @@ func TestRecursiveHelperNamesAfterDiscardedSerialization(t *testing.T) {
 				return f.NewTypeAliasDeclaration(nil, name, nil, f.NewArrayTypeNode(ref))
 			}
 			discarded, left, right, next := helper(), helper(), helper(), helper()
-			tx.state.recursiveTypeDeclarations = map[*ast.Node][]*ast.Node{scope: {discarded, left, right, next}}
+			tx.state.recursiveTypeDeclarations = map[*ast.Node][]nodebuilder.RecursiveTypeDeclaration{scope: {{Declaration: discarded}, {Declaration: left}, {Declaration: right}, {Declaration: next}}}
+			if test.reuse {
+				for i := range tx.state.recursiveTypeDeclarations[scope] {
+					tx.state.recursiveTypeDeclarations[scope][i].Key.TypeID = 1
+				}
+			}
+			if test.differentFlags {
+				tx.state.recursiveTypeDeclarations[scope][1].Key.TypeID = 1
+				tx.state.recursiveTypeDeclarations[scope][2].Key.TypeID = 1
+				tx.state.recursiveTypeDeclarations[scope][2].Key.Flags = nodebuilder.FlagsWriteArrayAsGenericType
+			}
 			reference := func(helper *ast.Node) *ast.Node {
 				return f.NewTypeReferenceNode(f.DeepCloneNode(helper.Name()), nil)
 			}
@@ -62,6 +77,9 @@ func TestRecursiveHelperNamesAfterDiscardedSerialization(t *testing.T) {
 			output := f.UpdateSourceFile(file, result, file.EndOfFileToken).AsSourceFile()
 			p := printer.NewPrinter(printer.PrinterOptions{NewLine: core.NewLineKindLF}, printer.PrintHandlers{}, ec)
 			want := test.prefix + fmt.Sprintf("type %s = %s[];\ntype %s = %s[];\nexport declare const first: %s | %s;\ntype second_1 = second_1[];\nexport declare const second: second_1;\n", test.first, test.first, test.second, test.second, test.first, test.second)
+			if test.reuse {
+				want = "type first_1 = first_1[];\nexport declare const first: first_1 | first_1;\nexport declare const second: first_1;\n"
+			}
 			assert.Equal(t, p.EmitSourceFile(output), want)
 		})
 	}

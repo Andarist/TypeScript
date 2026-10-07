@@ -6,6 +6,7 @@ import (
 
 	"github.com/microsoft/TypeScript/tsc/internal/ast"
 	"github.com/microsoft/TypeScript/tsc/internal/core"
+	"github.com/microsoft/TypeScript/tsc/internal/nodebuilder"
 	"github.com/microsoft/TypeScript/tsc/internal/printer"
 	"github.com/microsoft/TypeScript/tsc/internal/scanner"
 )
@@ -241,9 +242,17 @@ func (b *NodeBuilderImpl) trackRecursiveTypeDeclarations() {
 	if b.ctx.recursiveTypeTracker == nil || len(b.ctx.recursiveTypeHelpers) == 0 {
 		return
 	}
-	declarations := make([]*ast.Node, 0, len(b.ctx.recursiveTypeHelpers))
+	declarations := make([]nodebuilder.RecursiveTypeDeclaration, 0, len(b.ctx.recursiveTypeHelpers))
 	for _, frame := range b.ctx.recursiveTypeHelpers {
-		declarations = append(declarations, b.f.NewTypeAliasDeclaration(nil, b.f.DeepCloneNode(frame.name), nil, frame.body))
+		declarations = append(declarations, nodebuilder.RecursiveTypeDeclaration{
+			Declaration: b.f.NewTypeAliasDeclaration(nil, b.f.DeepCloneNode(frame.name), nil, frame.body),
+			Key: nodebuilder.RecursiveTypeKey{
+				TypeID:              uint32(frame.key.typeId),
+				Flags:               frame.key.flags,
+				InternalFlags:       frame.key.internalFlags,
+				InferTypeParameters: [2]uint64{frame.key.inferTypeParameters.Lo, frame.key.inferTypeParameters.Hi},
+			},
+		})
 	}
 	b.ctx.recursiveTypeTracker.TrackRecursiveTypeDeclarations(b.ctx.recursiveTypeScope, declarations)
 }

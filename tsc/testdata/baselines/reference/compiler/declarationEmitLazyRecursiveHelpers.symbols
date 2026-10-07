@@ -872,3 +872,58 @@ export function local() {
 >recur : Symbol(recur, Decl(existingReferences.ts, 14, 25))
 }
 
+=== sharedMembers.ts ===
+export class Shared {
+>Shared : Symbol(Shared, Decl(sharedMembers.ts, 0, 0))
+
+    protected next() { return this.next; }
+>next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+>this.next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+>this : Symbol(Shared, Decl(sharedMembers.ts, 0, 0))
+>next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+
+    first() { return this.next; }
+>first : Symbol(Shared.first, Decl(sharedMembers.ts, 1, 42))
+>this.next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+>this : Symbol(Shared, Decl(sharedMembers.ts, 0, 0))
+>next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+
+    second() { return this.next; }
+>second : Symbol(Shared.second, Decl(sharedMembers.ts, 2, 33))
+>this.next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+>this : Symbol(Shared, Decl(sharedMembers.ts, 0, 0))
+>next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+}
+
+function source<T>() {
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+>T : Symbol(T, Decl(sharedMembers.ts, 6, 16))
+
+    type Local = readonly [T, Local];
+>Local : Symbol(Local, Decl(sharedMembers.ts, 6, 22))
+>T : Symbol(T, Decl(sharedMembers.ts, 6, 16))
+>Local : Symbol(Local, Decl(sharedMembers.ts, 6, 22))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(sharedMembers.ts, 6, 22))
+}
+export class Instantiations {
+>Instantiations : Symbol(Instantiations, Decl(sharedMembers.ts, 9, 1))
+
+    numbers() { return source<number>(); }
+>numbers : Symbol(Instantiations.numbers, Decl(sharedMembers.ts, 10, 29))
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+
+    numbersAgain() { return source<number>(); }
+>numbersAgain : Symbol(Instantiations.numbersAgain, Decl(sharedMembers.ts, 11, 42))
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+
+    strings() { return source<string>(); }
+>strings : Symbol(Instantiations.strings, Decl(sharedMembers.ts, 12, 47))
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+
+    stringsAgain() { return source<string>(); }
+>stringsAgain : Symbol(Instantiations.stringsAgain, Decl(sharedMembers.ts, 13, 42))
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+}
+

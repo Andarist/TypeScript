@@ -71,3 +71,17 @@ declare function maybe<T>(): { node?: resolve<T> };
 export namespace N { export interface Payload { name: string; } }
 
 export const result = maybe<{ next: "ref"; value: N.Payload }>();
+
+// @filename: sharedScopes.ts
+export function sharedSource() {
+    type Local = readonly [number, Local];
+    return null as unknown as Local;
+}
+export namespace First {
+    export const node = sharedSource();
+}
+export namespace Second {
+    export const node = sharedSource();
+}
+const firstNodeValue: number = First.node[1][0];
+const secondNodeValue: number = Second.node[1][0];

@@ -26,7 +26,21 @@ type SymbolTracker interface {
 // builder callers, such as diagnostic and hover serialization, have no statement
 // insertion scope and must not synthesize declarations to describe anonymous cycles.
 type RecursiveTypeTracker interface {
-	TrackRecursiveTypeDeclarations(scope *ast.Node, declarations []*ast.Node)
+	TrackRecursiveTypeDeclarations(scope *ast.Node, declarations []RecursiveTypeDeclaration)
+}
+
+// RecursiveTypeKey identifies a closed helper within a declaration emit scope.
+// Serialization options remain part of the key even when the checker type agrees.
+type RecursiveTypeKey struct {
+	TypeID              uint32
+	Flags               Flags
+	InternalFlags       InternalFlags
+	InferTypeParameters [2]uint64
+}
+
+type RecursiveTypeDeclaration struct {
+	Declaration *ast.Node
+	Key         RecursiveTypeKey
 }
 
 // NOTE: If modifying this enum, must modify `TypeFormatFlags` too!

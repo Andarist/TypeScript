@@ -229,6 +229,24 @@ export function local() {
     return recur;
 }
 
+//// [sharedMembers.ts]
+export class Shared {
+    protected next() { return this.next; }
+    first() { return this.next; }
+    second() { return this.next; }
+}
+
+function source<T>() {
+    type Local = readonly [T, Local];
+    return null as unknown as Local;
+}
+export class Instantiations {
+    numbers() { return source<number>(); }
+    numbersAgain() { return source<number>(); }
+    strings() { return source<string>(); }
+    stringsAgain() { return source<string>(); }
+}
+
 
 
 
@@ -875,4 +893,20 @@ type factory_1 = () => factory_1;
 export declare const factory: () => () => factory_1;
 type local_1 = () => local_1;
 export declare function local(): local_1;
+export {};
+//// [sharedMembers.d.ts]
+type Shared_1 = () => Shared_1;
+export declare class Shared {
+    protected next(): Shared_1;
+    first(): Shared_1;
+    second(): Shared_1;
+}
+type Instantiations_1 = readonly [number, Instantiations_1];
+type Instantiations_2 = readonly [string, Instantiations_2];
+export declare class Instantiations {
+    numbers(): Instantiations_1;
+    numbersAgain(): Instantiations_1;
+    strings(): Instantiations_2;
+    stringsAgain(): Instantiations_2;
+}
 export {};

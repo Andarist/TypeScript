@@ -609,3 +609,60 @@ export function local() {
 >recur : () => typeof recur
 }
 
+=== sharedMembers.ts ===
+export class Shared {
+>Shared : Shared
+
+    protected next() { return this.next; }
+>next : () => Shared["next"]
+>this.next : () => Shared["next"]
+>this : this
+>next : () => Shared["next"]
+
+    first() { return this.next; }
+>first : () => () => Shared["next"]
+>this.next : () => Shared["next"]
+>this : this
+>next : () => Shared["next"]
+
+    second() { return this.next; }
+>second : () => () => Shared["next"]
+>this.next : () => Shared["next"]
+>this : this
+>next : () => Shared["next"]
+}
+
+function source<T>() {
+>source : <T>() => readonly [T, any]
+
+    type Local = readonly [T, Local];
+>Local : readonly [T, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [T, any]
+>null as unknown : unknown
+}
+export class Instantiations {
+>Instantiations : Instantiations
+
+    numbers() { return source<number>(); }
+>numbers : () => readonly [number, any]
+>source<number>() : readonly [number, any]
+>source : <T>() => readonly [T, any]
+
+    numbersAgain() { return source<number>(); }
+>numbersAgain : () => readonly [number, any]
+>source<number>() : readonly [number, any]
+>source : <T>() => readonly [T, any]
+
+    strings() { return source<string>(); }
+>strings : () => readonly [string, any]
+>source<string>() : readonly [string, any]
+>source : <T>() => readonly [T, any]
+
+    stringsAgain() { return source<string>(); }
+>stringsAgain : () => readonly [string, any]
+>source<string>() : readonly [string, any]
+>source : <T>() => readonly [T, any]
+}
+

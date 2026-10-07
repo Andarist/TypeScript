@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/microsoft/TypeScript/tsc/internal/ast"
+	"github.com/microsoft/TypeScript/tsc/internal/nodebuilder"
 	"github.com/microsoft/TypeScript/tsc/internal/printer"
 )
 
@@ -14,21 +15,35 @@ func (tx *DeclarationTransformer) addRecursiveTypeDeclarations(scope *ast.Node, 
 	if len(declarations) == 0 {
 		return statements
 	}
-	helpers := make(map[printer.AutoGenerateId]*ast.Node)
+	helpers := make(map[printer.AutoGenerateId]nodebuilder.RecursiveTypeDeclaration)
 	for _, declaration := range declarations {
-		id := tx.EmitContext().GetAutoGenerateInfo(declaration.Name()).Id
+		id := tx.EmitContext().GetAutoGenerateInfo(declaration.Declaration.Name()).Id
 		helpers[id] = declaration
 	}
+	// Pick the first reachable helper for each identity. Abandoned attempts and
+	// dependencies reachable only through duplicate bodies must not claim a name.
+	canonical := make(map[nodebuilder.RecursiveTypeKey]printer.AutoGenerateId)
+	redirects := make(map[printer.AutoGenerateId]printer.AutoGenerateId)
 	firstUse := make(map[printer.AutoGenerateId]int)
 	statementIndex := 0
 	var visit func(*ast.Node) bool
 	visit = func(node *ast.Node) bool {
 		if ast.IsIdentifier(node) {
 			if info := tx.EmitContext().GetAutoGenerateInfo(node); info != nil {
-				if helper := helpers[info.Id]; helper != nil {
-					if _, seen := firstUse[info.Id]; !seen {
-						firstUse[info.Id] = statementIndex
-						visit(helper.AsTypeAliasDeclaration().Type)
+				if helper, exists := helpers[info.Id]; exists {
+					id := info.Id
+					if helper.Key.TypeID != 0 {
+						if existing, seen := canonical[helper.Key]; seen {
+							id = existing
+							helper = helpers[id]
+							redirects[info.Id] = id
+						} else {
+							canonical[helper.Key] = id
+						}
+					}
+					if _, seen := firstUse[id]; !seen {
+						firstUse[id] = statementIndex
+						visit(helper.Declaration.AsTypeAliasDeclaration().Type)
 					}
 				}
 			}
@@ -49,7 +64,8 @@ func (tx *DeclarationTransformer) addRecursiveTypeDeclarations(scope *ast.Node, 
 	before := make([][]*ast.Node, len(statements.Nodes))
 	names := make(map[printer.AutoGenerateId]*ast.Node, len(firstUse))
 	counters := make([]int, len(statements.Nodes))
-	for _, declaration := range declarations {
+	for _, helper := range declarations {
+		declaration := helper.Declaration
 		id := tx.EmitContext().GetAutoGenerateInfo(declaration.Name()).Id
 		if i, reachable := firstUse[id]; reachable {
 			base := declaration.Name().Text()
@@ -79,6 +95,9 @@ func (tx *DeclarationTransformer) addRecursiveTypeDeclarations(scope *ast.Node, 
 			names[id] = tx.Factory().NewUniqueNameEx(text, printer.AutoGenerateOptions{Flags: printer.GeneratedIdentifierFlagsOptimistic})
 			before[i] = append(before[i], declaration)
 		}
+	}
+	for id, target := range redirects {
+		names[id] = names[target]
 	}
 	var rename *ast.NodeVisitor
 	rename = tx.EmitContext().NewNodeVisitor(func(node *ast.Node) *ast.Node {

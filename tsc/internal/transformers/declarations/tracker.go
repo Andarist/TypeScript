@@ -5,6 +5,7 @@ import (
 	"github.com/microsoft/TypeScript/tsc/internal/checker"
 	"github.com/microsoft/TypeScript/tsc/internal/core"
 	"github.com/microsoft/TypeScript/tsc/internal/diagnostics"
+	"github.com/microsoft/TypeScript/tsc/internal/nodebuilder"
 	"github.com/microsoft/TypeScript/tsc/internal/printer"
 	"github.com/microsoft/TypeScript/tsc/internal/scanner"
 )
@@ -42,9 +43,9 @@ func (s *SymbolTrackerImpl) ReportCyclicStructureError() {
 }
 
 // TrackRecursiveTypeDeclarations implements nodebuilder.RecursiveTypeTracker.
-func (s *SymbolTrackerImpl) TrackRecursiveTypeDeclarations(scope *ast.Node, declarations []*ast.Node) {
+func (s *SymbolTrackerImpl) TrackRecursiveTypeDeclarations(scope *ast.Node, declarations []nodebuilder.RecursiveTypeDeclaration) {
 	if s.state.recursiveTypeDeclarations == nil {
-		s.state.recursiveTypeDeclarations = make(map[*ast.Node][]*ast.Node)
+		s.state.recursiveTypeDeclarations = make(map[*ast.Node][]nodebuilder.RecursiveTypeDeclaration)
 	}
 	s.state.recursiveTypeDeclarations[scope] = append(s.state.recursiveTypeDeclarations[scope], declarations...)
 }
@@ -246,7 +247,7 @@ func createDiagnosticForNode(node *ast.Node, message *diagnostics.Message, args 
 
 type SymbolTrackerSharedState struct {
 	lateMarkedStatements             []*ast.Node
-	recursiveTypeDeclarations        map[*ast.Node][]*ast.Node
+	recursiveTypeDeclarations        map[*ast.Node][]nodebuilder.RecursiveTypeDeclaration
 	diagnostics                      []*ast.Diagnostic
 	getSymbolAccessibilityDiagnostic GetSymbolAccessibilityDiagnostic
 	errorNameNode                    *ast.Node
