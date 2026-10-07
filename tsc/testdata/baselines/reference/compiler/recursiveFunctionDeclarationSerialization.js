@@ -380,6 +380,26 @@ export declare const tupleReturn: () => readonly [typeof tupleReturn];
 export declare const shadowed: (shadowed: number) => typeof import("./exported").shadowed;
 //// [consumer.d.ts]
 export {};
+//// [nestedNamedFunctions.d.ts]
+export declare const nestedObject: {
+    recur: () => () => (typeof nestedObject)["recur"];
+};
+export declare const nestedTuple: readonly [() => () => (typeof nestedTuple)[0]];
+export declare const object: {
+    recur: () => () => (typeof object)["recur"];
+};
+export declare const tuple: readonly [() => () => (typeof tuple)[0]];
+type factory_1 = () => factory_1;
+export declare const factory: () => () => factory_1;
+export declare const method: {
+    recur(): typeof method;
+};
+export declare const accessor: {
+    readonly recur: typeof accessor;
+};
+type local_1 = () => local_1;
+export declare function local(): local_1;
+export {};
 //// [recursiveStructures.d.ts]
 export declare const object: {
     value: number;
@@ -508,3 +528,14 @@ export declare class Methods {
 }
 export declare function overloaded(value: string): typeof overloaded;
 export declare function overloaded(value: number): typeof overloaded;
+//// [hiddenReferences.d.ts]
+type Hidden_1 = () => Hidden_1;
+type Hidden_2 = () => Hidden_2;
+type Hidden_3 = () => Hidden_3;
+export declare class Hidden {
+    private static recur;
+    static expose(): Hidden_1;
+    protected next(): Hidden_2;
+    expose(): Hidden_3;
+}
+export {};

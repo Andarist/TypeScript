@@ -58,11 +58,12 @@ type serializationTypeName struct {
 
 // Definitions include standalone signatures and types emitted syntactically or structurally.
 type serializationDefinition struct {
-	typeId    TypeId
-	signature *Signature
-	symbol    *ast.Symbol
-	depth     int
-	expanding bool
+	typeId        TypeId
+	signature     *Signature
+	symbol        *ast.Symbol
+	depth         int
+	expanding     bool
+	recursiveType *recursiveTypeFrame
 }
 
 type NodeBuilderLinks struct {
@@ -106,6 +107,16 @@ type NodeBuilderContext struct {
 	remappedSymbolReferences        map[ast.SymbolId]*ast.Symbol
 	definitions                     []serializationDefinition
 	deferredTypeDepth               int // Lazy member boundaries, excluding eager type arguments and container elements.
+
+	recursiveTypeTracker         nodebuilder.RecursiveTypeTracker
+	recursiveTypeScope           *ast.Node
+	recursiveTypeReferences      map[CompositeTypeCacheIdentity]*ast.Node
+	recursiveTypeHelpers         []*recursiveTypeFrame
+	recursiveTypeReferenceUsed   bool
+	recursiveTypePath            *recursiveTypePath
+	recursiveTypePathType        *Type
+	recursiveTypeCurrentFrame    *recursiveTypeFrame
+	recursiveTypeRootDeclaration *ast.Node
 
 	// per signature scope state
 	typeParameterNames                    collections.CopyOnWriteMap[TypeId, *ast.Identifier]
@@ -2725,7 +2736,11 @@ func (b *NodeBuilderImpl) addPropertyToElementList(propertySymbol *ast.Symbol, t
 			b.ctx.reverseMappedStack = append(b.ctx.reverseMappedStack, propertySymbol)
 		}
 		if propertyType != nil {
+			previousPath, previousPathType := b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType
+			b.ctx.recursiveTypePath = b.recursiveTypePathForProperty(propertySymbol, propertyName)
+			b.ctx.recursiveTypePathType = propertyType
 			propertyTypeNode = b.serializeTypeForDeclaration(nil /*declaration*/, propertyType, propertySymbol, true)
+			b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType = previousPath, previousPathType
 		} else {
 			propertyTypeNode = b.f.NewKeywordTypeNode(ast.KindAnyKeyword)
 		}
@@ -3200,12 +3215,33 @@ func (b *NodeBuilderImpl) visitType(t *Type, transform func(b *NodeBuilderImpl, 
 	typeId := b.serializationTypeId(t)
 	for _, definition := range b.ctx.definitions {
 		if definition.expanding && definition.typeId == typeId {
+			if b.ctx.recursiveTypeTracker != nil {
+				if reference := b.tryCreateRecursiveTypeReference(t, definition.recursiveType); reference != nil {
+					return reference
+				}
+			}
 			return b.createCyclicStructurePlaceholder()
 		}
 	}
-	restoreDefinition := b.enterTypeDefinition(t, nil, true /*expanding*/)
+	definition := serializationDefinition{typeId: typeId, expanding: true}
+	previousFrame := b.ctx.recursiveTypeCurrentFrame
+	if b.ctx.recursiveTypeTracker != nil {
+		frame := &recursiveTypeFrame{enclosingDeclaration: b.ctx.enclosingDeclaration, typ: t, key: b.recursiveTypeReferenceKey(t)}
+		if b.ctx.recursiveTypePathType != nil && b.serializationTypeId(b.ctx.recursiveTypePathType) == typeId {
+			frame.path = b.ctx.recursiveTypePath
+		}
+		definition.recursiveType = frame
+		b.ctx.recursiveTypeCurrentFrame = frame
+	}
+	restoreDefinition := b.enterDefinition(definition)
 	defer restoreDefinition()
-	return transform(b, t)
+	// The pending output path belongs only to this type, not its descendants.
+	previousPath, previousPathType := b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType
+	b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType = nil, nil
+	result := transform(b, t)
+	b.ctx.recursiveTypePath, b.ctx.recursiveTypePathType = previousPath, previousPathType
+	b.ctx.recursiveTypeCurrentFrame = previousFrame
+	return b.finishRecursiveTypeDefinition(definition.recursiveType, result)
 }
 
 func (b *NodeBuilderImpl) visitAndTransformType(t *Type, transform func(b *NodeBuilderImpl, t *Type) *ast.TypeNode) *ast.TypeNode {
@@ -3243,6 +3279,13 @@ func (b *NodeBuilderImpl) transformType(t *Type, transform func(b *NodeBuilderIm
 		typeId:        typeId,
 		flags:         b.ctx.flags,
 		internalFlags: b.ctx.internalFlags,
+	}
+	if b.ctx.recursiveTypeReferences != nil {
+		if reference := b.ctx.recursiveTypeReferences[b.recursiveTypeReferenceKey(t)]; reference != nil {
+			b.ctx.recursiveTypeReferenceUsed = true
+			b.ctx.approximateLength += len(reference.AsTypeReferenceNode().TypeName.Text())
+			return b.f.DeepCloneNode(reference)
+		}
 	}
 	// Expansion must recompute canIncreaseExpansionDepth instead of reusing cached output.
 	canUseCache := b.ctx.maxExpansionDepth < 0
@@ -3309,10 +3352,12 @@ func (b *NodeBuilderImpl) transformType(t *Type, transform func(b *NodeBuilderIm
 	}
 	prevTrackedSymbols := b.ctx.trackedSymbols
 	b.ctx.trackedSymbols = nil
+	previousRecursiveReferenceUsed := b.ctx.recursiveTypeReferenceUsed
+	b.ctx.recursiveTypeReferenceUsed = false
 	startLength := b.ctx.approximateLength
 	result := transform(b, t)
 	addedLength := b.ctx.approximateLength - startLength
-	if canUseCache && !b.ctx.reportedDiagnostic && !b.ctx.encounteredError {
+	if canUseCache && !b.ctx.recursiveTypeReferenceUsed && !b.ctx.reportedDiagnostic && !b.ctx.encounteredError {
 		links := b.links.Get(b.ctx.enclosingDeclaration)
 		if links.serializedTypes == nil {
 			links.serializedTypes = make(map[CompositeTypeCacheIdentity]*SerializedTypeEntry)
@@ -3328,6 +3373,7 @@ func (b *NodeBuilderImpl) transformType(t *Type, transform func(b *NodeBuilderIm
 		b.ctx.symbolDepth[*id] = depth
 	}
 	b.ctx.trackedSymbols = prevTrackedSymbols
+	b.ctx.recursiveTypeReferenceUsed = previousRecursiveReferenceUsed || b.ctx.recursiveTypeReferenceUsed
 	return result
 
 	// !!! TODO: Attempt node reuse or parse nodes to minimize copying once text range setting is set up

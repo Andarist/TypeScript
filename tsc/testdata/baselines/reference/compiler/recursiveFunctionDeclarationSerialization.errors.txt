@@ -1,12 +1,7 @@
 consumer.ts(11,7): error TS2322: Type '() => typeof arrow' is not assignable to type 'number'.
 consumer.ts(13,25): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
-hiddenReferences.ts(3,12): error TS5088: The inferred type of 'expose' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
-hiddenReferences.ts(4,15): error TS5088: The inferred type of 'next' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
-hiddenReferences.ts(5,5): error TS5088: The inferred type of 'expose' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
 namedReferences.ts(28,7): error TS2322: Type 'string' is not assignable to type 'number'.
 namedReferences.ts(29,14): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
-nestedNamedFunctions.ts(5,14): error TS5088: The inferred type of 'factory' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
-nestedNamedFunctions.ts(8,17): error TS5088: The inferred type of 'local' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
 recursiveAnnotations.ts(2,15): error TS2502: 'tuple' is referenced directly or indirectly in its own type annotation.
 recursiveAnnotations.ts(3,15): error TS2502: 'array' is referenced directly or indirectly in its own type annotation.
 recursiveAnnotations.ts(8,15): error TS2502: 'union' is referenced directly or indirectly in its own type annotation.
@@ -95,19 +90,15 @@ recursiveStructures.ts(47,7): error TS2322: Type 'string' is not assignable to t
                    ~~~~~~~
 !!! error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
     
-==== nestedNamedFunctions.ts (2 errors) ====
+==== nestedNamedFunctions.ts (0 errors) ====
     export const nestedObject = { recur: () => nestedObject.recur };
     export const nestedTuple = [() => nestedTuple[0]] as const;
     export const object = { recur: function self() { return self; } };
     export const tuple = [function self() { return self; }] as const;
     export const factory = () => function self() { return self; };
-                 ~~~~~~~
-!!! error TS5088: The inferred type of 'factory' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
     export const method = { recur() { return method; } };
     export const accessor = { get recur() { return accessor; } };
     export function local() {
-                    ~~~~~
-!!! error TS5088: The inferred type of 'local' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
         function recur() { return recur; }
         return recur;
     }
@@ -217,17 +208,11 @@ recursiveStructures.ts(47,7): error TS2322: Type 'string' is not assignable to t
                  ~~~~~~~
 !!! error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
     
-==== hiddenReferences.ts (3 errors) ====
+==== hiddenReferences.ts (0 errors) ====
     export class Hidden {
         private static recur() { return Hidden.recur; }
         static expose() { return Hidden.recur; }
-               ~~~~~~
-!!! error TS5088: The inferred type of 'expose' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
         protected next() { return this.next; }
-                  ~~~~
-!!! error TS5088: The inferred type of 'next' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
         expose() { return this.next; }
-        ~~~~~~
-!!! error TS5088: The inferred type of 'expose' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
     }
     
