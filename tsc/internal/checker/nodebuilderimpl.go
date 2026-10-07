@@ -88,6 +88,7 @@ type NodeBuilderContext struct {
 	suppressReportInferenceFallback bool
 	remappedSymbolReferences        map[ast.SymbolId]*ast.Symbol
 	recursiveTypeTracker            nodebuilder.RecursiveTypeTracker
+	recursiveTypeScope              *ast.Node
 	recursiveTypeFrames             map[TypeId]*recursiveTypeFrame
 	recursiveTypeReferences         map[CompositeTypeCacheIdentity]*ast.Node
 	recursiveTypeHelpers            []*recursiveTypeFrame

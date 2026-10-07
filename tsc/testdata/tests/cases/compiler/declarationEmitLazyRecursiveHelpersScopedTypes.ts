@@ -53,3 +53,21 @@ export interface Captured {
 export function shadowed<Captured>() {
     return maybe<{ next: "ref"; value: Captured }>();
 }
+
+// @filename: global.ts
+// A source-file helper in a global script could collide with one from another
+// script. Until global helpers have a safe naming strategy, preserve TS5088.
+function globalTree() {
+    type Local = readonly [number, Local];
+    return null as unknown as Local;
+}
+
+// @filename: namespace.ts
+// An insertion scope inside a namespace does not make function type parameters
+// available to the helper. Keep TS5088 rather than lifting or capturing T.
+namespace Generic {
+    export function make<T>() {
+        type Local = readonly [T, Local];
+        return null as unknown as Local;
+    }
+}

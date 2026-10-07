@@ -140,3 +140,37 @@ export function shadowed<Captured>() {
 >Captured : Symbol(Captured, Decl(nested.ts, 15, 25))
 }
 
+=== global.ts ===
+// A source-file helper in a global script could collide with one from another
+// script. Until global helpers have a safe naming strategy, preserve TS5088.
+function globalTree() {
+>globalTree : Symbol(globalTree, Decl(global.ts, 0, 0))
+
+    type Local = readonly [number, Local];
+>Local : Symbol(Local, Decl(global.ts, 2, 23))
+>Local : Symbol(Local, Decl(global.ts, 2, 23))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(global.ts, 2, 23))
+}
+
+=== namespace.ts ===
+// An insertion scope inside a namespace does not make function type parameters
+// available to the helper. Keep TS5088 rather than lifting or capturing T.
+namespace Generic {
+>Generic : Symbol(Generic, Decl(namespace.ts, 0, 0))
+
+    export function make<T>() {
+>make : Symbol(make, Decl(namespace.ts, 2, 19))
+>T : Symbol(T, Decl(namespace.ts, 3, 25))
+
+        type Local = readonly [T, Local];
+>Local : Symbol(Local, Decl(namespace.ts, 3, 31))
+>T : Symbol(T, Decl(namespace.ts, 3, 25))
+>Local : Symbol(Local, Decl(namespace.ts, 3, 31))
+
+        return null as unknown as Local;
+>Local : Symbol(Local, Decl(namespace.ts, 3, 31))
+    }
+}
+

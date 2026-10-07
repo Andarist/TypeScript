@@ -7,12 +7,13 @@ import (
 
 // Commit only helpers reachable from the accepted declaration statements. Node
 // builder attempts which were subsequently discarded must not leave aliases behind.
-func (tx *DeclarationTransformer) addRecursiveTypeDeclarations(statements *ast.StatementList) *ast.StatementList {
-	if len(tx.state.recursiveTypeDeclarations) == 0 {
+func (tx *DeclarationTransformer) addRecursiveTypeDeclarations(scope *ast.Node, statements *ast.StatementList) *ast.StatementList {
+	declarations := tx.state.recursiveTypeDeclarations[tx.EmitContext().MostOriginal(scope)]
+	if len(declarations) == 0 {
 		return statements
 	}
 	helpers := make(map[printer.AutoGenerateId]*ast.Node)
-	for _, declaration := range tx.state.recursiveTypeDeclarations {
+	for _, declaration := range declarations {
 		id := tx.EmitContext().GetAutoGenerateInfo(declaration.Name()).Id
 		helpers[id] = declaration
 	}
@@ -34,7 +35,7 @@ func (tx *DeclarationTransformer) addRecursiveTypeDeclarations(statements *ast.S
 		visit(statement)
 	}
 	var result []*ast.Node
-	for _, declaration := range tx.state.recursiveTypeDeclarations {
+	for _, declaration := range declarations {
 		id := tx.EmitContext().GetAutoGenerateInfo(declaration.Name()).Id
 		if reachable[id] {
 			result = append(result, declaration)

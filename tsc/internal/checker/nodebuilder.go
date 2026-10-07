@@ -57,6 +57,12 @@ func (b *NodeBuilder) enterContext(enclosingDeclaration *ast.Node, flags nodebui
 	if capability, ok := tracker.(nodebuilder.RecursiveTypeTracker); ok && verbosityLevel < 0 && b.impl.ctx.enclosingFile != nil {
 		b.impl.ctx.recursiveTypeTracker = capability
 		b.impl.ctx.recursiveTypeFrames = make(map[TypeId]*recursiveTypeFrame)
+		for scope := enclosingDeclaration; scope != nil; scope = scope.Parent {
+			if ast.IsSourceFile(scope) || ast.IsModuleBlock(scope) {
+				b.impl.ctx.recursiveTypeScope = scope
+				break
+			}
+		}
 	}
 	tracker = NewSymbolTrackerImpl(b.impl.ctx, tracker)
 	b.impl.ctx.tracker = tracker

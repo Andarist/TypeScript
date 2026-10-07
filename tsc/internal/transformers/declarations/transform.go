@@ -351,7 +351,7 @@ func (tx *DeclarationTransformer) transformSourceFile(node *ast.SourceFile) *ast
 	statements := tx.Visitor().VisitNodes(node.Statements)
 	combinedStatements = tx.transformAndReplaceLatePaintedStatements(statements)
 	combinedStatements = tx.appendCjsExports(combinedStatements)
-	combinedStatements = tx.addRecursiveTypeDeclarations(combinedStatements)
+	combinedStatements = tx.addRecursiveTypeDeclarations(node.AsNode(), combinedStatements)
 	combinedStatements.Loc = statements.Loc // setTextRange
 	if ast.IsExternalOrCommonJSModule(node) {
 		if ast.IsInJSFile(node.AsNode()) {
@@ -1853,6 +1853,7 @@ func (tx *DeclarationTransformer) transformModuleDeclaration(input *ast.ModuleDe
 		if input.Flags&ast.NodeFlagsAmbient != 0 {
 			tx.needsScopeFixMarker = false // If it was `declare`'d everything is implicitly exported already, ignore late printed "privates"
 		}
+		lateStatements = tx.addRecursiveTypeDeclarations(inner, lateStatements)
 		// With the final list of statements, there are 3 possibilities:
 		// 1. There's an export assignment or export declaration in the namespace - do nothing
 		// 2. Everything is exported and there are no export assignments or export declarations - strip all export modifiers

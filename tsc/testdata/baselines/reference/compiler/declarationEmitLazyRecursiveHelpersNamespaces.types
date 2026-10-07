@@ -1,0 +1,225 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpersNamespaces.ts] ////
+
+=== globalA.ts ===
+// Helpers must remain private to this namespace declaration, rather than becoming
+// global aliases which collide with globalB.d.ts.
+// Ideal globalA.d.ts:
+// declare namespace A {
+//     type make_Result = readonly [number, make_Result];
+//     export function make(): make_Result;
+//     export {};
+// }
+namespace A {
+>A : typeof A
+
+    export function make() {
+>make : () => readonly [number, any]
+
+        type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+        return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+    }
+}
+
+=== globalB.ts ===
+// Ideal globalB.d.ts: the same structure as A, with string instead of number.
+// B.make()[0] must remain string even when consumers enable skipLibCheck.
+namespace B {
+>B : typeof B
+
+    export function make() {
+>make : () => readonly [string, any]
+
+        type Local = readonly [string, Local];
+>Local : readonly [string, any]
+
+        return null as unknown as Local;
+>null as unknown as Local : readonly [string, any]
+>null as unknown : unknown
+    }
+}
+
+=== mergedA.ts ===
+// A helper may use a name private to its namespace block. The original private
+// interface must be late-painted alongside the helper, without exporting either.
+// Ideal mergedA.d.ts:
+// declare namespace Shared {
+//     type numbers_Result = readonly [Payload, numbers_Result];
+//     interface Payload { value: number; }
+//     export function numbers(): numbers_Result;
+//     export {};
+// }
+namespace Shared {
+>Shared : typeof Shared
+
+    interface Payload { value: number; }
+>value : number
+
+    export function numbers() {
+>numbers : () => readonly [Payload, any]
+
+        type Local = readonly [Payload, Local];
+>Local : readonly [Payload, any]
+
+        return null as unknown as Local;
+>null as unknown as Local : readonly [Payload, any]
+>null as unknown : unknown
+    }
+}
+
+=== mergedB.ts ===
+// This declaration's private Payload is distinct from mergedA.ts's Payload.
+// Ideal mergedB.d.ts: the same structure as above for strings(), with string payloads.
+namespace Shared {
+>Shared : typeof Shared
+
+    interface Payload { value: string; }
+>value : string
+
+    export function strings() {
+>strings : () => readonly [Payload, any]
+
+        type Local = readonly [Payload, Local];
+>Local : readonly [Payload, any]
+
+        return null as unknown as Local;
+>null as unknown as Local : readonly [Payload, any]
+>null as unknown : unknown
+    }
+}
+
+=== globalRoot.ts ===
+type globalShow<T> = { [K in keyof T]: T[K] } & unknown;
+>globalShow : { [K in keyof T]: T[K]; }
+
+type globalResolve<T> = globalShow<{
+>globalResolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+    [P in keyof T]: T[P] extends "ref" ? globalResolve<T> : T[P];
+}>;
+declare function globalMod<T>(): { node: globalResolve<T> };
+>globalMod : <T>() => { node: globalResolve<T>; }
+>node : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }[K]; }
+
+// Global scripts can still close a cycle through an existing variable path.
+// Ideal declaration (in addition to the existing source declarations above):
+// declare const globalRoot: { node: { value: number; next: typeof globalRoot.node } };
+const globalRoot = globalMod<{ value: number; next: "ref" }>();
+>globalRoot : { node: { value: number; next: any; }; }
+>globalMod<{ value: number; next: "ref" }>() : { node: { value: number; next: any; }; }
+>globalMod : <T>() => { node: globalResolve<T>; }
+>value : number
+>next : "ref"
+
+=== consumer.ts ===
+const rootValue: number = globalRoot.node.next.value;
+>rootValue : number
+>globalRoot.node.next.value : number
+>globalRoot.node.next : { value: number; next: any; }
+>globalRoot.node : { value: number; next: any; }
+>globalRoot : { node: { value: number; next: any; }; }
+>node : { value: number; next: any; }
+>next : { value: number; next: any; }
+>value : number
+
+const a: number = A.make()[0];
+>a : number
+>A.make()[0] : number
+>A.make() : readonly [number, any]
+>A.make : () => readonly [number, any]
+>A : typeof A
+>make : () => readonly [number, any]
+>0 : 0
+
+const b: string = B.make()[0];
+>b : string
+>B.make()[0] : string
+>B.make() : readonly [string, any]
+>B.make : () => readonly [string, any]
+>B : typeof B
+>make : () => readonly [string, any]
+>0 : 0
+
+const sharedNumber: number = Shared.numbers()[0].value;
+>sharedNumber : number
+>Shared.numbers()[0].value : number
+>Shared.numbers()[0] : Payload
+>Shared.numbers() : readonly [Payload, any]
+>Shared.numbers : () => readonly [Payload, any]
+>Shared : typeof Shared
+>numbers : () => readonly [Payload, any]
+>0 : 0
+>value : number
+
+const sharedString: string = Shared.strings()[0].value;
+>sharedString : string
+>Shared.strings()[0].value : string
+>Shared.strings()[0] : Payload
+>Shared.strings() : readonly [Payload, any]
+>Shared.strings : () => readonly [Payload, any]
+>Shared : typeof Shared
+>strings : () => readonly [Payload, any]
+>0 : 0
+>value : string
+
+=== model.ts ===
+export interface Payload { name: string; }
+>name : string
+
+=== namespaceImport.ts ===
+import * as Model from "./model";
+>Model : typeof Model
+
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+// A namespace import is available at the helper's insertion scope.
+// Ideal namespaceImport.d.ts:
+// import * as Model from "./model";
+// type result_Node = { next: result_Node; value: Model.Payload };
+// export declare const result: { node?: result_Node };
+export const result = maybe<{ next: "ref"; value: Model.Payload }>();
+>result : { node?: { next: any; value: Model.Payload; } | undefined; }
+>maybe<{ next: "ref"; value: Model.Payload }>() : { node?: { next: any; value: Model.Payload; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+>value : Model.Payload
+>Model : any
+
+=== namespaceType.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+export namespace N { export interface Payload { name: string; } }
+>name : string
+
+// The root N has namespace meaning, whereas N.Payload has type meaning.
+// Ideal namespaceType.d.ts:
+// type result_Node = { next: result_Node; value: N.Payload };
+// export namespace N { interface Payload { name: string; } }
+// export declare const result: { node?: result_Node };
+export const result = maybe<{ next: "ref"; value: N.Payload }>();
+>result : { node?: { next: any; value: N.Payload; } | undefined; }
+>maybe<{ next: "ref"; value: N.Payload }>() : { node?: { next: any; value: N.Payload; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+>value : N.Payload
+>N : any
+

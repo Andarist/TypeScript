@@ -1,5 +1,7 @@
 generic.ts(18,17): error TS5088: The inferred type of 'make' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
 generic.ts(27,17): error TS5088: The inferred type of 'factory' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+global.ts(3,10): error TS5088: The inferred type of 'globalTree' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+namespace.ts(4,21): error TS5088: The inferred type of 'make' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
 nested.ts(7,17): error TS5088: The inferred type of 'nested' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
 nested.ts(16,17): error TS5088: The inferred type of 'shadowed' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
 
@@ -61,5 +63,27 @@ nested.ts(16,17): error TS5088: The inferred type of 'shadowed' references a typ
                     ~~~~~~~~
 !!! error TS5088: The inferred type of 'shadowed' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
         return maybe<{ next: "ref"; value: Captured }>();
+    }
+    
+==== global.ts (1 errors) ====
+    // A source-file helper in a global script could collide with one from another
+    // script. Until global helpers have a safe naming strategy, preserve TS5088.
+    function globalTree() {
+             ~~~~~~~~~~
+!!! error TS5088: The inferred type of 'globalTree' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+        type Local = readonly [number, Local];
+        return null as unknown as Local;
+    }
+    
+==== namespace.ts (1 errors) ====
+    // An insertion scope inside a namespace does not make function type parameters
+    // available to the helper. Keep TS5088 rather than lifting or capturing T.
+    namespace Generic {
+        export function make<T>() {
+                        ~~~~
+!!! error TS5088: The inferred type of 'make' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+            type Local = readonly [T, Local];
+            return null as unknown as Local;
+        }
     }
     

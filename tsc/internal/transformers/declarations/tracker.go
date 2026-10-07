@@ -41,8 +41,11 @@ func (s *SymbolTrackerImpl) ReportCyclicStructureError() {
 	}
 }
 
-func (s *SymbolTrackerImpl) TrackRecursiveTypeDeclarations(declarations []*ast.Node) {
-	s.state.recursiveTypeDeclarations = append(s.state.recursiveTypeDeclarations, declarations...)
+func (s *SymbolTrackerImpl) TrackRecursiveTypeDeclarations(scope *ast.Node, declarations []*ast.Node) {
+	if s.state.recursiveTypeDeclarations == nil {
+		s.state.recursiveTypeDeclarations = make(map[*ast.Node][]*ast.Node)
+	}
+	s.state.recursiveTypeDeclarations[scope] = append(s.state.recursiveTypeDeclarations[scope], declarations...)
 }
 
 // ReportInaccessibleThisError implements checker.SymbolTracker.
@@ -242,7 +245,7 @@ func createDiagnosticForNode(node *ast.Node, message *diagnostics.Message, args 
 
 type SymbolTrackerSharedState struct {
 	lateMarkedStatements             []*ast.Node
-	recursiveTypeDeclarations        []*ast.Node
+	recursiveTypeDeclarations        map[*ast.Node][]*ast.Node
 	diagnostics                      []*ast.Diagnostic
 	getSymbolAccessibilityDiagnostic GetSymbolAccessibilityDiagnostic
 	errorNameNode                    *ast.Node

@@ -42,6 +42,13 @@ func (b *NodeBuilderImpl) tryCreateRecursiveTypeReference(t *Type) *ast.Node {
 		b.ctx.recursiveTypeReferenceUsed = true
 		return reference
 	}
+	// A global script has no private source-file scope. Printer-generated names
+	// are only unique within one file, so a global helper could collide with a
+	// helper from another file. Namespace blocks and external modules are safe.
+	scope := b.ctx.recursiveTypeScope
+	if scope == nil || ast.IsSourceFile(scope) && !ast.IsExternalOrCommonJSModule(scope.AsSourceFile()) {
+		return nil
+	}
 	if frame.name == nil {
 		name := "recursive"
 		for enclosing := b.ctx.enclosingDeclaration; enclosing != nil && !ast.IsSourceFile(enclosing); enclosing = enclosing.Parent {
@@ -113,9 +120,14 @@ func (b *NodeBuilderImpl) recursiveTypeBodyIsClosed(frame *recursiveTypeFrame) b
 	if frame.body == nil || b.ctx.enclosingFile == nil {
 		return false
 	}
-	scope := b.ctx.enclosingFile.AsNode()
+	scope := b.ctx.recursiveTypeScope
 	var check func(*ast.Node, map[string]ast.SymbolFlags) bool
 	checkReference := func(name *ast.Node, meaning ast.SymbolFlags, bound map[string]ast.SymbolFlags) bool {
+		if ast.IsQualifiedName(name) && meaning == ast.SymbolFlagsType {
+			// The left side of a qualified type name names a namespace, even
+			// though the complete reference has type meaning.
+			meaning = ast.SymbolFlagsNamespace
+		}
 		for ast.IsQualifiedName(name) || ast.IsPropertyAccessExpression(name) {
 			if ast.IsQualifiedName(name) {
 				name = name.AsQualifiedName().Left
@@ -220,5 +232,5 @@ func (b *NodeBuilderImpl) trackRecursiveTypeDeclarations() {
 	for _, frame := range b.ctx.recursiveTypeHelpers {
 		declarations = append(declarations, b.f.NewTypeAliasDeclaration(nil, b.f.DeepCloneNode(frame.name), nil, frame.body))
 	}
-	b.ctx.recursiveTypeTracker.TrackRecursiveTypeDeclarations(declarations)
+	b.ctx.recursiveTypeTracker.TrackRecursiveTypeDeclarations(b.ctx.recursiveTypeScope, declarations)
 }

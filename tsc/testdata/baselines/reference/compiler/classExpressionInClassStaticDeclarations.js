@@ -11,13 +11,3 @@ class C {
 }
 C.D = class extends C {
 };
-
-
-//// [classExpressionInClassStaticDeclarations.d.ts]
-type C_recursive = {
-    new (): {};
-    D: C_recursive;
-};
-declare class C {
-    static D: C_recursive;
-}
