@@ -54,6 +54,15 @@ func (b *NodeBuilder) enterContext(enclosingDeclaration *ast.Node, flags nodebui
 		enclosingSymbolTypes:     make(map[ast.SymbolId]*Type),
 		remappedSymbolReferences: make(map[ast.SymbolId]*ast.Symbol),
 	}
+	if capability, ok := tracker.(nodebuilder.RecursiveTypeTracker); ok && verbosityLevel < 0 && b.impl.ctx.enclosingFile != nil {
+		b.impl.ctx.recursiveTypeTracker = capability
+		for scope := enclosingDeclaration; scope != nil; scope = scope.Parent {
+			if ast.IsSourceFile(scope) || ast.IsModuleBlock(scope) {
+				b.impl.ctx.recursiveTypeScope = scope
+				break
+			}
+		}
+	}
 	tracker = NewSymbolTrackerImpl(b.impl.ctx, tracker)
 	b.impl.ctx.tracker = tracker
 }
@@ -88,6 +97,9 @@ func (b *NodeBuilder) exitContext(result *ast.Node) *ast.Node {
 	if b.impl.ctx.encounteredError {
 		return nil
 	}
+	if result != nil {
+		b.impl.trackRecursiveTypeDeclarations()
+	}
 	return result
 }
 
@@ -97,6 +109,9 @@ func (b *NodeBuilder) exitContextSlice(result []*ast.Node) []*ast.Node {
 	defer b.popContext()
 	if b.impl.ctx.encounteredError {
 		return nil
+	}
+	if len(result) > 0 {
+		b.impl.trackRecursiveTypeDeclarations()
 	}
 	return result
 }
@@ -133,6 +148,13 @@ func (b *NodeBuilder) SerializeTypeParametersForSignature(signatureDeclaration *
 // SerializeTypeForDeclaration implements NodeBuilderInterface.
 func (b *NodeBuilder) SerializeTypeForDeclaration(declaration *ast.Node, symbol *ast.Symbol, enclosingDeclaration *ast.Node, flags nodebuilder.Flags, internalFlags nodebuilder.InternalFlags, tracker nodebuilder.SymbolTracker) *ast.Node {
 	b.enterContext(enclosingDeclaration, flags, internalFlags, tracker)
+	if b.impl.ctx.recursiveTypeTracker != nil {
+		b.impl.ctx.recursiveTypeRootDeclaration = declaration
+		if ast.IsVariableDeclaration(declaration) && ast.IsIdentifier(declaration.Name()) && symbol != nil {
+			b.impl.ctx.recursiveTypePathType = b.impl.ch.getWidenedLiteralType(b.impl.ch.getTypeOfSymbol(symbol))
+			b.impl.ctx.recursiveTypePath = &recursiveTypePath{name: declaration.Name().Text()}
+		}
+	}
 	return b.exitContext(b.impl.serializeTypeForDeclaration(declaration, nil, symbol, true))
 }
 

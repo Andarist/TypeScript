@@ -35,5 +35,13 @@ function f(k) {
 }
 
 
+//// [mod1.d.ts]
+type K_1 = {
+    values(): K_1;
+};
+export declare var K: {
+    new (): K_1;
+};
+export {};
 //// [main.d.ts]
 export {};

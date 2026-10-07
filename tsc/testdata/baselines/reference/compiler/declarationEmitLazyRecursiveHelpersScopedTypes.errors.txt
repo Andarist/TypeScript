@@ -1,0 +1,63 @@
+generic.ts(5,17): error TS5088: The inferred type of 'make' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+generic.ts(9,17): error TS5088: The inferred type of 'factory' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+global.ts(1,10): error TS5088: The inferred type of 'globalTree' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+namespace.ts(2,21): error TS5088: The inferred type of 'make' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+nested.ts(5,17): error TS5088: The inferred type of 'nested' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+nested.ts(12,17): error TS5088: The inferred type of 'shadowed' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+
+
+==== generic.ts (2 errors) ====
+    type show<T> = { [K in keyof T]: T[K] } & unknown;
+    type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+    declare function mod<T>(): resolve<T>;
+    
+    export function make<T extends { id: string }>(value: T) {
+                    ~~~~
+!!! error TS5088: The inferred type of 'make' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+        return { node: mod<{ value: T; next: "ref" }>(), label: value.id };
+    }
+    
+    export function factory() {
+                    ~~~~~~~
+!!! error TS5088: The inferred type of 'factory' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+        return <T>(value: T) => mod<{ value: T; next: "ref" }>();
+    }
+    
+==== nested.ts (2 errors) ====
+    type show<T> = { [K in keyof T]: T[K] } & unknown;
+    type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+    declare function maybe<T>(): { node?: resolve<T> };
+    
+    export function nested<T>() {
+                    ~~~~~~
+!!! error TS5088: The inferred type of 'nested' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+        return maybe<{ next: "ref"; read: <U>(value: U) => T }>();
+    }
+    
+    export interface Captured {
+        id: number;
+    }
+    export function shadowed<Captured>() {
+                    ~~~~~~~~
+!!! error TS5088: The inferred type of 'shadowed' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+        return maybe<{ next: "ref"; value: Captured }>();
+    }
+    
+==== global.ts (1 errors) ====
+    function globalTree() {
+             ~~~~~~~~~~
+!!! error TS5088: The inferred type of 'globalTree' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+        type Local = readonly [number, Local];
+        return null as unknown as Local;
+    }
+    
+==== namespace.ts (1 errors) ====
+    namespace Generic {
+        export function make<T>() {
+                        ~~~~
+!!! error TS5088: The inferred type of 'make' references a type with a cyclic structure which cannot be trivially serialized. A type annotation is necessary.
+            type Local = readonly [T, Local];
+            return null as unknown as Local;
+        }
+    }
+    
