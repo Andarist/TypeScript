@@ -846,7 +846,15 @@ func getExistingNodeTreeVisitor(b *NodeBuilderImpl, bound *recoveryBoundary) *as
 			}
 			exit = b.enterNewScope(node, params, typeParams, nil, nil)
 		}
+		deferredType := ast.IsTypeLiteralNode(node) || ast.IsFunctionTypeNode(node) || ast.IsConstructorTypeNode(node) ||
+			node.Parent != nil && ast.IsMappedTypeNode(node.Parent) && node.Parent.Type() == node
+		if deferredType {
+			b.ctx.deferredTypeDepth++
+		}
 		result := visitExistingNodeTreeSymbolsWorker(node)
+		if deferredType {
+			b.ctx.deferredTypeDepth--
+		}
 		if exit != nil {
 			exit()
 		}

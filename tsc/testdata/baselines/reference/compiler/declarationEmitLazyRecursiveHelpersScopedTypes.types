@@ -1,0 +1,106 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpersScopedTypes.ts] ////
+
+=== generic.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function mod<T>(): resolve<T>;
+>mod : <T>() => resolve<T>
+
+export function make<T extends { id: string }>(value: T) {
+>make : <T extends { id: string; }>(value: T) => { node: { value: T; next: any; }; label: string; }
+>id : string
+>value : T
+
+    return { node: mod<{ value: T; next: "ref" }>(), label: value.id };
+>{ node: mod<{ value: T; next: "ref" }>(), label: value.id } : { node: { value: T; next: any; }; label: string; }
+>node : { value: T; next: any; }
+>mod<{ value: T; next: "ref" }>() : { value: T; next: any; }
+>mod : <T_1>() => resolve<T_1>
+>value : T
+>next : "ref"
+>label : string
+>value.id : string
+>value : T
+>id : string
+}
+
+export function factory() {
+>factory : () => <T>(value: T) => { value: T; next: any; }
+
+    return <T>(value: T) => mod<{ value: T; next: "ref" }>();
+><T>(value: T) => mod<{ value: T; next: "ref" }>() : <T>(value: T) => { value: T; next: any; }
+>value : T
+>mod<{ value: T; next: "ref" }>() : { value: T; next: any; }
+>mod : <T_1>() => resolve<T_1>
+>value : T
+>next : "ref"
+}
+
+=== nested.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+export function nested<T>() {
+>nested : <T>() => { node?: { next: any; read: <U>(value: U) => T; } | undefined; }
+
+    return maybe<{ next: "ref"; read: <U>(value: U) => T }>();
+>maybe<{ next: "ref"; read: <U>(value: U) => T }>() : { node?: { next: any; read: <U>(value: U) => T; } | undefined; }
+>maybe : <T_1>() => { node?: resolve<T_1>; }
+>next : "ref"
+>read : <U>(value: U) => T
+>value : U
+}
+
+export interface Captured {
+    id: number;
+>id : number
+}
+export function shadowed<Captured>() {
+>shadowed : <Captured>() => { node?: { next: any; value: Captured; } | undefined; }
+
+    return maybe<{ next: "ref"; value: Captured }>();
+>maybe<{ next: "ref"; value: Captured }>() : { node?: { next: any; value: Captured; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+>value : Captured
+}
+
+=== global.ts ===
+function globalTree() {
+>globalTree : () => readonly [number, any]
+
+    type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+}
+
+=== namespace.ts ===
+namespace Generic {
+>Generic : typeof Generic
+
+    export function make<T>() {
+>make : <T>() => readonly [T, any]
+
+        type Local = readonly [T, Local];
+>Local : readonly [T, any]
+
+        return null as unknown as Local;
+>null as unknown as Local : readonly [T, any]
+>null as unknown : unknown
+    }
+}
+

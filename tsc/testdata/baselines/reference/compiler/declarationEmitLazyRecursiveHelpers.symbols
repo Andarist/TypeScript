@@ -1,0 +1,929 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpers.ts] ////
+
+=== self.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(self.ts, 0, 0))
+>T : Symbol(T, Decl(self.ts, 0, 10))
+>K : Symbol(K, Decl(self.ts, 0, 18))
+>T : Symbol(T, Decl(self.ts, 0, 10))
+>T : Symbol(T, Decl(self.ts, 0, 10))
+>K : Symbol(K, Decl(self.ts, 0, 18))
+
+type resolve<M, K extends keyof M> = show<{
+>resolve : Symbol(resolve, Decl(self.ts, 0, 50))
+>M : Symbol(M, Decl(self.ts, 1, 13))
+>K : Symbol(K, Decl(self.ts, 1, 15))
+>M : Symbol(M, Decl(self.ts, 1, 13))
+>show : Symbol(show, Decl(self.ts, 0, 0))
+
+    [P in keyof M[K]]: M[K][P] extends "ref" ? resolve<M, K> : M[K][P];
+>P : Symbol(P, Decl(self.ts, 2, 5))
+>M : Symbol(M, Decl(self.ts, 1, 13))
+>K : Symbol(K, Decl(self.ts, 1, 15))
+>M : Symbol(M, Decl(self.ts, 1, 13))
+>K : Symbol(K, Decl(self.ts, 1, 15))
+>P : Symbol(P, Decl(self.ts, 2, 5))
+>resolve : Symbol(resolve, Decl(self.ts, 0, 50))
+>M : Symbol(M, Decl(self.ts, 1, 13))
+>K : Symbol(K, Decl(self.ts, 1, 15))
+>M : Symbol(M, Decl(self.ts, 1, 13))
+>K : Symbol(K, Decl(self.ts, 1, 15))
+>P : Symbol(P, Decl(self.ts, 2, 5))
+
+}>;
+declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
+>mod : Symbol(mod, Decl(self.ts, 4, 13))
+>M : Symbol(M, Decl(self.ts, 4, 20))
+>K : Symbol(K, Decl(self.ts, 4, 31))
+>M : Symbol(M, Decl(self.ts, 4, 20))
+>resolve : Symbol(resolve, Decl(self.ts, 0, 50))
+>M : Symbol(M, Decl(self.ts, 4, 20))
+>K : Symbol(K, Decl(self.ts, 4, 31))
+
+export const n = mod<{ Node: { value: number; next: "ref" } }>();
+>n : Symbol(n, Decl(self.ts, 6, 12))
+>mod : Symbol(mod, Decl(self.ts, 4, 13))
+>Node : Symbol(Node, Decl(self.ts, 6, 22))
+>value : Symbol(value, Decl(self.ts, 6, 30))
+>next : Symbol(next, Decl(self.ts, 6, 45))
+
+=== quotedAnchor.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(quotedAnchor.ts, 0, 0))
+>T : Symbol(T, Decl(quotedAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(quotedAnchor.ts, 0, 18))
+>T : Symbol(T, Decl(quotedAnchor.ts, 0, 10))
+>T : Symbol(T, Decl(quotedAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(quotedAnchor.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(quotedAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>show : Symbol(show, Decl(quotedAnchor.ts, 0, 0))
+>P : Symbol(P, Decl(quotedAnchor.ts, 1, 26))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>P : Symbol(P, Decl(quotedAnchor.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(quotedAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>T : Symbol(T, Decl(quotedAnchor.ts, 1, 13))
+>P : Symbol(P, Decl(quotedAnchor.ts, 1, 26))
+
+declare function mod<T>(): { "node": resolve<T> };
+>mod : Symbol(mod, Decl(quotedAnchor.ts, 1, 83))
+>T : Symbol(T, Decl(quotedAnchor.ts, 2, 21))
+>"node" : Symbol("node", Decl(quotedAnchor.ts, 2, 28))
+>resolve : Symbol(resolve, Decl(quotedAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(quotedAnchor.ts, 2, 21))
+
+export const quoted = mod<{ next: "ref" }>();
+>quoted : Symbol(quoted, Decl(quotedAnchor.ts, 4, 12))
+>mod : Symbol(mod, Decl(quotedAnchor.ts, 1, 83))
+>next : Symbol(next, Decl(quotedAnchor.ts, 4, 27))
+
+=== wideAnchor.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(wideAnchor.ts, 0, 0))
+>T : Symbol(T, Decl(wideAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(wideAnchor.ts, 0, 18))
+>T : Symbol(T, Decl(wideAnchor.ts, 0, 10))
+>T : Symbol(T, Decl(wideAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(wideAnchor.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(wideAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>show : Symbol(show, Decl(wideAnchor.ts, 0, 0))
+>P : Symbol(P, Decl(wideAnchor.ts, 1, 26))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>P : Symbol(P, Decl(wideAnchor.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(wideAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>T : Symbol(T, Decl(wideAnchor.ts, 1, 13))
+>P : Symbol(P, Decl(wideAnchor.ts, 1, 26))
+
+type Bit = "0" | "1";
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+
+type Keys = `${Bit}${Bit}${Bit}${Bit}${Bit}${Bit}${Bit}`;
+>Keys : Symbol(Keys, Decl(wideAnchor.ts, 2, 21))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+>Bit : Symbol(Bit, Decl(wideAnchor.ts, 1, 83))
+
+declare function mod<T>(): { [K in Keys | "node"]: K extends "node" ? resolve<T> : { key: K } };
+>mod : Symbol(mod, Decl(wideAnchor.ts, 3, 57))
+>T : Symbol(T, Decl(wideAnchor.ts, 4, 21))
+>K : Symbol(K, Decl(wideAnchor.ts, 4, 30))
+>Keys : Symbol(Keys, Decl(wideAnchor.ts, 2, 21))
+>K : Symbol(K, Decl(wideAnchor.ts, 4, 30))
+>resolve : Symbol(resolve, Decl(wideAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(wideAnchor.ts, 4, 21))
+>key : Symbol(key, Decl(wideAnchor.ts, 4, 84))
+>K : Symbol(K, Decl(wideAnchor.ts, 4, 30))
+
+export const wide = mod<{ next: "ref" }>();
+>wide : Symbol(wide, Decl(wideAnchor.ts, 6, 12))
+>mod : Symbol(mod, Decl(wideAnchor.ts, 3, 57))
+>next : Symbol(next, Decl(wideAnchor.ts, 6, 25))
+
+=== mutual.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(mutual.ts, 0, 0))
+>T : Symbol(T, Decl(mutual.ts, 0, 10))
+>K : Symbol(K, Decl(mutual.ts, 0, 18))
+>T : Symbol(T, Decl(mutual.ts, 0, 10))
+>T : Symbol(T, Decl(mutual.ts, 0, 10))
+>K : Symbol(K, Decl(mutual.ts, 0, 18))
+
+type resolve<M, K extends keyof M> = show<{
+>resolve : Symbol(resolve, Decl(mutual.ts, 0, 50))
+>M : Symbol(M, Decl(mutual.ts, 1, 13))
+>K : Symbol(K, Decl(mutual.ts, 1, 15))
+>M : Symbol(M, Decl(mutual.ts, 1, 13))
+>show : Symbol(show, Decl(mutual.ts, 0, 0))
+
+    [P in keyof M[K]]: M[K][P] extends keyof M ? resolve<M, M[K][P]> : M[K][P];
+>P : Symbol(P, Decl(mutual.ts, 2, 5))
+>M : Symbol(M, Decl(mutual.ts, 1, 13))
+>K : Symbol(K, Decl(mutual.ts, 1, 15))
+>M : Symbol(M, Decl(mutual.ts, 1, 13))
+>K : Symbol(K, Decl(mutual.ts, 1, 15))
+>P : Symbol(P, Decl(mutual.ts, 2, 5))
+>M : Symbol(M, Decl(mutual.ts, 1, 13))
+>resolve : Symbol(resolve, Decl(mutual.ts, 0, 50))
+>M : Symbol(M, Decl(mutual.ts, 1, 13))
+>M : Symbol(M, Decl(mutual.ts, 1, 13))
+>K : Symbol(K, Decl(mutual.ts, 1, 15))
+>P : Symbol(P, Decl(mutual.ts, 2, 5))
+>M : Symbol(M, Decl(mutual.ts, 1, 13))
+>K : Symbol(K, Decl(mutual.ts, 1, 15))
+>P : Symbol(P, Decl(mutual.ts, 2, 5))
+
+}>;
+declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
+>mod : Symbol(mod, Decl(mutual.ts, 4, 13))
+>M : Symbol(M, Decl(mutual.ts, 4, 20))
+>K : Symbol(K, Decl(mutual.ts, 4, 31))
+>M : Symbol(M, Decl(mutual.ts, 4, 20))
+>resolve : Symbol(resolve, Decl(mutual.ts, 0, 50))
+>M : Symbol(M, Decl(mutual.ts, 4, 20))
+>K : Symbol(K, Decl(mutual.ts, 4, 31))
+
+export const pair = mod<{
+>pair : Symbol(pair, Decl(mutual.ts, 6, 12))
+>mod : Symbol(mod, Decl(mutual.ts, 4, 13))
+
+    Left: { leftValue: number; right: "Right" };
+>Left : Symbol(Left, Decl(mutual.ts, 6, 25))
+>leftValue : Symbol(leftValue, Decl(mutual.ts, 7, 11))
+>right : Symbol(right, Decl(mutual.ts, 7, 30))
+
+    Right: { rightValue: string; left: "Left" };
+>Right : Symbol(Right, Decl(mutual.ts, 7, 48))
+>rightValue : Symbol(rightValue, Decl(mutual.ts, 8, 12))
+>left : Symbol(left, Decl(mutual.ts, 8, 32))
+
+}>();
+
+export function left() {
+>left : Symbol(left, Decl(mutual.ts, 9, 5))
+
+    return mod<{
+>mod<{        Left: { leftValue: number; right: "Right" };        Right: { rightValue: string; left: "Left" };    }>().Left : Symbol(Left, Decl(mutual.ts, 12, 16))
+>mod : Symbol(mod, Decl(mutual.ts, 4, 13))
+
+        Left: { leftValue: number; right: "Right" };
+>Left : Symbol(Left, Decl(mutual.ts, 12, 16))
+>leftValue : Symbol(leftValue, Decl(mutual.ts, 13, 15))
+>right : Symbol(right, Decl(mutual.ts, 13, 34))
+
+        Right: { rightValue: string; left: "Left" };
+>Right : Symbol(Right, Decl(mutual.ts, 13, 52))
+>rightValue : Symbol(rightValue, Decl(mutual.ts, 14, 16))
+>left : Symbol(left, Decl(mutual.ts, 14, 36))
+
+    }>().Left;
+>Left : Symbol(Left, Decl(mutual.ts, 12, 16))
+}
+
+=== optional.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(optional.ts, 0, 0))
+>T : Symbol(T, Decl(optional.ts, 0, 10))
+>K : Symbol(K, Decl(optional.ts, 0, 18))
+>T : Symbol(T, Decl(optional.ts, 0, 10))
+>T : Symbol(T, Decl(optional.ts, 0, 10))
+>K : Symbol(K, Decl(optional.ts, 0, 18))
+
+type resolve<T> = show<{
+>resolve : Symbol(resolve, Decl(optional.ts, 0, 50))
+>T : Symbol(T, Decl(optional.ts, 1, 13))
+>show : Symbol(show, Decl(optional.ts, 0, 0))
+
+    [P in keyof T]: NonNullable<T[P]> extends "ref"
+>P : Symbol(P, Decl(optional.ts, 2, 5))
+>T : Symbol(T, Decl(optional.ts, 1, 13))
+>NonNullable : Symbol(NonNullable, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(optional.ts, 1, 13))
+>P : Symbol(P, Decl(optional.ts, 2, 5))
+
+        ? resolve<T> | Extract<T[P], undefined>
+>resolve : Symbol(resolve, Decl(optional.ts, 0, 50))
+>T : Symbol(T, Decl(optional.ts, 1, 13))
+>Extract : Symbol(Extract, Decl(lib.es5.d.ts, --, --))
+>T : Symbol(T, Decl(optional.ts, 1, 13))
+>P : Symbol(P, Decl(optional.ts, 2, 5))
+
+        : T[P];
+>T : Symbol(T, Decl(optional.ts, 1, 13))
+>P : Symbol(P, Decl(optional.ts, 2, 5))
+
+}>;
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : Symbol(maybe, Decl(optional.ts, 5, 3))
+>T : Symbol(T, Decl(optional.ts, 6, 23))
+>node : Symbol(node, Decl(optional.ts, 6, 30))
+>resolve : Symbol(resolve, Decl(optional.ts, 0, 50))
+>T : Symbol(T, Decl(optional.ts, 6, 23))
+
+export const optional = maybe<{ readonly value: number; next?: "ref" }>();
+>optional : Symbol(optional, Decl(optional.ts, 8, 12))
+>maybe : Symbol(maybe, Decl(optional.ts, 5, 3))
+>value : Symbol(value, Decl(optional.ts, 8, 31))
+>next : Symbol(next, Decl(optional.ts, 8, 55))
+
+declare function both<T>(): { left?: resolve<T>; right?: resolve<T> };
+>both : Symbol(both, Decl(optional.ts, 8, 74))
+>T : Symbol(T, Decl(optional.ts, 10, 22))
+>left : Symbol(left, Decl(optional.ts, 10, 29))
+>resolve : Symbol(resolve, Decl(optional.ts, 0, 50))
+>T : Symbol(T, Decl(optional.ts, 10, 22))
+>right : Symbol(right, Decl(optional.ts, 10, 48))
+>resolve : Symbol(resolve, Decl(optional.ts, 0, 50))
+>T : Symbol(T, Decl(optional.ts, 10, 22))
+
+export const shared = both<{ next: "ref" }>();
+>shared : Symbol(shared, Decl(optional.ts, 11, 12))
+>both : Symbol(both, Decl(optional.ts, 8, 74))
+>next : Symbol(next, Decl(optional.ts, 11, 28))
+
+=== containers.ts ===
+export function tree() {
+>tree : Symbol(tree, Decl(containers.ts, 0, 0))
+
+    type Local = string | Local[];
+>Local : Symbol(Local, Decl(containers.ts, 0, 24))
+>Local : Symbol(Local, Decl(containers.ts, 0, 24))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(containers.ts, 0, 24))
+}
+
+export function tuple() {
+>tuple : Symbol(tuple, Decl(containers.ts, 3, 1))
+
+    type Local = readonly [number, Local];
+>Local : Symbol(Local, Decl(containers.ts, 5, 25))
+>Local : Symbol(Local, Decl(containers.ts, 5, 25))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(containers.ts, 5, 25))
+}
+
+=== signatures.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(signatures.ts, 0, 0))
+>T : Symbol(T, Decl(signatures.ts, 0, 10))
+>K : Symbol(K, Decl(signatures.ts, 0, 18))
+>T : Symbol(T, Decl(signatures.ts, 0, 10))
+>T : Symbol(T, Decl(signatures.ts, 0, 10))
+>K : Symbol(K, Decl(signatures.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(signatures.ts, 0, 50))
+>T : Symbol(T, Decl(signatures.ts, 1, 13))
+>show : Symbol(show, Decl(signatures.ts, 0, 0))
+>P : Symbol(P, Decl(signatures.ts, 1, 26))
+>T : Symbol(T, Decl(signatures.ts, 1, 13))
+>P : Symbol(P, Decl(signatures.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(signatures.ts, 0, 50))
+>T : Symbol(T, Decl(signatures.ts, 1, 13))
+>T : Symbol(T, Decl(signatures.ts, 1, 13))
+>P : Symbol(P, Decl(signatures.ts, 1, 26))
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : Symbol(maybe, Decl(signatures.ts, 1, 81))
+>T : Symbol(T, Decl(signatures.ts, 2, 23))
+>node : Symbol(node, Decl(signatures.ts, 2, 30))
+>resolve : Symbol(resolve, Decl(signatures.ts, 0, 50))
+>T : Symbol(T, Decl(signatures.ts, 2, 23))
+
+export const signatures = maybe<{
+>signatures : Symbol(signatures, Decl(signatures.ts, 4, 12))
+>maybe : Symbol(maybe, Decl(signatures.ts, 1, 81))
+
+    next: "ref";
+>next : Symbol(next, Decl(signatures.ts, 4, 33))
+
+    identity: <T>(value: T) => T;
+>identity : Symbol(identity, Decl(signatures.ts, 5, 16))
+>T : Symbol(T, Decl(signatures.ts, 6, 15))
+>value : Symbol(value, Decl(signatures.ts, 6, 18))
+>T : Symbol(T, Decl(signatures.ts, 6, 15))
+>T : Symbol(T, Decl(signatures.ts, 6, 15))
+
+    unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;
+>unwrap : Symbol(unwrap, Decl(signatures.ts, 6, 33))
+>T : Symbol(T, Decl(signatures.ts, 7, 13))
+>value : Symbol(value, Decl(signatures.ts, 7, 16))
+>T : Symbol(T, Decl(signatures.ts, 7, 13))
+>T : Symbol(T, Decl(signatures.ts, 7, 13))
+>U : Symbol(U, Decl(signatures.ts, 7, 54))
+>U : Symbol(U, Decl(signatures.ts, 7, 54))
+>T : Symbol(T, Decl(signatures.ts, 7, 13))
+
+    copy: <T>(value: T) => { [K in keyof T]: T[K] };
+>copy : Symbol(copy, Decl(signatures.ts, 7, 68))
+>T : Symbol(T, Decl(signatures.ts, 8, 11))
+>value : Symbol(value, Decl(signatures.ts, 8, 14))
+>T : Symbol(T, Decl(signatures.ts, 8, 11))
+>K : Symbol(K, Decl(signatures.ts, 8, 30))
+>T : Symbol(T, Decl(signatures.ts, 8, 11))
+>T : Symbol(T, Decl(signatures.ts, 8, 11))
+>K : Symbol(K, Decl(signatures.ts, 8, 30))
+
+}>();
+
+=== collisions.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(collisions.ts, 0, 0))
+>T : Symbol(T, Decl(collisions.ts, 0, 10))
+>K : Symbol(K, Decl(collisions.ts, 0, 18))
+>T : Symbol(T, Decl(collisions.ts, 0, 10))
+>T : Symbol(T, Decl(collisions.ts, 0, 10))
+>K : Symbol(K, Decl(collisions.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(collisions.ts, 0, 50))
+>T : Symbol(T, Decl(collisions.ts, 1, 13))
+>show : Symbol(show, Decl(collisions.ts, 0, 0))
+>P : Symbol(P, Decl(collisions.ts, 1, 26))
+>T : Symbol(T, Decl(collisions.ts, 1, 13))
+>P : Symbol(P, Decl(collisions.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(collisions.ts, 0, 50))
+>T : Symbol(T, Decl(collisions.ts, 1, 13))
+>T : Symbol(T, Decl(collisions.ts, 1, 13))
+>P : Symbol(P, Decl(collisions.ts, 1, 26))
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : Symbol(maybe, Decl(collisions.ts, 1, 81))
+>T : Symbol(T, Decl(collisions.ts, 2, 23))
+>node : Symbol(node, Decl(collisions.ts, 2, 30))
+>resolve : Symbol(resolve, Decl(collisions.ts, 0, 50))
+>T : Symbol(T, Decl(collisions.ts, 2, 23))
+
+export interface collision_1 {
+>collision_1 : Symbol(collision_1, Decl(collisions.ts, 2, 51))
+
+    occupied: true;
+>occupied : Symbol(collision_1.occupied, Decl(collisions.ts, 4, 30))
+}
+export const collision = maybe<{ next: "ref" }>();
+>collision : Symbol(collision, Decl(collisions.ts, 7, 12))
+>maybe : Symbol(maybe, Decl(collisions.ts, 1, 81))
+>next : Symbol(next, Decl(collisions.ts, 7, 32))
+
+=== symbols.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(symbols.ts, 0, 0))
+>T : Symbol(T, Decl(symbols.ts, 0, 10))
+>K : Symbol(K, Decl(symbols.ts, 0, 18))
+>T : Symbol(T, Decl(symbols.ts, 0, 10))
+>T : Symbol(T, Decl(symbols.ts, 0, 10))
+>K : Symbol(K, Decl(symbols.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(symbols.ts, 0, 50))
+>T : Symbol(T, Decl(symbols.ts, 1, 13))
+>show : Symbol(show, Decl(symbols.ts, 0, 0))
+>P : Symbol(P, Decl(symbols.ts, 1, 26))
+>T : Symbol(T, Decl(symbols.ts, 1, 13))
+>P : Symbol(P, Decl(symbols.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(symbols.ts, 0, 50))
+>T : Symbol(T, Decl(symbols.ts, 1, 13))
+>T : Symbol(T, Decl(symbols.ts, 1, 13))
+>P : Symbol(P, Decl(symbols.ts, 1, 26))
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : Symbol(maybe, Decl(symbols.ts, 1, 81))
+>T : Symbol(T, Decl(symbols.ts, 2, 23))
+>node : Symbol(node, Decl(symbols.ts, 2, 30))
+>resolve : Symbol(resolve, Decl(symbols.ts, 0, 50))
+>T : Symbol(T, Decl(symbols.ts, 2, 23))
+
+export declare const key: unique symbol;
+>key : Symbol(key, Decl(symbols.ts, 4, 20))
+
+export const keyed = maybe<{ next: "ref"; [key]: number }>();
+>keyed : Symbol(keyed, Decl(symbols.ts, 5, 12))
+>maybe : Symbol(maybe, Decl(symbols.ts, 1, 81))
+>next : Symbol(next, Decl(symbols.ts, 5, 28))
+>[key] : Symbol([key], Decl(symbols.ts, 5, 41))
+>key : Symbol(key, Decl(symbols.ts, 4, 20))
+
+=== payload.ts ===
+export interface Payload {
+>Payload : Symbol(Payload, Decl(payload.ts, 0, 0))
+
+    name: string;
+>name : Symbol(Payload.name, Decl(payload.ts, 0, 26))
+}
+
+=== imported.ts ===
+import { Payload as Input } from "./payload";
+>Payload : Symbol(Input, Decl(payload.ts, 0, 0))
+>Input : Symbol(Input, Decl(imported.ts, 0, 8))
+
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(imported.ts, 0, 45))
+>T : Symbol(T, Decl(imported.ts, 1, 10))
+>K : Symbol(K, Decl(imported.ts, 1, 18))
+>T : Symbol(T, Decl(imported.ts, 1, 10))
+>T : Symbol(T, Decl(imported.ts, 1, 10))
+>K : Symbol(K, Decl(imported.ts, 1, 18))
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(imported.ts, 1, 50))
+>T : Symbol(T, Decl(imported.ts, 2, 13))
+>show : Symbol(show, Decl(imported.ts, 0, 45))
+>P : Symbol(P, Decl(imported.ts, 2, 26))
+>T : Symbol(T, Decl(imported.ts, 2, 13))
+>P : Symbol(P, Decl(imported.ts, 2, 26))
+>resolve : Symbol(resolve, Decl(imported.ts, 1, 50))
+>T : Symbol(T, Decl(imported.ts, 2, 13))
+>T : Symbol(T, Decl(imported.ts, 2, 13))
+>P : Symbol(P, Decl(imported.ts, 2, 26))
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : Symbol(maybe, Decl(imported.ts, 2, 81))
+>T : Symbol(T, Decl(imported.ts, 3, 23))
+>node : Symbol(node, Decl(imported.ts, 3, 30))
+>resolve : Symbol(resolve, Decl(imported.ts, 1, 50))
+>T : Symbol(T, Decl(imported.ts, 3, 23))
+
+export const imported = maybe<{ value: Input; next: "ref" }>();
+>imported : Symbol(imported, Decl(imported.ts, 5, 12))
+>maybe : Symbol(maybe, Decl(imported.ts, 2, 81))
+>value : Symbol(value, Decl(imported.ts, 5, 31))
+>Input : Symbol(Input, Decl(imported.ts, 0, 8))
+>next : Symbol(next, Decl(imported.ts, 5, 45))
+
+=== recursiveArray.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(recursiveArray.ts, 0, 0))
+>T : Symbol(T, Decl(recursiveArray.ts, 0, 10))
+>K : Symbol(K, Decl(recursiveArray.ts, 0, 18))
+>T : Symbol(T, Decl(recursiveArray.ts, 0, 10))
+>T : Symbol(T, Decl(recursiveArray.ts, 0, 10))
+>K : Symbol(K, Decl(recursiveArray.ts, 0, 18))
+
+function source() {
+>source : Symbol(source, Decl(recursiveArray.ts, 0, 50))
+
+    type Local = show<{ next: Local[] }>;
+>Local : Symbol(Local, Decl(recursiveArray.ts, 1, 19))
+>show : Symbol(show, Decl(recursiveArray.ts, 0, 0))
+>next : Symbol(next, Decl(recursiveArray.ts, 2, 23))
+>Local : Symbol(Local, Decl(recursiveArray.ts, 1, 19))
+
+    return null as unknown as Local["next"];
+>Local : Symbol(Local, Decl(recursiveArray.ts, 1, 19))
+}
+
+export const nodes = source();
+>nodes : Symbol(nodes, Decl(recursiveArray.ts, 6, 12))
+>source : Symbol(source, Decl(recursiveArray.ts, 0, 50))
+
+=== shadowedAnchor.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(shadowedAnchor.ts, 0, 0))
+>T : Symbol(T, Decl(shadowedAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(shadowedAnchor.ts, 0, 18))
+>T : Symbol(T, Decl(shadowedAnchor.ts, 0, 10))
+>T : Symbol(T, Decl(shadowedAnchor.ts, 0, 10))
+>K : Symbol(K, Decl(shadowedAnchor.ts, 0, 18))
+
+type resolve<T> = show<{ value: T; read: (node: string) => resolve<T> }>;
+>resolve : Symbol(resolve, Decl(shadowedAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(shadowedAnchor.ts, 1, 13))
+>show : Symbol(show, Decl(shadowedAnchor.ts, 0, 0))
+>value : Symbol(value, Decl(shadowedAnchor.ts, 1, 24))
+>T : Symbol(T, Decl(shadowedAnchor.ts, 1, 13))
+>read : Symbol(read, Decl(shadowedAnchor.ts, 1, 34))
+>node : Symbol(node, Decl(shadowedAnchor.ts, 1, 42))
+>resolve : Symbol(resolve, Decl(shadowedAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(shadowedAnchor.ts, 1, 13))
+
+declare function mod<T>(): resolve<T>;
+>mod : Symbol(mod, Decl(shadowedAnchor.ts, 1, 73))
+>T : Symbol(T, Decl(shadowedAnchor.ts, 2, 21))
+>resolve : Symbol(resolve, Decl(shadowedAnchor.ts, 0, 50))
+>T : Symbol(T, Decl(shadowedAnchor.ts, 2, 21))
+
+export const node = mod<number>();
+>node : Symbol(node, Decl(shadowedAnchor.ts, 4, 12))
+>mod : Symbol(mod, Decl(shadowedAnchor.ts, 1, 73))
+
+=== classAnchor.ts ===
+export const ctor = class Inner {
+>ctor : Symbol(ctor, Decl(classAnchor.ts, 0, 12))
+>Inner : Symbol(Inner, Decl(classAnchor.ts, 0, 19))
+
+    next(): Inner {
+>next : Symbol(Inner.next, Decl(classAnchor.ts, 0, 33))
+>Inner : Symbol(Inner, Decl(classAnchor.ts, 0, 19))
+
+        return this;
+>this : Symbol(Inner, Decl(classAnchor.ts, 0, 19))
+    }
+};
+
+=== instantiations.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(instantiations.ts, 0, 0))
+>T : Symbol(T, Decl(instantiations.ts, 0, 10))
+>K : Symbol(K, Decl(instantiations.ts, 0, 18))
+>T : Symbol(T, Decl(instantiations.ts, 0, 10))
+>T : Symbol(T, Decl(instantiations.ts, 0, 10))
+>K : Symbol(K, Decl(instantiations.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(instantiations.ts, 0, 50))
+>T : Symbol(T, Decl(instantiations.ts, 1, 13))
+>show : Symbol(show, Decl(instantiations.ts, 0, 0))
+>P : Symbol(P, Decl(instantiations.ts, 1, 26))
+>T : Symbol(T, Decl(instantiations.ts, 1, 13))
+>T : Symbol(T, Decl(instantiations.ts, 1, 13))
+>P : Symbol(P, Decl(instantiations.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(instantiations.ts, 0, 50))
+>T : Symbol(T, Decl(instantiations.ts, 1, 13))
+>T : Symbol(T, Decl(instantiations.ts, 1, 13))
+>P : Symbol(P, Decl(instantiations.ts, 1, 26))
+
+declare function mod<T>(): resolve<T>;
+>mod : Symbol(mod, Decl(instantiations.ts, 1, 83))
+>T : Symbol(T, Decl(instantiations.ts, 2, 21))
+>resolve : Symbol(resolve, Decl(instantiations.ts, 0, 50))
+>T : Symbol(T, Decl(instantiations.ts, 2, 21))
+
+export const numbers = mod<{ value: number; next: "ref" }>();
+>numbers : Symbol(numbers, Decl(instantiations.ts, 4, 12))
+>mod : Symbol(mod, Decl(instantiations.ts, 1, 83))
+>value : Symbol(value, Decl(instantiations.ts, 4, 28))
+>next : Symbol(next, Decl(instantiations.ts, 4, 43))
+
+export const strings = mod<{ value: string; next: "ref" }>();
+>strings : Symbol(strings, Decl(instantiations.ts, 5, 12))
+>mod : Symbol(mod, Decl(instantiations.ts, 1, 83))
+>value : Symbol(value, Decl(instantiations.ts, 5, 28))
+>next : Symbol(next, Decl(instantiations.ts, 5, 43))
+
+export const numbersAgain = mod<{ value: number; next: "ref" }>();
+>numbersAgain : Symbol(numbersAgain, Decl(instantiations.ts, 6, 12))
+>mod : Symbol(mod, Decl(instantiations.ts, 1, 83))
+>value : Symbol(value, Decl(instantiations.ts, 6, 33))
+>next : Symbol(next, Decl(instantiations.ts, 6, 48))
+
+=== cacheSiblings.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(cacheSiblings.ts, 0, 0))
+>T : Symbol(T, Decl(cacheSiblings.ts, 0, 10))
+>K : Symbol(K, Decl(cacheSiblings.ts, 0, 18))
+>T : Symbol(T, Decl(cacheSiblings.ts, 0, 10))
+>T : Symbol(T, Decl(cacheSiblings.ts, 0, 10))
+>K : Symbol(K, Decl(cacheSiblings.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(cacheSiblings.ts, 0, 50))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>show : Symbol(show, Decl(cacheSiblings.ts, 0, 0))
+>P : Symbol(P, Decl(cacheSiblings.ts, 1, 26))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>P : Symbol(P, Decl(cacheSiblings.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(cacheSiblings.ts, 0, 50))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>T : Symbol(T, Decl(cacheSiblings.ts, 1, 13))
+>P : Symbol(P, Decl(cacheSiblings.ts, 1, 26))
+
+declare function batch<T>(): {
+>batch : Symbol(batch, Decl(cacheSiblings.ts, 1, 83))
+>T : Symbol(T, Decl(cacheSiblings.ts, 2, 23))
+
+    first?: resolve<T>;
+>first : Symbol(first, Decl(cacheSiblings.ts, 2, 30))
+>resolve : Symbol(resolve, Decl(cacheSiblings.ts, 0, 50))
+>T : Symbol(T, Decl(cacheSiblings.ts, 2, 23))
+
+    second: { node: resolve<T>; leaf: { value: string; nested: { id: number } } };
+>second : Symbol(second, Decl(cacheSiblings.ts, 3, 23))
+>node : Symbol(node, Decl(cacheSiblings.ts, 4, 13))
+>resolve : Symbol(resolve, Decl(cacheSiblings.ts, 0, 50))
+>T : Symbol(T, Decl(cacheSiblings.ts, 2, 23))
+>leaf : Symbol(leaf, Decl(cacheSiblings.ts, 4, 31))
+>value : Symbol(value, Decl(cacheSiblings.ts, 4, 39))
+>nested : Symbol(nested, Decl(cacheSiblings.ts, 4, 54))
+>id : Symbol(id, Decl(cacheSiblings.ts, 4, 64))
+
+    leaf: { value: string; nested: { id: number } };
+>leaf : Symbol(leaf, Decl(cacheSiblings.ts, 4, 82))
+>value : Symbol(value, Decl(cacheSiblings.ts, 5, 11))
+>nested : Symbol(nested, Decl(cacheSiblings.ts, 5, 26))
+>id : Symbol(id, Decl(cacheSiblings.ts, 5, 36))
+
+};
+
+export const mixed = batch<{ value: number; next: "ref" }>();
+>mixed : Symbol(mixed, Decl(cacheSiblings.ts, 8, 12))
+>batch : Symbol(batch, Decl(cacheSiblings.ts, 1, 83))
+>value : Symbol(value, Decl(cacheSiblings.ts, 8, 28))
+>next : Symbol(next, Decl(cacheSiblings.ts, 8, 43))
+
+export const mixedAgain = batch<{ value: number; next: "ref" }>();
+>mixedAgain : Symbol(mixedAgain, Decl(cacheSiblings.ts, 9, 12))
+>batch : Symbol(batch, Decl(cacheSiblings.ts, 1, 83))
+>value : Symbol(value, Decl(cacheSiblings.ts, 9, 33))
+>next : Symbol(next, Decl(cacheSiblings.ts, 9, 48))
+
+=== helperNames.ts ===
+export function makePair() {
+>makePair : Symbol(makePair, Decl(helperNames.ts, 0, 0))
+
+    type Left = readonly [number, Left];
+>Left : Symbol(Left, Decl(helperNames.ts, 0, 28))
+>Left : Symbol(Left, Decl(helperNames.ts, 0, 28))
+
+    type Right = readonly [string, Right];
+>Right : Symbol(Right, Decl(helperNames.ts, 1, 40))
+>Right : Symbol(Right, Decl(helperNames.ts, 1, 40))
+
+    return { left: null as unknown as Left, right: null as unknown as Right };
+>left : Symbol(left, Decl(helperNames.ts, 3, 12))
+>Left : Symbol(Left, Decl(helperNames.ts, 0, 28))
+>right : Symbol(right, Decl(helperNames.ts, 3, 43))
+>Right : Symbol(Right, Decl(helperNames.ts, 1, 40))
+}
+export function other() {
+>other : Symbol(other, Decl(helperNames.ts, 4, 1))
+
+    type Local = readonly [boolean, Local];
+>Local : Symbol(Local, Decl(helperNames.ts, 5, 25))
+>Local : Symbol(Local, Decl(helperNames.ts, 5, 25))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(helperNames.ts, 5, 25))
+}
+
+=== helperNameCollisions.ts ===
+export interface makePair_1 { occupied: true; }
+>makePair_1 : Symbol(makePair_1, Decl(helperNameCollisions.ts, 0, 0))
+>occupied : Symbol(makePair_1.occupied, Decl(helperNameCollisions.ts, 0, 29))
+
+export const makePair_2 = 0;
+>makePair_2 : Symbol(makePair_2, Decl(helperNameCollisions.ts, 1, 12))
+
+export function makePair() {
+>makePair : Symbol(makePair, Decl(helperNameCollisions.ts, 1, 28))
+
+    type Left = readonly [number, Left];
+>Left : Symbol(Left, Decl(helperNameCollisions.ts, 2, 28))
+>Left : Symbol(Left, Decl(helperNameCollisions.ts, 2, 28))
+
+    type Right = readonly [string, Right];
+>Right : Symbol(Right, Decl(helperNameCollisions.ts, 3, 40))
+>Right : Symbol(Right, Decl(helperNameCollisions.ts, 3, 40))
+
+    return { left: null as unknown as Left, right: null as unknown as Right };
+>left : Symbol(left, Decl(helperNameCollisions.ts, 5, 12))
+>Left : Symbol(Left, Decl(helperNameCollisions.ts, 2, 28))
+>right : Symbol(right, Decl(helperNameCollisions.ts, 5, 43))
+>Right : Symbol(Right, Decl(helperNameCollisions.ts, 3, 40))
+}
+
+=== defaultValue.ts ===
+function source() {
+>source : Symbol(source, Decl(defaultValue.ts, 0, 0))
+
+    type Local = readonly [number, Local];
+>Local : Symbol(Local, Decl(defaultValue.ts, 0, 19))
+>Local : Symbol(Local, Decl(defaultValue.ts, 0, 19))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(defaultValue.ts, 0, 19))
+}
+
+export default source();
+>source : Symbol(source, Decl(defaultValue.ts, 0, 0))
+
+=== defaultFunction.ts ===
+export default function () {
+    type Local = readonly [string, Local];
+>Local : Symbol(Local, Decl(defaultFunction.ts, 0, 28))
+>Local : Symbol(Local, Decl(defaultFunction.ts, 0, 28))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(defaultFunction.ts, 0, 28))
+}
+
+=== acyclic.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(acyclic.ts, 0, 0))
+>T : Symbol(T, Decl(acyclic.ts, 0, 10))
+>K : Symbol(K, Decl(acyclic.ts, 0, 18))
+>T : Symbol(T, Decl(acyclic.ts, 0, 10))
+>T : Symbol(T, Decl(acyclic.ts, 0, 10))
+>K : Symbol(K, Decl(acyclic.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(acyclic.ts, 0, 50))
+>T : Symbol(T, Decl(acyclic.ts, 1, 13))
+>show : Symbol(show, Decl(acyclic.ts, 0, 0))
+>P : Symbol(P, Decl(acyclic.ts, 1, 26))
+>T : Symbol(T, Decl(acyclic.ts, 1, 13))
+>T : Symbol(T, Decl(acyclic.ts, 1, 13))
+>P : Symbol(P, Decl(acyclic.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(acyclic.ts, 0, 50))
+>T : Symbol(T, Decl(acyclic.ts, 1, 13))
+>T : Symbol(T, Decl(acyclic.ts, 1, 13))
+>P : Symbol(P, Decl(acyclic.ts, 1, 26))
+
+declare function mod<T>(): resolve<T>;
+>mod : Symbol(mod, Decl(acyclic.ts, 1, 83))
+>T : Symbol(T, Decl(acyclic.ts, 2, 21))
+>resolve : Symbol(resolve, Decl(acyclic.ts, 0, 50))
+>T : Symbol(T, Decl(acyclic.ts, 2, 21))
+
+export const leaf = mod<{ value: number; next: null }>();
+>leaf : Symbol(leaf, Decl(acyclic.ts, 4, 12))
+>mod : Symbol(mod, Decl(acyclic.ts, 1, 83))
+>value : Symbol(value, Decl(acyclic.ts, 4, 25))
+>next : Symbol(next, Decl(acyclic.ts, 4, 40))
+
+export const siblings = {
+>siblings : Symbol(siblings, Decl(acyclic.ts, 5, 12))
+
+    left: mod<{ value: number; next: null }>(),
+>left : Symbol(left, Decl(acyclic.ts, 5, 25))
+>mod : Symbol(mod, Decl(acyclic.ts, 1, 83))
+>value : Symbol(value, Decl(acyclic.ts, 6, 15))
+>next : Symbol(next, Decl(acyclic.ts, 6, 30))
+
+    right: mod<{ value: number; next: null }>(),
+>right : Symbol(right, Decl(acyclic.ts, 6, 47))
+>mod : Symbol(mod, Decl(acyclic.ts, 1, 83))
+>value : Symbol(value, Decl(acyclic.ts, 7, 16))
+>next : Symbol(next, Decl(acyclic.ts, 7, 31))
+
+};
+export const finite = mod<{ value: number[][][] }>();
+>finite : Symbol(finite, Decl(acyclic.ts, 9, 12))
+>mod : Symbol(mod, Decl(acyclic.ts, 1, 83))
+>value : Symbol(value, Decl(acyclic.ts, 9, 27))
+
+export interface Named {
+>Named : Symbol(Named, Decl(acyclic.ts, 9, 53))
+
+    value: number;
+>value : Symbol(Named.value, Decl(acyclic.ts, 11, 24))
+
+    next: Named;
+>next : Symbol(Named.next, Decl(acyclic.ts, 12, 18))
+>Named : Symbol(Named, Decl(acyclic.ts, 9, 53))
+}
+declare const source: Named;
+>source : Symbol(source, Decl(acyclic.ts, 15, 13))
+>Named : Symbol(Named, Decl(acyclic.ts, 9, 53))
+
+export const named = source;
+>named : Symbol(named, Decl(acyclic.ts, 16, 12))
+>source : Symbol(source, Decl(acyclic.ts, 15, 13))
+
+=== existingReferences.ts ===
+export const arrow = () => arrow;
+>arrow : Symbol(arrow, Decl(existingReferences.ts, 0, 12))
+>arrow : Symbol(arrow, Decl(existingReferences.ts, 0, 12))
+
+export const quoted = { "a-b": () => quoted["a-b"] };
+>quoted : Symbol(quoted, Decl(existingReferences.ts, 1, 12))
+>"a-b" : Symbol("a-b", Decl(existingReferences.ts, 1, 23))
+>quoted : Symbol(quoted, Decl(existingReferences.ts, 1, 12))
+>"a-b" : Symbol("a-b", Decl(existingReferences.ts, 1, 23))
+
+export const tuple = [() => tuple[0]] as const;
+>tuple : Symbol(tuple, Decl(existingReferences.ts, 2, 12))
+>tuple : Symbol(tuple, Decl(existingReferences.ts, 2, 12))
+>0 : Symbol(0)
+>const : Symbol(const)
+
+function source() {
+>source : Symbol(source, Decl(existingReferences.ts, 2, 47))
+
+    type Local = readonly [number, Local];
+>Local : Symbol(Local, Decl(existingReferences.ts, 4, 19))
+>Local : Symbol(Local, Decl(existingReferences.ts, 4, 19))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(existingReferences.ts, 4, 19))
+}
+export const mixed = {
+>mixed : Symbol(mixed, Decl(existingReferences.ts, 8, 12))
+
+    named: () => mixed.named,
+>named : Symbol(named, Decl(existingReferences.ts, 8, 22))
+>mixed.named : Symbol(named, Decl(existingReferences.ts, 8, 22))
+>mixed : Symbol(mixed, Decl(existingReferences.ts, 8, 12))
+>named : Symbol(named, Decl(existingReferences.ts, 8, 22))
+
+    anonymous: source(),
+>anonymous : Symbol(anonymous, Decl(existingReferences.ts, 9, 29))
+>source : Symbol(source, Decl(existingReferences.ts, 2, 47))
+
+};
+
+export const factory = () => function self() { return self; };
+>factory : Symbol(factory, Decl(existingReferences.ts, 13, 12))
+>self : Symbol(self, Decl(existingReferences.ts, 13, 28))
+>self : Symbol(self, Decl(existingReferences.ts, 13, 28))
+
+export function local() {
+>local : Symbol(local, Decl(existingReferences.ts, 13, 62))
+
+    function recur() { return recur; }
+>recur : Symbol(recur, Decl(existingReferences.ts, 14, 25))
+>recur : Symbol(recur, Decl(existingReferences.ts, 14, 25))
+
+    return recur;
+>recur : Symbol(recur, Decl(existingReferences.ts, 14, 25))
+}
+
+=== sharedMembers.ts ===
+export class Shared {
+>Shared : Symbol(Shared, Decl(sharedMembers.ts, 0, 0))
+
+    protected next() { return this.next; }
+>next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+>this.next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+>this : Symbol(Shared, Decl(sharedMembers.ts, 0, 0))
+>next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+
+    first() { return this.next; }
+>first : Symbol(Shared.first, Decl(sharedMembers.ts, 1, 42))
+>this.next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+>this : Symbol(Shared, Decl(sharedMembers.ts, 0, 0))
+>next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+
+    second() { return this.next; }
+>second : Symbol(Shared.second, Decl(sharedMembers.ts, 2, 33))
+>this.next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+>this : Symbol(Shared, Decl(sharedMembers.ts, 0, 0))
+>next : Symbol(Shared.next, Decl(sharedMembers.ts, 0, 21))
+}
+
+function source<T>() {
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+>T : Symbol(T, Decl(sharedMembers.ts, 6, 16))
+
+    type Local = readonly [T, Local];
+>Local : Symbol(Local, Decl(sharedMembers.ts, 6, 22))
+>T : Symbol(T, Decl(sharedMembers.ts, 6, 16))
+>Local : Symbol(Local, Decl(sharedMembers.ts, 6, 22))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(sharedMembers.ts, 6, 22))
+}
+export class Instantiations {
+>Instantiations : Symbol(Instantiations, Decl(sharedMembers.ts, 9, 1))
+
+    numbers() { return source<number>(); }
+>numbers : Symbol(Instantiations.numbers, Decl(sharedMembers.ts, 10, 29))
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+
+    numbersAgain() { return source<number>(); }
+>numbersAgain : Symbol(Instantiations.numbersAgain, Decl(sharedMembers.ts, 11, 42))
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+
+    strings() { return source<string>(); }
+>strings : Symbol(Instantiations.strings, Decl(sharedMembers.ts, 12, 47))
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+
+    stringsAgain() { return source<string>(); }
+>stringsAgain : Symbol(Instantiations.stringsAgain, Decl(sharedMembers.ts, 13, 42))
+>source : Symbol(source, Decl(sharedMembers.ts, 4, 1))
+}
+

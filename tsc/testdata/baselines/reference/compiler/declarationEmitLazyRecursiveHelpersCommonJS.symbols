@@ -1,0 +1,49 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpersCommonJS.ts] ////
+
+=== mod.js ===
+var NS = {};
+>NS : Symbol(NS, Decl(mod.js, 0, 3))
+
+NS.K = class {
+>NS.K : Symbol(K, Decl(mod.js, 0, 12))
+>NS : Symbol(NS, Decl(mod.js, 0, 3))
+>K : Symbol(K, Decl(mod.js, 0, 12))
+
+    value = 1;
+>value : Symbol(K.value, Decl(mod.js, 1, 14))
+
+    values() {
+>values : Symbol(K.values, Decl(mod.js, 2, 14))
+
+        return new NS.K();
+>NS.K : Symbol(K, Decl(mod.js, 0, 12))
+>NS : Symbol(NS, Decl(mod.js, 0, 3))
+>K : Symbol(K, Decl(mod.js, 0, 12))
+    }
+};
+exports.K = NS.K;
+>exports.K : Symbol(K, Decl(mod.js, 6, 2))
+>exports : Symbol(exports, Decl(mod.js, 0, 0))
+>K : Symbol(K, Decl(mod.js, 6, 2))
+>NS.K : Symbol(K, Decl(mod.js, 0, 12))
+>NS : Symbol(NS, Decl(mod.js, 0, 3))
+>K : Symbol(K, Decl(mod.js, 0, 12))
+
+=== consumer.ts ===
+import { K } from "./mod";
+>K : Symbol(K, Decl(consumer.ts, 0, 8))
+
+// @ts-expect-error
+import type { K_1 } from "./mod";
+>K_1 : Symbol(K_1, Decl(consumer.ts, 2, 13))
+
+const value: number = new K().values().values().value;
+>value : Symbol(value, Decl(consumer.ts, 3, 5))
+>new K().values().values().value : Symbol(K.value, Decl(mod.js, 1, 14))
+>new K().values().values : Symbol(K.values, Decl(mod.js, 2, 14))
+>new K().values : Symbol(K.values, Decl(mod.js, 2, 14))
+>K : Symbol(K, Decl(consumer.ts, 0, 8))
+>values : Symbol(K.values, Decl(mod.js, 2, 14))
+>values : Symbol(K.values, Decl(mod.js, 2, 14))
+>value : Symbol(K.value, Decl(mod.js, 1, 14))
+

@@ -1,0 +1,150 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpersScopedTypes.ts] ////
+
+=== generic.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(generic.ts, 0, 0))
+>T : Symbol(T, Decl(generic.ts, 0, 10))
+>K : Symbol(K, Decl(generic.ts, 0, 18))
+>T : Symbol(T, Decl(generic.ts, 0, 10))
+>T : Symbol(T, Decl(generic.ts, 0, 10))
+>K : Symbol(K, Decl(generic.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(generic.ts, 0, 50))
+>T : Symbol(T, Decl(generic.ts, 1, 13))
+>show : Symbol(show, Decl(generic.ts, 0, 0))
+>P : Symbol(P, Decl(generic.ts, 1, 26))
+>T : Symbol(T, Decl(generic.ts, 1, 13))
+>P : Symbol(P, Decl(generic.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(generic.ts, 0, 50))
+>T : Symbol(T, Decl(generic.ts, 1, 13))
+>T : Symbol(T, Decl(generic.ts, 1, 13))
+>P : Symbol(P, Decl(generic.ts, 1, 26))
+
+declare function mod<T>(): resolve<T>;
+>mod : Symbol(mod, Decl(generic.ts, 1, 81))
+>T : Symbol(T, Decl(generic.ts, 2, 21))
+>resolve : Symbol(resolve, Decl(generic.ts, 0, 50))
+>T : Symbol(T, Decl(generic.ts, 2, 21))
+
+export function make<T extends { id: string }>(value: T) {
+>make : Symbol(make, Decl(generic.ts, 2, 38))
+>T : Symbol(T, Decl(generic.ts, 4, 21))
+>id : Symbol(id, Decl(generic.ts, 4, 32))
+>value : Symbol(value, Decl(generic.ts, 4, 47))
+>T : Symbol(T, Decl(generic.ts, 4, 21))
+
+    return { node: mod<{ value: T; next: "ref" }>(), label: value.id };
+>node : Symbol(node, Decl(generic.ts, 5, 12))
+>mod : Symbol(mod, Decl(generic.ts, 1, 81))
+>value : Symbol(value, Decl(generic.ts, 5, 24))
+>T : Symbol(T, Decl(generic.ts, 4, 21))
+>next : Symbol(next, Decl(generic.ts, 5, 34))
+>label : Symbol(label, Decl(generic.ts, 5, 52))
+>value.id : Symbol(id, Decl(generic.ts, 4, 32))
+>value : Symbol(value, Decl(generic.ts, 4, 47))
+>id : Symbol(id, Decl(generic.ts, 4, 32))
+}
+
+export function factory() {
+>factory : Symbol(factory, Decl(generic.ts, 6, 1))
+
+    return <T>(value: T) => mod<{ value: T; next: "ref" }>();
+>T : Symbol(T, Decl(generic.ts, 9, 12))
+>value : Symbol(value, Decl(generic.ts, 9, 15))
+>T : Symbol(T, Decl(generic.ts, 9, 12))
+>mod : Symbol(mod, Decl(generic.ts, 1, 81))
+>value : Symbol(value, Decl(generic.ts, 9, 33))
+>T : Symbol(T, Decl(generic.ts, 9, 12))
+>next : Symbol(next, Decl(generic.ts, 9, 43))
+}
+
+=== nested.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(nested.ts, 0, 0))
+>T : Symbol(T, Decl(nested.ts, 0, 10))
+>K : Symbol(K, Decl(nested.ts, 0, 18))
+>T : Symbol(T, Decl(nested.ts, 0, 10))
+>T : Symbol(T, Decl(nested.ts, 0, 10))
+>K : Symbol(K, Decl(nested.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(nested.ts, 0, 50))
+>T : Symbol(T, Decl(nested.ts, 1, 13))
+>show : Symbol(show, Decl(nested.ts, 0, 0))
+>P : Symbol(P, Decl(nested.ts, 1, 26))
+>T : Symbol(T, Decl(nested.ts, 1, 13))
+>P : Symbol(P, Decl(nested.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(nested.ts, 0, 50))
+>T : Symbol(T, Decl(nested.ts, 1, 13))
+>T : Symbol(T, Decl(nested.ts, 1, 13))
+>P : Symbol(P, Decl(nested.ts, 1, 26))
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : Symbol(maybe, Decl(nested.ts, 1, 81))
+>T : Symbol(T, Decl(nested.ts, 2, 23))
+>node : Symbol(node, Decl(nested.ts, 2, 30))
+>resolve : Symbol(resolve, Decl(nested.ts, 0, 50))
+>T : Symbol(T, Decl(nested.ts, 2, 23))
+
+export function nested<T>() {
+>nested : Symbol(nested, Decl(nested.ts, 2, 51))
+>T : Symbol(T, Decl(nested.ts, 4, 23))
+
+    return maybe<{ next: "ref"; read: <U>(value: U) => T }>();
+>maybe : Symbol(maybe, Decl(nested.ts, 1, 81))
+>next : Symbol(next, Decl(nested.ts, 5, 18))
+>read : Symbol(read, Decl(nested.ts, 5, 31))
+>U : Symbol(U, Decl(nested.ts, 5, 39))
+>value : Symbol(value, Decl(nested.ts, 5, 42))
+>U : Symbol(U, Decl(nested.ts, 5, 39))
+>T : Symbol(T, Decl(nested.ts, 4, 23))
+}
+
+export interface Captured {
+>Captured : Symbol(Captured, Decl(nested.ts, 6, 1))
+
+    id: number;
+>id : Symbol(Captured.id, Decl(nested.ts, 8, 27))
+}
+export function shadowed<Captured>() {
+>shadowed : Symbol(shadowed, Decl(nested.ts, 10, 1))
+>Captured : Symbol(Captured, Decl(nested.ts, 11, 25))
+
+    return maybe<{ next: "ref"; value: Captured }>();
+>maybe : Symbol(maybe, Decl(nested.ts, 1, 81))
+>next : Symbol(next, Decl(nested.ts, 12, 18))
+>value : Symbol(value, Decl(nested.ts, 12, 31))
+>Captured : Symbol(Captured, Decl(nested.ts, 11, 25))
+}
+
+=== global.ts ===
+function globalTree() {
+>globalTree : Symbol(globalTree, Decl(global.ts, 0, 0))
+
+    type Local = readonly [number, Local];
+>Local : Symbol(Local, Decl(global.ts, 0, 23))
+>Local : Symbol(Local, Decl(global.ts, 0, 23))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(global.ts, 0, 23))
+}
+
+=== namespace.ts ===
+namespace Generic {
+>Generic : Symbol(Generic, Decl(namespace.ts, 0, 0))
+
+    export function make<T>() {
+>make : Symbol(make, Decl(namespace.ts, 0, 19))
+>T : Symbol(T, Decl(namespace.ts, 1, 25))
+
+        type Local = readonly [T, Local];
+>Local : Symbol(Local, Decl(namespace.ts, 1, 31))
+>T : Symbol(T, Decl(namespace.ts, 1, 25))
+>Local : Symbol(Local, Decl(namespace.ts, 1, 31))
+
+        return null as unknown as Local;
+>Local : Symbol(Local, Decl(namespace.ts, 1, 31))
+    }
+}
+

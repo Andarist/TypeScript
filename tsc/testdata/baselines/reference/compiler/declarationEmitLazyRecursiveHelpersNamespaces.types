@@ -1,0 +1,238 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpersNamespaces.ts] ////
+
+=== globalA.ts ===
+namespace A {
+>A : typeof A
+
+    export function make() {
+>make : () => readonly [number, any]
+
+        type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+        return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+    }
+}
+
+=== globalB.ts ===
+namespace B {
+>B : typeof B
+
+    export function make() {
+>make : () => readonly [string, any]
+
+        type Local = readonly [string, Local];
+>Local : readonly [string, any]
+
+        return null as unknown as Local;
+>null as unknown as Local : readonly [string, any]
+>null as unknown : unknown
+    }
+}
+
+=== mergedA.ts ===
+namespace Shared {
+>Shared : typeof Shared
+
+    interface Payload { value: number; }
+>value : number
+
+    export function numbers() {
+>numbers : () => readonly [Payload, any]
+
+        type Local = readonly [Payload, Local];
+>Local : readonly [Payload, any]
+
+        return null as unknown as Local;
+>null as unknown as Local : readonly [Payload, any]
+>null as unknown : unknown
+    }
+}
+
+=== mergedB.ts ===
+namespace Shared {
+>Shared : typeof Shared
+
+    interface Payload { value: string; }
+>value : string
+
+    export function strings() {
+>strings : () => readonly [Payload, any]
+
+        type Local = readonly [Payload, Local];
+>Local : readonly [Payload, any]
+
+        return null as unknown as Local;
+>null as unknown as Local : readonly [Payload, any]
+>null as unknown : unknown
+    }
+}
+
+=== globalRoot.ts ===
+type globalShow<T> = { [K in keyof T]: T[K] } & unknown;
+>globalShow : { [K in keyof T]: T[K]; }
+
+type globalResolve<T> = globalShow<{
+>globalResolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+    [P in keyof T]: T[P] extends "ref" ? globalResolve<T> : T[P];
+}>;
+declare function globalMod<T>(): { node: globalResolve<T> };
+>globalMod : <T>() => { node: globalResolve<T>; }
+>node : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }[K]; }
+
+const globalRoot = globalMod<{ value: number; next: "ref" }>();
+>globalRoot : { node: { value: number; next: any; }; }
+>globalMod<{ value: number; next: "ref" }>() : { node: { value: number; next: any; }; }
+>globalMod : <T>() => { node: globalResolve<T>; }
+>value : number
+>next : "ref"
+
+=== consumer.ts ===
+const rootValue: number = globalRoot.node.next.value;
+>rootValue : number
+>globalRoot.node.next.value : number
+>globalRoot.node.next : { value: number; next: any; }
+>globalRoot.node : { value: number; next: any; }
+>globalRoot : { node: { value: number; next: any; }; }
+>node : { value: number; next: any; }
+>next : { value: number; next: any; }
+>value : number
+
+const a: number = A.make()[0];
+>a : number
+>A.make()[0] : number
+>A.make() : readonly [number, any]
+>A.make : () => readonly [number, any]
+>A : typeof A
+>make : () => readonly [number, any]
+>0 : 0
+
+const b: string = B.make()[0];
+>b : string
+>B.make()[0] : string
+>B.make() : readonly [string, any]
+>B.make : () => readonly [string, any]
+>B : typeof B
+>make : () => readonly [string, any]
+>0 : 0
+
+const sharedNumber: number = Shared.numbers()[0].value;
+>sharedNumber : number
+>Shared.numbers()[0].value : number
+>Shared.numbers()[0] : Payload
+>Shared.numbers() : readonly [Payload, any]
+>Shared.numbers : () => readonly [Payload, any]
+>Shared : typeof Shared
+>numbers : () => readonly [Payload, any]
+>0 : 0
+>value : number
+
+const sharedString: string = Shared.strings()[0].value;
+>sharedString : string
+>Shared.strings()[0].value : string
+>Shared.strings()[0] : Payload
+>Shared.strings() : readonly [Payload, any]
+>Shared.strings : () => readonly [Payload, any]
+>Shared : typeof Shared
+>strings : () => readonly [Payload, any]
+>0 : 0
+>value : string
+
+=== model.ts ===
+export interface Payload { name: string; }
+>name : string
+
+=== namespaceImport.ts ===
+import * as Model from "./model";
+>Model : typeof Model
+
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+export const result = maybe<{ next: "ref"; value: Model.Payload }>();
+>result : { node?: { next: any; value: Model.Payload; } | undefined; }
+>maybe<{ next: "ref"; value: Model.Payload }>() : { node?: { next: any; value: Model.Payload; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+>value : Model.Payload
+>Model : any
+
+=== namespaceType.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+export namespace N { export interface Payload { name: string; } }
+>name : string
+
+export const result = maybe<{ next: "ref"; value: N.Payload }>();
+>result : { node?: { next: any; value: N.Payload; } | undefined; }
+>maybe<{ next: "ref"; value: N.Payload }>() : { node?: { next: any; value: N.Payload; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+>value : N.Payload
+>N : any
+
+=== sharedScopes.ts ===
+export function sharedSource() {
+>sharedSource : () => readonly [number, any]
+
+    type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+}
+export namespace First {
+>First : typeof First
+
+    export const node = sharedSource();
+>node : readonly [number, any]
+>sharedSource() : readonly [number, any]
+>sharedSource : () => readonly [number, any]
+}
+export namespace Second {
+>Second : typeof Second
+
+    export const node = sharedSource();
+>node : readonly [number, any]
+>sharedSource() : readonly [number, any]
+>sharedSource : () => readonly [number, any]
+}
+const firstNodeValue: number = First.node[1][0];
+>firstNodeValue : number
+>First.node[1][0] : number
+>First.node[1] : readonly [number, any]
+>First.node : readonly [number, any]
+>First : typeof First
+>node : readonly [number, any]
+>1 : 1
+>0 : 0
+
+const secondNodeValue: number = Second.node[1][0];
+>secondNodeValue : number
+>Second.node[1][0] : number
+>Second.node[1] : readonly [number, any]
+>Second.node : readonly [number, any]
+>Second : typeof Second
+>node : readonly [number, any]
+>1 : 1
+>0 : 0
+

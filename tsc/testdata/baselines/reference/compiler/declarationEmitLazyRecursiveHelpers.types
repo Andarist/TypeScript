@@ -1,0 +1,668 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpers.ts] ////
+
+=== self.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<M, K extends keyof M> = show<{
+>resolve : { [P in keyof M[K]]: M[K][P] extends "ref" ? any extends infer T_1 ? { [K_1 in keyof T_1]: T_1[K_1]; } : never : M[K][P]; } extends infer T ? { [K_1 in keyof T]: T[K_1]; } : never
+
+    [P in keyof M[K]]: M[K][P] extends "ref" ? resolve<M, K> : M[K][P];
+}>;
+declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+
+export const n = mod<{ Node: { value: number; next: "ref" } }>();
+>n : { Node: { value: number; next: any; }; }
+>mod<{ Node: { value: number; next: "ref" } }>() : { Node: { value: number; next: any; }; }
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+>Node : { value: number; next: "ref"; }
+>value : number
+>next : "ref"
+
+=== quotedAnchor.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function mod<T>(): { "node": resolve<T> };
+>mod : <T>() => { "node": resolve<T>; }
+>"node" : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }[K]; }
+
+export const quoted = mod<{ next: "ref" }>();
+>quoted : { node: { next: any; }; }
+>mod<{ next: "ref" }>() : { node: { next: any; }; }
+>mod : <T>() => { "node": resolve<T>; }
+>next : "ref"
+
+=== wideAnchor.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+type Bit = "0" | "1";
+>Bit : Bit
+
+type Keys = `${Bit}${Bit}${Bit}${Bit}${Bit}${Bit}${Bit}`;
+>Keys : "0000000" | "0000001" | "0000010" | "0000011" | "0000100" | "0000101" | "0000110" | "0000111" | "0001000" | "0001001" | "0001010" | "0001011" | "0001100" | "0001101" | "0001110" | "0001111" | "0010000" | "0010001" | "0010010" | "0010011" | "0010100" | "0010101" | "0010110" | "0010111" | "0011000" | "0011001" | "0011010" | "0011011" | "0011100" | "0011101" | "0011110" | "0011111" | "0100000" | "0100001" | "0100010" | "0100011" | "0100100" | "0100101" | "0100110" | "0100111" | "0101000" | "0101001" | "0101010" | "0101011" | "0101100" | "0101101" | "0101110" | "0101111" | "0110000" | "0110001" | "0110010" | "0110011" | "0110100" | "0110101" | "0110110" | "0110111" | "0111000" | "0111001" | "0111010" | "0111011" | "0111100" | "0111101" | "0111110" | "0111111" | "1000000" | "1000001" | "1000010" | "1000011" | "1000100" | "1000101" | "1000110" | "1000111" | "1001000" | "1001001" | "1001010" | "1001011" | "1001100" | "1001101" | "1001110" | "1001111" | "1010000" | "1010001" | "1010010" | "1010011" | "1010100" | "1010101" | "1010110" | "1010111" | "1011000" | "1011001" | "1011010" | "1011011" | "1011100" | "1011101" | "1011110" | "1011111" | "1100000" | "1100001" | "1100010" | "1100011" | "1100100" | "1100101" | "1100110" | "1100111" | "1101000" | "1101001" | "1101010" | "1101011" | "1101100" | "1101101" | "1101110" | "1101111" | "1110000" | "1110001" | "1110010" | "1110011" | "1110100" | "1110101" | "1110110" | "1110111" | "1111000" | "1111001" | "1111010" | "1111011" | "1111100" | "1111101" | "1111110" | "1111111"
+
+declare function mod<T>(): { [K in Keys | "node"]: K extends "node" ? resolve<T> : { key: K } };
+>mod : <T>() => { [K in Keys | "node"]: K extends "node" ? resolve<T> : { key: K; }; }
+>key : K
+
+export const wide = mod<{ next: "ref" }>();
+>wide : { "0000000": { key: "0000000"; }; "0000001": { key: "0000001"; }; "0000010": { key: "0000010"; }; "0000011": { key: "0000011"; }; "0000100": { key: "0000100"; }; "0000101": { key: "0000101"; }; "0000110": { key: "0000110"; }; "0000111": { key: "0000111"; }; "0001000": { key: "0001000"; }; "0001001": { key: "0001001"; }; "0001010": { key: "0001010"; }; "0001011": { key: "0001011"; }; "0001100": { key: "0001100"; }; "0001101": { key: "0001101"; }; "0001110": { key: "0001110"; }; "0001111": { key: "0001111"; }; "0010000": { key: "0010000"; }; "0010001": { key: "0010001"; }; "0010010": { key: "0010010"; }; "0010011": { key: "0010011"; }; "0010100": { key: "0010100"; }; "0010101": { key: "0010101"; }; "0010110": { key: "0010110"; }; "0010111": { key: "0010111"; }; "0011000": { key: "0011000"; }; "0011001": { key: "0011001"; }; "0011010": { key: "0011010"; }; "0011011": { key: "0011011"; }; "0011100": { key: "0011100"; }; "0011101": { key: "0011101"; }; "0011110": { key: "0011110"; }; "0011111": { key: "0011111"; }; "0100000": { key: "0100000"; }; "0100001": { key: "0100001"; }; "0100010": { key: "0100010"; }; "0100011": { key: "0100011"; }; "0100100": { key: "0100100"; }; "0100101": { key: "0100101"; }; "0100110": { key: "0100110"; }; "0100111": { key: "0100111"; }; "0101000": { key: "0101000"; }; "0101001": { key: "0101001"; }; "0101010": { key: "0101010"; }; "0101011": { key: "0101011"; }; "0101100": { key: "0101100"; }; "0101101": { key: "0101101"; }; "0101110": { key: "0101110"; }; "0101111": { key: "0101111"; }; "0110000": { key: "0110000"; }; "0110001": { key: "0110001"; }; "0110010": { key: "0110010"; }; "0110011": { key: "0110011"; }; "0110100": { key: "0110100"; }; "0110101": { key: "0110101"; }; "0110110": { key: "0110110"; }; "0110111": { key: "0110111"; }; "0111000": { key: "0111000"; }; "0111001": { key: "0111001"; }; "0111010": { key: "0111010"; }; "0111011": { key: "0111011"; }; "0111100": { key: "0111100"; }; "0111101": { key: "0111101"; }; "0111110": { key: "0111110"; }; "0111111": { key: "0111111"; }; 1000000: { key: "1000000"; }; 1000001: { key: "1000001"; }; 1000010: { key: "1000010"; }; 1000011: { key: "1000011"; }; 1000100: { key: "1000100"; }; 1000101: { key: "1000101"; }; 1000110: { key: "1000110"; }; 1000111: { key: "1000111"; }; 1001000: { key: "1001000"; }; 1001001: { key: "1001001"; }; 1001010: { key: "1001010"; }; 1001011: { key: "1001011"; }; 1001100: { key: "1001100"; }; 1001101: { key: "1001101"; }; 1001110: { key: "1001110"; }; 1001111: { key: "1001111"; }; 1010000: { key: "1010000"; }; 1010001: { key: "1010001"; }; 1010010: { key: "1010010"; }; 1010011: { key: "1010011"; }; 1010100: { key: "1010100"; }; 1010101: { key: "1010101"; }; 1010110: { key: "1010110"; }; 1010111: { key: "1010111"; }; 1011000: { key: "1011000"; }; 1011001: { key: "1011001"; }; 1011010: { key: "1011010"; }; 1011011: { key: "1011011"; }; 1011100: { key: "1011100"; }; 1011101: { key: "1011101"; }; 1011110: { key: "1011110"; }; 1011111: { key: "1011111"; }; 1100000: { key: "1100000"; }; 1100001: { key: "1100001"; }; 1100010: { key: "1100010"; }; 1100011: { key: "1100011"; }; 1100100: { key: "1100100"; }; 1100101: { key: "1100101"; }; 1100110: { key: "1100110"; }; 1100111: { key: "1100111"; }; 1101000: { key: "1101000"; }; 1101001: { key: "1101001"; }; 1101010: { key: "1101010"; }; 1101011: { key: "1101011"; }; 1101100: { key: "1101100"; }; 1101101: { key: "1101101"; }; 1101110: { key: "1101110"; }; 1101111: { key: "1101111"; }; 1110000: { key: "1110000"; }; 1110001: { key: "1110001"; }; 1110010: { key: "1110010"; }; 1110011: { key: "1110011"; }; 1110100: { key: "1110100"; }; 1110101: { key: "1110101"; }; 1110110: { key: "1110110"; }; 1110111: { key: "1110111"; }; 1111000: { key: "1111000"; }; 1111001: { key: "1111001"; }; 1111010: { key: "1111010"; }; 1111011: { key: "1111011"; }; 1111100: { key: "1111100"; }; 1111101: { key: "1111101"; }; 1111110: { key: "1111110"; }; 1111111: { key: "1111111"; }; node: { next: any; }; }
+>mod<{ next: "ref" }>() : { "0000000": { key: "0000000"; }; "0000001": { key: "0000001"; }; "0000010": { key: "0000010"; }; "0000011": { key: "0000011"; }; "0000100": { key: "0000100"; }; "0000101": { key: "0000101"; }; "0000110": { key: "0000110"; }; "0000111": { key: "0000111"; }; "0001000": { key: "0001000"; }; "0001001": { key: "0001001"; }; "0001010": { key: "0001010"; }; "0001011": { key: "0001011"; }; "0001100": { key: "0001100"; }; "0001101": { key: "0001101"; }; "0001110": { key: "0001110"; }; "0001111": { key: "0001111"; }; "0010000": { key: "0010000"; }; "0010001": { key: "0010001"; }; "0010010": { key: "0010010"; }; "0010011": { key: "0010011"; }; "0010100": { key: "0010100"; }; "0010101": { key: "0010101"; }; "0010110": { key: "0010110"; }; "0010111": { key: "0010111"; }; "0011000": { key: "0011000"; }; "0011001": { key: "0011001"; }; "0011010": { key: "0011010"; }; "0011011": { key: "0011011"; }; "0011100": { key: "0011100"; }; "0011101": { key: "0011101"; }; "0011110": { key: "0011110"; }; "0011111": { key: "0011111"; }; "0100000": { key: "0100000"; }; "0100001": { key: "0100001"; }; "0100010": { key: "0100010"; }; "0100011": { key: "0100011"; }; "0100100": { key: "0100100"; }; "0100101": { key: "0100101"; }; "0100110": { key: "0100110"; }; "0100111": { key: "0100111"; }; "0101000": { key: "0101000"; }; "0101001": { key: "0101001"; }; "0101010": { key: "0101010"; }; "0101011": { key: "0101011"; }; "0101100": { key: "0101100"; }; "0101101": { key: "0101101"; }; "0101110": { key: "0101110"; }; "0101111": { key: "0101111"; }; "0110000": { key: "0110000"; }; "0110001": { key: "0110001"; }; "0110010": { key: "0110010"; }; "0110011": { key: "0110011"; }; "0110100": { key: "0110100"; }; "0110101": { key: "0110101"; }; "0110110": { key: "0110110"; }; "0110111": { key: "0110111"; }; "0111000": { key: "0111000"; }; "0111001": { key: "0111001"; }; "0111010": { key: "0111010"; }; "0111011": { key: "0111011"; }; "0111100": { key: "0111100"; }; "0111101": { key: "0111101"; }; "0111110": { key: "0111110"; }; "0111111": { key: "0111111"; }; 1000000: { key: "1000000"; }; 1000001: { key: "1000001"; }; 1000010: { key: "1000010"; }; 1000011: { key: "1000011"; }; 1000100: { key: "1000100"; }; 1000101: { key: "1000101"; }; 1000110: { key: "1000110"; }; 1000111: { key: "1000111"; }; 1001000: { key: "1001000"; }; 1001001: { key: "1001001"; }; 1001010: { key: "1001010"; }; 1001011: { key: "1001011"; }; 1001100: { key: "1001100"; }; 1001101: { key: "1001101"; }; 1001110: { key: "1001110"; }; 1001111: { key: "1001111"; }; 1010000: { key: "1010000"; }; 1010001: { key: "1010001"; }; 1010010: { key: "1010010"; }; 1010011: { key: "1010011"; }; 1010100: { key: "1010100"; }; 1010101: { key: "1010101"; }; 1010110: { key: "1010110"; }; 1010111: { key: "1010111"; }; 1011000: { key: "1011000"; }; 1011001: { key: "1011001"; }; 1011010: { key: "1011010"; }; 1011011: { key: "1011011"; }; 1011100: { key: "1011100"; }; 1011101: { key: "1011101"; }; 1011110: { key: "1011110"; }; 1011111: { key: "1011111"; }; 1100000: { key: "1100000"; }; 1100001: { key: "1100001"; }; 1100010: { key: "1100010"; }; 1100011: { key: "1100011"; }; 1100100: { key: "1100100"; }; 1100101: { key: "1100101"; }; 1100110: { key: "1100110"; }; 1100111: { key: "1100111"; }; 1101000: { key: "1101000"; }; 1101001: { key: "1101001"; }; 1101010: { key: "1101010"; }; 1101011: { key: "1101011"; }; 1101100: { key: "1101100"; }; 1101101: { key: "1101101"; }; 1101110: { key: "1101110"; }; 1101111: { key: "1101111"; }; 1110000: { key: "1110000"; }; 1110001: { key: "1110001"; }; 1110010: { key: "1110010"; }; 1110011: { key: "1110011"; }; 1110100: { key: "1110100"; }; 1110101: { key: "1110101"; }; 1110110: { key: "1110110"; }; 1110111: { key: "1110111"; }; 1111000: { key: "1111000"; }; 1111001: { key: "1111001"; }; 1111010: { key: "1111010"; }; 1111011: { key: "1111011"; }; 1111100: { key: "1111100"; }; 1111101: { key: "1111101"; }; 1111110: { key: "1111110"; }; 1111111: { key: "1111111"; }; node: { next: any; }; }
+>mod : <T>() => { [K in Keys | "node"]: K extends "node" ? resolve<T> : { key: K; }; }
+>next : "ref"
+
+=== mutual.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<M, K extends keyof M> = show<{
+>resolve : { [P in keyof M[K]]: M[K][P] extends keyof M ? { [P_1 in keyof M[M[K][P]]]: M[M[K][P]][P_1] extends keyof M ? { [P_2 in keyof M[M[M[K][P]][P_1]]]: M[M[M[K][P]][P_1]][P_2] extends keyof M ? { [P_3 in keyof M[M[M[M[K][P]][P_1]][P_2]]]: M[M[M[M[K][P]][P_1]][P_2]][P_3] extends keyof M ? { [P_4 in keyof M[M[M[M[M[K][P]][P_1]][P_2]][P_3]]]: M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4] extends keyof M ? { [P_5 in keyof M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]]]: M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5] extends keyof M ? { [P_6 in keyof M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]]]: M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6] extends keyof M ? { [P_7 in keyof M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]]]: M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7] extends keyof M ? { [P_8 in keyof M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]]]: M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8] extends keyof M ? { [P_9 in keyof M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]]]: M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9] extends keyof M ? { [P_10 in keyof M[M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9]]]: M[M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9]][P_10] extends keyof M ? any : M[M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9]][P_10]; } extends infer T_10 ? { [K_1 in keyof T_10]: T_10[K_1]; } : never : M[M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]][P_9]; } extends infer T_9 ? { [K_1 in keyof T_9]: T_9[K_1]; } : never : M[M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]][P_8]; } extends infer T_8 ? { [K_1 in keyof T_8]: T_8[K_1]; } : never : M[M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]][P_7]; } extends infer T_7 ? { [K_1 in keyof T_7]: T_7[K_1]; } : never : M[M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]][P_6]; } extends infer T_6 ? { [K_1 in keyof T_6]: T_6[K_1]; } : never : M[M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]][P_5]; } extends infer T_5 ? { [K_1 in keyof T_5]: T_5[K_1]; } : never : M[M[M[M[M[K][P]][P_1]][P_2]][P_3]][P_4]; } extends infer T_4 ? { [K_1 in keyof T_4]: T_4[K_1]; } : never : M[M[M[M[K][P]][P_1]][P_2]][P_3]; } extends infer T_3 ? { [K_1 in keyof T_3]: T_3[K_1]; } : never : M[M[M[K][P]][P_1]][P_2]; } extends infer T_2 ? { [K_1 in keyof T_2]: T_2[K_1]; } : never : M[M[K][P]][P_1]; } extends infer T_1 ? { [K_1 in keyof T_1]: T_1[K_1]; } : never : M[K][P]; } extends infer T ? { [K_1 in keyof T]: T[K_1]; } : never
+
+    [P in keyof M[K]]: M[K][P] extends keyof M ? resolve<M, M[K][P]> : M[K][P];
+}>;
+declare const mod: <M>() => { [K in keyof M]: resolve<M, K> };
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+
+export const pair = mod<{
+>pair : { Left: { leftValue: number; right: { rightValue: string; left: any; }; }; Right: { rightValue: string; left: { leftValue: number; right: any; }; }; }
+>mod<{    Left: { leftValue: number; right: "Right" };    Right: { rightValue: string; left: "Left" };}>() : { Left: { leftValue: number; right: { rightValue: string; left: any; }; }; Right: { rightValue: string; left: { leftValue: number; right: any; }; }; }
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+
+    Left: { leftValue: number; right: "Right" };
+>Left : { leftValue: number; right: "Right"; }
+>leftValue : number
+>right : "Right"
+
+    Right: { rightValue: string; left: "Left" };
+>Right : { rightValue: string; left: "Left"; }
+>rightValue : string
+>left : "Left"
+
+}>();
+
+export function left() {
+>left : () => { leftValue: number; right: { rightValue: string; left: any; }; }
+
+    return mod<{
+>mod<{        Left: { leftValue: number; right: "Right" };        Right: { rightValue: string; left: "Left" };    }>().Left : { leftValue: number; right: { rightValue: string; left: any; }; }
+>mod<{        Left: { leftValue: number; right: "Right" };        Right: { rightValue: string; left: "Left" };    }>() : { Left: { leftValue: number; right: { rightValue: string; left: any; }; }; Right: { rightValue: string; left: { leftValue: number; right: any; }; }; }
+>mod : <M>() => { [K in keyof M]: resolve<M, K>; }
+
+        Left: { leftValue: number; right: "Right" };
+>Left : { leftValue: number; right: "Right"; }
+>leftValue : number
+>right : "Right"
+
+        Right: { rightValue: string; left: "Left" };
+>Right : { rightValue: string; left: "Left"; }
+>rightValue : string
+>left : "Left"
+
+    }>().Left;
+>Left : { leftValue: number; right: { rightValue: string; left: any; }; }
+}
+
+=== optional.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{
+>resolve : { [K in keyof { [P in keyof T]: NonNullable<T[P]> extends "ref" ? { [K in keyof any]: any[K]; } | Extract<T[P], undefined> : T[P]; }]: { [P in keyof T]: NonNullable<T[P]> extends "ref" ? { [K_1 in keyof any]: any[K_1]; } | Extract<T[P], undefined> : T[P]; }[K]; }
+
+    [P in keyof T]: NonNullable<T[P]> extends "ref"
+        ? resolve<T> | Extract<T[P], undefined>
+        : T[P];
+}>;
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }]: { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }[K]; } | undefined
+
+export const optional = maybe<{ readonly value: number; next?: "ref" }>();
+>optional : { node?: { readonly value: number; next?: any | undefined; } | undefined; }
+>maybe<{ readonly value: number; next?: "ref" }>() : { node?: { readonly value: number; next?: any | undefined; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>value : number
+>next : "ref" | undefined
+
+declare function both<T>(): { left?: resolve<T>; right?: resolve<T> };
+>both : <T>() => { left?: resolve<T>; right?: resolve<T>; }
+>left : { [K in keyof { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }]: { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }[K]; } | undefined
+>right : { [K in keyof { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }]: { [P in keyof T]: NonNullable<T[P]> extends "ref" ? any | Extract<T[P], undefined> : T[P]; }[K]; } | undefined
+
+export const shared = both<{ next: "ref" }>();
+>shared : { left?: { next: any; } | undefined; right?: { next: any; } | undefined; }
+>both<{ next: "ref" }>() : { left?: { next: any; } | undefined; right?: { next: any; } | undefined; }
+>both : <T>() => { left?: resolve<T>; right?: resolve<T>; }
+>next : "ref"
+
+=== containers.ts ===
+export function tree() {
+>tree : () => string | (string | any)[]
+
+    type Local = string | Local[];
+>Local : string | (string | any)[]
+
+    return null as unknown as Local;
+>null as unknown as Local : string | (string | any)[]
+>null as unknown : unknown
+}
+
+export function tuple() {
+>tuple : () => readonly [number, any]
+
+    type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+}
+
+=== signatures.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+export const signatures = maybe<{
+>signatures : { node?: { next: any; identity: <T>(value: T) => T; unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T; copy: <T>(value: T) => { [K in keyof T]: T[K]; }; } | undefined; }
+>maybe<{    next: "ref";    identity: <T>(value: T) => T;    unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;    copy: <T>(value: T) => { [K in keyof T]: T[K] };}>() : { node?: { next: any; identity: <T>(value: T) => T; unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T; copy: <T>(value: T) => { [K in keyof T]: T[K]; }; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+
+    next: "ref";
+>next : "ref"
+
+    identity: <T>(value: T) => T;
+>identity : <T>(value: T) => T
+>value : T
+
+    unwrap: <T>(value: T) => T extends readonly (infer U)[] ? U : T;
+>unwrap : <T>(value: T) => T extends readonly (infer U)[] ? U : T
+>value : T
+
+    copy: <T>(value: T) => { [K in keyof T]: T[K] };
+>copy : <T>(value: T) => { [K in keyof T]: T[K]; }
+>value : T
+
+}>();
+
+=== collisions.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+export interface collision_1 {
+    occupied: true;
+>occupied : true
+>true : true
+}
+export const collision = maybe<{ next: "ref" }>();
+>collision : { node?: { next: any; } | undefined; }
+>maybe<{ next: "ref" }>() : { node?: { next: any; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+
+=== symbols.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+export declare const key: unique symbol;
+>key : unique symbol
+
+export const keyed = maybe<{ next: "ref"; [key]: number }>();
+>keyed : { node?: { next: any; [key]: number; } | undefined; }
+>maybe<{ next: "ref"; [key]: number }>() : { node?: { next: any; [key]: number; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>next : "ref"
+>[key] : number
+>key : unique symbol
+
+=== payload.ts ===
+export interface Payload {
+    name: string;
+>name : string
+}
+
+=== imported.ts ===
+import { Payload as Input } from "./payload";
+>Payload : any
+>Input : any
+
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: P extends "next" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: P extends "next" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : <T>() => { node?: resolve<T>; }
+>node : { [K in keyof { [P in keyof T]: P extends "next" ? any : T[P]; }]: { [P in keyof T]: P extends "next" ? any : T[P]; }[K]; } | undefined
+
+export const imported = maybe<{ value: Input; next: "ref" }>();
+>imported : { node?: { value: Input; next: any; } | undefined; }
+>maybe<{ value: Input; next: "ref" }>() : { node?: { value: Input; next: any; } | undefined; }
+>maybe : <T>() => { node?: resolve<T>; }
+>value : Input
+>next : "ref"
+
+=== recursiveArray.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+function source() {
+>source : () => { next: any[]; }[]
+
+    type Local = show<{ next: Local[] }>;
+>Local : { next: any[]; }
+>next : { next: any[]; }[]
+
+    return null as unknown as Local["next"];
+>null as unknown as Local["next"] : { next: any[]; }[]
+>null as unknown : unknown
+}
+
+export const nodes = source();
+>nodes : { next: any[]; }[]
+>source() : { next: any[]; }[]
+>source : () => { next: any[]; }[]
+
+=== shadowedAnchor.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ value: T; read: (node: string) => resolve<T> }>;
+>resolve : { value: T; read: (node: string) => resolve<T>; }
+>value : T
+>read : (node: string) => resolve<T>
+>node : string
+
+declare function mod<T>(): resolve<T>;
+>mod : <T>() => resolve<T>
+
+export const node = mod<number>();
+>node : { value: number; read: (node: string) => any; }
+>mod<number>() : { value: number; read: (node: string) => any; }
+>mod : <T>() => resolve<T>
+
+=== classAnchor.ts ===
+export const ctor = class Inner {
+>ctor : typeof Inner
+>class Inner {    next(): Inner {        return this;    }} : typeof Inner
+>Inner : typeof Inner
+
+    next(): Inner {
+>next : () => Inner
+
+        return this;
+>this : this
+    }
+};
+
+=== instantiations.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function mod<T>(): resolve<T>;
+>mod : <T>() => resolve<T>
+
+export const numbers = mod<{ value: number; next: "ref" }>();
+>numbers : { value: number; next: any; }
+>mod<{ value: number; next: "ref" }>() : { value: number; next: any; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : "ref"
+
+export const strings = mod<{ value: string; next: "ref" }>();
+>strings : { value: string; next: any; }
+>mod<{ value: string; next: "ref" }>() : { value: string; next: any; }
+>mod : <T>() => resolve<T>
+>value : string
+>next : "ref"
+
+export const numbersAgain = mod<{ value: number; next: "ref" }>();
+>numbersAgain : { value: number; next: any; }
+>mod<{ value: number; next: "ref" }>() : { value: number; next: any; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : "ref"
+
+=== cacheSiblings.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function batch<T>(): {
+>batch : <T>() => { first?: resolve<T>; second: { node: resolve<T>; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+
+    first?: resolve<T>;
+>first : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }[K]; } | undefined
+
+    second: { node: resolve<T>; leaf: { value: string; nested: { id: number } } };
+>second : { node: resolve<T>; leaf: { value: string; nested: { id: number; }; }; }
+>node : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? any : T[P]; }[K]; }
+>leaf : { value: string; nested: { id: number; }; }
+>value : string
+>nested : { id: number; }
+>id : number
+
+    leaf: { value: string; nested: { id: number } };
+>leaf : { value: string; nested: { id: number; }; }
+>value : string
+>nested : { id: number; }
+>id : number
+
+};
+
+export const mixed = batch<{ value: number; next: "ref" }>();
+>mixed : { first?: { value: number; next: any; } | undefined; second: { node: { value: number; next: any; }; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>batch<{ value: number; next: "ref" }>() : { first?: { value: number; next: any; } | undefined; second: { node: { value: number; next: any; }; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>batch : <T>() => { first?: resolve<T>; second: { node: resolve<T>; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>value : number
+>next : "ref"
+
+export const mixedAgain = batch<{ value: number; next: "ref" }>();
+>mixedAgain : { first?: { value: number; next: any; } | undefined; second: { node: { value: number; next: any; }; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>batch<{ value: number; next: "ref" }>() : { first?: { value: number; next: any; } | undefined; second: { node: { value: number; next: any; }; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>batch : <T>() => { first?: resolve<T>; second: { node: resolve<T>; leaf: { value: string; nested: { id: number; }; }; }; leaf: { value: string; nested: { id: number; }; }; }
+>value : number
+>next : "ref"
+
+=== helperNames.ts ===
+export function makePair() {
+>makePair : () => { left: readonly [number, any]; right: readonly [string, any]; }
+
+    type Left = readonly [number, Left];
+>Left : readonly [number, any]
+
+    type Right = readonly [string, Right];
+>Right : readonly [string, any]
+
+    return { left: null as unknown as Left, right: null as unknown as Right };
+>{ left: null as unknown as Left, right: null as unknown as Right } : { left: readonly [number, any]; right: readonly [string, any]; }
+>left : readonly [number, any]
+>null as unknown as Left : readonly [number, any]
+>null as unknown : unknown
+>right : readonly [string, any]
+>null as unknown as Right : readonly [string, any]
+>null as unknown : unknown
+}
+export function other() {
+>other : () => readonly [boolean, any]
+
+    type Local = readonly [boolean, Local];
+>Local : readonly [boolean, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [boolean, any]
+>null as unknown : unknown
+}
+
+=== helperNameCollisions.ts ===
+export interface makePair_1 { occupied: true; }
+>occupied : true
+>true : true
+
+export const makePair_2 = 0;
+>makePair_2 : 0
+>0 : 0
+
+export function makePair() {
+>makePair : () => { left: readonly [number, any]; right: readonly [string, any]; }
+
+    type Left = readonly [number, Left];
+>Left : readonly [number, any]
+
+    type Right = readonly [string, Right];
+>Right : readonly [string, any]
+
+    return { left: null as unknown as Left, right: null as unknown as Right };
+>{ left: null as unknown as Left, right: null as unknown as Right } : { left: readonly [number, any]; right: readonly [string, any]; }
+>left : readonly [number, any]
+>null as unknown as Left : readonly [number, any]
+>null as unknown : unknown
+>right : readonly [string, any]
+>null as unknown as Right : readonly [string, any]
+>null as unknown : unknown
+}
+
+=== defaultValue.ts ===
+function source() {
+>source : () => readonly [number, any]
+
+    type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+}
+
+export default source();
+>source() : readonly [number, any]
+>source : () => readonly [number, any]
+
+=== defaultFunction.ts ===
+export default function () {
+    type Local = readonly [string, Local];
+>Local : readonly [string, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [string, any]
+>null as unknown : unknown
+}
+
+=== acyclic.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : { [K in keyof T]: T[K]; }
+
+type resolve<T> = show<{ [P in keyof T]: T[P] extends "ref" ? resolve<T> : T[P] }>;
+>resolve : { [K in keyof { [P in keyof T]: T[P] extends "ref" ? { [K in keyof any]: any[K]; } : T[P]; }]: { [P in keyof T]: T[P] extends "ref" ? { [K_1 in keyof any]: any[K_1]; } : T[P]; }[K]; }
+
+declare function mod<T>(): resolve<T>;
+>mod : <T>() => resolve<T>
+
+export const leaf = mod<{ value: number; next: null }>();
+>leaf : { value: number; next: null; }
+>mod<{ value: number; next: null }>() : { value: number; next: null; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : null
+
+export const siblings = {
+>siblings : { left: { value: number; next: null; }; right: { value: number; next: null; }; }
+>{    left: mod<{ value: number; next: null }>(),    right: mod<{ value: number; next: null }>(),} : { left: { value: number; next: null; }; right: { value: number; next: null; }; }
+
+    left: mod<{ value: number; next: null }>(),
+>left : { value: number; next: null; }
+>mod<{ value: number; next: null }>() : { value: number; next: null; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : null
+
+    right: mod<{ value: number; next: null }>(),
+>right : { value: number; next: null; }
+>mod<{ value: number; next: null }>() : { value: number; next: null; }
+>mod : <T>() => resolve<T>
+>value : number
+>next : null
+
+};
+export const finite = mod<{ value: number[][][] }>();
+>finite : { value: number[][][]; }
+>mod<{ value: number[][][] }>() : { value: number[][][]; }
+>mod : <T>() => resolve<T>
+>value : number[][][]
+
+export interface Named {
+    value: number;
+>value : number
+
+    next: Named;
+>next : Named
+}
+declare const source: Named;
+>source : Named
+
+export const named = source;
+>named : Named
+>source : Named
+
+=== existingReferences.ts ===
+export const arrow = () => arrow;
+>arrow : () => typeof arrow
+>() => arrow : () => typeof arrow
+>arrow : () => typeof arrow
+
+export const quoted = { "a-b": () => quoted["a-b"] };
+>quoted : { "a-b": () => (typeof quoted)["a-b"]; }
+>{ "a-b": () => quoted["a-b"] } : { "a-b": () => (typeof quoted)["a-b"]; }
+>"a-b" : () => (typeof quoted)["a-b"]
+>() => quoted["a-b"] : () => (typeof quoted)["a-b"]
+>quoted["a-b"] : () => (typeof quoted)["a-b"]
+>quoted : { "a-b": () => (typeof quoted)["a-b"]; }
+>"a-b" : "a-b"
+
+export const tuple = [() => tuple[0]] as const;
+>tuple : readonly [() => (typeof tuple)[0]]
+>[() => tuple[0]] as const : readonly [() => (typeof tuple)[0]]
+>[() => tuple[0]] : readonly [() => (typeof tuple)[0]]
+>() => tuple[0] : () => (typeof tuple)[0]
+>tuple[0] : () => (typeof tuple)[0]
+>tuple : readonly [() => (typeof tuple)[0]]
+>0 : 0
+
+function source() {
+>source : () => readonly [number, any]
+
+    type Local = readonly [number, Local];
+>Local : readonly [number, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [number, any]
+>null as unknown : unknown
+}
+export const mixed = {
+>mixed : { named: () => (typeof mixed)["named"]; anonymous: readonly [number, any]; }
+>{    named: () => mixed.named,    anonymous: source(),} : { named: () => (typeof mixed)["named"]; anonymous: readonly [number, any]; }
+
+    named: () => mixed.named,
+>named : () => (typeof mixed)["named"]
+>() => mixed.named : () => (typeof mixed)["named"]
+>mixed.named : () => (typeof mixed)["named"]
+>mixed : { named: () => (typeof mixed)["named"]; anonymous: readonly [number, any]; }
+>named : () => (typeof mixed)["named"]
+
+    anonymous: source(),
+>anonymous : readonly [number, any]
+>source() : readonly [number, any]
+>source : () => readonly [number, any]
+
+};
+
+export const factory = () => function self() { return self; };
+>factory : () => () => () => any
+>() => function self() { return self; } : () => () => () => any
+>function self() { return self; } : () => any
+>self : () => typeof self
+>self : () => typeof self
+
+export function local() {
+>local : () => () => typeof recur
+
+    function recur() { return recur; }
+>recur : () => typeof recur
+>recur : () => typeof recur
+
+    return recur;
+>recur : () => typeof recur
+}
+
+=== sharedMembers.ts ===
+export class Shared {
+>Shared : Shared
+
+    protected next() { return this.next; }
+>next : () => Shared["next"]
+>this.next : () => Shared["next"]
+>this : this
+>next : () => Shared["next"]
+
+    first() { return this.next; }
+>first : () => () => Shared["next"]
+>this.next : () => Shared["next"]
+>this : this
+>next : () => Shared["next"]
+
+    second() { return this.next; }
+>second : () => () => Shared["next"]
+>this.next : () => Shared["next"]
+>this : this
+>next : () => Shared["next"]
+}
+
+function source<T>() {
+>source : <T>() => readonly [T, any]
+
+    type Local = readonly [T, Local];
+>Local : readonly [T, any]
+
+    return null as unknown as Local;
+>null as unknown as Local : readonly [T, any]
+>null as unknown : unknown
+}
+export class Instantiations {
+>Instantiations : Instantiations
+
+    numbers() { return source<number>(); }
+>numbers : () => readonly [number, any]
+>source<number>() : readonly [number, any]
+>source : <T>() => readonly [T, any]
+
+    numbersAgain() { return source<number>(); }
+>numbersAgain : () => readonly [number, any]
+>source<number>() : readonly [number, any]
+>source : <T>() => readonly [T, any]
+
+    strings() { return source<string>(); }
+>strings : () => readonly [string, any]
+>source<string>() : readonly [string, any]
+>source : <T>() => readonly [T, any]
+
+    stringsAgain() { return source<string>(); }
+>stringsAgain : () => readonly [string, any]
+>source<string>() : readonly [string, any]
+>source : <T>() => readonly [T, any]
+}
+

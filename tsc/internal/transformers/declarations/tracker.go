@@ -5,6 +5,7 @@ import (
 	"github.com/microsoft/TypeScript/tsc/internal/checker"
 	"github.com/microsoft/TypeScript/tsc/internal/core"
 	"github.com/microsoft/TypeScript/tsc/internal/diagnostics"
+	"github.com/microsoft/TypeScript/tsc/internal/nodebuilder"
 	"github.com/microsoft/TypeScript/tsc/internal/printer"
 	"github.com/microsoft/TypeScript/tsc/internal/scanner"
 )
@@ -39,6 +40,14 @@ func (s *SymbolTrackerImpl) ReportCyclicStructureError() {
 	if location != nil {
 		s.state.addDiagnostic(createDiagnosticForNode(location, diagnostics.The_inferred_type_of_0_references_a_type_with_a_cyclic_structure_which_cannot_be_trivially_serialized_A_type_annotation_is_necessary, s.errorDeclarationNameWithFallback()))
 	}
+}
+
+// TrackRecursiveTypeDeclarations implements nodebuilder.RecursiveTypeTracker.
+func (s *SymbolTrackerImpl) TrackRecursiveTypeDeclarations(scope *ast.Node, declarations []nodebuilder.RecursiveTypeDeclaration) {
+	if s.state.recursiveTypeDeclarations == nil {
+		s.state.recursiveTypeDeclarations = make(map[*ast.Node][]nodebuilder.RecursiveTypeDeclaration)
+	}
+	s.state.recursiveTypeDeclarations[scope] = append(s.state.recursiveTypeDeclarations[scope], declarations...)
 }
 
 // ReportInaccessibleThisError implements checker.SymbolTracker.
@@ -238,6 +247,7 @@ func createDiagnosticForNode(node *ast.Node, message *diagnostics.Message, args 
 
 type SymbolTrackerSharedState struct {
 	lateMarkedStatements             []*ast.Node
+	recursiveTypeDeclarations        map[*ast.Node][]nodebuilder.RecursiveTypeDeclaration
 	diagnostics                      []*ast.Diagnostic
 	getSymbolAccessibilityDiagnostic GetSymbolAccessibilityDiagnostic
 	errorNameNode                    *ast.Node

@@ -1,0 +1,283 @@
+//// [tests/cases/compiler/declarationEmitLazyRecursiveHelpersNamespaces.ts] ////
+
+=== globalA.ts ===
+namespace A {
+>A : Symbol(A, Decl(globalA.ts, 0, 0))
+
+    export function make() {
+>make : Symbol(make, Decl(globalA.ts, 0, 13))
+
+        type Local = readonly [number, Local];
+>Local : Symbol(Local, Decl(globalA.ts, 1, 28))
+>Local : Symbol(Local, Decl(globalA.ts, 1, 28))
+
+        return null as unknown as Local;
+>Local : Symbol(Local, Decl(globalA.ts, 1, 28))
+    }
+}
+
+=== globalB.ts ===
+namespace B {
+>B : Symbol(B, Decl(globalB.ts, 0, 0))
+
+    export function make() {
+>make : Symbol(make, Decl(globalB.ts, 0, 13))
+
+        type Local = readonly [string, Local];
+>Local : Symbol(Local, Decl(globalB.ts, 1, 28))
+>Local : Symbol(Local, Decl(globalB.ts, 1, 28))
+
+        return null as unknown as Local;
+>Local : Symbol(Local, Decl(globalB.ts, 1, 28))
+    }
+}
+
+=== mergedA.ts ===
+namespace Shared {
+>Shared : Symbol(Shared, Decl(mergedA.ts, 0, 0), Decl(mergedB.ts, 0, 0))
+
+    interface Payload { value: number; }
+>Payload : Symbol(Payload, Decl(mergedA.ts, 0, 18))
+>value : Symbol(Payload.value, Decl(mergedA.ts, 1, 23))
+
+    export function numbers() {
+>numbers : Symbol(numbers, Decl(mergedA.ts, 1, 40))
+
+        type Local = readonly [Payload, Local];
+>Local : Symbol(Local, Decl(mergedA.ts, 2, 31))
+>Payload : Symbol(Payload, Decl(mergedA.ts, 0, 18))
+>Local : Symbol(Local, Decl(mergedA.ts, 2, 31))
+
+        return null as unknown as Local;
+>Local : Symbol(Local, Decl(mergedA.ts, 2, 31))
+    }
+}
+
+=== mergedB.ts ===
+namespace Shared {
+>Shared : Symbol(Shared, Decl(mergedA.ts, 0, 0), Decl(mergedB.ts, 0, 0))
+
+    interface Payload { value: string; }
+>Payload : Symbol(Payload, Decl(mergedB.ts, 0, 18))
+>value : Symbol(Payload.value, Decl(mergedB.ts, 1, 23))
+
+    export function strings() {
+>strings : Symbol(strings, Decl(mergedB.ts, 1, 40))
+
+        type Local = readonly [Payload, Local];
+>Local : Symbol(Local, Decl(mergedB.ts, 2, 31))
+>Payload : Symbol(Payload, Decl(mergedB.ts, 0, 18))
+>Local : Symbol(Local, Decl(mergedB.ts, 2, 31))
+
+        return null as unknown as Local;
+>Local : Symbol(Local, Decl(mergedB.ts, 2, 31))
+    }
+}
+
+=== globalRoot.ts ===
+type globalShow<T> = { [K in keyof T]: T[K] } & unknown;
+>globalShow : Symbol(globalShow, Decl(globalRoot.ts, 0, 0))
+>T : Symbol(T, Decl(globalRoot.ts, 0, 16))
+>K : Symbol(K, Decl(globalRoot.ts, 0, 24))
+>T : Symbol(T, Decl(globalRoot.ts, 0, 16))
+>T : Symbol(T, Decl(globalRoot.ts, 0, 16))
+>K : Symbol(K, Decl(globalRoot.ts, 0, 24))
+
+type globalResolve<T> = globalShow<{
+>globalResolve : Symbol(globalResolve, Decl(globalRoot.ts, 0, 56))
+>T : Symbol(T, Decl(globalRoot.ts, 1, 19))
+>globalShow : Symbol(globalShow, Decl(globalRoot.ts, 0, 0))
+
+    [P in keyof T]: T[P] extends "ref" ? globalResolve<T> : T[P];
+>P : Symbol(P, Decl(globalRoot.ts, 2, 5))
+>T : Symbol(T, Decl(globalRoot.ts, 1, 19))
+>T : Symbol(T, Decl(globalRoot.ts, 1, 19))
+>P : Symbol(P, Decl(globalRoot.ts, 2, 5))
+>globalResolve : Symbol(globalResolve, Decl(globalRoot.ts, 0, 56))
+>T : Symbol(T, Decl(globalRoot.ts, 1, 19))
+>T : Symbol(T, Decl(globalRoot.ts, 1, 19))
+>P : Symbol(P, Decl(globalRoot.ts, 2, 5))
+
+}>;
+declare function globalMod<T>(): { node: globalResolve<T> };
+>globalMod : Symbol(globalMod, Decl(globalRoot.ts, 3, 3))
+>T : Symbol(T, Decl(globalRoot.ts, 4, 27))
+>node : Symbol(node, Decl(globalRoot.ts, 4, 34))
+>globalResolve : Symbol(globalResolve, Decl(globalRoot.ts, 0, 56))
+>T : Symbol(T, Decl(globalRoot.ts, 4, 27))
+
+const globalRoot = globalMod<{ value: number; next: "ref" }>();
+>globalRoot : Symbol(globalRoot, Decl(globalRoot.ts, 6, 5))
+>globalMod : Symbol(globalMod, Decl(globalRoot.ts, 3, 3))
+>value : Symbol(value, Decl(globalRoot.ts, 6, 30))
+>next : Symbol(next, Decl(globalRoot.ts, 6, 45))
+
+=== consumer.ts ===
+const rootValue: number = globalRoot.node.next.value;
+>rootValue : Symbol(rootValue, Decl(consumer.ts, 0, 5))
+>globalRoot.node.next.value : Symbol(value, Decl(globalRoot.ts, 6, 30))
+>globalRoot.node.next : Symbol(next, Decl(globalRoot.ts, 6, 45))
+>globalRoot.node : Symbol(node, Decl(globalRoot.ts, 4, 34))
+>globalRoot : Symbol(globalRoot, Decl(globalRoot.ts, 6, 5))
+>node : Symbol(node, Decl(globalRoot.ts, 4, 34))
+>next : Symbol(next, Decl(globalRoot.ts, 6, 45))
+>value : Symbol(value, Decl(globalRoot.ts, 6, 30))
+
+const a: number = A.make()[0];
+>a : Symbol(a, Decl(consumer.ts, 1, 5))
+>A.make : Symbol(A.make, Decl(globalA.ts, 0, 13))
+>A : Symbol(A, Decl(globalA.ts, 0, 0))
+>make : Symbol(A.make, Decl(globalA.ts, 0, 13))
+>0 : Symbol(0)
+
+const b: string = B.make()[0];
+>b : Symbol(b, Decl(consumer.ts, 2, 5))
+>B.make : Symbol(B.make, Decl(globalB.ts, 0, 13))
+>B : Symbol(B, Decl(globalB.ts, 0, 0))
+>make : Symbol(B.make, Decl(globalB.ts, 0, 13))
+>0 : Symbol(0)
+
+const sharedNumber: number = Shared.numbers()[0].value;
+>sharedNumber : Symbol(sharedNumber, Decl(consumer.ts, 3, 5))
+>Shared.numbers()[0].value : Symbol(Payload.value, Decl(mergedA.ts, 1, 23))
+>Shared.numbers : Symbol(Shared.numbers, Decl(mergedA.ts, 1, 40))
+>Shared : Symbol(Shared, Decl(mergedA.ts, 0, 0), Decl(mergedB.ts, 0, 0))
+>numbers : Symbol(Shared.numbers, Decl(mergedA.ts, 1, 40))
+>0 : Symbol(0)
+>value : Symbol(Payload.value, Decl(mergedA.ts, 1, 23))
+
+const sharedString: string = Shared.strings()[0].value;
+>sharedString : Symbol(sharedString, Decl(consumer.ts, 4, 5))
+>Shared.strings()[0].value : Symbol(Payload.value, Decl(mergedB.ts, 1, 23))
+>Shared.strings : Symbol(Shared.strings, Decl(mergedB.ts, 1, 40))
+>Shared : Symbol(Shared, Decl(mergedA.ts, 0, 0), Decl(mergedB.ts, 0, 0))
+>strings : Symbol(Shared.strings, Decl(mergedB.ts, 1, 40))
+>0 : Symbol(0)
+>value : Symbol(Payload.value, Decl(mergedB.ts, 1, 23))
+
+=== model.ts ===
+export interface Payload { name: string; }
+>Payload : Symbol(Payload, Decl(model.ts, 0, 0))
+>name : Symbol(Payload.name, Decl(model.ts, 0, 26))
+
+=== namespaceImport.ts ===
+import * as Model from "./model";
+>Model : Symbol(Model, Decl(namespaceImport.ts, 0, 6))
+
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(namespaceImport.ts, 0, 33))
+>T : Symbol(T, Decl(namespaceImport.ts, 1, 10))
+>K : Symbol(K, Decl(namespaceImport.ts, 1, 18))
+>T : Symbol(T, Decl(namespaceImport.ts, 1, 10))
+>T : Symbol(T, Decl(namespaceImport.ts, 1, 10))
+>K : Symbol(K, Decl(namespaceImport.ts, 1, 18))
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(namespaceImport.ts, 1, 50))
+>T : Symbol(T, Decl(namespaceImport.ts, 2, 13))
+>show : Symbol(show, Decl(namespaceImport.ts, 0, 33))
+>P : Symbol(P, Decl(namespaceImport.ts, 2, 26))
+>T : Symbol(T, Decl(namespaceImport.ts, 2, 13))
+>P : Symbol(P, Decl(namespaceImport.ts, 2, 26))
+>resolve : Symbol(resolve, Decl(namespaceImport.ts, 1, 50))
+>T : Symbol(T, Decl(namespaceImport.ts, 2, 13))
+>T : Symbol(T, Decl(namespaceImport.ts, 2, 13))
+>P : Symbol(P, Decl(namespaceImport.ts, 2, 26))
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : Symbol(maybe, Decl(namespaceImport.ts, 2, 81))
+>T : Symbol(T, Decl(namespaceImport.ts, 3, 23))
+>node : Symbol(node, Decl(namespaceImport.ts, 3, 30))
+>resolve : Symbol(resolve, Decl(namespaceImport.ts, 1, 50))
+>T : Symbol(T, Decl(namespaceImport.ts, 3, 23))
+
+export const result = maybe<{ next: "ref"; value: Model.Payload }>();
+>result : Symbol(result, Decl(namespaceImport.ts, 5, 12))
+>maybe : Symbol(maybe, Decl(namespaceImport.ts, 2, 81))
+>next : Symbol(next, Decl(namespaceImport.ts, 5, 29))
+>value : Symbol(value, Decl(namespaceImport.ts, 5, 42))
+>Model : Symbol(Model, Decl(namespaceImport.ts, 0, 6))
+>Payload : Symbol(Model.Payload, Decl(model.ts, 0, 0))
+
+=== namespaceType.ts ===
+type show<T> = { [K in keyof T]: T[K] } & unknown;
+>show : Symbol(show, Decl(namespaceType.ts, 0, 0))
+>T : Symbol(T, Decl(namespaceType.ts, 0, 10))
+>K : Symbol(K, Decl(namespaceType.ts, 0, 18))
+>T : Symbol(T, Decl(namespaceType.ts, 0, 10))
+>T : Symbol(T, Decl(namespaceType.ts, 0, 10))
+>K : Symbol(K, Decl(namespaceType.ts, 0, 18))
+
+type resolve<T> = show<{ [P in keyof T]: P extends "next" ? resolve<T> : T[P] }>;
+>resolve : Symbol(resolve, Decl(namespaceType.ts, 0, 50))
+>T : Symbol(T, Decl(namespaceType.ts, 1, 13))
+>show : Symbol(show, Decl(namespaceType.ts, 0, 0))
+>P : Symbol(P, Decl(namespaceType.ts, 1, 26))
+>T : Symbol(T, Decl(namespaceType.ts, 1, 13))
+>P : Symbol(P, Decl(namespaceType.ts, 1, 26))
+>resolve : Symbol(resolve, Decl(namespaceType.ts, 0, 50))
+>T : Symbol(T, Decl(namespaceType.ts, 1, 13))
+>T : Symbol(T, Decl(namespaceType.ts, 1, 13))
+>P : Symbol(P, Decl(namespaceType.ts, 1, 26))
+
+declare function maybe<T>(): { node?: resolve<T> };
+>maybe : Symbol(maybe, Decl(namespaceType.ts, 1, 81))
+>T : Symbol(T, Decl(namespaceType.ts, 2, 23))
+>node : Symbol(node, Decl(namespaceType.ts, 2, 30))
+>resolve : Symbol(resolve, Decl(namespaceType.ts, 0, 50))
+>T : Symbol(T, Decl(namespaceType.ts, 2, 23))
+
+export namespace N { export interface Payload { name: string; } }
+>N : Symbol(N, Decl(namespaceType.ts, 2, 51))
+>Payload : Symbol(Payload, Decl(namespaceType.ts, 3, 20))
+>name : Symbol(Payload.name, Decl(namespaceType.ts, 3, 47))
+
+export const result = maybe<{ next: "ref"; value: N.Payload }>();
+>result : Symbol(result, Decl(namespaceType.ts, 5, 12))
+>maybe : Symbol(maybe, Decl(namespaceType.ts, 1, 81))
+>next : Symbol(next, Decl(namespaceType.ts, 5, 29))
+>value : Symbol(value, Decl(namespaceType.ts, 5, 42))
+>N : Symbol(N, Decl(namespaceType.ts, 2, 51))
+>Payload : Symbol(N.Payload, Decl(namespaceType.ts, 3, 20))
+
+=== sharedScopes.ts ===
+export function sharedSource() {
+>sharedSource : Symbol(sharedSource, Decl(sharedScopes.ts, 0, 0))
+
+    type Local = readonly [number, Local];
+>Local : Symbol(Local, Decl(sharedScopes.ts, 0, 32))
+>Local : Symbol(Local, Decl(sharedScopes.ts, 0, 32))
+
+    return null as unknown as Local;
+>Local : Symbol(Local, Decl(sharedScopes.ts, 0, 32))
+}
+export namespace First {
+>First : Symbol(First, Decl(sharedScopes.ts, 3, 1))
+
+    export const node = sharedSource();
+>node : Symbol(node, Decl(sharedScopes.ts, 5, 16))
+>sharedSource : Symbol(sharedSource, Decl(sharedScopes.ts, 0, 0))
+}
+export namespace Second {
+>Second : Symbol(Second, Decl(sharedScopes.ts, 6, 1))
+
+    export const node = sharedSource();
+>node : Symbol(node, Decl(sharedScopes.ts, 8, 16))
+>sharedSource : Symbol(sharedSource, Decl(sharedScopes.ts, 0, 0))
+}
+const firstNodeValue: number = First.node[1][0];
+>firstNodeValue : Symbol(firstNodeValue, Decl(sharedScopes.ts, 10, 5))
+>First.node : Symbol(First.node, Decl(sharedScopes.ts, 5, 16))
+>First : Symbol(First, Decl(sharedScopes.ts, 3, 1))
+>node : Symbol(First.node, Decl(sharedScopes.ts, 5, 16))
+>1 : Symbol(1)
+>0 : Symbol(0)
+
+const secondNodeValue: number = Second.node[1][0];
+>secondNodeValue : Symbol(secondNodeValue, Decl(sharedScopes.ts, 11, 5))
+>Second.node : Symbol(Second.node, Decl(sharedScopes.ts, 8, 16))
+>Second : Symbol(Second, Decl(sharedScopes.ts, 6, 1))
+>node : Symbol(Second.node, Decl(sharedScopes.ts, 8, 16))
+>1 : Symbol(1)
+>0 : Symbol(0)
+
