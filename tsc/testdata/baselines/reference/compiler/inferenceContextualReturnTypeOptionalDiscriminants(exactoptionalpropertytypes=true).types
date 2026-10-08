@@ -1,0 +1,76 @@
+//// [tests/cases/compiler/inferenceContextualReturnTypeOptionalDiscriminants.ts] ////
+
+=== inferenceContextualReturnTypeOptionalDiscriminants.ts ===
+type Ok<T> = { ok: true; value: T };
+>Ok : Ok<T>
+>ok : true
+>true : true
+>value : T
+
+type Err<E> = { ok: false; value: E };
+>Err : Err<E>
+>ok : false
+>false : false
+>value : E
+
+type OptionalOk<T> = { ok?: true; value: T };
+>OptionalOk : OptionalOk<T>
+>ok : true | undefined
+>true : true
+>value : T
+
+type MaybeErr<E> = { ok?: false; value: E };
+>MaybeErr : MaybeErr<E>
+>ok : false | undefined
+>false : false
+>value : E
+
+declare function ok<const T>(value: T): Ok<T>;
+>ok : <const T>(value: T) => Ok<T>
+>value : T
+
+declare function optionalOk<const T>(value: T): OptionalOk<T>;
+>optionalOk : <const T>(value: T) => OptionalOk<T>
+>value : T
+
+// A required false tag cannot match true | undefined.
+export function optionalTarget(): OptionalOk<string[]> | Err<string> {
+>optionalTarget : () => OptionalOk<string[]> | Err<string>
+
+    return optionalOk([]);
+>optionalOk([]) : OptionalOk<[]>
+>optionalOk : <const T>(value: T) => OptionalOk<T>
+>[] : []
+}
+
+// An optional false tag cannot match a required true tag.
+export function optionalSource(): Ok<string[]> | MaybeErr<string> {
+>optionalSource : () => Ok<string[]> | MaybeErr<string>
+
+    return ok([]);
+>ok([]) : Ok<[]>
+>ok : <const T>(value: T) => Ok<T>
+>[] : []
+}
+
+// Both tags may be absent, so the optional error member still contributes candidates.
+export function bothOptional(): OptionalOk<string[]> | MaybeErr<string> {
+>bothOptional : () => OptionalOk<string[]> | MaybeErr<string>
+
+    return optionalOk([]);
+>optionalOk([]) : OptionalOk<readonly []>
+>optionalOk : <const T>(value: T) => OptionalOk<T>
+>[] : []
+}
+
+// A missing source tag does not prove incompatibility with an optional target tag.
+export function missingSourceTag(): OptionalOk<string[]> | { value: string } {
+>missingSourceTag : () => OptionalOk<string[]> | { value: string; }
+>value : string
+
+    return optionalOk([]);
+>optionalOk([]) : OptionalOk<[]>
+>optionalOk : <const T>(value: T) => OptionalOk<T>
+>[] : []
+}
+

@@ -1,0 +1,87 @@
+//// [tests/cases/compiler/inferenceContextualReturnTypeOptionalDiscriminants.ts] ////
+
+=== inferenceContextualReturnTypeOptionalDiscriminants.ts ===
+type Ok<T> = { ok: true; value: T };
+>Ok : Symbol(Ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 0))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 8))
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 14))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 24))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 8))
+
+type Err<E> = { ok: false; value: E };
+>Err : Symbol(Err, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 36))
+>E : Symbol(E, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 9))
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 15))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 26))
+>E : Symbol(E, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 9))
+
+type OptionalOk<T> = { ok?: true; value: T };
+>OptionalOk : Symbol(OptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 38))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 2, 16))
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 2, 22))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 2, 33))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 2, 16))
+
+type MaybeErr<E> = { ok?: false; value: E };
+>MaybeErr : Symbol(MaybeErr, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 2, 45))
+>E : Symbol(E, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 3, 14))
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 3, 20))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 3, 32))
+>E : Symbol(E, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 3, 14))
+
+declare function ok<const T>(value: T): Ok<T>;
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 3, 44))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 20))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 29))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 20))
+>Ok : Symbol(Ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 0))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 20))
+
+declare function optionalOk<const T>(value: T): OptionalOk<T>;
+>optionalOk : Symbol(optionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 46))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 6, 28))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 6, 37))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 6, 28))
+>OptionalOk : Symbol(OptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 38))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 6, 28))
+
+// A required false tag cannot match true | undefined.
+export function optionalTarget(): OptionalOk<string[]> | Err<string> {
+>optionalTarget : Symbol(optionalTarget, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 6, 62))
+>OptionalOk : Symbol(OptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 38))
+>Err : Symbol(Err, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 36))
+
+    return optionalOk([]);
+>optionalOk : Symbol(optionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 46))
+}
+
+// An optional false tag cannot match a required true tag.
+export function optionalSource(): Ok<string[]> | MaybeErr<string> {
+>optionalSource : Symbol(optionalSource, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 11, 1))
+>Ok : Symbol(Ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 0))
+>MaybeErr : Symbol(MaybeErr, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 2, 45))
+
+    return ok([]);
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 3, 44))
+}
+
+// Both tags may be absent, so the optional error member still contributes candidates.
+export function bothOptional(): OptionalOk<string[]> | MaybeErr<string> {
+>bothOptional : Symbol(bothOptional, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 16, 1))
+>OptionalOk : Symbol(OptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 38))
+>MaybeErr : Symbol(MaybeErr, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 2, 45))
+
+    return optionalOk([]);
+>optionalOk : Symbol(optionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 46))
+}
+
+// A missing source tag does not prove incompatibility with an optional target tag.
+export function missingSourceTag(): OptionalOk<string[]> | { value: string } {
+>missingSourceTag : Symbol(missingSourceTag, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 21, 1))
+>OptionalOk : Symbol(OptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 38))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 24, 60))
+
+    return optionalOk([]);
+>optionalOk : Symbol(optionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 46))
+}
+

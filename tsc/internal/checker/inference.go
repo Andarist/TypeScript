@@ -1208,28 +1208,33 @@ func (c *Checker) getInferenceDiscriminants(source *Type, target *Type) []Infere
 	}
 	var discriminants []InferenceDiscriminant
 	for _, targetProp := range c.getPropertiesOfType(target) {
-		if targetProp.Flags&ast.SymbolFlagsOptional != 0 {
-			continue
-		}
 		targetType := c.getTypeOfSymbol(targetProp)
-		if isUnitType(targetType) && c.isDiscriminantProperty(source, targetProp.Name) {
+		tagType := targetType
+		if targetProp.Flags&ast.SymbolFlagsOptional != 0 {
+			tagType = c.getTypeWithFacts(tagType, TypeFactsNEUndefined)
+		}
+		if isUnitType(tagType) && c.isDiscriminantProperty(source, targetProp.Name) {
 			discriminants = append(discriminants, InferenceDiscriminant{name: targetProp.Name, targetType: targetType})
 		}
 	}
 	return discriminants
 }
 
-// A fixed discriminant mismatch cannot be resolved by inference. Only compare required
-// unit types so that optional, broad, and generic tags retain the usual inference behavior.
+// A fixed discriminant mismatch cannot be resolved by inference. Optional fixed tags
+// include undefined in the comparison so that overlapping optional tags aren't excluded.
 func (c *Checker) hasIncompatibleInferenceDiscriminant(source *Type, discriminants []InferenceDiscriminant) bool {
 	if source.flags&(TypeFlagsObject|TypeFlagsIntersection) == 0 {
 		return false
 	}
 	for _, discriminant := range discriminants {
 		sourceProp := c.getPropertyOfType(source, discriminant.name)
-		if sourceProp != nil && sourceProp.Flags&ast.SymbolFlagsOptional == 0 {
+		if sourceProp != nil {
 			sourceType := c.getTypeOfSymbol(sourceProp)
-			if isUnitType(sourceType) && !c.areTypesComparable(sourceType, discriminant.targetType) {
+			tagType := sourceType
+			if sourceProp.Flags&ast.SymbolFlagsOptional != 0 {
+				tagType = c.getTypeWithFacts(tagType, TypeFactsNEUndefined)
+			}
+			if isUnitType(tagType) && !c.areTypesComparable(sourceType, discriminant.targetType) {
 				return true
 			}
 		}
