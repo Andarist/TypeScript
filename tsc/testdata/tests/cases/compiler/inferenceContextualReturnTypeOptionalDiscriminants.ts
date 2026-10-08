@@ -29,3 +29,37 @@ export function bothOptional(): OptionalOk<string[]> | MaybeErr<string> {
 export function missingSourceTag(): OptionalOk<string[]> | { value: string } {
     return optionalOk([]);
 }
+
+type ExplicitOptionalOk<T> = { ok?: true | undefined; value: T };
+type UnionOk<T> = { ok: true | undefined; value: T };
+declare function explicitOptionalOk<const T>(value: T): ExplicitOptionalOk<T>;
+declare function unionOk<const T>(value: T): UnionOk<T>;
+
+// Explicit undefined is retained in both optional-property modes.
+export function explicitUndefined(): ExplicitOptionalOk<string[]> | Err<string> {
+    return explicitOptionalOk([]);
+}
+
+// A required union-valued tag is treated the same as the overlapping optional tag.
+export function requiredUnionTag(): UnionOk<string[]> | Err<string> {
+    return unionOk([]);
+}
+
+type AlwaysUndefinedErr<E> = { ok: undefined; value: E };
+type UndefinedOk<T> = { ok: undefined; value: T };
+declare function undefinedOk<const T>(value: T): UndefinedOk<T>;
+
+// With EOPT, present undefined cannot match an optional true tag that only permits absence.
+export function undefinedSource(): OptionalOk<string[]> | AlwaysUndefinedErr<string> {
+    return optionalOk([]);
+}
+
+// With EOPT, an optional false tag cannot match a required, present undefined tag.
+export function undefinedTarget(): UndefinedOk<string[]> | MaybeErr<string> {
+    return undefinedOk([]);
+}
+
+// Explicit undefined remains a valid overlap even with EOPT enabled.
+export function explicitUndefinedOverlap(): ExplicitOptionalOk<string[]> | AlwaysUndefinedErr<string> {
+    return explicitOptionalOk([]);
+}

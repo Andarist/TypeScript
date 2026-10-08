@@ -1,9 +1,18 @@
 inferenceContextualReturnTypeOptionalDiscriminants.ts(21,5): error TS2322: Type 'OptionalOk<readonly []>' is not assignable to type 'MaybeErr<string> | OptionalOk<string[]>'.
   Type 'OptionalOk<readonly []>' is not assignable to type 'OptionalOk<string[]>'.
     The type 'readonly []' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+inferenceContextualReturnTypeOptionalDiscriminants.ts(50,5): error TS2322: Type 'OptionalOk<readonly []>' is not assignable to type 'AlwaysUndefinedErr<string> | OptionalOk<string[]>'.
+  Type 'OptionalOk<readonly []>' is not assignable to type 'OptionalOk<string[]>'.
+    The type 'readonly []' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+inferenceContextualReturnTypeOptionalDiscriminants.ts(55,5): error TS2322: Type 'UndefinedOk<readonly []>' is not assignable to type 'MaybeErr<string> | UndefinedOk<string[]>'.
+  Type 'UndefinedOk<readonly []>' is not assignable to type 'UndefinedOk<string[]>'.
+    The type 'readonly []' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+inferenceContextualReturnTypeOptionalDiscriminants.ts(60,5): error TS2322: Type 'ExplicitOptionalOk<readonly []>' is not assignable to type 'AlwaysUndefinedErr<string> | ExplicitOptionalOk<string[]>'.
+  Type 'ExplicitOptionalOk<readonly []>' is not assignable to type 'ExplicitOptionalOk<string[]>'.
+    The type 'readonly []' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
 
 
-==== inferenceContextualReturnTypeOptionalDiscriminants.ts (1 errors) ====
+==== inferenceContextualReturnTypeOptionalDiscriminants.ts (4 errors) ====
     type Ok<T> = { ok: true; value: T };
     type Err<E> = { ok: false; value: E };
     type OptionalOk<T> = { ok?: true; value: T };
@@ -34,5 +43,51 @@ inferenceContextualReturnTypeOptionalDiscriminants.ts(21,5): error TS2322: Type 
     // A missing source tag does not prove incompatibility with an optional target tag.
     export function missingSourceTag(): OptionalOk<string[]> | { value: string } {
         return optionalOk([]);
+    }
+    
+    type ExplicitOptionalOk<T> = { ok?: true | undefined; value: T };
+    type UnionOk<T> = { ok: true | undefined; value: T };
+    declare function explicitOptionalOk<const T>(value: T): ExplicitOptionalOk<T>;
+    declare function unionOk<const T>(value: T): UnionOk<T>;
+    
+    // Explicit undefined is retained in both optional-property modes.
+    export function explicitUndefined(): ExplicitOptionalOk<string[]> | Err<string> {
+        return explicitOptionalOk([]);
+    }
+    
+    // A required union-valued tag is treated the same as the overlapping optional tag.
+    export function requiredUnionTag(): UnionOk<string[]> | Err<string> {
+        return unionOk([]);
+    }
+    
+    type AlwaysUndefinedErr<E> = { ok: undefined; value: E };
+    type UndefinedOk<T> = { ok: undefined; value: T };
+    declare function undefinedOk<const T>(value: T): UndefinedOk<T>;
+    
+    // With EOPT, present undefined cannot match an optional true tag that only permits absence.
+    export function undefinedSource(): OptionalOk<string[]> | AlwaysUndefinedErr<string> {
+        return optionalOk([]);
+        ~~~~~~
+!!! error TS2322: Type 'OptionalOk<readonly []>' is not assignable to type 'AlwaysUndefinedErr<string> | OptionalOk<string[]>'.
+!!! error TS2322:   Type 'OptionalOk<readonly []>' is not assignable to type 'OptionalOk<string[]>'.
+!!! error TS2322:     The type 'readonly []' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+    }
+    
+    // With EOPT, an optional false tag cannot match a required, present undefined tag.
+    export function undefinedTarget(): UndefinedOk<string[]> | MaybeErr<string> {
+        return undefinedOk([]);
+        ~~~~~~
+!!! error TS2322: Type 'UndefinedOk<readonly []>' is not assignable to type 'MaybeErr<string> | UndefinedOk<string[]>'.
+!!! error TS2322:   Type 'UndefinedOk<readonly []>' is not assignable to type 'UndefinedOk<string[]>'.
+!!! error TS2322:     The type 'readonly []' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+    }
+    
+    // Explicit undefined remains a valid overlap even with EOPT enabled.
+    export function explicitUndefinedOverlap(): ExplicitOptionalOk<string[]> | AlwaysUndefinedErr<string> {
+        return explicitOptionalOk([]);
+        ~~~~~~
+!!! error TS2322: Type 'ExplicitOptionalOk<readonly []>' is not assignable to type 'AlwaysUndefinedErr<string> | ExplicitOptionalOk<string[]>'.
+!!! error TS2322:   Type 'ExplicitOptionalOk<readonly []>' is not assignable to type 'ExplicitOptionalOk<string[]>'.
+!!! error TS2322:     The type 'readonly []' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
     }
     

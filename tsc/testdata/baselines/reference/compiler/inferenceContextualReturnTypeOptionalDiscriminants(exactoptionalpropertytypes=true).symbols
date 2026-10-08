@@ -85,3 +85,105 @@ export function missingSourceTag(): OptionalOk<string[]> | { value: string } {
 >optionalOk : Symbol(optionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 46))
 }
 
+type ExplicitOptionalOk<T> = { ok?: true | undefined; value: T };
+>ExplicitOptionalOk : Symbol(ExplicitOptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 26, 1))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 28, 24))
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 28, 30))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 28, 53))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 28, 24))
+
+type UnionOk<T> = { ok: true | undefined; value: T };
+>UnionOk : Symbol(UnionOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 28, 65))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 29, 13))
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 29, 19))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 29, 41))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 29, 13))
+
+declare function explicitOptionalOk<const T>(value: T): ExplicitOptionalOk<T>;
+>explicitOptionalOk : Symbol(explicitOptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 29, 53))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 30, 36))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 30, 45))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 30, 36))
+>ExplicitOptionalOk : Symbol(ExplicitOptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 26, 1))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 30, 36))
+
+declare function unionOk<const T>(value: T): UnionOk<T>;
+>unionOk : Symbol(unionOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 30, 78))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 31, 25))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 31, 34))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 31, 25))
+>UnionOk : Symbol(UnionOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 28, 65))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 31, 25))
+
+// Explicit undefined is retained in both optional-property modes.
+export function explicitUndefined(): ExplicitOptionalOk<string[]> | Err<string> {
+>explicitUndefined : Symbol(explicitUndefined, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 31, 56))
+>ExplicitOptionalOk : Symbol(ExplicitOptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 26, 1))
+>Err : Symbol(Err, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 36))
+
+    return explicitOptionalOk([]);
+>explicitOptionalOk : Symbol(explicitOptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 29, 53))
+}
+
+// A required union-valued tag is treated the same as the overlapping optional tag.
+export function requiredUnionTag(): UnionOk<string[]> | Err<string> {
+>requiredUnionTag : Symbol(requiredUnionTag, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 36, 1))
+>UnionOk : Symbol(UnionOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 28, 65))
+>Err : Symbol(Err, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 0, 36))
+
+    return unionOk([]);
+>unionOk : Symbol(unionOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 30, 78))
+}
+
+type AlwaysUndefinedErr<E> = { ok: undefined; value: E };
+>AlwaysUndefinedErr : Symbol(AlwaysUndefinedErr, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 41, 1))
+>E : Symbol(E, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 43, 24))
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 43, 30))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 43, 45))
+>E : Symbol(E, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 43, 24))
+
+type UndefinedOk<T> = { ok: undefined; value: T };
+>UndefinedOk : Symbol(UndefinedOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 43, 57))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 44, 17))
+>ok : Symbol(ok, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 44, 23))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 44, 38))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 44, 17))
+
+declare function undefinedOk<const T>(value: T): UndefinedOk<T>;
+>undefinedOk : Symbol(undefinedOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 44, 50))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 45, 29))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 45, 38))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 45, 29))
+>UndefinedOk : Symbol(UndefinedOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 43, 57))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 45, 29))
+
+// With EOPT, present undefined cannot match an optional true tag that only permits absence.
+export function undefinedSource(): OptionalOk<string[]> | AlwaysUndefinedErr<string> {
+>undefinedSource : Symbol(undefinedSource, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 45, 64))
+>OptionalOk : Symbol(OptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 1, 38))
+>AlwaysUndefinedErr : Symbol(AlwaysUndefinedErr, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 41, 1))
+
+    return optionalOk([]);
+>optionalOk : Symbol(optionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 5, 46))
+}
+
+// With EOPT, an optional false tag cannot match a required, present undefined tag.
+export function undefinedTarget(): UndefinedOk<string[]> | MaybeErr<string> {
+>undefinedTarget : Symbol(undefinedTarget, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 50, 1))
+>UndefinedOk : Symbol(UndefinedOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 43, 57))
+>MaybeErr : Symbol(MaybeErr, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 2, 45))
+
+    return undefinedOk([]);
+>undefinedOk : Symbol(undefinedOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 44, 50))
+}
+
+// Explicit undefined remains a valid overlap even with EOPT enabled.
+export function explicitUndefinedOverlap(): ExplicitOptionalOk<string[]> | AlwaysUndefinedErr<string> {
+>explicitUndefinedOverlap : Symbol(explicitUndefinedOverlap, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 55, 1))
+>ExplicitOptionalOk : Symbol(ExplicitOptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 26, 1))
+>AlwaysUndefinedErr : Symbol(AlwaysUndefinedErr, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 41, 1))
+
+    return explicitOptionalOk([]);
+>explicitOptionalOk : Symbol(explicitOptionalOk, Decl(inferenceContextualReturnTypeOptionalDiscriminants.ts, 29, 53))
+}
+

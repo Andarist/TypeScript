@@ -1200,6 +1200,7 @@ func (c *Checker) replaceIndexedAccess(instantiable *Type, t *Type, replacement 
 type InferenceDiscriminant struct {
 	name       string
 	targetType *Type
+	optional   bool
 }
 
 func (c *Checker) getInferenceDiscriminants(source *Type, target *Type) []InferenceDiscriminant {
@@ -1208,20 +1209,17 @@ func (c *Checker) getInferenceDiscriminants(source *Type, target *Type) []Infere
 	}
 	var discriminants []InferenceDiscriminant
 	for _, targetProp := range c.getPropertiesOfType(target) {
-		targetType := c.getTypeOfSymbol(targetProp)
-		tagType := targetType
-		if targetProp.Flags&ast.SymbolFlagsOptional != 0 {
-			tagType = c.getTypeWithFacts(tagType, TypeFactsNEUndefined)
-		}
-		if isUnitType(tagType) && c.isDiscriminantProperty(source, targetProp.Name) {
-			discriminants = append(discriminants, InferenceDiscriminant{name: targetProp.Name, targetType: targetType})
+		optional := targetProp.Flags&ast.SymbolFlagsOptional != 0
+		targetType := c.removeMissingType(c.getTypeOfSymbol(targetProp), optional)
+		if !c.couldContainTypeVariables(targetType) && c.isDiscriminantProperty(source, targetProp.Name) {
+			discriminants = append(discriminants, InferenceDiscriminant{name: targetProp.Name, targetType: targetType, optional: optional})
 		}
 	}
 	return discriminants
 }
 
-// A fixed discriminant mismatch cannot be resolved by inference. Optional fixed tags
-// include undefined in the comparison so that overlapping optional tags aren't excluded.
+// A concrete discriminant mismatch cannot be resolved by inference. Two optional tags
+// always overlap through absence; otherwise compare their types as in property inference.
 func (c *Checker) hasIncompatibleInferenceDiscriminant(source *Type, discriminants []InferenceDiscriminant) bool {
 	if source.flags&(TypeFlagsObject|TypeFlagsIntersection) == 0 {
 		return false
@@ -1229,12 +1227,12 @@ func (c *Checker) hasIncompatibleInferenceDiscriminant(source *Type, discriminan
 	for _, discriminant := range discriminants {
 		sourceProp := c.getPropertyOfType(source, discriminant.name)
 		if sourceProp != nil {
-			sourceType := c.getTypeOfSymbol(sourceProp)
-			tagType := sourceType
-			if sourceProp.Flags&ast.SymbolFlagsOptional != 0 {
-				tagType = c.getTypeWithFacts(tagType, TypeFactsNEUndefined)
+			optional := sourceProp.Flags&ast.SymbolFlagsOptional != 0
+			if optional && discriminant.optional {
+				continue
 			}
-			if isUnitType(tagType) && !c.areTypesComparable(sourceType, discriminant.targetType) {
+			sourceType := c.removeMissingType(c.getTypeOfSymbol(sourceProp), optional)
+			if !c.couldContainTypeVariables(sourceType) && !c.areTypesComparable(sourceType, discriminant.targetType) {
 				return true
 			}
 		}
