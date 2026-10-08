@@ -249,8 +249,15 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 	case target.flags&TypeFlagsUnionOrIntersection != 0:
 		c.inferToMultipleTypes(n, source, target.Types(), target.flags)
 	case source.flags&TypeFlagsUnion != 0:
-		// Source is a union or intersection type, infer from each constituent type
+		// Infer from each source union constituent, excluding incompatible fixed discriminants.
+		var discriminantProperties []*ast.Symbol
+		if target.flags&(TypeFlagsObject|TypeFlagsIntersection) != 0 {
+			discriminantProperties = c.findDiscriminantProperties(c.getPropertiesOfType(target), source)
+		}
 		for _, sourceType := range source.Types() {
+			if c.hasIncompatibleInferenceDiscriminant(sourceType, discriminantProperties) {
+				continue
+			}
 			c.inferFromTypes(n, sourceType, target)
 		}
 	case target.flags&TypeFlagsTemplateLiteral != 0:
@@ -1191,6 +1198,31 @@ func (c *Checker) replaceIndexedAccess(instantiable *Type, t *Type, replacement 
 	// map type.objectType to `[TReplacement]`
 	// thus making the indexed access `[TReplacement][0]` or `TReplacement`
 	return c.instantiateType(instantiable, newTypeMapper([]*Type{t.AsIndexedAccessType().indexType, t.AsIndexedAccessType().objectType}, []*Type{c.getNumberLiteralType(0), c.createTupleType([]*Type{replacement})}))
+}
+
+// A fixed discriminant mismatch cannot be resolved by inference. Only compare required
+// unit types so that optional, broad, and generic tags retain the usual inference behavior.
+func (c *Checker) hasIncompatibleInferenceDiscriminant(source *Type, targetProperties []*ast.Symbol) bool {
+	if source.flags&(TypeFlagsObject|TypeFlagsIntersection) == 0 {
+		return false
+	}
+	for _, targetProp := range targetProperties {
+		if targetProp.Flags&ast.SymbolFlagsOptional != 0 {
+			continue
+		}
+		targetType := c.getTypeOfSymbol(targetProp)
+		if !isUnitType(targetType) {
+			continue
+		}
+		sourceProp := c.getPropertyOfType(source, targetProp.Name)
+		if sourceProp != nil && sourceProp.Flags&ast.SymbolFlagsOptional == 0 {
+			sourceType := c.getTypeOfSymbol(sourceProp)
+			if isUnitType(sourceType) && !c.areTypesComparable(sourceType, targetType) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (c *Checker) typesDefinitelyUnrelated(source *Type, target *Type) bool {
