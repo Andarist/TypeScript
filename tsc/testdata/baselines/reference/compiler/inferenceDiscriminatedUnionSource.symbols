@@ -1,0 +1,237 @@
+//// [tests/cases/compiler/inferenceDiscriminatedUnionSource.ts] ////
+
+=== inferenceDiscriminatedUnionSource.ts ===
+// Inference from a union source to an object target skips constituents whose discriminant
+// properties can't match the target's, regardless of the order of the union constituents.
+
+type Ok<T> = { ok: true; value: T };
+>Ok : Symbol(Ok, Decl(inferenceDiscriminatedUnionSource.ts, 0, 0))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 3, 8))
+>ok : Symbol(ok, Decl(inferenceDiscriminatedUnionSource.ts, 3, 14))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 3, 24))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 3, 8))
+
+type Err<E> = { ok: false; value: E };
+>Err : Symbol(Err, Decl(inferenceDiscriminatedUnionSource.ts, 3, 36))
+>E : Symbol(E, Decl(inferenceDiscriminatedUnionSource.ts, 4, 9))
+>ok : Symbol(ok, Decl(inferenceDiscriminatedUnionSource.ts, 4, 15))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 4, 26))
+>E : Symbol(E, Decl(inferenceDiscriminatedUnionSource.ts, 4, 9))
+
+declare function ok<const T>(value: T): Ok<T>;
+>ok : Symbol(ok, Decl(inferenceDiscriminatedUnionSource.ts, 4, 38))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 5, 20))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 5, 29))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 5, 20))
+>Ok : Symbol(Ok, Decl(inferenceDiscriminatedUnionSource.ts, 0, 0))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 5, 20))
+
+declare function okInline<const T>(value: T): { ok: true; value: T };
+>okInline : Symbol(okInline, Decl(inferenceDiscriminatedUnionSource.ts, 5, 46))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 6, 26))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 6, 35))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 6, 26))
+>ok : Symbol(ok, Decl(inferenceDiscriminatedUnionSource.ts, 6, 47))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 6, 57))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 6, 26))
+
+// The mismatched constituent comes first in these unions.
+type ErrShape = { ok: false; value: string };
+>ErrShape : Symbol(ErrShape, Decl(inferenceDiscriminatedUnionSource.ts, 6, 69))
+>ok : Symbol(ok, Decl(inferenceDiscriminatedUnionSource.ts, 9, 17))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 9, 28))
+
+type OkShape = { ok: true; value: string[] };
+>OkShape : Symbol(OkShape, Decl(inferenceDiscriminatedUnionSource.ts, 9, 45))
+>ok : Symbol(ok, Decl(inferenceDiscriminatedUnionSource.ts, 10, 16))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 10, 26))
+
+export function aliasTarget(): ErrShape | OkShape { return ok([]); }
+>aliasTarget : Symbol(aliasTarget, Decl(inferenceDiscriminatedUnionSource.ts, 10, 45))
+>ErrShape : Symbol(ErrShape, Decl(inferenceDiscriminatedUnionSource.ts, 6, 69))
+>OkShape : Symbol(OkShape, Decl(inferenceDiscriminatedUnionSource.ts, 9, 45))
+>ok : Symbol(ok, Decl(inferenceDiscriminatedUnionSource.ts, 4, 38))
+
+export function inlineTarget(): ErrShape | OkShape { return okInline([]); }
+>inlineTarget : Symbol(inlineTarget, Decl(inferenceDiscriminatedUnionSource.ts, 12, 68))
+>ErrShape : Symbol(ErrShape, Decl(inferenceDiscriminatedUnionSource.ts, 6, 69))
+>OkShape : Symbol(OkShape, Decl(inferenceDiscriminatedUnionSource.ts, 9, 45))
+>okInline : Symbol(okInline, Decl(inferenceDiscriminatedUnionSource.ts, 5, 46))
+
+export function inlineTargetReversed(): OkShape | ErrShape { return okInline([]); }
+>inlineTargetReversed : Symbol(inlineTargetReversed, Decl(inferenceDiscriminatedUnionSource.ts, 13, 75))
+>OkShape : Symbol(OkShape, Decl(inferenceDiscriminatedUnionSource.ts, 9, 45))
+>ErrShape : Symbol(ErrShape, Decl(inferenceDiscriminatedUnionSource.ts, 6, 69))
+>okInline : Symbol(okInline, Decl(inferenceDiscriminatedUnionSource.ts, 5, 46))
+
+// Contravariant position: a handler accepting a wider union is assignable, and T is inferred
+// from the constituent that matches the tag.
+declare function on<T>(handler: (e: { kind: "a"; value: T }) => void): T;
+>on : Symbol(on, Decl(inferenceDiscriminatedUnionSource.ts, 14, 83))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 18, 20))
+>handler : Symbol(handler, Decl(inferenceDiscriminatedUnionSource.ts, 18, 23))
+>e : Symbol(e, Decl(inferenceDiscriminatedUnionSource.ts, 18, 33))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 18, 37))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 18, 48))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 18, 20))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 18, 20))
+
+const r1 = on((e: { kind: "a"; value: string } | { kind: "b"; value: number }) => {});
+>r1 : Symbol(r1, Decl(inferenceDiscriminatedUnionSource.ts, 19, 5))
+>on : Symbol(on, Decl(inferenceDiscriminatedUnionSource.ts, 14, 83))
+>e : Symbol(e, Decl(inferenceDiscriminatedUnionSource.ts, 19, 15))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 19, 19))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 19, 30))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 19, 50))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 19, 61))
+
+const r2 = on((e: { kind: "b"; value: number } | { kind: "a"; value: string }) => {});
+>r2 : Symbol(r2, Decl(inferenceDiscriminatedUnionSource.ts, 20, 5))
+>on : Symbol(on, Decl(inferenceDiscriminatedUnionSource.ts, 14, 83))
+>e : Symbol(e, Decl(inferenceDiscriminatedUnionSource.ts, 20, 15))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 20, 19))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 20, 30))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 20, 50))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 20, 61))
+
+// Argument position: only the matching constituent contributes to T.
+declare function pick<T>(x: { kind: "a"; value: T }): T;
+>pick : Symbol(pick, Decl(inferenceDiscriminatedUnionSource.ts, 20, 86))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 23, 22))
+>x : Symbol(x, Decl(inferenceDiscriminatedUnionSource.ts, 23, 25))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 23, 29))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 23, 40))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 23, 22))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 23, 22))
+
+declare const u1: { kind: "b"; value: number } | { kind: "a"; value: string };
+>u1 : Symbol(u1, Decl(inferenceDiscriminatedUnionSource.ts, 24, 13))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 24, 19))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 24, 30))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 24, 50))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 24, 61))
+
+const r3 = pick(u1);
+>r3 : Symbol(r3, Decl(inferenceDiscriminatedUnionSource.ts, 25, 5))
+>pick : Symbol(pick, Decl(inferenceDiscriminatedUnionSource.ts, 20, 86))
+>u1 : Symbol(u1, Decl(inferenceDiscriminatedUnionSource.ts, 24, 13))
+
+// A constituent with a non-literal tag type may still match.
+declare const u2: { kind: string; value: number } | { kind: "a"; value: string };
+>u2 : Symbol(u2, Decl(inferenceDiscriminatedUnionSource.ts, 28, 13))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 28, 19))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 28, 33))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 28, 53))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 28, 64))
+
+const r4 = pick(u2);
+>r4 : Symbol(r4, Decl(inferenceDiscriminatedUnionSource.ts, 29, 5))
+>pick : Symbol(pick, Decl(inferenceDiscriminatedUnionSource.ts, 20, 86))
+>u2 : Symbol(u2, Decl(inferenceDiscriminatedUnionSource.ts, 28, 13))
+
+// A constituent without the tag is retained.
+declare const u3: { value: number } | { kind: "a"; value: string };
+>u3 : Symbol(u3, Decl(inferenceDiscriminatedUnionSource.ts, 32, 13))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 32, 19))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 32, 39))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 32, 50))
+
+const r5 = pick(u3);
+>r5 : Symbol(r5, Decl(inferenceDiscriminatedUnionSource.ts, 33, 5))
+>pick : Symbol(pick, Decl(inferenceDiscriminatedUnionSource.ts, 20, 86))
+>u3 : Symbol(u3, Decl(inferenceDiscriminatedUnionSource.ts, 32, 13))
+
+// A discriminant that no constituent matches is ignored.
+declare function two<T>(x: { kind: "a"; sub: 1; value: T }): T;
+>two : Symbol(two, Decl(inferenceDiscriminatedUnionSource.ts, 33, 20))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 36, 21))
+>x : Symbol(x, Decl(inferenceDiscriminatedUnionSource.ts, 36, 24))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 36, 28))
+>sub : Symbol(sub, Decl(inferenceDiscriminatedUnionSource.ts, 36, 39))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 36, 47))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 36, 21))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 36, 21))
+
+declare const u4: { kind: "a"; sub: 2; value: string } | { kind: "b"; sub: 1; value: number };
+>u4 : Symbol(u4, Decl(inferenceDiscriminatedUnionSource.ts, 37, 13))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 37, 19))
+>sub : Symbol(sub, Decl(inferenceDiscriminatedUnionSource.ts, 37, 30))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 37, 38))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 37, 58))
+>sub : Symbol(sub, Decl(inferenceDiscriminatedUnionSource.ts, 37, 69))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 37, 77))
+
+const r6 = two(u4);
+>r6 : Symbol(r6, Decl(inferenceDiscriminatedUnionSource.ts, 38, 5))
+>two : Symbol(two, Decl(inferenceDiscriminatedUnionSource.ts, 33, 20))
+>u4 : Symbol(u4, Decl(inferenceDiscriminatedUnionSource.ts, 37, 13))
+
+// Enum and boolean tags.
+enum K { A, B }
+>K : Symbol(K, Decl(inferenceDiscriminatedUnionSource.ts, 38, 19))
+>A : Symbol(K.A, Decl(inferenceDiscriminatedUnionSource.ts, 41, 8))
+>B : Symbol(K.B, Decl(inferenceDiscriminatedUnionSource.ts, 41, 11))
+
+declare function enumTag<T>(x: { kind: K.A; value: T }): T;
+>enumTag : Symbol(enumTag, Decl(inferenceDiscriminatedUnionSource.ts, 41, 15))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 42, 25))
+>x : Symbol(x, Decl(inferenceDiscriminatedUnionSource.ts, 42, 28))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 42, 32))
+>K : Symbol(K, Decl(inferenceDiscriminatedUnionSource.ts, 38, 19))
+>A : Symbol(K.A, Decl(inferenceDiscriminatedUnionSource.ts, 41, 8))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 42, 43))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 42, 25))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 42, 25))
+
+declare const u5: { kind: K.B; value: number } | { kind: K.A; value: string };
+>u5 : Symbol(u5, Decl(inferenceDiscriminatedUnionSource.ts, 43, 13))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 43, 19))
+>K : Symbol(K, Decl(inferenceDiscriminatedUnionSource.ts, 38, 19))
+>B : Symbol(K.B, Decl(inferenceDiscriminatedUnionSource.ts, 41, 11))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 43, 30))
+>kind : Symbol(kind, Decl(inferenceDiscriminatedUnionSource.ts, 43, 50))
+>K : Symbol(K, Decl(inferenceDiscriminatedUnionSource.ts, 38, 19))
+>A : Symbol(K.A, Decl(inferenceDiscriminatedUnionSource.ts, 41, 8))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 43, 61))
+
+const r7 = enumTag(u5);
+>r7 : Symbol(r7, Decl(inferenceDiscriminatedUnionSource.ts, 44, 5))
+>enumTag : Symbol(enumTag, Decl(inferenceDiscriminatedUnionSource.ts, 41, 15))
+>u5 : Symbol(u5, Decl(inferenceDiscriminatedUnionSource.ts, 43, 13))
+
+declare function boolTag<T>(x: { ok: boolean; value: T }): T;
+>boolTag : Symbol(boolTag, Decl(inferenceDiscriminatedUnionSource.ts, 44, 23))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 45, 25))
+>x : Symbol(x, Decl(inferenceDiscriminatedUnionSource.ts, 45, 28))
+>ok : Symbol(ok, Decl(inferenceDiscriminatedUnionSource.ts, 45, 32))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 45, 45))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 45, 25))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 45, 25))
+
+declare const u6: Err<number> | Ok<string>;
+>u6 : Symbol(u6, Decl(inferenceDiscriminatedUnionSource.ts, 46, 13))
+>Err : Symbol(Err, Decl(inferenceDiscriminatedUnionSource.ts, 3, 36))
+>Ok : Symbol(Ok, Decl(inferenceDiscriminatedUnionSource.ts, 0, 0))
+
+const r8 = boolTag(u6);
+>r8 : Symbol(r8, Decl(inferenceDiscriminatedUnionSource.ts, 47, 5))
+>boolTag : Symbol(boolTag, Decl(inferenceDiscriminatedUnionSource.ts, 44, 23))
+>u6 : Symbol(u6, Decl(inferenceDiscriminatedUnionSource.ts, 46, 13))
+
+// A union source in a nested position.
+declare function wrap<const T>(value: T): { result: Ok<T> };
+>wrap : Symbol(wrap, Decl(inferenceDiscriminatedUnionSource.ts, 47, 23))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 50, 22))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 50, 31))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 50, 22))
+>result : Symbol(result, Decl(inferenceDiscriminatedUnionSource.ts, 50, 43))
+>Ok : Symbol(Ok, Decl(inferenceDiscriminatedUnionSource.ts, 0, 0))
+>T : Symbol(T, Decl(inferenceDiscriminatedUnionSource.ts, 50, 22))
+
+export function nested(): { result: ErrShape | OkShape } { return wrap([]); }
+>nested : Symbol(nested, Decl(inferenceDiscriminatedUnionSource.ts, 50, 60))
+>result : Symbol(result, Decl(inferenceDiscriminatedUnionSource.ts, 51, 27))
+>ErrShape : Symbol(ErrShape, Decl(inferenceDiscriminatedUnionSource.ts, 6, 69))
+>OkShape : Symbol(OkShape, Decl(inferenceDiscriminatedUnionSource.ts, 9, 45))
+>wrap : Symbol(wrap, Decl(inferenceDiscriminatedUnionSource.ts, 47, 23))
+

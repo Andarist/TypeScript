@@ -1,0 +1,107 @@
+inferenceDiscriminatedUnionSource.ts(26,17): error TS2345: Argument of type '{ kind: "b"; value: number; } | { kind: "a"; value: string; }' is not assignable to parameter of type '{ kind: "a"; value: string; }'.
+  Type '{ kind: "b"; value: number; }' is not assignable to type '{ kind: "a"; value: string; }'.
+    Types of property 'kind' are incompatible.
+      Type '"b"' is not assignable to type '"a"'.
+inferenceDiscriminatedUnionSource.ts(30,17): error TS2345: Argument of type '{ kind: string; value: number; } | { kind: "a"; value: string; }' is not assignable to parameter of type '{ kind: "a"; value: number; }'.
+  Type '{ kind: string; value: number; }' is not assignable to type '{ kind: "a"; value: number; }'.
+    Types of property 'kind' are incompatible.
+      Type 'string' is not assignable to type '"a"'.
+inferenceDiscriminatedUnionSource.ts(34,17): error TS2345: Argument of type '{ value: number; } | { kind: "a"; value: string; }' is not assignable to parameter of type '{ kind: "a"; value: number; }'.
+  Property 'kind' is missing in type '{ value: number; }' but required in type '{ kind: "a"; value: number; }'.
+inferenceDiscriminatedUnionSource.ts(39,16): error TS2345: Argument of type '{ kind: "a"; sub: 2; value: string; } | { kind: "b"; sub: 1; value: number; }' is not assignable to parameter of type '{ kind: "a"; sub: 1; value: string; }'.
+  Type '{ kind: "a"; sub: 2; value: string; }' is not assignable to type '{ kind: "a"; sub: 1; value: string; }'.
+    Types of property 'sub' are incompatible.
+      Type '2' is not assignable to type '1'.
+inferenceDiscriminatedUnionSource.ts(45,20): error TS2345: Argument of type '{ kind: K.B; value: number; } | { kind: K.A; value: string; }' is not assignable to parameter of type '{ kind: K.A; value: string; }'.
+  Type '{ kind: K.B; value: number; }' is not assignable to type '{ kind: K.A; value: string; }'.
+    Types of property 'kind' are incompatible.
+      Type 'K.B' is not assignable to type 'K.A'.
+inferenceDiscriminatedUnionSource.ts(48,20): error TS2345: Argument of type 'Err<number> | Ok<string>' is not assignable to parameter of type '{ ok: boolean; value: number; }'.
+  Type 'Ok<string>' is not assignable to type '{ ok: boolean; value: number; }'.
+    Types of property 'value' are incompatible.
+      Type 'string' is not assignable to type 'number'.
+
+
+==== inferenceDiscriminatedUnionSource.ts (6 errors) ====
+    // Inference from a union source to an object target skips constituents whose discriminant
+    // properties can't match the target's, regardless of the order of the union constituents.
+    
+    type Ok<T> = { ok: true; value: T };
+    type Err<E> = { ok: false; value: E };
+    declare function ok<const T>(value: T): Ok<T>;
+    declare function okInline<const T>(value: T): { ok: true; value: T };
+    
+    // The mismatched constituent comes first in these unions.
+    type ErrShape = { ok: false; value: string };
+    type OkShape = { ok: true; value: string[] };
+    
+    export function aliasTarget(): ErrShape | OkShape { return ok([]); }
+    export function inlineTarget(): ErrShape | OkShape { return okInline([]); }
+    export function inlineTargetReversed(): OkShape | ErrShape { return okInline([]); }
+    
+    // Contravariant position: a handler accepting a wider union is assignable, and T is inferred
+    // from the constituent that matches the tag.
+    declare function on<T>(handler: (e: { kind: "a"; value: T }) => void): T;
+    const r1 = on((e: { kind: "a"; value: string } | { kind: "b"; value: number }) => {});
+    const r2 = on((e: { kind: "b"; value: number } | { kind: "a"; value: string }) => {});
+    
+    // Argument position: only the matching constituent contributes to T.
+    declare function pick<T>(x: { kind: "a"; value: T }): T;
+    declare const u1: { kind: "b"; value: number } | { kind: "a"; value: string };
+    const r3 = pick(u1);
+                    ~~
+!!! error TS2345: Argument of type '{ kind: "b"; value: number; } | { kind: "a"; value: string; }' is not assignable to parameter of type '{ kind: "a"; value: string; }'.
+!!! error TS2345:   Type '{ kind: "b"; value: number; }' is not assignable to type '{ kind: "a"; value: string; }'.
+!!! error TS2345:     Types of property 'kind' are incompatible.
+!!! error TS2345:       Type '"b"' is not assignable to type '"a"'.
+    
+    // A constituent with a non-literal tag type may still match.
+    declare const u2: { kind: string; value: number } | { kind: "a"; value: string };
+    const r4 = pick(u2);
+                    ~~
+!!! error TS2345: Argument of type '{ kind: string; value: number; } | { kind: "a"; value: string; }' is not assignable to parameter of type '{ kind: "a"; value: number; }'.
+!!! error TS2345:   Type '{ kind: string; value: number; }' is not assignable to type '{ kind: "a"; value: number; }'.
+!!! error TS2345:     Types of property 'kind' are incompatible.
+!!! error TS2345:       Type 'string' is not assignable to type '"a"'.
+    
+    // A constituent without the tag is retained.
+    declare const u3: { value: number } | { kind: "a"; value: string };
+    const r5 = pick(u3);
+                    ~~
+!!! error TS2345: Argument of type '{ value: number; } | { kind: "a"; value: string; }' is not assignable to parameter of type '{ kind: "a"; value: number; }'.
+!!! error TS2345:   Property 'kind' is missing in type '{ value: number; }' but required in type '{ kind: "a"; value: number; }'.
+!!! related TS2728 inferenceDiscriminatedUnionSource.ts:24:31: 'kind' is declared here.
+    
+    // A discriminant that no constituent matches is ignored.
+    declare function two<T>(x: { kind: "a"; sub: 1; value: T }): T;
+    declare const u4: { kind: "a"; sub: 2; value: string } | { kind: "b"; sub: 1; value: number };
+    const r6 = two(u4);
+                   ~~
+!!! error TS2345: Argument of type '{ kind: "a"; sub: 2; value: string; } | { kind: "b"; sub: 1; value: number; }' is not assignable to parameter of type '{ kind: "a"; sub: 1; value: string; }'.
+!!! error TS2345:   Type '{ kind: "a"; sub: 2; value: string; }' is not assignable to type '{ kind: "a"; sub: 1; value: string; }'.
+!!! error TS2345:     Types of property 'sub' are incompatible.
+!!! error TS2345:       Type '2' is not assignable to type '1'.
+    
+    // Enum and boolean tags.
+    enum K { A, B }
+    declare function enumTag<T>(x: { kind: K.A; value: T }): T;
+    declare const u5: { kind: K.B; value: number } | { kind: K.A; value: string };
+    const r7 = enumTag(u5);
+                       ~~
+!!! error TS2345: Argument of type '{ kind: K.B; value: number; } | { kind: K.A; value: string; }' is not assignable to parameter of type '{ kind: K.A; value: string; }'.
+!!! error TS2345:   Type '{ kind: K.B; value: number; }' is not assignable to type '{ kind: K.A; value: string; }'.
+!!! error TS2345:     Types of property 'kind' are incompatible.
+!!! error TS2345:       Type 'K.B' is not assignable to type 'K.A'.
+    declare function boolTag<T>(x: { ok: boolean; value: T }): T;
+    declare const u6: Err<number> | Ok<string>;
+    const r8 = boolTag(u6);
+                       ~~
+!!! error TS2345: Argument of type 'Err<number> | Ok<string>' is not assignable to parameter of type '{ ok: boolean; value: number; }'.
+!!! error TS2345:   Type 'Ok<string>' is not assignable to type '{ ok: boolean; value: number; }'.
+!!! error TS2345:     Types of property 'value' are incompatible.
+!!! error TS2345:       Type 'string' is not assignable to type 'number'.
+    
+    // A union source in a nested position.
+    declare function wrap<const T>(value: T): { result: Ok<T> };
+    export function nested(): { result: ErrShape | OkShape } { return wrap([]); }
+    
