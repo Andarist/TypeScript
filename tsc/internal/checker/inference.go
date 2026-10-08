@@ -249,12 +249,8 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 	case target.flags&TypeFlagsUnionOrIntersection != 0:
 		c.inferToMultipleTypes(n, source, target.Types(), target.flags)
 	case source.flags&TypeFlagsUnion != 0:
-		// Infer from each source union constituent, excluding incompatible fixed discriminants.
-		discriminants := c.getInferenceDiscriminants(source, target)
-		for _, sourceType := range source.Types() {
-			if len(discriminants) != 0 && c.hasIncompatibleInferenceDiscriminant(sourceType, discriminants) {
-				continue
-			}
+		// Source is a union type, infer from each constituent type that could be related to the target
+		for _, sourceType := range c.getInferableUnionConstituents(source, target) {
 			c.inferFromTypes(n, sourceType, target)
 		}
 	case target.flags&TypeFlagsTemplateLiteral != 0:
@@ -1197,47 +1193,83 @@ func (c *Checker) replaceIndexedAccess(instantiable *Type, t *Type, replacement 
 	return c.instantiateType(instantiable, newTypeMapper([]*Type{t.AsIndexedAccessType().indexType, t.AsIndexedAccessType().objectType}, []*Type{c.getNumberLiteralType(0), c.createTupleType([]*Type{replacement})}))
 }
 
-type InferenceDiscriminant struct {
-	name       string
-	targetType *Type
-	optional   bool
-}
-
-func (c *Checker) getInferenceDiscriminants(source *Type, target *Type) []InferenceDiscriminant {
-	if target.flags&(TypeFlagsObject|TypeFlagsIntersection) == 0 {
-		return nil
+// Return the constituents of the union type 'source' from which to make inferences to 'target'. When
+// 'target' is an object type with literal-typed properties that are discriminant properties of 'source'
+// (see findDiscriminantProperties), we exclude constituents whose corresponding property has a concrete
+// type that isn't comparable to the target's. Such constituents can't be related to the target in either
+// direction, so inferences made from them would only degrade the result. For example, when inferring from
+// 'Ok<string[]> | Err<string>' to 'Ok<T>', where 'Ok' and 'Err' are tagged with 'ok: true' and 'ok: false',
+// we infer only from 'Ok<string[]>'. As in discriminateTypeByDiscriminableItems, a discriminant eliminates
+// constituents only when at least one constituent matches it, such that an erroneous discriminant doesn't
+// eliminate every constituent. Note that typesDefinitelyUnrelated also detects a mismatched unit-typed
+// property, but only in combination with a property that is missing in the reverse direction.
+func (c *Checker) getInferableUnionConstituents(source *Type, target *Type) []*Type {
+	types := source.Types()
+	if target.flags&TypeFlagsObject == 0 {
+		return types
 	}
-	var discriminants []InferenceDiscriminant
-	for _, targetProp := range c.getPropertiesOfType(target) {
-		optional := targetProp.Flags&ast.SymbolFlagsOptional != 0
-		targetType := c.removeMissingType(c.getTypeOfSymbol(targetProp), optional)
-		if !c.couldContainTypeVariables(targetType) && c.isDiscriminantProperty(source, targetProp.Name) {
-			discriminants = append(discriminants, InferenceDiscriminant{name: targetProp.Name, targetType: targetType, optional: optional})
+	literalProps := core.Filter(c.getPropertiesOfType(target), func(prop *ast.Symbol) bool {
+		return isLiteralType(c.getNonMissingTypeOfSymbol(prop))
+	})
+	discriminants := c.findDiscriminantProperties(literalProps, source)
+	if len(discriminants) == 0 {
+		return types
+	}
+	include := make([]Ternary, len(types))
+	for i := range include {
+		include[i] = TernaryTrue
+	}
+	for _, targetProp := range discriminants {
+		matched := false
+		for i, t := range types {
+			if include[i] == TernaryTrue {
+				switch c.relateInferenceDiscriminant(t, targetProp) {
+				case TernaryTrue:
+					matched = true
+				case TernaryFalse:
+					include[i] = TernaryMaybe
+				}
+			}
+		}
+		// Turn each Ternary.Maybe into Ternary.False if there was a match. Otherwise, revert to Ternary.True.
+		for i := range include {
+			if include[i] == TernaryMaybe {
+				include[i] = core.IfElse(matched, TernaryFalse, TernaryTrue)
+			}
 		}
 	}
-	return discriminants
+	if !slices.Contains(include, TernaryFalse) {
+		return types
+	}
+	var result []*Type
+	for i, t := range types {
+		if include[i] == TernaryTrue {
+			result = append(result, t)
+		}
+	}
+	return result
 }
 
-// A concrete discriminant mismatch cannot be resolved by inference. Two optional tags
-// always overlap through absence; otherwise compare their types as in property inference.
-func (c *Checker) hasIncompatibleInferenceDiscriminant(source *Type, discriminants []InferenceDiscriminant) bool {
+// Return TernaryTrue when the property of 'source' corresponding to 'targetProp' is comparable to the
+// target property, TernaryFalse when it has a concrete type that isn't comparable, and TernaryMaybe when
+// nothing can be concluded. Optional properties are compared without the missing type, except that two
+// optional properties are always considered comparable as both permit absence.
+func (c *Checker) relateInferenceDiscriminant(source *Type, targetProp *ast.Symbol) Ternary {
 	if source.flags&(TypeFlagsObject|TypeFlagsIntersection) == 0 {
-		return false
+		return TernaryMaybe
 	}
-	for _, discriminant := range discriminants {
-		sourceProp := c.getPropertyOfType(source, discriminant.name)
-		if sourceProp != nil {
-			optional := sourceProp.Flags&ast.SymbolFlagsOptional != 0
-			if optional && discriminant.optional {
-				continue
-			}
-			sourceType := c.removeMissingType(c.getTypeOfSymbol(sourceProp), optional)
-			if !c.couldContainTypeVariables(sourceType) && !c.areTypesComparable(sourceType, discriminant.targetType) {
-				return true
-			}
-		}
+	sourceProp := c.getPropertyOfType(source, targetProp.Name)
+	if sourceProp == nil {
+		return TernaryMaybe
 	}
-	return false
+	if sourceProp.Flags&ast.SymbolFlagsOptional != 0 && targetProp.Flags&ast.SymbolFlagsOptional != 0 {
+		return TernaryTrue
+	}
+	sourceType := c.getNonMissingTypeOfSymbol(sourceProp)
+	if c.couldContainTypeVariables(sourceType) {
+		return TernaryMaybe
+	}
+	return core.IfElse(c.areTypesComparable(sourceType, c.getNonMissingTypeOfSymbol(targetProp)), TernaryTrue, TernaryFalse)
 }
 
 func (c *Checker) typesDefinitelyUnrelated(source *Type, target *Type) bool {

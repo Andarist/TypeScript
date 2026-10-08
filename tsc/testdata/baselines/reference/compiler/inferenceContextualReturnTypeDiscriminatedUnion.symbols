@@ -103,7 +103,7 @@ declare function unmatched<T>(): { kind: "other"; value: T };
 >value : Symbol(value, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 26, 49))
 >T : Symbol(T, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 26, 27))
 
-// Neither union member matches the fixed tag, so T has no candidates and becomes unknown.
+// Neither union member matches the fixed tag, so the tag is ignored and both members contribute candidates.
 export function withUnmatchedTag(): Success<string[]> | Failure<number[]> {
 >withUnmatchedTag : Symbol(withUnmatchedTag, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 26, 61))
 >Success : Symbol(Success, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 8, 1))

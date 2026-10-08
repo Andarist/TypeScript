@@ -1,5 +1,5 @@
-inferenceContextualReturnTypeDiscriminatedUnion.ts(31,5): error TS2322: Type '{ kind: "other"; value: unknown; }' is not assignable to type 'Failure<number[]> | Success<string[]>'.
-  Type '{ kind: "other"; value: unknown; }' is not assignable to type 'Success<string[]>'.
+inferenceContextualReturnTypeDiscriminatedUnion.ts(31,5): error TS2322: Type '{ kind: "other"; value: string[] | number[]; }' is not assignable to type 'Failure<number[]> | Success<string[]>'.
+  Type '{ kind: "other"; value: string[] | number[]; }' is not assignable to type 'Success<string[]>'.
     Types of property 'kind' are incompatible.
       Type '"other"' is not assignable to type '"success"'.
 
@@ -33,12 +33,12 @@ inferenceContextualReturnTypeDiscriminatedUnion.ts(31,5): error TS2322: Type '{ 
     
     declare function unmatched<T>(): { kind: "other"; value: T };
     
-    // Neither union member matches the fixed tag, so T has no candidates and becomes unknown.
+    // Neither union member matches the fixed tag, so the tag is ignored and both members contribute candidates.
     export function withUnmatchedTag(): Success<string[]> | Failure<number[]> {
         return unmatched();
         ~~~~~~
-!!! error TS2322: Type '{ kind: "other"; value: unknown; }' is not assignable to type 'Failure<number[]> | Success<string[]>'.
-!!! error TS2322:   Type '{ kind: "other"; value: unknown; }' is not assignable to type 'Success<string[]>'.
+!!! error TS2322: Type '{ kind: "other"; value: string[] | number[]; }' is not assignable to type 'Failure<number[]> | Success<string[]>'.
+!!! error TS2322:   Type '{ kind: "other"; value: string[] | number[]; }' is not assignable to type 'Success<string[]>'.
 !!! error TS2322:     Types of property 'kind' are incompatible.
 !!! error TS2322:       Type '"other"' is not assignable to type '"success"'.
     }

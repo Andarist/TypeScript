@@ -29,7 +29,7 @@ export function withNumberTag(): Accepted<string[]> | Rejected<string> {
 
 declare function unmatched<T>(): { kind: "other"; value: T };
 
-// Neither union member matches the fixed tag, so T has no candidates and becomes unknown.
+// Neither union member matches the fixed tag, so the tag is ignored and both members contribute candidates.
 export function withUnmatchedTag(): Success<string[]> | Failure<number[]> {
     return unmatched();
 }
