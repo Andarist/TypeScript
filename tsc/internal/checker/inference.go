@@ -250,12 +250,9 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 		c.inferToMultipleTypes(n, source, target.Types(), target.flags)
 	case source.flags&TypeFlagsUnion != 0:
 		// Infer from each source union constituent, excluding incompatible fixed discriminants.
-		var discriminantProperties []*ast.Symbol
-		if target.flags&(TypeFlagsObject|TypeFlagsIntersection) != 0 {
-			discriminantProperties = c.findDiscriminantProperties(c.getPropertiesOfType(target), source)
-		}
+		discriminants := c.getInferenceDiscriminants(source, target)
 		for _, sourceType := range source.Types() {
-			if c.hasIncompatibleInferenceDiscriminant(sourceType, discriminantProperties) {
+			if len(discriminants) != 0 && c.hasIncompatibleInferenceDiscriminant(sourceType, discriminants) {
 				continue
 			}
 			c.inferFromTypes(n, sourceType, target)
@@ -1200,24 +1197,39 @@ func (c *Checker) replaceIndexedAccess(instantiable *Type, t *Type, replacement 
 	return c.instantiateType(instantiable, newTypeMapper([]*Type{t.AsIndexedAccessType().indexType, t.AsIndexedAccessType().objectType}, []*Type{c.getNumberLiteralType(0), c.createTupleType([]*Type{replacement})}))
 }
 
-// A fixed discriminant mismatch cannot be resolved by inference. Only compare required
-// unit types so that optional, broad, and generic tags retain the usual inference behavior.
-func (c *Checker) hasIncompatibleInferenceDiscriminant(source *Type, targetProperties []*ast.Symbol) bool {
-	if source.flags&(TypeFlagsObject|TypeFlagsIntersection) == 0 {
-		return false
+type InferenceDiscriminant struct {
+	name       string
+	targetType *Type
+}
+
+func (c *Checker) getInferenceDiscriminants(source *Type, target *Type) []InferenceDiscriminant {
+	if target.flags&(TypeFlagsObject|TypeFlagsIntersection) == 0 {
+		return nil
 	}
-	for _, targetProp := range targetProperties {
+	var discriminants []InferenceDiscriminant
+	for _, targetProp := range c.getPropertiesOfType(target) {
 		if targetProp.Flags&ast.SymbolFlagsOptional != 0 {
 			continue
 		}
 		targetType := c.getTypeOfSymbol(targetProp)
-		if !isUnitType(targetType) {
-			continue
+		if isUnitType(targetType) && c.isDiscriminantProperty(source, targetProp.Name) {
+			discriminants = append(discriminants, InferenceDiscriminant{name: targetProp.Name, targetType: targetType})
 		}
-		sourceProp := c.getPropertyOfType(source, targetProp.Name)
+	}
+	return discriminants
+}
+
+// A fixed discriminant mismatch cannot be resolved by inference. Only compare required
+// unit types so that optional, broad, and generic tags retain the usual inference behavior.
+func (c *Checker) hasIncompatibleInferenceDiscriminant(source *Type, discriminants []InferenceDiscriminant) bool {
+	if source.flags&(TypeFlagsObject|TypeFlagsIntersection) == 0 {
+		return false
+	}
+	for _, discriminant := range discriminants {
+		sourceProp := c.getPropertyOfType(source, discriminant.name)
 		if sourceProp != nil && sourceProp.Flags&ast.SymbolFlagsOptional == 0 {
 			sourceType := c.getTypeOfSymbol(sourceProp)
-			if isUnitType(sourceType) && !c.areTypesComparable(sourceType, targetType) {
+			if isUnitType(sourceType) && !c.areTypesComparable(sourceType, discriminant.targetType) {
 				return true
 			}
 		}

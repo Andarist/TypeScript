@@ -96,3 +96,20 @@ export function withNumberTag(): Accepted<string[]> | Rejected<string> {
 >accepted : Symbol(accepted, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 19, 41))
 }
 
+declare function unmatched<T>(): { kind: "other"; value: T };
+>unmatched : Symbol(unmatched, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 24, 1))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 26, 27))
+>kind : Symbol(kind, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 26, 34))
+>value : Symbol(value, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 26, 49))
+>T : Symbol(T, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 26, 27))
+
+// Neither union member matches the fixed tag, so T has no candidates and becomes unknown.
+export function withUnmatchedTag(): Success<string[]> | Failure<number[]> {
+>withUnmatchedTag : Symbol(withUnmatchedTag, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 26, 61))
+>Success : Symbol(Success, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 8, 1))
+>Failure : Symbol(Failure, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 10, 48))
+
+    return unmatched();
+>unmatched : Symbol(unmatched, Decl(inferenceContextualReturnTypeDiscriminatedUnion.ts, 24, 1))
+}
+

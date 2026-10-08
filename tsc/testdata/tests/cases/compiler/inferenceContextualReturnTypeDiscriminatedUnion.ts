@@ -26,3 +26,10 @@ declare function accepted<const T>(value: T): Accepted<T>;
 export function withNumberTag(): Accepted<string[]> | Rejected<string> {
     return accepted([]);
 }
+
+declare function unmatched<T>(): { kind: "other"; value: T };
+
+// Neither union member matches the fixed tag, so T has no candidates and becomes unknown.
+export function withUnmatchedTag(): Success<string[]> | Failure<number[]> {
+    return unmatched();
+}

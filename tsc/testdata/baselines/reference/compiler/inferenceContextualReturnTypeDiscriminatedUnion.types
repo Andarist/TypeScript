@@ -74,3 +74,17 @@ export function withNumberTag(): Accepted<string[]> | Rejected<string> {
 >[] : []
 }
 
+declare function unmatched<T>(): { kind: "other"; value: T };
+>unmatched : <T>() => { kind: "other"; value: T; }
+>kind : "other"
+>value : T
+
+// Neither union member matches the fixed tag, so T has no candidates and becomes unknown.
+export function withUnmatchedTag(): Success<string[]> | Failure<number[]> {
+>withUnmatchedTag : () => Success<string[]> | Failure<number[]>
+
+    return unmatched();
+>unmatched() : { kind: "other"; value: unknown; }
+>unmatched : <T>() => { kind: "other"; value: T; }
+}
+
