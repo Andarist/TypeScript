@@ -492,3 +492,239 @@ export function explicitUndefinedOverlap(): ExplicitOptionalOk<string[]> | Alway
 >explicitOptionalOk : Symbol(explicitOptionalOk, Decl(inferenceDiscriminatedUnionSource.ts, 94, 53))
 }
 
+type Tagged<A, B> = { type: "a"; value: A } | { type: "b"; value: B };
+>Tagged : Symbol(Tagged, Decl(inferenceDiscriminatedUnionSource.ts, 120, 1))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 122, 12))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 122, 14))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 122, 21))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 122, 32))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 122, 12))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 122, 47))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 122, 58))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 122, 14))
+
+declare function inferTwoArguments<A, B>(first: Tagged<A, B>, second: Tagged<A, B>): [A, B];
+>inferTwoArguments : Symbol(inferTwoArguments, Decl(inferenceDiscriminatedUnionSource.ts, 122, 70))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 124, 35))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 124, 37))
+>first : Symbol(first, Decl(inferenceDiscriminatedUnionSource.ts, 124, 41))
+>Tagged : Symbol(Tagged, Decl(inferenceDiscriminatedUnionSource.ts, 120, 1))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 124, 35))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 124, 37))
+>second : Symbol(second, Decl(inferenceDiscriminatedUnionSource.ts, 124, 61))
+>Tagged : Symbol(Tagged, Decl(inferenceDiscriminatedUnionSource.ts, 120, 1))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 124, 35))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 124, 37))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 124, 35))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 124, 37))
+
+const twoArguments = inferTwoArguments({ type: "a", value: 42 }, { type: "b", value: true });
+>twoArguments : Symbol(twoArguments, Decl(inferenceDiscriminatedUnionSource.ts, 125, 5))
+>inferTwoArguments : Symbol(inferTwoArguments, Decl(inferenceDiscriminatedUnionSource.ts, 122, 70))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 125, 40))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 125, 51))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 125, 66))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 125, 77))
+
+declare function inferInlineUnion<A, B>(value: { type: "a"; value: A } | { type: "b"; value: B }): [A, B];
+>inferInlineUnion : Symbol(inferInlineUnion, Decl(inferenceDiscriminatedUnionSource.ts, 125, 93))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 127, 34))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 127, 36))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 127, 40))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 127, 48))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 127, 59))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 127, 34))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 127, 74))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 127, 85))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 127, 36))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 127, 34))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 127, 36))
+
+const oneArgument = inferInlineUnion({ type: "a", value: 42 });
+>oneArgument : Symbol(oneArgument, Decl(inferenceDiscriminatedUnionSource.ts, 128, 5))
+>inferInlineUnion : Symbol(inferInlineUnion, Decl(inferenceDiscriminatedUnionSource.ts, 125, 93))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 128, 38))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 128, 49))
+
+declare function inferNoInferOverloads<A, B>(first: Tagged<A, NoInfer<B>>, second: Tagged<A, B>): [A, B];
+>inferNoInferOverloads : Symbol(inferNoInferOverloads, Decl(inferenceDiscriminatedUnionSource.ts, 128, 63), Decl(inferenceDiscriminatedUnionSource.ts, 130, 105))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 130, 39))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 130, 41))
+>first : Symbol(first, Decl(inferenceDiscriminatedUnionSource.ts, 130, 45))
+>Tagged : Symbol(Tagged, Decl(inferenceDiscriminatedUnionSource.ts, 120, 1))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 130, 39))
+>NoInfer : Symbol(NoInfer, Decl(lib.es5.d.ts, --, --))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 130, 41))
+>second : Symbol(second, Decl(inferenceDiscriminatedUnionSource.ts, 130, 74))
+>Tagged : Symbol(Tagged, Decl(inferenceDiscriminatedUnionSource.ts, 120, 1))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 130, 39))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 130, 41))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 130, 39))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 130, 41))
+
+declare function inferNoInferOverloads<A, B>(first: Tagged<NoInfer<A>, B>, second: Tagged<A, B>): [A, B];
+>inferNoInferOverloads : Symbol(inferNoInferOverloads, Decl(inferenceDiscriminatedUnionSource.ts, 128, 63), Decl(inferenceDiscriminatedUnionSource.ts, 130, 105))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 131, 39))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 131, 41))
+>first : Symbol(first, Decl(inferenceDiscriminatedUnionSource.ts, 131, 45))
+>Tagged : Symbol(Tagged, Decl(inferenceDiscriminatedUnionSource.ts, 120, 1))
+>NoInfer : Symbol(NoInfer, Decl(lib.es5.d.ts, --, --))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 131, 39))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 131, 41))
+>second : Symbol(second, Decl(inferenceDiscriminatedUnionSource.ts, 131, 74))
+>Tagged : Symbol(Tagged, Decl(inferenceDiscriminatedUnionSource.ts, 120, 1))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 131, 39))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 131, 41))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 131, 39))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 131, 41))
+
+const noInferArguments = inferNoInferOverloads({ type: "a", value: 42 }, { type: "b", value: true });
+>noInferArguments : Symbol(noInferArguments, Decl(inferenceDiscriminatedUnionSource.ts, 132, 5))
+>inferNoInferOverloads : Symbol(inferNoInferOverloads, Decl(inferenceDiscriminatedUnionSource.ts, 128, 63), Decl(inferenceDiscriminatedUnionSource.ts, 130, 105))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 132, 48))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 132, 59))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 132, 74))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 132, 85))
+
+const noInferReversedArguments = inferNoInferOverloads({ type: "b", value: true }, { type: "a", value: 42 });
+>noInferReversedArguments : Symbol(noInferReversedArguments, Decl(inferenceDiscriminatedUnionSource.ts, 133, 5))
+>inferNoInferOverloads : Symbol(inferNoInferOverloads, Decl(inferenceDiscriminatedUnionSource.ts, 128, 63), Decl(inferenceDiscriminatedUnionSource.ts, 130, 105))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 133, 56))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 133, 67))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 133, 84))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 133, 95))
+
+declare const taggedSource: Tagged<string, number>;
+>taggedSource : Symbol(taggedSource, Decl(inferenceDiscriminatedUnionSource.ts, 135, 13))
+>Tagged : Symbol(Tagged, Decl(inferenceDiscriminatedUnionSource.ts, 120, 1))
+
+const unionArgument = inferInlineUnion(taggedSource);
+>unionArgument : Symbol(unionArgument, Decl(inferenceDiscriminatedUnionSource.ts, 136, 5))
+>inferInlineUnion : Symbol(inferInlineUnion, Decl(inferenceDiscriminatedUnionSource.ts, 125, 93))
+>taggedSource : Symbol(taggedSource, Decl(inferenceDiscriminatedUnionSource.ts, 135, 13))
+
+const explicitUnionArgument = inferInlineUnion<string, number>(taggedSource);
+>explicitUnionArgument : Symbol(explicitUnionArgument, Decl(inferenceDiscriminatedUnionSource.ts, 137, 5))
+>inferInlineUnion : Symbol(inferInlineUnion, Decl(inferenceDiscriminatedUnionSource.ts, 125, 93))
+>taggedSource : Symbol(taggedSource, Decl(inferenceDiscriminatedUnionSource.ts, 135, 13))
+
+declare function inferReversedUnion<A, B>(value: { type: "b"; value: B } | { type: "a"; value: A }): [A, B];
+>inferReversedUnion : Symbol(inferReversedUnion, Decl(inferenceDiscriminatedUnionSource.ts, 137, 77))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 139, 36))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 139, 38))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 139, 42))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 139, 50))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 139, 61))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 139, 38))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 139, 76))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 139, 87))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 139, 36))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 139, 36))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 139, 38))
+
+const reversedTargetUnion = inferReversedUnion(taggedSource);
+>reversedTargetUnion : Symbol(reversedTargetUnion, Decl(inferenceDiscriminatedUnionSource.ts, 140, 5))
+>inferReversedUnion : Symbol(inferReversedUnion, Decl(inferenceDiscriminatedUnionSource.ts, 137, 77))
+>taggedSource : Symbol(taggedSource, Decl(inferenceDiscriminatedUnionSource.ts, 135, 13))
+
+declare const reversedTaggedSource: { type: "b"; value: number } | { type: "a"; value: string };
+>reversedTaggedSource : Symbol(reversedTaggedSource, Decl(inferenceDiscriminatedUnionSource.ts, 141, 13))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 141, 37))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 141, 48))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 141, 68))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 141, 79))
+
+const reversedSourceUnion = inferInlineUnion(reversedTaggedSource);
+>reversedSourceUnion : Symbol(reversedSourceUnion, Decl(inferenceDiscriminatedUnionSource.ts, 142, 5))
+>inferInlineUnion : Symbol(inferInlineUnion, Decl(inferenceDiscriminatedUnionSource.ts, 125, 93))
+>reversedTaggedSource : Symbol(reversedTaggedSource, Decl(inferenceDiscriminatedUnionSource.ts, 141, 13))
+
+declare function inferTwoDiscriminants<A, B>(value: { type: "a"; sub: 1; value: A } | { type: "b"; sub: 2; value: B }): [A, B];
+>inferTwoDiscriminants : Symbol(inferTwoDiscriminants, Decl(inferenceDiscriminatedUnionSource.ts, 142, 67))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 144, 39))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 144, 41))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 144, 45))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 144, 53))
+>sub : Symbol(sub, Decl(inferenceDiscriminatedUnionSource.ts, 144, 64))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 144, 72))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 144, 39))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 144, 87))
+>sub : Symbol(sub, Decl(inferenceDiscriminatedUnionSource.ts, 144, 98))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 144, 106))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 144, 41))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 144, 39))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 144, 41))
+
+declare function inferTwoDiscriminantsReversed<A, B>(value: { sub: 1; type: "a"; value: A } | { sub: 2; type: "b"; value: B }): [A, B];
+>inferTwoDiscriminantsReversed : Symbol(inferTwoDiscriminantsReversed, Decl(inferenceDiscriminatedUnionSource.ts, 144, 127))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 145, 47))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 145, 49))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 145, 53))
+>sub : Symbol(sub, Decl(inferenceDiscriminatedUnionSource.ts, 145, 61))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 145, 69))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 145, 80))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 145, 47))
+>sub : Symbol(sub, Decl(inferenceDiscriminatedUnionSource.ts, 145, 95))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 145, 103))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 145, 114))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 145, 49))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 145, 47))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 145, 49))
+
+const unmatchedTargetUnion = inferTwoDiscriminants({ type: "a", sub: 2, value: 42 });
+>unmatchedTargetUnion : Symbol(unmatchedTargetUnion, Decl(inferenceDiscriminatedUnionSource.ts, 146, 5))
+>inferTwoDiscriminants : Symbol(inferTwoDiscriminants, Decl(inferenceDiscriminatedUnionSource.ts, 142, 67))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 146, 52))
+>sub : Symbol(sub, Decl(inferenceDiscriminatedUnionSource.ts, 146, 63))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 146, 71))
+
+const unmatchedTargetUnionReversed = inferTwoDiscriminantsReversed({ type: "a", sub: 2, value: 42 });
+>unmatchedTargetUnionReversed : Symbol(unmatchedTargetUnionReversed, Decl(inferenceDiscriminatedUnionSource.ts, 147, 5))
+>inferTwoDiscriminantsReversed : Symbol(inferTwoDiscriminantsReversed, Decl(inferenceDiscriminatedUnionSource.ts, 144, 127))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 147, 68))
+>sub : Symbol(sub, Decl(inferenceDiscriminatedUnionSource.ts, 147, 79))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 147, 87))
+
+declare const broadSourceTag: { type: string; value: number };
+>broadSourceTag : Symbol(broadSourceTag, Decl(inferenceDiscriminatedUnionSource.ts, 149, 13))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 149, 31))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 149, 45))
+
+const broadTargetUnion = inferInlineUnion(broadSourceTag);
+>broadTargetUnion : Symbol(broadTargetUnion, Decl(inferenceDiscriminatedUnionSource.ts, 150, 5))
+>inferInlineUnion : Symbol(inferInlineUnion, Decl(inferenceDiscriminatedUnionSource.ts, 125, 93))
+>broadSourceTag : Symbol(broadSourceTag, Decl(inferenceDiscriminatedUnionSource.ts, 149, 13))
+
+declare const missingTag: { value: number };
+>missingTag : Symbol(missingTag, Decl(inferenceDiscriminatedUnionSource.ts, 151, 13))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 151, 27))
+
+const missingTargetUnion = inferInlineUnion(missingTag);
+>missingTargetUnion : Symbol(missingTargetUnion, Decl(inferenceDiscriminatedUnionSource.ts, 152, 5))
+>inferInlineUnion : Symbol(inferInlineUnion, Decl(inferenceDiscriminatedUnionSource.ts, 125, 93))
+>missingTag : Symbol(missingTag, Decl(inferenceDiscriminatedUnionSource.ts, 151, 13))
+
+declare function inferOptionalUnion<A, B>(value: { type?: "a"; value: A } | { type?: "b"; value: B }): [A, B];
+>inferOptionalUnion : Symbol(inferOptionalUnion, Decl(inferenceDiscriminatedUnionSource.ts, 152, 56))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 154, 36))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 154, 38))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 154, 42))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 154, 50))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 154, 62))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 154, 36))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 154, 77))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 154, 89))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 154, 38))
+>A : Symbol(A, Decl(inferenceDiscriminatedUnionSource.ts, 154, 36))
+>B : Symbol(B, Decl(inferenceDiscriminatedUnionSource.ts, 154, 38))
+
+declare const optionalTag: { type?: "a"; value: string };
+>optionalTag : Symbol(optionalTag, Decl(inferenceDiscriminatedUnionSource.ts, 155, 13))
+>type : Symbol(type, Decl(inferenceDiscriminatedUnionSource.ts, 155, 28))
+>value : Symbol(value, Decl(inferenceDiscriminatedUnionSource.ts, 155, 40))
+
+const optionalTargetUnion = inferOptionalUnion(optionalTag);
+>optionalTargetUnion : Symbol(optionalTargetUnion, Decl(inferenceDiscriminatedUnionSource.ts, 156, 5))
+>inferOptionalUnion : Symbol(inferOptionalUnion, Decl(inferenceDiscriminatedUnionSource.ts, 152, 56))
+>optionalTag : Symbol(optionalTag, Decl(inferenceDiscriminatedUnionSource.ts, 155, 13))
+

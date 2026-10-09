@@ -44,9 +44,21 @@ inferenceDiscriminatedUnionSource.ts(116,5): error TS2322: Type 'UndefinedOk<rea
 inferenceDiscriminatedUnionSource.ts(120,5): error TS2322: Type 'ExplicitOptionalOk<readonly []>' is not assignable to type 'AlwaysUndefinedErr<string> | ExplicitOptionalOk<string[]>'.
   Type 'ExplicitOptionalOk<readonly []>' is not assignable to type 'ExplicitOptionalOk<string[]>'.
     The type 'readonly []' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
+inferenceDiscriminatedUnionSource.ts(147,52): error TS2345: Argument of type '{ type: "a"; sub: 2; value: number; }' is not assignable to parameter of type '{ type: "a"; sub: 1; value: unknown; } | { type: "b"; sub: 2; value: unknown; }'.
+  Types of property 'sub' are incompatible.
+    Type '2' is not assignable to type '1'.
+inferenceDiscriminatedUnionSource.ts(148,68): error TS2345: Argument of type '{ type: "a"; sub: 2; value: number; }' is not assignable to parameter of type '{ sub: 1; type: "a"; value: unknown; } | { sub: 2; type: "b"; value: unknown; }'.
+  Types of property 'sub' are incompatible.
+    Type '2' is not assignable to type '1'.
+inferenceDiscriminatedUnionSource.ts(151,43): error TS2345: Argument of type '{ type: string; value: number; }' is not assignable to parameter of type '{ type: "a"; value: number; } | { type: "b"; value: number; }'.
+  Type '{ type: string; value: number; }' is not assignable to type '{ type: "b"; value: number; }'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type '"b"'.
+inferenceDiscriminatedUnionSource.ts(153,45): error TS2345: Argument of type '{ value: number; }' is not assignable to parameter of type '{ type: "a"; value: number; } | { type: "b"; value: number; }'.
+  Property 'type' is missing in type '{ value: number; }' but required in type '{ type: "b"; value: number; }'.
 
 
-==== inferenceDiscriminatedUnionSource.ts (13 errors) ====
+==== inferenceDiscriminatedUnionSource.ts (17 errors) ====
     type Ok<T> = { ok: true; value: T };
     type Err<E> = { ok: false; value: E };
     declare function ok<const T>(value: T): Ok<T>;
@@ -228,4 +240,57 @@ inferenceDiscriminatedUnionSource.ts(120,5): error TS2322: Type 'ExplicitOptiona
 !!! error TS2322:   Type 'ExplicitOptionalOk<readonly []>' is not assignable to type 'ExplicitOptionalOk<string[]>'.
 !!! error TS2322:     The type 'readonly []' is 'readonly' and cannot be assigned to the mutable type 'string[]'.
     }
+    
+    type Tagged<A, B> = { type: "a"; value: A } | { type: "b"; value: B };
+    
+    declare function inferTwoArguments<A, B>(first: Tagged<A, B>, second: Tagged<A, B>): [A, B];
+    const twoArguments = inferTwoArguments({ type: "a", value: 42 }, { type: "b", value: true });
+    
+    declare function inferInlineUnion<A, B>(value: { type: "a"; value: A } | { type: "b"; value: B }): [A, B];
+    const oneArgument = inferInlineUnion({ type: "a", value: 42 });
+    
+    declare function inferNoInferOverloads<A, B>(first: Tagged<A, NoInfer<B>>, second: Tagged<A, B>): [A, B];
+    declare function inferNoInferOverloads<A, B>(first: Tagged<NoInfer<A>, B>, second: Tagged<A, B>): [A, B];
+    const noInferArguments = inferNoInferOverloads({ type: "a", value: 42 }, { type: "b", value: true });
+    const noInferReversedArguments = inferNoInferOverloads({ type: "b", value: true }, { type: "a", value: 42 });
+    
+    declare const taggedSource: Tagged<string, number>;
+    const unionArgument = inferInlineUnion(taggedSource);
+    const explicitUnionArgument = inferInlineUnion<string, number>(taggedSource);
+    
+    declare function inferReversedUnion<A, B>(value: { type: "b"; value: B } | { type: "a"; value: A }): [A, B];
+    const reversedTargetUnion = inferReversedUnion(taggedSource);
+    declare const reversedTaggedSource: { type: "b"; value: number } | { type: "a"; value: string };
+    const reversedSourceUnion = inferInlineUnion(reversedTaggedSource);
+    
+    declare function inferTwoDiscriminants<A, B>(value: { type: "a"; sub: 1; value: A } | { type: "b"; sub: 2; value: B }): [A, B];
+    declare function inferTwoDiscriminantsReversed<A, B>(value: { sub: 1; type: "a"; value: A } | { sub: 2; type: "b"; value: B }): [A, B];
+    const unmatchedTargetUnion = inferTwoDiscriminants({ type: "a", sub: 2, value: 42 });
+                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2345: Argument of type '{ type: "a"; sub: 2; value: number; }' is not assignable to parameter of type '{ type: "a"; sub: 1; value: unknown; } | { type: "b"; sub: 2; value: unknown; }'.
+!!! error TS2345:   Types of property 'sub' are incompatible.
+!!! error TS2345:     Type '2' is not assignable to type '1'.
+    const unmatchedTargetUnionReversed = inferTwoDiscriminantsReversed({ type: "a", sub: 2, value: 42 });
+                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2345: Argument of type '{ type: "a"; sub: 2; value: number; }' is not assignable to parameter of type '{ sub: 1; type: "a"; value: unknown; } | { sub: 2; type: "b"; value: unknown; }'.
+!!! error TS2345:   Types of property 'sub' are incompatible.
+!!! error TS2345:     Type '2' is not assignable to type '1'.
+    
+    declare const broadSourceTag: { type: string; value: number };
+    const broadTargetUnion = inferInlineUnion(broadSourceTag);
+                                              ~~~~~~~~~~~~~~
+!!! error TS2345: Argument of type '{ type: string; value: number; }' is not assignable to parameter of type '{ type: "a"; value: number; } | { type: "b"; value: number; }'.
+!!! error TS2345:   Type '{ type: string; value: number; }' is not assignable to type '{ type: "b"; value: number; }'.
+!!! error TS2345:     Types of property 'type' are incompatible.
+!!! error TS2345:       Type 'string' is not assignable to type '"b"'.
+    declare const missingTag: { value: number };
+    const missingTargetUnion = inferInlineUnion(missingTag);
+                                                ~~~~~~~~~~
+!!! error TS2345: Argument of type '{ value: number; }' is not assignable to parameter of type '{ type: "a"; value: number; } | { type: "b"; value: number; }'.
+!!! error TS2345:   Property 'type' is missing in type '{ value: number; }' but required in type '{ type: "b"; value: number; }'.
+!!! related TS2728 inferenceDiscriminatedUnionSource.ts:128:76: 'type' is declared here.
+    
+    declare function inferOptionalUnion<A, B>(value: { type?: "a"; value: A } | { type?: "b"; value: B }): [A, B];
+    declare const optionalTag: { type?: "a"; value: string };
+    const optionalTargetUnion = inferOptionalUnion(optionalTag);
     
