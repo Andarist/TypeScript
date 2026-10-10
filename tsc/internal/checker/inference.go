@@ -247,10 +247,10 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 	case target.flags&TypeFlagsConditional != 0:
 		c.invokeOnce(n, source, target, (*Checker).inferToConditionalType)
 	case target.flags&TypeFlagsUnionOrIntersection != 0:
-		c.inferToMultipleTypes(n, source, target.Types(), target.flags)
+		c.inferToMultipleTypes(n, source, target)
 	case source.flags&TypeFlagsUnion != 0:
 		// Infer from each source union constituent, excluding incompatible fixed discriminants.
-		discriminants := c.getInferenceDiscriminants(source.Types(), target)
+		discriminants := c.getInferenceDiscriminants(source, target)
 	inferConstituents:
 		for _, sourceType := range source.Types() {
 			if len(discriminants) != 0 && sourceType.flags&(TypeFlagsObject|TypeFlagsIntersection) != 0 {
@@ -474,7 +474,19 @@ func getTypeListDepth(types []*Type, maxDepth int) int {
 	return depth
 }
 
-func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets []*Type, targetFlags TypeFlags) {
+func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, target *Type) {
+	var discriminants [][]*ast.Symbol
+	if target.flags&TypeFlagsUnion != 0 {
+		sources := source.Distributed()
+		discriminants = make([][]*ast.Symbol, len(sources))
+		for i, s := range sources {
+			discriminants[i] = c.getInferenceDiscriminants(target, s)
+		}
+	}
+	c.inferToMultipleTypeList(n, source, target.Types(), target.flags, discriminants)
+}
+
+func (c *Checker) inferToMultipleTypeList(n *InferenceState, source *Type, targets []*Type, targetFlags TypeFlags, discriminants [][]*ast.Symbol) {
 	typeVariableCount := 0
 	if targetFlags&TypeFlagsUnion != 0 {
 		var nakedTypeVariable *Type
@@ -483,10 +495,6 @@ func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets 
 			sources = source.Types()
 		} else {
 			sources = []*Type{source}
-		}
-		discriminants := make([][]*ast.Symbol, len(sources))
-		for i, s := range sources {
-			discriminants[i] = c.getInferenceDiscriminants(targets, s)
 		}
 		matched := make([]bool, len(sources))
 		inferenceCircularity := false
@@ -501,7 +509,7 @@ func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets 
 			} else {
 			inferSources:
 				for i := range sources {
-					if len(discriminants[i]) != 0 && t.flags&(TypeFlagsObject|TypeFlagsIntersection) != 0 {
+					if len(discriminants) != 0 && len(discriminants[i]) != 0 && t.flags&(TypeFlagsObject|TypeFlagsIntersection) != 0 {
 						for _, sourceProp := range discriminants[i] {
 							targetProp := c.getPropertyOfType(t, sourceProp.Name)
 							if targetProp == nil || sourceProp.Flags&ast.SymbolFlagsOptional != 0 && targetProp.Flags&ast.SymbolFlagsOptional != 0 {
@@ -593,7 +601,7 @@ func getSingleTypeVariableFromIntersectionTypes(n *InferenceState, types []*Type
 func (c *Checker) inferToMultipleTypesWithPriority(n *InferenceState, source *Type, targets []*Type, targetFlags TypeFlags, newPriority InferencePriority) {
 	savePriority := n.priority
 	n.priority |= newPriority
-	c.inferToMultipleTypes(n, source, targets, targetFlags)
+	c.inferToMultipleTypeList(n, source, targets, targetFlags, nil)
 	n.priority = savePriority
 }
 
@@ -1228,14 +1236,14 @@ func (c *Checker) replaceIndexedAccess(instantiable *Type, t *Type, replacement 
 	return c.instantiateType(instantiable, newTypeMapper([]*Type{t.AsIndexedAccessType().indexType, t.AsIndexedAccessType().objectType}, []*Type{c.getNumberLiteralType(0), c.createTupleType([]*Type{replacement})}))
 }
 
-func (c *Checker) getInferenceDiscriminants(types []*Type, target *Type) []*ast.Symbol {
+func (c *Checker) getInferenceDiscriminants(source *Type, target *Type) []*ast.Symbol {
 	if target.flags&TypeFlagsObject == 0 {
 		return nil
 	}
 	literalProps := core.Filter(c.getPropertiesOfType(target), func(prop *ast.Symbol) bool {
 		return isLiteralType(c.getNonMissingTypeOfSymbol(prop))
 	})
-	return c.findDiscriminantProperties(literalProps, c.getUnionType(types))
+	return c.findDiscriminantProperties(literalProps, source)
 }
 
 func (c *Checker) typesDefinitelyUnrelated(source *Type, target *Type) bool {
