@@ -145,6 +145,7 @@ const reversedTargetUnion = inferReversedUnion(taggedSource);
 
 declare function inferTwoDiscriminants<A, B>(value: { type: "a"; sub: 1; value: A } | { type: "b"; sub: 2; value: B }): [A, B];
 const unmatchedTargetUnion = inferTwoDiscriminants({ type: "a", sub: 2, value: 42 });
+const unmatchedTargetUnionReversedSource = inferTwoDiscriminants({ sub: 2, type: "a", value: 42 });
 
 declare function inferTwoDiscriminantsReversed<A, B>(value: { sub: 1; type: "a"; value: A } | { sub: 2; type: "b"; value: B }): [A, B];
 const unmatchedTargetUnionReversed = inferTwoDiscriminantsReversed({ type: "a", sub: 2, value: 42 });
