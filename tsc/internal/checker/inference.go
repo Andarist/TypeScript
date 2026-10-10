@@ -247,7 +247,7 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 	case target.flags&TypeFlagsConditional != 0:
 		c.invokeOnce(n, source, target, (*Checker).inferToConditionalType)
 	case target.flags&TypeFlagsUnionOrIntersection != 0:
-		c.inferToMultipleTypes(n, source, target)
+		c.inferToUnionOrIntersectionType(n, source, target)
 	case source.flags&TypeFlagsUnion != 0:
 		// Infer from each source union constituent, excluding incompatible fixed discriminants.
 		discriminants := c.getInferenceDiscriminants(source, target)
@@ -474,7 +474,7 @@ func getTypeListDepth(types []*Type, maxDepth int) int {
 	return depth
 }
 
-func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, target *Type) {
+func (c *Checker) inferToUnionOrIntersectionType(n *InferenceState, source *Type, target *Type) {
 	var discriminants [][]*ast.Symbol
 	if target.flags&TypeFlagsUnion != 0 {
 		sources := source.Distributed()
@@ -483,10 +483,10 @@ func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, target *
 			discriminants[i] = c.getInferenceDiscriminants(target, s)
 		}
 	}
-	c.inferToMultipleTypeList(n, source, target.Types(), target.flags, discriminants)
+	c.inferToMultipleTypes(n, source, target.Types(), target.flags, discriminants)
 }
 
-func (c *Checker) inferToMultipleTypeList(n *InferenceState, source *Type, targets []*Type, targetFlags TypeFlags, discriminants [][]*ast.Symbol) {
+func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets []*Type, targetFlags TypeFlags, discriminants [][]*ast.Symbol) {
 	typeVariableCount := 0
 	if targetFlags&TypeFlagsUnion != 0 {
 		var nakedTypeVariable *Type
@@ -601,7 +601,7 @@ func getSingleTypeVariableFromIntersectionTypes(n *InferenceState, types []*Type
 func (c *Checker) inferToMultipleTypesWithPriority(n *InferenceState, source *Type, targets []*Type, targetFlags TypeFlags, newPriority InferencePriority) {
 	savePriority := n.priority
 	n.priority |= newPriority
-	c.inferToMultipleTypeList(n, source, targets, targetFlags, nil)
+	c.inferToMultipleTypes(n, source, targets, targetFlags, nil)
 	n.priority = savePriority
 }
 
