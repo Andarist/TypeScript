@@ -462,7 +462,7 @@ func getTypeListDepth(types []*Type, maxDepth int) int {
 }
 
 func (c *Checker) inferToUnionOrIntersectionType(n *InferenceState, source *Type, target *Type) {
-	// Each entry contains the allowed targets for the corresponding source constituent; nil means unrestricted.
+	// Each entry contains the remaining allowed targets for the corresponding source constituent; nil means unrestricted.
 	var filteredTargets [][]*Type
 	if target.flags&TypeFlagsUnion != 0 {
 		sources := source.Distributed()
@@ -499,10 +499,21 @@ func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets 
 			if getInferenceInfoForType(n, t) != nil {
 				nakedTypeVariable = t
 				typeVariableCount++
+				// Naked type parameters still consume their entries in the filtered target lists.
+				for i, remaining := range filteredTargets {
+					if len(remaining) != 0 && remaining[0] == t {
+						filteredTargets[i] = remaining[1:]
+					}
+				}
 			} else {
 				for i := range sources {
-					if len(filteredTargets) != 0 && filteredTargets[i] != nil && !slices.Contains(filteredTargets[i], t) {
-						continue
+					if len(filteredTargets) != 0 && filteredTargets[i] != nil {
+						// Filtering preserves union order, so the next allowed target must be first.
+						remaining := filteredTargets[i]
+						if len(remaining) == 0 || remaining[0] != t {
+							continue
+						}
+						filteredTargets[i] = remaining[1:]
 					}
 					saveInferencePriority := n.inferencePriority
 					n.inferencePriority = InferencePriorityMaxValue

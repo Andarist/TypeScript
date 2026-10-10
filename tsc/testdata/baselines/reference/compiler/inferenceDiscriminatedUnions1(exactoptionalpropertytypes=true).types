@@ -528,6 +528,21 @@ const missingTargetUnion = inferInlineUnion(missingTag);
 >inferInlineUnion : <A, B>(value: { type: "a"; value: A; } | { type: "b"; value: B; }) => [A, B]
 >missingTag : { value: number; }
 
+declare function inferUnionWithFallback<T extends { type: "a" | "b" }, A, B>(value: T | Tagged<A, B>): [T, A, B];
+>inferUnionWithFallback : <T extends { type: "a" | "b"; }, A, B>(value: T | Tagged<A, B>) => [T, A, B]
+>type : "a" | "b"
+>value : T | Tagged<A, B>
+
+const nakedTypeParameter = inferUnionWithFallback({ type: "a", value: 42 });
+>nakedTypeParameter : [{ type: "a"; value: number; }, number, unknown]
+>inferUnionWithFallback({ type: "a", value: 42 }) : [{ type: "a"; value: number; }, number, unknown]
+>inferUnionWithFallback : <T extends { type: "a" | "b"; }, A, B>(value: T | Tagged<A, B>) => [T, A, B]
+>{ type: "a", value: 42 } : { type: "a"; value: number; }
+>type : "a"
+>"a" : "a"
+>value : number
+>42 : 42
+
 declare function inferNoInferOverloads<A, B>(first: Tagged<A, NoInfer<B>>, second: Tagged<A, B>): [A, B];
 >inferNoInferOverloads : { <A, B>(first: Tagged<A, NoInfer<B>>, second: Tagged<A, B>): [A, B]; <A_1, B_1>(first: Tagged<NoInfer<A_1>, B_1>, second: Tagged<A_1, B_1>): [A_1, B_1]; }
 >first : Tagged<A, NoInfer<B>>

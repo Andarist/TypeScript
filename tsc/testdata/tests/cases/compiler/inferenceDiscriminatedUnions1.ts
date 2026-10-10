@@ -135,6 +135,9 @@ const reversedSourceUnion = inferInlineUnion(reversedTaggedSource);
 const broadTargetUnion = inferInlineUnion(broadSourceTag);
 const missingTargetUnion = inferInlineUnion(missingTag);
 
+declare function inferUnionWithFallback<T extends { type: "a" | "b" }, A, B>(value: T | Tagged<A, B>): [T, A, B];
+const nakedTypeParameter = inferUnionWithFallback({ type: "a", value: 42 });
+
 declare function inferNoInferOverloads<A, B>(first: Tagged<A, NoInfer<B>>, second: Tagged<A, B>): [A, B];
 declare function inferNoInferOverloads<A, B>(first: Tagged<NoInfer<A>, B>, second: Tagged<A, B>): [A, B];
 const noInferArguments = inferNoInferOverloads({ type: "a", value: 42 }, { type: "b", value: true });

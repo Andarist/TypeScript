@@ -56,13 +56,13 @@ inferenceDiscriminatedUnions1.ts(131,43): error TS2345: Argument of type '{ type
       Type 'string' is not assignable to type '"b"'.
 inferenceDiscriminatedUnions1.ts(132,45): error TS2345: Argument of type '{ value: number; }' is not assignable to parameter of type '{ type: "a"; value: number; } | { type: "b"; value: number; }'.
   Property 'type' is missing in type '{ value: number; }' but required in type '{ type: "b"; value: number; }'.
-inferenceDiscriminatedUnions1.ts(143,52): error TS2345: Argument of type '{ type: "a"; sub: 2; value: number; }' is not assignable to parameter of type '{ type: "a"; sub: 1; value: number; } | { type: "b"; sub: 2; value: unknown; }'.
+inferenceDiscriminatedUnions1.ts(146,52): error TS2345: Argument of type '{ type: "a"; sub: 2; value: number; }' is not assignable to parameter of type '{ type: "a"; sub: 1; value: number; } | { type: "b"; sub: 2; value: unknown; }'.
   Types of property 'sub' are incompatible.
     Type '2' is not assignable to type '1'.
-inferenceDiscriminatedUnions1.ts(144,66): error TS2345: Argument of type '{ sub: 2; type: "a"; value: number; }' is not assignable to parameter of type '{ type: "a"; sub: 1; value: unknown; } | { type: "b"; sub: 2; value: number; }'.
+inferenceDiscriminatedUnions1.ts(147,66): error TS2345: Argument of type '{ sub: 2; type: "a"; value: number; }' is not assignable to parameter of type '{ type: "a"; sub: 1; value: unknown; } | { type: "b"; sub: 2; value: number; }'.
   Types of property 'type' are incompatible.
     Type '"a"' is not assignable to type '"b"'.
-inferenceDiscriminatedUnions1.ts(147,68): error TS2345: Argument of type '{ type: "a"; sub: 2; value: number; }' is not assignable to parameter of type '{ sub: 1; type: "a"; value: number; } | { sub: 2; type: "b"; value: unknown; }'.
+inferenceDiscriminatedUnions1.ts(150,68): error TS2345: Argument of type '{ type: "a"; sub: 2; value: number; }' is not assignable to parameter of type '{ sub: 1; type: "a"; value: number; } | { sub: 2; type: "b"; value: unknown; }'.
   Types of property 'sub' are incompatible.
     Type '2' is not assignable to type '1'.
 
@@ -277,6 +277,9 @@ inferenceDiscriminatedUnions1.ts(147,68): error TS2345: Argument of type '{ type
 !!! error TS2345: Argument of type '{ value: number; }' is not assignable to parameter of type '{ type: "a"; value: number; } | { type: "b"; value: number; }'.
 !!! error TS2345:   Property 'type' is missing in type '{ value: number; }' but required in type '{ type: "b"; value: number; }'.
 !!! related TS2728 inferenceDiscriminatedUnions1.ts:126:76: 'type' is declared here.
+    
+    declare function inferUnionWithFallback<T extends { type: "a" | "b" }, A, B>(value: T | Tagged<A, B>): [T, A, B];
+    const nakedTypeParameter = inferUnionWithFallback({ type: "a", value: 42 });
     
     declare function inferNoInferOverloads<A, B>(first: Tagged<A, NoInfer<B>>, second: Tagged<A, B>): [A, B];
     declare function inferNoInferOverloads<A, B>(first: Tagged<NoInfer<A>, B>, second: Tagged<A, B>): [A, B];
