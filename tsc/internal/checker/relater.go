@@ -1059,7 +1059,7 @@ func (c *Checker) findMatchingDiscriminantType(source *Type, target *Type, isRel
 		}
 		if discriminantProperties := c.findDiscriminantProperties(c.getPropertiesOfType(source), target); len(discriminantProperties) != 0 {
 			discriminator := &TypeDiscriminator{c: c, props: discriminantProperties, isRelatedTo: isRelatedTo}
-			if discriminated := c.discriminateTypeByDiscriminableItems(target, discriminator); discriminated != target {
+			if discriminated := c.discriminateTypeByDiscriminableItems(target, discriminator, false /*requireAllDiscriminants*/); discriminated != target {
 				return discriminated
 			}
 		}
@@ -1202,7 +1202,7 @@ type Discriminator interface {
 	matches(index int, t *Type) bool // True if index-th discriminator matches the given type
 }
 
-func (c *Checker) discriminateTypeByDiscriminableItems(target *Type, discriminator Discriminator) *Type {
+func (c *Checker) discriminateTypeByDiscriminableItems(target *Type, discriminator Discriminator, requireAllDiscriminants bool) *Type {
 	types := target.Types()
 	include := make([]Ternary, len(types))
 	for i, t := range types {
@@ -1211,9 +1211,8 @@ func (c *Checker) discriminateTypeByDiscriminableItems(target *Type, discriminat
 		}
 	}
 	for n := range discriminator.len() {
-		// If the remaining target types include at least one with a matching discriminant, eliminate those that
-		// have non-matching discriminants. This ensures that we ignore erroneous discriminators and gradually
-		// refine the target set without eliminating every constituent (which would lead to `never`).
+		// Contextual typing ignores erroneous discriminators when no remaining constituent matches.
+		// Inference requires every discriminant to match, then falls back to the original union if none survive.
 		matched := false
 		for i := range types {
 			if include[i] != TernaryFalse {
@@ -1227,10 +1226,10 @@ func (c *Checker) discriminateTypeByDiscriminableItems(target *Type, discriminat
 				}
 			}
 		}
-		// Turn each Ternary.Maybe into Ternary.False if there was a match. Otherwise, revert to Ternary.True.
+		// Reject non-matches when required or when there was a match. Otherwise, restore them.
 		for i := range types {
 			if include[i] == TernaryMaybe {
-				if matched {
+				if matched || requireAllDiscriminants {
 					include[i] = TernaryFalse
 				} else {
 					include[i] = TernaryTrue

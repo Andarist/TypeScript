@@ -31325,7 +31325,7 @@ func (c *Checker) discriminateContextualTypeByObjectMembers(node *ast.Node, cont
 			return s.Flags&ast.SymbolFlagsOptional != 0 && node.Symbol().Members[s.Name] == nil && c.isDiscriminantProperty(contextualType, s.Name)
 		})
 		discriminator := &ObjectLiteralDiscriminator{c: c, props: discriminantProperties, members: discriminantMembers}
-		discriminated = c.discriminateTypeByDiscriminableItems(contextualType, discriminator)
+		discriminated = c.discriminateTypeByDiscriminableItems(contextualType, discriminator, false /*requireAllDiscriminants*/)
 	}
 	c.discriminatedContextualTypes[key] = discriminated
 	return discriminated

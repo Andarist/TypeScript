@@ -290,8 +290,8 @@ declare function twoReversed<T>(x: { sub: 1; kind: "a"; value: T }): T;
 >value : T
 
 const r6Reversed = twoReversed(u4);
->r6Reversed : number
->twoReversed(u4) : number
+>r6Reversed : string
+>twoReversed(u4) : string
 >twoReversed : <T>(x: { sub: 1; kind: "a"; value: T; }) => T
 >u4 : { kind: "a"; sub: 2; value: string; } | { kind: "b"; sub: 1; value: number; }
 
@@ -593,14 +593,26 @@ declare function inferTwoDiscriminants<A, B>(value: { type: "a"; sub: 1; value: 
 >value : B
 
 const unmatchedTargetUnion = inferTwoDiscriminants({ type: "a", sub: 2, value: 42 });
->unmatchedTargetUnion : [number, unknown]
->inferTwoDiscriminants({ type: "a", sub: 2, value: 42 }) : [number, unknown]
+>unmatchedTargetUnion : [number, number]
+>inferTwoDiscriminants({ type: "a", sub: 2, value: 42 }) : [number, number]
 >inferTwoDiscriminants : <A, B>(value: { type: "a"; sub: 1; value: A; } | { type: "b"; sub: 2; value: B; }) => [A, B]
 >{ type: "a", sub: 2, value: 42 } : { type: "a"; sub: 2; value: number; }
 >type : "a"
 >"a" : "a"
 >sub : 2
 >2 : 2
+>value : number
+>42 : 42
+
+const unmatchedTargetUnionReversedSource = inferTwoDiscriminants({ sub: 2, type: "a", value: 42 });
+>unmatchedTargetUnionReversedSource : [number, number]
+>inferTwoDiscriminants({ sub: 2, type: "a", value: 42 }) : [number, number]
+>inferTwoDiscriminants : <A, B>(value: { type: "a"; sub: 1; value: A; } | { type: "b"; sub: 2; value: B; }) => [A, B]
+>{ sub: 2, type: "a", value: 42 } : { sub: 2; type: "a"; value: number; }
+>sub : 2
+>2 : 2
+>type : "a"
+>"a" : "a"
 >value : number
 >42 : 42
 
@@ -615,8 +627,8 @@ declare function inferTwoDiscriminantsReversed<A, B>(value: { sub: 1; type: "a";
 >value : B
 
 const unmatchedTargetUnionReversed = inferTwoDiscriminantsReversed({ type: "a", sub: 2, value: 42 });
->unmatchedTargetUnionReversed : [number, unknown]
->inferTwoDiscriminantsReversed({ type: "a", sub: 2, value: 42 }) : [number, unknown]
+>unmatchedTargetUnionReversed : [number, number]
+>inferTwoDiscriminantsReversed({ type: "a", sub: 2, value: 42 }) : [number, number]
 >inferTwoDiscriminantsReversed : <A, B>(value: { sub: 1; type: "a"; value: A; } | { sub: 2; type: "b"; value: B; }) => [A, B]
 >{ type: "a", sub: 2, value: 42 } : { type: "a"; sub: 2; value: number; }
 >type : "a"

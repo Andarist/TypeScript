@@ -288,7 +288,7 @@ func (c *Checker) discriminateContextualTypeByJSXAttributes(node *ast.Node, cont
 		return node.Symbol().Members[s.Name] == nil && c.isDiscriminantProperty(contextualType, s.Name)
 	})
 	discriminator := &ObjectLiteralDiscriminator{c: c, props: discriminantProperties, members: discriminantMembers}
-	discriminated := c.discriminateTypeByDiscriminableItems(contextualType, discriminator)
+	discriminated := c.discriminateTypeByDiscriminableItems(contextualType, discriminator, false /*requireAllDiscriminants*/)
 	c.discriminatedContextualTypes[key] = discriminated
 	return discriminated
 }
