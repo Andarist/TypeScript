@@ -1028,10 +1028,9 @@ func excludeProperties(properties []*ast.Symbol, excludedProperties collections.
 }
 
 type TypeDiscriminator struct {
-	c                *Checker
-	props            []*ast.Symbol
-	isRelatedTo      func(*Type, *Type) Ternary
-	skipOptionalPair bool
+	c           *Checker
+	props       []*ast.Symbol
+	isRelatedTo func(*Type, *Type) Ternary
 }
 
 func (d *TypeDiscriminator) len() int {
@@ -1043,7 +1042,7 @@ func (d *TypeDiscriminator) name(index int) string {
 }
 
 func (d *TypeDiscriminator) matches(index int, t *Type, candidate *Type) bool {
-	if d.skipOptionalPair && d.props[index].Flags&ast.SymbolFlagsOptional != 0 {
+	if d.props[index].Flags&ast.SymbolFlagsOptional != 0 {
 		if prop := d.c.getPropertyOfType(candidate, d.props[index].Name); prop != nil && prop.Flags&ast.SymbolFlagsOptional != 0 {
 			return true
 		}
