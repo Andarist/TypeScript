@@ -1028,10 +1028,10 @@ func excludeProperties(properties []*ast.Symbol, excludedProperties collections.
 }
 
 type TypeDiscriminator struct {
-	c                   *Checker
-	props               []*ast.Symbol
-	isRelatedTo         func(*Type, *Type) Ternary
-	distributeCandidate bool
+	c           *Checker
+	props       []*ast.Symbol
+	isRelatedTo func(*Type, *Type) Ternary
+	reverse     bool
 }
 
 func (d *TypeDiscriminator) len() int {
@@ -1043,17 +1043,12 @@ func (d *TypeDiscriminator) name(index int) string {
 }
 
 func (d *TypeDiscriminator) matches(index int, t *Type) bool {
-	propType := d.c.getTypeOfSymbol(d.props[index])
-	if d.distributeCandidate {
-		for _, sourceType := range t.Distributed() {
-			if d.isRelatedTo(propType, sourceType) != TernaryFalse {
-				return true
-			}
-		}
-		return false
+	sourceType, targetType := d.c.getTypeOfSymbol(d.props[index]), t
+	if d.reverse {
+		sourceType, targetType = targetType, sourceType
 	}
-	for _, s := range propType.Distributed() {
-		if d.isRelatedTo(s, t) != TernaryFalse {
+	for _, sourceType := range sourceType.Distributed() {
+		if d.isRelatedTo(sourceType, targetType) != TernaryFalse {
 			return true
 		}
 	}
