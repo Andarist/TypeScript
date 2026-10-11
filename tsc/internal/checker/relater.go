@@ -1042,7 +1042,12 @@ func (d *TypeDiscriminator) name(index int) string {
 	return d.props[index].Name
 }
 
-func (d *TypeDiscriminator) matches(index int, t *Type) bool {
+func (d *TypeDiscriminator) matches(index int, t *Type, candidate *Type) bool {
+	if d.props[index].Flags&ast.SymbolFlagsOptional != 0 {
+		if prop := d.c.getPropertyOfType(candidate, d.props[index].Name); prop != nil && prop.Flags&ast.SymbolFlagsOptional != 0 {
+			return true
+		}
+	}
 	sourceType, targetType := d.c.getTypeOfSymbol(d.props[index]), t
 	if d.reverse {
 		sourceType, targetType = targetType, sourceType
@@ -1201,9 +1206,9 @@ func (c *Checker) mapTypesByKeyProperty(types []*Type, keyPropertyName string) m
 }
 
 type Discriminator interface {
-	len() int                        // Number of discriminant properties
-	name(index int) string           // Property name of index-th discriminator
-	matches(index int, t *Type) bool // True if index-th discriminator matches the given type
+	len() int                                         // Number of discriminant properties
+	name(index int) string                            // Property name of index-th discriminator
+	matches(index int, t *Type, candidate *Type) bool // True if index-th discriminator matches the given type
 }
 
 func (c *Checker) discriminateTypeByDiscriminableItems(target *Type, discriminator Discriminator) *Type {
@@ -1223,7 +1228,7 @@ func (c *Checker) discriminateTypeByDiscriminableItems(target *Type, discriminat
 			if include[i] != TernaryFalse {
 				targetType := c.getTypeOfPropertyOrIndexSignatureOfType(types[i], discriminator.name(n))
 				if targetType != nil {
-					if discriminator.matches(n, targetType) {
+					if discriminator.matches(n, targetType, types[i]) {
 						matched = true
 					} else {
 						include[i] = TernaryMaybe
