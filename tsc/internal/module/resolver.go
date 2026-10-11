@@ -80,6 +80,16 @@ func resolutionCandidateFromDirectoryPath(directory tspath.RootedDirectoryPath, 
 	return resolutionCandidateFromEncodedPaths(directory, filePath, directoryPath, tspath.HasTrailingDirectorySeparator(path))
 }
 
+// tryResolutionCandidateFromDirectoryPath is like resolutionCandidateFromDirectoryPath,
+// but reports false when path comes from source text that cannot name a rooted path,
+// such as a URL with a query or fragment.
+func tryResolutionCandidateFromDirectoryPath(directory tspath.RootedDirectoryPath, path string) (resolutionCandidate, bool) {
+	if _, ok := directory.TryResolveDirectory(pathForDynamicResolution(directory, path, true)); !ok {
+		return resolutionCandidate{}, false
+	}
+	return resolutionCandidateFromDirectoryPath(directory, path), true
+}
+
 func resolutionCandidateFromDynamicLogicalPath(directory tspath.RootedDirectoryPath, path string) resolutionCandidate {
 	empty := path == ""
 	directoryOnly := path == "" || tspath.HasTrailingDirectorySeparator(path)
@@ -1471,9 +1481,12 @@ func (r *resolutionState) tryLoadModuleUsingPaths(extensions extensions, moduleN
 		}
 		for _, subst := range paths.GetOrZero(matchedPattern.Text) {
 			path := strings.Replace(subst, "*", matchedStar, 1)
-			candidate := resolutionCandidateFromDirectoryPath(containingDirectory, path)
 			if r.tracer != nil {
 				r.tracer.write(diagnostics.Trying_substitution_0_candidate_module_location_Colon_1, subst, path)
+			}
+			candidate, ok := tryResolutionCandidateFromDirectoryPath(containingDirectory, path)
+			if !ok {
+				continue
 			}
 			// A path mapping may have an extension
 			extensionFromSubst := tspath.TryGetExtensionFromPath(subst)

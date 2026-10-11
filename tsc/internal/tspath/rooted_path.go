@@ -782,22 +782,45 @@ func (d RootedDirectoryPath) ResolveRelativeDirectory(path RelativePath) RootedD
 }
 
 func (d RootedDirectoryPath) ResolveDirectory(path string) RootedDirectoryPath {
+	result, ok := d.TryResolveDirectory(path)
+	if !ok {
+		panic("path must not resolve to a URL with a query or fragment")
+	}
+	return result
+}
+
+// TryResolveDirectory is like ResolveDirectory, but reports false instead of
+// panicking when path would resolve to a URL with a query or fragment. Use it
+// for paths that come from source text, such as module specifiers.
+func (d RootedDirectoryPath) TryResolveDirectory(path string) (RootedDirectoryPath, bool) {
 	if d == "" {
 		panic("cannot resolve from an empty directory name")
 	}
 	if path == "" {
-		return d
+		return d, true
 	}
 	if GetEncodedRootLength(path) == 0 && hasURLRoot(d.AsString()) && strings.ContainsAny(path, "?#") {
-		panic("relative URL path must not contain a query or fragment")
+		return "", false
 	}
+	var resolved string
 	if canAppendPathWithoutNormalization(path) {
-		return RootedDirectoryPath(rootedFilePathFromResolved(appendPathToDirectory(d, path)))
+		resolved = appendPathToDirectory(d, path)
+	} else if isNormalizedSlashesRelativePath(path) {
+		resolved = getNormalizedAbsolutePathFromNormalizedSlashes(appendPathToDirectory(d, path))
+	} else {
+		if hasRootedURLSuffix(path) {
+			return "", false
+		}
+		resolved = getNormalizedAbsolutePathFromDirectory(path, d)
+		if GetEncodedRootLength(resolved) == 0 {
+			return "", false
+		}
+		resolved = ensureRootedPathRootSeparator(resolved)
 	}
-	if isNormalizedSlashesRelativePath(path) {
-		return RootedDirectoryPath(rootedFilePathFromResolved(getNormalizedAbsolutePathFromNormalizedSlashes(appendPathToDirectory(d, path))))
+	if hasRootedURLSuffix(resolved) {
+		return "", false
 	}
-	return ToRootedDirectoryPath(path, d)
+	return RootedDirectoryPath(resolved), true
 }
 
 func rootedFilePathFromResolved(path string) RootedFilePath {

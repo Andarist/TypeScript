@@ -61,6 +61,21 @@ func TestToRootedFilePath(t *testing.T) {
 	} {
 		assertPanics(t, resolve)
 	}
+	for _, input := range []string{
+		"dir?query/",
+		"dir#fragment/",
+		"../dir?query/",
+		"http://server/dir?query/",
+	} {
+		_, ok := urlDirectory.TryResolveDirectory(input)
+		assert.Assert(t, !ok, input)
+		assertPanics(t, func() { urlDirectory.ResolveDirectory(input) })
+	}
+	_, ok = RootedDirectoryPathFromNormalized("/disk").TryResolveDirectory("http://server/dir?query/")
+	assert.Assert(t, !ok)
+	resolved, ok := urlDirectory.TryResolveDirectory("../dir/")
+	assert.Assert(t, ok)
+	assert.Equal(t, resolved, urlDirectory.ResolveDirectory("../dir/"))
 	assert.Equal(t, urlDirectory.ResolveFile("/disk/file?name.ts"), RootedFilePath("/disk/file?name.ts"))
 	assert.Equal(
 		t,

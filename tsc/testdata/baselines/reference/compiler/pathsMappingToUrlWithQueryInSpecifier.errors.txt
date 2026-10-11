@@ -1,0 +1,21 @@
+/a.ts(1,15): error TS2307: Cannot find module 'cdn/x?y/z' or its corresponding type declarations.
+/a.ts(2,15): error TS2307: Cannot find module 'cdn/x#y/z' or its corresponding type declarations.
+
+
+==== /tsconfig.json (0 errors) ====
+    {
+        "compilerOptions": {
+            "noEmit": true,
+            "paths": {
+                "cdn/*": ["https://example.com/*"]
+            }
+        }
+    }
+==== /a.ts (2 errors) ====
+    import a from "cdn/x?y/z";
+                  ~~~~~~~~~~~
+!!! error TS2307: Cannot find module 'cdn/x?y/z' or its corresponding type declarations.
+    import b from "cdn/x#y/z";
+                  ~~~~~~~~~~~
+!!! error TS2307: Cannot find module 'cdn/x#y/z' or its corresponding type declarations.
+    

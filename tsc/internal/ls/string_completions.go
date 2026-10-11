@@ -1275,7 +1275,10 @@ func (l *LanguageService) getCompletionEntriesForDirectoryFragment(
 
 	fragment = tspath.EnsureTrailingDirectorySeparator(fragment)
 
-	baseDirectory := scriptDirectory.ResolveDirectory(fragment)
+	baseDirectory, ok := scriptDirectory.TryResolveDirectory(fragment)
+	if !ok {
+		return result
+	}
 	if !moduleSpecifierIsRelative {
 		// Check for a version redirect.
 		packageJsonDirectory := program.GetNearestAncestorDirectoryWithPackageJson(baseDirectory)
@@ -1664,7 +1667,10 @@ func (l *LanguageService) getModulesForPathsPattern(
 		expandedPrefixDirectory = normalizedPrefixDirectory
 	}
 	// Need to normalize after combining: If we combinePaths("a", "../b"), we want "b" and not "a/../b".
-	baseDirectory := packageDirectory.ResolveDirectory(expandedPrefixDirectory)
+	baseDirectory, ok := packageDirectory.TryResolveDirectory(expandedPrefixDirectory)
+	if !ok {
+		return nil
+	}
 
 	var possibleInputBaseDirectoryForOutDir tspath.RootedDirectoryPath
 	var possibleInputBaseDirectoryForDeclarationDir tspath.RootedDirectoryPath

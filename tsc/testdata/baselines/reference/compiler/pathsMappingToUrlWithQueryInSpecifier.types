@@ -1,0 +1,9 @@
+//// [tests/cases/compiler/pathsMappingToUrlWithQueryInSpecifier.ts] ////
+
+=== /a.ts ===
+import a from "cdn/x?y/z";
+>a : any
+
+import b from "cdn/x#y/z";
+>b : any
+
