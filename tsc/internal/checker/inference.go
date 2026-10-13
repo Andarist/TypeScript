@@ -360,10 +360,10 @@ func (c *Checker) invokeOnce(n *InferenceState, source *Type, target *Type, acti
 	saveExpandingFlags := n.expandingFlags
 	n.sourceStack = append(n.sourceStack, source)
 	n.targetStack = append(n.targetStack, target)
-	if c.isDeeplyNestedType(source, n.sourceStack, 2) {
+	if c.isExpandingInferenceType(source, n.sourceStack) {
 		n.expandingFlags |= ExpandingFlagsSource
 	}
-	if c.isDeeplyNestedType(target, n.targetStack, 2) {
+	if c.isExpandingInferenceType(target, n.targetStack) {
 		n.expandingFlags |= ExpandingFlagsTarget
 	}
 	if n.expandingFlags != ExpandingFlagsBoth {
@@ -376,6 +376,64 @@ func (c *Checker) invokeOnce(n *InferenceState, source *Type, target *Type, acti
 	n.expandingFlags = saveExpandingFlags
 	n.visited[key] = n.inferencePriority
 	n.inferencePriority = min(n.inferencePriority, saveInferencePriority)
+}
+
+// Like isDeeplyNestedType with a maximum depth of 2, but an earlier occurrence of the same generic on the
+// stack only counts as evidence of infinite expansion when the type arguments of the newer occurrence
+// contain the earlier occurrence (as in Deep<T> followed by Deep<Deep<T>>). Type ids alone aren't enough:
+// an inner type reference that is resolved lazily (e.g. the return type of a signature) is created after,
+// and thus has a higher id than, the outer reference that contains it.
+func (c *Checker) isExpandingInferenceType(t *Type, stack []*Type) bool {
+	if len(stack) < 2 {
+		return false
+	}
+	target := getRecursionIdentityTarget(t)
+	if target.flags&TypeFlagsIntersection != 0 {
+		for _, t := range target.Types() {
+			if c.isExpandingInferenceType(t, stack) {
+				return true
+			}
+		}
+		return false
+	}
+	identity := getRecursionIdentityFromTarget(target)
+	var last *Type
+	for _, s := range stack {
+		if hasMatchingRecursionIdentity(s, identity) {
+			if last != nil && s.id >= last.id && c.typeArgumentsContain(s, last, 0) {
+				return true
+			}
+			last = s
+		}
+	}
+	return false
+}
+
+// Returns true if inner occurs (possibly nested) among the type arguments of t.
+func (c *Checker) typeArgumentsContain(t *Type, inner *Type, depth int) bool {
+	if depth > 8 {
+		return false
+	}
+	if t.flags&TypeFlagsUnionOrIntersection != 0 {
+		for _, s := range t.Types() {
+			if s == inner || c.typeArgumentsContain(s, inner, depth+1) {
+				return true
+			}
+		}
+		return false
+	}
+	var args []*Type
+	if t.alias != nil {
+		args = t.alias.typeArguments
+	} else if t.objectFlags&ObjectFlagsReference != 0 {
+		args = c.getTypeArguments(t)
+	}
+	for _, a := range args {
+		if a == inner || c.typeArgumentsContain(a, inner, depth+1) {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Checker) inferFromMatchingTypes(n *InferenceState, sources []*Type, targets []*Type, matches func(c *Checker, s *Type, t *Type) bool, sort bool) ([]*Type, []*Type) {
