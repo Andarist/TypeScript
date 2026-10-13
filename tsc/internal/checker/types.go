@@ -687,6 +687,7 @@ type Type struct {
 	id          TypeId
 	symbol      *ast.Symbol
 	alias       *TypeAlias
+	origin      *ast.Node // Type reference node this type (or the type it was instantiated from) was first created for
 	checker     *Checker
 	data        TypeData // Type specific data
 }

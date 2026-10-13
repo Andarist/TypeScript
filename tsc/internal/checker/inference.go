@@ -360,10 +360,10 @@ func (c *Checker) invokeOnce(n *InferenceState, source *Type, target *Type, acti
 	saveExpandingFlags := n.expandingFlags
 	n.sourceStack = append(n.sourceStack, source)
 	n.targetStack = append(n.targetStack, target)
-	if c.isDeeplyNestedType(source, n.sourceStack, 2) {
+	if c.isGenerativelyNestedType(source, n.sourceStack) {
 		n.expandingFlags |= ExpandingFlagsSource
 	}
-	if c.isDeeplyNestedType(target, n.targetStack, 2) {
+	if c.isGenerativelyNestedType(target, n.targetStack) {
 		n.expandingFlags |= ExpandingFlagsTarget
 	}
 	if n.expandingFlags != ExpandingFlagsBoth {
@@ -376,6 +376,38 @@ func (c *Checker) invokeOnce(n *InferenceState, source *Type, target *Type, acti
 	n.expandingFlags = saveExpandingFlags
 	n.visited[key] = n.inferencePriority
 	n.inferencePriority = min(n.inferencePriority, saveInferencePriority)
+}
+
+// Like isDeeplyNestedType with a maximum depth of 2, except that an entry on the stack only counts as a repeat of
+// an earlier entry with the same recursion identity when it is the same type (a cycle) or has the same origin, i.e.
+// descends from the same type reference node (generative recursion instantiates the same reference over and over
+// with growing type arguments). Two different references to the same generic nested within one declaration don't
+// count as a repeat, even though the inner one is created later and thus has a higher type id when it is resolved
+// lazily (e.g. as the return type of a signature). When origins are unknown we fall back to comparing type ids.
+func (c *Checker) isGenerativelyNestedType(t *Type, stack []*Type) bool {
+	if len(stack) < 2 {
+		return false
+	}
+	target := getRecursionIdentityTarget(t)
+	if target.flags&TypeFlagsIntersection != 0 {
+		for _, t := range target.Types() {
+			if c.isGenerativelyNestedType(t, stack) {
+				return true
+			}
+		}
+		return false
+	}
+	identity := getRecursionIdentityFromTarget(target)
+	var last *Type
+	for _, s := range stack {
+		if hasMatchingRecursionIdentity(s, identity) {
+			if last != nil && s.id >= last.id && (s == last || s.origin == nil || last.origin == nil || s.origin == last.origin) {
+				return true
+			}
+			last = s
+		}
+	}
+	return false
 }
 
 func (c *Checker) inferFromMatchingTypes(n *InferenceState, sources []*Type, targets []*Type, matches func(c *Checker, s *Type, t *Type) bool, sort bool) ([]*Type, []*Type) {
