@@ -81,7 +81,7 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 	}
 	if source.alias != nil && target.alias != nil && source.alias.symbol == target.alias.symbol {
 		if len(source.alias.typeArguments) != 0 || len(target.alias.typeArguments) != 0 {
-			c.invokeOnce(n, source, target, (*Checker).inferFromAliasTypeArguments)
+			c.inferOnce(n, source, target, (*Checker).inferFromAliasTypeArguments)
 		}
 		// And if there weren't any type arguments, there's no reason to run inference as the types must be the same.
 		return
@@ -227,7 +227,7 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 	switch {
 	case source.objectFlags&ObjectFlagsReference != 0 && target.objectFlags&ObjectFlagsReference != 0 && (source.AsTypeReference().target == target.AsTypeReference().target || c.isArrayType(source) && c.isArrayType(target)) && !(source.AsTypeReference().node != nil && target.AsTypeReference().node != nil):
 		// If source and target are references to the same generic type, infer from type arguments
-		c.invokeOnce(n, source, target, (*Checker).inferFromReferenceTypeArguments)
+		c.inferOnce(n, source, target, (*Checker).inferFromReferenceTypeArguments)
 	case source.flags&TypeFlagsIndex != 0 && target.flags&TypeFlagsIndex != 0:
 		c.inferFromContravariantTypes(n, source.AsIndexType().target, target.AsIndexType().target)
 	case (isLiteralType(source) || source.flags&TypeFlagsString != 0) && target.flags&TypeFlagsIndex != 0:
@@ -328,6 +328,30 @@ func (c *Checker) inferFromContravariantTypesIfStrictFunctionTypes(n *InferenceS
 	} else {
 		c.inferFromTypes(n, source, target)
 	}
+}
+
+// Ensure an inference action is performed only once for the given source and target types, without
+// the infinite expansion check performed by invokeOnce. Inferring between the type arguments of two
+// references to the same generic type (or two instantiations of the same type alias) is a finite
+// structural step that doesn't resolve members, so it can't expand forever on its own. It also must
+// not count as a nesting level for isDeeplyNestedType: that check assumes nested types have lower type
+// ids than the types containing them, which doesn't hold for lazily resolved inner references (e.g.
+// the return type of a signature), and counting them produces false circularities.
+func (c *Checker) inferOnce(n *InferenceState, source *Type, target *Type, action func(c *Checker, n *InferenceState, source *Type, target *Type)) {
+	key := InferenceKey{source: source.id, target: target.id, priority: n.priority, contravariant: n.contravariant, bivariant: n.bivariant}
+	if status, ok := n.visited[key]; ok {
+		n.inferencePriority = min(n.inferencePriority, status)
+		return
+	}
+	if n.visited == nil {
+		n.visited = make(map[InferenceKey]InferencePriority)
+	}
+	n.visited[key] = InferencePriorityCircularity
+	saveInferencePriority := n.inferencePriority
+	n.inferencePriority = InferencePriorityMaxValue
+	action(c, n, source, target)
+	n.visited[key] = n.inferencePriority
+	n.inferencePriority = min(n.inferencePriority, saveInferencePriority)
 }
 
 // Ensure an inference action is performed only once for the given source and target types.
