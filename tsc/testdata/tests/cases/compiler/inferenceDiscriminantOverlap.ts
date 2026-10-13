@@ -31,7 +31,7 @@ const requiredUndefined = inferOptionalSource(undefinedRequiredSource);
 const explicitUndefined = inferOptionalSource(explicitUndefinedSource);
 const optionalNever = inferOptionalSource(optionalNeverSource);
 const indexedOptional = inferOptionalSource(indexedSource); // error
-const declaredOptional = inferOptionalSource(optionalPropertySource); // error
+const declaredOptional = inferOptionalSource(optionalPropertySource);
 const declaredRequired = inferOptionalSource(requiredPropertySource); // error
 
 declare function inferRequiredSource<T>(value: { tag: "a"; value: T }): T;

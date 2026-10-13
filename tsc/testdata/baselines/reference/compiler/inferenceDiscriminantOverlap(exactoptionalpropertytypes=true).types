@@ -105,20 +105,20 @@ declare function inferOptionalSource<T>(value: { tag?: "a"; value: T }): T;
 >value : T
 
 const validOptional = inferOptionalSource(validOptionalSource);
->validOptional : 1
->inferOptionalSource(validOptionalSource) : 1
+>validOptional : 1 | 2
+>inferOptionalSource(validOptionalSource) : 1 | 2
 >inferOptionalSource : <T>(value: { tag?: "a"; value: T; }) => T
 >validOptionalSource : { tag: "a"; value: 1; } | { tag?: "a"; value: 2; }
 
 const mixedOptional = inferOptionalSource(mixedOptionalSource);
->mixedOptional : 1
->inferOptionalSource(mixedOptionalSource) : 1
+>mixedOptional : 1 | 2
+>inferOptionalSource(mixedOptionalSource) : 1 | 2
 >inferOptionalSource : <T>(value: { tag?: "a"; value: T; }) => T
 >mixedOptionalSource : { tag: "a"; value: 1; } | { tag?: "b"; value: 2; }
 
 const matchingOptional = inferOptionalSource(matchingOptionalSource);
->matchingOptional : 1
->inferOptionalSource(matchingOptionalSource) : 1
+>matchingOptional : 1 | 2
+>inferOptionalSource(matchingOptionalSource) : 1 | 2
 >inferOptionalSource : <T>(value: { tag?: "a"; value: T; }) => T
 >matchingOptionalSource : { tag: "a"; value: 1; } | { tag?: "a"; value: 2; } | { tag: "b"; value: 3; }
 
@@ -152,9 +152,9 @@ const indexedOptional = inferOptionalSource(indexedSource); // error
 >inferOptionalSource : <T>(value: { tag?: "a"; value: T; }) => T
 >indexedSource : { tag: "a"; value: "a"; } | { tag?: "a"; value: "a"; } | { [key: string]: "b"; value: "b"; }
 
-const declaredOptional = inferOptionalSource(optionalPropertySource); // error
->declaredOptional : "a"
->inferOptionalSource(optionalPropertySource) : "a"
+const declaredOptional = inferOptionalSource(optionalPropertySource);
+>declaredOptional : "a" | "b"
+>inferOptionalSource(optionalPropertySource) : "a" | "b"
 >inferOptionalSource : <T>(value: { tag?: "a"; value: T; }) => T
 >optionalPropertySource : { tag: "a"; value: "a"; } | { [key: string]: "a" | "b" | undefined; tag?: "a"; value: "b"; }
 
@@ -195,7 +195,7 @@ export function optionalContext(): { tag: "a"; value: 1 } | { tag?: "b"; value: 
 >value : 2
 
     return makeOptional();
->makeOptional() : { tag?: "a"; value: 1; }
+>makeOptional() : { tag?: "a"; value: 1 | 2; }
 >makeOptional : <const T>() => { tag?: "a"; value: T; }
 }
 

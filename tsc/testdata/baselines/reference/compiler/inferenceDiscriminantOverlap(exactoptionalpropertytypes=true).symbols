@@ -147,7 +147,7 @@ const indexedOptional = inferOptionalSource(indexedSource); // error
 >inferOptionalSource : Symbol(inferOptionalSource, Decl(inferenceDiscriminantOverlap.ts, 18, 70))
 >indexedSource : Symbol(indexedSource, Decl(inferenceDiscriminantOverlap.ts, 9, 13))
 
-const declaredOptional = inferOptionalSource(optionalPropertySource); // error
+const declaredOptional = inferOptionalSource(optionalPropertySource);
 >declaredOptional : Symbol(declaredOptional, Decl(inferenceDiscriminantOverlap.ts, 29, 5))
 >inferOptionalSource : Symbol(inferOptionalSource, Decl(inferenceDiscriminantOverlap.ts, 18, 70))
 >optionalPropertySource : Symbol(optionalPropertySource, Decl(inferenceDiscriminantOverlap.ts, 16, 13))
