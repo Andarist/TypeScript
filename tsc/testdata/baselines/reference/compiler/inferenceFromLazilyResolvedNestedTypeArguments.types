@@ -1,0 +1,175 @@
+//// [tests/cases/compiler/inferenceFromLazilyResolvedNestedTypeArguments.ts] ////
+
+=== inferenceFromLazilyResolvedNestedTypeArguments.ts ===
+// The inner Effect<string, R> and Effect<string, Req> references are only created when the
+// signatures of the function types that contain them are resolved, i.e. during inference and after
+// the outer Effect references. Inference must not mistake that for infinite expansion.
+
+interface Effect<out A, out R = never> {
+  readonly _A: () => A;
+>_A : () => A
+
+  readonly _R: () => R;
+>_R : () => R
+
+  [Symbol.iterator](): Iterator<Effect<A, R>, A>;
+>[Symbol.iterator] : () => Iterator<Effect<A, R>, A>
+>Symbol.iterator : unique symbol
+>Symbol : SymbolConstructor
+>iterator : unique symbol
+}
+declare function succeed<A>(value: A): Effect<A>;
+>succeed : <A>(value: A) => Effect<A>
+>value : A
+
+declare function gen<Eff extends Effect<any, any>, AEff>(
+>gen : <Eff extends Effect<any, any>, AEff>(body: () => Generator<Eff, AEff, never>) => () => Effect<AEff, Eff extends Effect<infer _A, infer R> ? R : never>
+
+  body: () => Generator<Eff, AEff, never>,
+>body : () => Generator<Eff, AEff, never>
+
+): () => Effect<AEff, Eff extends Effect<infer _A, infer R> ? R : never>;
+
+interface Req { readonly url: string }
+>url : string
+
+declare const req: Effect<Req, Req>;
+>req : Effect<Req, Req>
+
+type Make<P> = <R>(m: Effect<() => Effect<string, R>>) => [R];
+>Make : Make<P>
+>m : Effect<() => Effect<string, R>, never>
+
+declare const make: Make<unknown>;
+>make : Make<unknown>
+
+const r1 = make(succeed(gen(function* () {
+>r1 : [Req]
+>make(succeed(gen(function* () {  yield* req;  return "";}))) : [Req]
+>make : Make<unknown>
+>succeed(gen(function* () {  yield* req;  return "";})) : Effect<() => Effect<string, Req>, never>
+>succeed : <A>(value: A) => Effect<A>
+>gen(function* () {  yield* req;  return "";}) : () => Effect<string, Req>
+>gen : <Eff extends Effect<any, any>, AEff>(body: () => Generator<Eff, AEff, never>) => () => Effect<AEff, Eff extends Effect<infer _A, infer R> ? R : never>
+>function* () {  yield* req;  return "";} : () => Generator<Effect<Req, Req>, string, any>
+
+  yield* req;
+>yield* req : Req
+>req : Effect<Req, Req>
+
+  return "";
+>"" : ""
+
+})));
+const check1: [Req] = r1;
+>check1 : [Req]
+>r1 : [Req]
+
+// Minimal form, with a property, a return type and a parameter type holding the inner reference
+
+interface Box<T> { value: T }
+>value : T
+
+declare function boxed<T>(x: T): Box<T>;
+>boxed : <T>(x: T) => Box<T>
+>x : T
+
+declare function lazyReturn<T>(x: T): () => Box<T>;
+>lazyReturn : <T>(x: T) => () => Box<T>
+>x : T
+
+declare function lazyProp<T>(x: T): { inner: Box<T> };
+>lazyProp : <T>(x: T) => { inner: Box<T>; }
+>x : T
+>inner : Box<T>
+
+declare function lazyParam<T>(x: T): (cb: Box<T>) => void;
+>lazyParam : <T>(x: T) => (cb: Box<T>) => void
+>x : T
+>cb : Box<T>
+
+declare function lazyDeep<T>(x: T): () => Box<() => Box<T>>;
+>lazyDeep : <T>(x: T) => () => Box<() => Box<T>>
+>x : T
+
+interface Builder<P> {
+  fromReturn<R>(m: Box<() => Box<R>>, p: P): [R];
+>fromReturn : <R>(m: Box<() => Box<R>>, p: P) => [R]
+>m : Box<() => Box<R>>
+>p : P
+
+  fromProp<R>(m: Box<{ inner: Box<R> }>, p: P): [R];
+>fromProp : <R>(m: Box<{ inner: Box<R>; }>, p: P) => [R]
+>m : Box<{ inner: Box<R>; }>
+>inner : Box<R>
+>p : P
+
+  fromParam<R>(m: Box<(cb: Box<R>) => void>, p: P): [R];
+>fromParam : <R>(m: Box<(cb: Box<R>) => void>, p: P) => [R]
+>m : Box<(cb: Box<R>) => void>
+>cb : Box<R>
+>p : P
+
+  fromDeep<R>(m: Box<() => Box<() => Box<R>>>, p: P): [R];
+>fromDeep : <R>(m: Box<() => Box<() => Box<R>>>, p: P) => [R]
+>m : Box<() => Box<() => Box<R>>>
+>p : P
+}
+declare const b: Builder<number>;
+>b : Builder<number>
+
+declare const rq: Req;
+>rq : Req
+
+const r2: [Req] = b.fromReturn(boxed(lazyReturn(rq)), 1);
+>r2 : [Req]
+>b.fromReturn(boxed(lazyReturn(rq)), 1) : [Req]
+>b.fromReturn : <R>(m: Box<() => Box<R>>, p: number) => [R]
+>b : Builder<number>
+>fromReturn : <R>(m: Box<() => Box<R>>, p: number) => [R]
+>boxed(lazyReturn(rq)) : Box<() => Box<Req>>
+>boxed : <T>(x: T) => Box<T>
+>lazyReturn(rq) : () => Box<Req>
+>lazyReturn : <T>(x: T) => () => Box<T>
+>rq : Req
+>1 : 1
+
+const r3: [Req] = b.fromProp(boxed(lazyProp(rq)), 1);
+>r3 : [Req]
+>b.fromProp(boxed(lazyProp(rq)), 1) : [Req]
+>b.fromProp : <R>(m: Box<{ inner: Box<R>; }>, p: number) => [R]
+>b : Builder<number>
+>fromProp : <R>(m: Box<{ inner: Box<R>; }>, p: number) => [R]
+>boxed(lazyProp(rq)) : Box<{ inner: Box<Req>; }>
+>boxed : <T>(x: T) => Box<T>
+>lazyProp(rq) : { inner: Box<Req>; }
+>lazyProp : <T>(x: T) => { inner: Box<T>; }
+>rq : Req
+>1 : 1
+
+const r4: [Req] = b.fromParam(boxed(lazyParam(rq)), 1);
+>r4 : [Req]
+>b.fromParam(boxed(lazyParam(rq)), 1) : [Req]
+>b.fromParam : <R>(m: Box<(cb: Box<R>) => void>, p: number) => [R]
+>b : Builder<number>
+>fromParam : <R>(m: Box<(cb: Box<R>) => void>, p: number) => [R]
+>boxed(lazyParam(rq)) : Box<(cb: Box<Req>) => void>
+>boxed : <T>(x: T) => Box<T>
+>lazyParam(rq) : (cb: Box<Req>) => void
+>lazyParam : <T>(x: T) => (cb: Box<T>) => void
+>rq : Req
+>1 : 1
+
+const r5: [Req] = b.fromDeep(boxed(lazyDeep(rq)), 1);
+>r5 : [Req]
+>b.fromDeep(boxed(lazyDeep(rq)), 1) : [Req]
+>b.fromDeep : <R>(m: Box<() => Box<() => Box<R>>>, p: number) => [R]
+>b : Builder<number>
+>fromDeep : <R>(m: Box<() => Box<() => Box<R>>>, p: number) => [R]
+>boxed(lazyDeep(rq)) : Box<() => Box<() => Box<Req>>>
+>boxed : <T>(x: T) => Box<T>
+>lazyDeep(rq) : () => Box<() => Box<Req>>
+>lazyDeep : <T>(x: T) => () => Box<() => Box<T>>
+>rq : Req
+>1 : 1
+

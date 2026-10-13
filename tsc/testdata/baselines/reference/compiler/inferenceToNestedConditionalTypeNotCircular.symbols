@@ -1,0 +1,53 @@
+//// [tests/cases/compiler/inferenceToNestedConditionalTypeNotCircular.ts] ////
+
+=== inferenceToNestedConditionalTypeNotCircular.ts ===
+// The source object type is pushed on the inference stack twice (once for the conditional type
+// target and once for its true branch), and the nested Cond<Q, never> is a lazily created deferred
+// conditional type with the same root as the outer Cond<R, Q>. Neither side is actually expanding,
+// so inference should still reach Q.
+
+type Cond<T, U> = T extends string ? { a: T; inner: () => Cond<U, never> } : { b: T };
+>Cond : Symbol(Cond, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 0, 0))
+>T : Symbol(T, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 10))
+>U : Symbol(U, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 12))
+>T : Symbol(T, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 10))
+>a : Symbol(a, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 38))
+>T : Symbol(T, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 10))
+>inner : Symbol(inner, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 44))
+>Cond : Symbol(Cond, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 0, 0))
+>U : Symbol(U, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 12))
+>b : Symbol(b, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 78))
+>T : Symbol(T, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 10))
+
+declare function f<R, Q>(m: Cond<R, Q>): [R, Q];
+>f : Symbol(f, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 86))
+>R : Symbol(R, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 19))
+>Q : Symbol(Q, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 21))
+>m : Symbol(m, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 25))
+>Cond : Symbol(Cond, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 0, 0))
+>R : Symbol(R, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 19))
+>Q : Symbol(Q, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 21))
+>R : Symbol(R, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 19))
+>Q : Symbol(Q, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 21))
+
+interface Req { url: string }
+>Req : Symbol(Req, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 48))
+>url : Symbol(Req.url, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 7, 15))
+
+declare const arg: { a: string; inner: () => { b: Req } };
+>arg : Symbol(arg, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 8, 13))
+>a : Symbol(a, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 8, 20))
+>inner : Symbol(inner, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 8, 31))
+>b : Symbol(b, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 8, 46))
+>Req : Symbol(Req, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 48))
+
+const r = f(arg);
+>r : Symbol(r, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 9, 5))
+>f : Symbol(f, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 5, 86))
+>arg : Symbol(arg, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 8, 13))
+
+const check: [string, Req] = r;
+>check : Symbol(check, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 10, 5))
+>Req : Symbol(Req, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 6, 48))
+>r : Symbol(r, Decl(inferenceToNestedConditionalTypeNotCircular.ts, 9, 5))
+
