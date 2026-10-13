@@ -81,7 +81,7 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 	}
 	if source.alias != nil && target.alias != nil && source.alias.symbol == target.alias.symbol {
 		if len(source.alias.typeArguments) != 0 || len(target.alias.typeArguments) != 0 {
-			c.invokeOnce(n, source, target, (*Checker).inferFromAliasTypeArguments)
+			c.inferFromAliasTypeArguments(n, source, target)
 		}
 		// And if there weren't any type arguments, there's no reason to run inference as the types must be the same.
 		return
@@ -227,7 +227,7 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 	switch {
 	case source.objectFlags&ObjectFlagsReference != 0 && target.objectFlags&ObjectFlagsReference != 0 && (source.AsTypeReference().target == target.AsTypeReference().target || c.isArrayType(source) && c.isArrayType(target)) && !(source.AsTypeReference().node != nil && target.AsTypeReference().node != nil):
 		// If source and target are references to the same generic type, infer from type arguments
-		c.invokeOnce(n, source, target, (*Checker).inferFromReferenceTypeArguments)
+		c.inferFromReferenceTypeArguments(n, source, target)
 	case source.flags&TypeFlagsIndex != 0 && target.flags&TypeFlagsIndex != 0:
 		c.inferFromContravariantTypes(n, source.AsIndexType().target, target.AsIndexType().target)
 	case (isLiteralType(source) || source.flags&TypeFlagsString != 0) && target.flags&TypeFlagsIndex != 0:
