@@ -368,13 +368,17 @@ func (c *Checker) invokeOnce(n *InferenceState, source *Type, target *Type, acti
 	}
 	if n.expandingFlags != ExpandingFlagsBoth {
 		action(c, n, source, target)
+		n.visited[key] = n.inferencePriority
 	} else {
+		// A circularity caused by the stack check depends on where in the walk the pair was encountered,
+		// so don't cache it. The in-progress entry written above is enough to break direct re-entrancy
+		// cycles. A later encounter at a non-expanding position will run the action.
 		n.inferencePriority = InferencePriorityCircularity
+		delete(n.visited, key)
 	}
 	n.targetStack = n.targetStack[:len(n.targetStack)-1]
 	n.sourceStack = n.sourceStack[:len(n.sourceStack)-1]
 	n.expandingFlags = saveExpandingFlags
-	n.visited[key] = n.inferencePriority
 	n.inferencePriority = min(n.inferencePriority, saveInferencePriority)
 }
 
