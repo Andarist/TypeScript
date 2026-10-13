@@ -14,6 +14,7 @@ type InferenceKey struct {
 	priority      InferencePriority
 	contravariant bool
 	bivariant     bool
+	expanding     ExpandingFlags
 }
 
 type InferenceState struct {
@@ -344,19 +345,10 @@ func (c *Checker) inferFromContravariantTypesIfStrictFunctionTypes(n *InferenceS
 // such that we would go on inferring forever, even though we would never infer
 // between the same pair of types.
 func (c *Checker) invokeOnce(n *InferenceState, source *Type, target *Type, action func(c *Checker, n *InferenceState, source *Type, target *Type)) {
-	key := InferenceKey{source: source.id, target: target.id, priority: n.priority, contravariant: n.contravariant, bivariant: n.bivariant}
-	if status, ok := n.visited[key]; ok {
-		n.inferencePriority = min(n.inferencePriority, status)
-		return
-	}
-	if n.visited == nil {
-		n.visited = make(map[InferenceKey]InferencePriority)
-	}
-	n.visited[key] = InferencePriorityCircularity
-	saveInferencePriority := n.inferencePriority
-	n.inferencePriority = InferencePriorityMaxValue
 	// We stop inferring and report a circularity if we encounter duplicate recursion identities on both
-	// the source side and the target side.
+	// the source side and the target side. The expanding flags are part of the cache key, so a pair that
+	// was skipped as circular at one stack position is retried when it is encountered at a position
+	// where it isn't expanding.
 	saveExpandingFlags := n.expandingFlags
 	n.sourceStack = append(n.sourceStack, source)
 	n.targetStack = append(n.targetStack, target)
@@ -366,16 +358,27 @@ func (c *Checker) invokeOnce(n *InferenceState, source *Type, target *Type, acti
 	if c.isDeeplyNestedType(target, n.targetStack, 2) {
 		n.expandingFlags |= ExpandingFlagsTarget
 	}
-	if n.expandingFlags != ExpandingFlagsBoth {
-		action(c, n, source, target)
+	key := InferenceKey{source: source.id, target: target.id, priority: n.priority, contravariant: n.contravariant, bivariant: n.bivariant, expanding: n.expandingFlags}
+	if status, ok := n.visited[key]; ok {
+		n.inferencePriority = min(n.inferencePriority, status)
 	} else {
-		n.inferencePriority = InferencePriorityCircularity
+		if n.visited == nil {
+			n.visited = make(map[InferenceKey]InferencePriority)
+		}
+		n.visited[key] = InferencePriorityCircularity
+		saveInferencePriority := n.inferencePriority
+		n.inferencePriority = InferencePriorityMaxValue
+		if n.expandingFlags != ExpandingFlagsBoth {
+			action(c, n, source, target)
+		} else {
+			n.inferencePriority = InferencePriorityCircularity
+		}
+		n.visited[key] = n.inferencePriority
+		n.inferencePriority = min(n.inferencePriority, saveInferencePriority)
 	}
 	n.targetStack = n.targetStack[:len(n.targetStack)-1]
 	n.sourceStack = n.sourceStack[:len(n.sourceStack)-1]
 	n.expandingFlags = saveExpandingFlags
-	n.visited[key] = n.inferencePriority
-	n.inferencePriority = min(n.inferencePriority, saveInferencePriority)
 }
 
 func (c *Checker) inferFromMatchingTypes(n *InferenceState, sources []*Type, targets []*Type, matches func(c *Checker, s *Type, t *Type) bool, sort bool) ([]*Type, []*Type) {
