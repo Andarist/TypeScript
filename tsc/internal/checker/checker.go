@@ -24674,7 +24674,7 @@ func (c *Checker) getTypeFromArrayOrTupleTypeNode(node *ast.Node) *Type {
 			if node.Kind == ast.KindTupleType && len(node.Elements()) == 0 {
 				links.resolvedType = target
 			} else {
-				links.resolvedType = c.createDeferredTypeReference(target, node, nil /*mapper*/, nil /*alias*/)
+				links.resolvedType = c.withOrigin(c.createDeferredTypeReference(target, node, nil /*mapper*/, nil /*alias*/), node)
 			}
 		} else {
 			var elementTypes []*Type
@@ -24684,9 +24684,9 @@ func (c *Checker) getTypeFromArrayOrTupleTypeNode(node *ast.Node) *Type {
 				elementTypes = core.Map(node.Elements(), c.getTypeFromTypeNode)
 			}
 			if target.objectFlags&ObjectFlagsTuple != 0 {
-				links.resolvedType = c.createNormalizedTupleTypeEx(target, elementTypes, ObjectFlagsFromTypeNode)
+				links.resolvedType = c.withOrigin(c.createNormalizedTupleTypeEx(target, elementTypes, ObjectFlagsFromTypeNode), node)
 			} else {
-				links.resolvedType = c.createTypeReferenceEx(target, elementTypes, ObjectFlagsFromTypeNode)
+				links.resolvedType = c.withOrigin(c.createTypeReferenceEx(target, elementTypes, ObjectFlagsFromTypeNode), node)
 			}
 		}
 	}
