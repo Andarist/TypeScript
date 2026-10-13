@@ -360,10 +360,10 @@ func (c *Checker) invokeOnce(n *InferenceState, source *Type, target *Type, acti
 	saveExpandingFlags := n.expandingFlags
 	n.sourceStack = append(n.sourceStack, source)
 	n.targetStack = append(n.targetStack, target)
-	if c.isDeeplyNestedType(source, n.sourceStack, 2) {
+	if c.isExpandingInferenceType(source, n.sourceStack) {
 		n.expandingFlags |= ExpandingFlagsSource
 	}
-	if c.isDeeplyNestedType(target, n.targetStack, 2) {
+	if c.isExpandingInferenceType(target, n.targetStack) {
 		n.expandingFlags |= ExpandingFlagsTarget
 	}
 	if n.expandingFlags != ExpandingFlagsBoth {
@@ -376,6 +376,123 @@ func (c *Checker) invokeOnce(n *InferenceState, source *Type, target *Type, acti
 	n.expandingFlags = saveExpandingFlags
 	n.visited[key] = n.inferencePriority
 	n.inferencePriority = min(n.inferencePriority, saveInferencePriority)
+}
+
+// Like isDeeplyNestedType with a maximum depth of 2, but an earlier occurrence of the same generic on the
+// stack only counts as evidence of infinite expansion when the newer occurrence is an expanded instantiation
+// of it, i.e. when one of its type arguments is structurally bigger than the corresponding type argument of the
+// earlier occurrence (as in Deep<T> followed by Deep<Deep<T>>, F<T> followed by F<NonNullable<T>>, or
+// Grow<[]> followed by Grow<[number]>). Type ids alone aren't enough:
+// an inner type that is resolved lazily (e.g. the return type of a signature, or the true branch of a deferred
+// conditional type) is created after, and thus has a higher id than, the outer type that contains it, and the
+// same type can be pushed twice in a row (once by a conditional type target and once by its branch),
+// which counts as a cycle but not as expansion.
+func (c *Checker) isExpandingInferenceType(t *Type, stack []*Type) bool {
+	if len(stack) < 2 {
+		return false
+	}
+	target := getRecursionIdentityTarget(t)
+	if target.flags&TypeFlagsIntersection != 0 {
+		for _, t := range target.Types() {
+			if c.isExpandingInferenceType(t, stack) {
+				return true
+			}
+		}
+		return false
+	}
+	identity := getRecursionIdentityFromTarget(target)
+	var last *Type
+	for _, s := range stack {
+		if hasMatchingRecursionIdentity(s, identity) {
+			if last != nil && s.id >= last.id && c.isExpandedInstantiationOf(s, last) {
+				return true
+			}
+			last = s
+		}
+	}
+	return false
+}
+
+func (c *Checker) isExpandedInstantiationOf(newer *Type, older *Type) bool {
+	if newer == older {
+		// The same type again: the side isn't expanding but cycling, which together with an expanding
+		// other side still means we'd go on forever.
+		return true
+	}
+	newerArgs, ok1 := c.getExpansionTypeArguments(newer)
+	olderArgs, ok2 := c.getExpansionTypeArguments(older)
+	if !ok1 || !ok2 {
+		// We can't compare the instantiations, fall back to assuming expansion.
+		return true
+	}
+	for i := range min(len(newerArgs), len(olderArgs)) {
+		if newerArgs[i] != olderArgs[i] && c.typeSize(newerArgs[i], 0) > c.typeSize(olderArgs[i], 0) {
+			return true
+		}
+	}
+	return false
+}
+
+// A bounded measure of the structural size of a type, counting the type and the types it is built from
+// (type arguments, union and intersection constituents, indexed access parts, etc.) without resolving
+// object type members.
+func (c *Checker) typeSize(t *Type, depth int) int {
+	if depth > 8 {
+		return 1
+	}
+	size := 1
+	switch {
+	case t.flags&TypeFlagsUnionOrIntersection != 0:
+		for _, s := range t.Types() {
+			size += c.typeSize(s, depth+1)
+		}
+		return size
+	case t.flags&TypeFlagsIndexedAccess != 0:
+		return size + c.typeSize(t.AsIndexedAccessType().objectType, depth+1) + c.typeSize(t.AsIndexedAccessType().indexType, depth+1)
+	case t.flags&TypeFlagsIndex != 0:
+		return size + c.typeSize(t.AsIndexType().target, depth+1)
+	case t.flags&TypeFlagsStringMapping != 0:
+		return size + c.typeSize(t.AsStringMappingType().target, depth+1)
+	case t.flags&TypeFlagsSubstitution != 0:
+		return size + c.typeSize(t.AsSubstitutionType().baseType, depth+1)
+	case t.flags&TypeFlagsTemplateLiteral != 0:
+		for _, s := range t.AsTemplateLiteralType().types {
+			size += c.typeSize(s, depth+1)
+		}
+		return size
+	case t.flags&TypeFlagsConditional != 0 && t.alias == nil:
+		size += c.typeSize(t.AsConditionalType().checkType, depth+1) + c.typeSize(t.AsConditionalType().extendsType, depth+1)
+	}
+	if args, ok := c.getExpansionTypeArguments(t); ok {
+		for _, s := range args {
+			size += c.typeSize(s, depth+1)
+		}
+	}
+	return size
+}
+
+// Returns the type arguments that distinguish instantiations sharing a recursion identity.
+func (c *Checker) getExpansionTypeArguments(t *Type) ([]*Type, bool) {
+	if t.alias != nil {
+		return t.alias.typeArguments, true
+	}
+	if t.objectFlags&ObjectFlagsReference != 0 {
+		return c.getTypeArguments(t), true
+	}
+	if t.flags&TypeFlagsConditional != 0 {
+		ct := t.AsConditionalType()
+		if ct.mapper != nil && len(ct.root.outerTypeParameters) != 0 {
+			return core.Map(ct.root.outerTypeParameters, ct.mapper.Map), true
+		}
+		return nil, false
+	}
+	if t.objectFlags&ObjectFlagsInstantiated != 0 && t.objectFlags&(ObjectFlagsAnonymous|ObjectFlagsMapped) != 0 && t.symbol != nil && len(t.symbol.Declarations()) != 0 {
+		links := c.typeNodeLinks.Get(t.symbol.Declarations()[0])
+		if t.Mapper() != nil && len(links.outerTypeParameters) != 0 {
+			return core.Map(links.outerTypeParameters, t.Mapper().Map), true
+		}
+	}
+	return nil, false
 }
 
 func (c *Checker) inferFromMatchingTypes(n *InferenceState, sources []*Type, targets []*Type, matches func(c *Checker, s *Type, t *Type) bool, sort bool) ([]*Type, []*Type) {
