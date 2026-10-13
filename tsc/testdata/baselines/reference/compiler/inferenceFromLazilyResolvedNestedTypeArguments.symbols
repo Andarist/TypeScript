@@ -1,0 +1,250 @@
+//// [tests/cases/compiler/inferenceFromLazilyResolvedNestedTypeArguments.ts] ////
+
+=== inferenceFromLazilyResolvedNestedTypeArguments.ts ===
+// The inner Effect<string, R> and Effect<string, Req> references are only created when the
+// signatures of the function types that contain them are resolved, i.e. during inference and after
+// the outer Effect references. Inference must not mistake that for infinite expansion.
+
+interface Effect<out A, out R = never> {
+>Effect : Symbol(Effect, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 0, 0))
+>A : Symbol(A, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 4, 17))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 4, 23))
+
+  readonly _A: () => A;
+>_A : Symbol(Effect._A, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 4, 40))
+>A : Symbol(A, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 4, 17))
+
+  readonly _R: () => R;
+>_R : Symbol(Effect._R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 5, 23))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 4, 23))
+
+  [Symbol.iterator](): Iterator<Effect<A, R>, A>;
+>[Symbol.iterator] : Symbol(Effect[Symbol.iterator], Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 6, 23))
+>Symbol.iterator : Symbol(SymbolConstructor.iterator, Decl(lib.es2015.iterable.d.ts, --, --))
+>Symbol : Symbol(Symbol, Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.symbol.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.es2019.symbol.d.ts, --, --))
+>iterator : Symbol(SymbolConstructor.iterator, Decl(lib.es2015.iterable.d.ts, --, --))
+>Iterator : Symbol(Iterator, Decl(lib.es2015.iterable.d.ts, --, --))
+>Effect : Symbol(Effect, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 0, 0))
+>A : Symbol(A, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 4, 17))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 4, 23))
+>A : Symbol(A, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 4, 17))
+}
+declare function succeed<A>(value: A): Effect<A>;
+>succeed : Symbol(succeed, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 8, 1))
+>A : Symbol(A, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 9, 25))
+>value : Symbol(value, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 9, 28))
+>A : Symbol(A, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 9, 25))
+>Effect : Symbol(Effect, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 0, 0))
+>A : Symbol(A, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 9, 25))
+
+declare function gen<Eff extends Effect<any, any>, AEff>(
+>gen : Symbol(gen, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 9, 49))
+>Eff : Symbol(Eff, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 10, 21))
+>Effect : Symbol(Effect, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 0, 0))
+>AEff : Symbol(AEff, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 10, 50))
+
+  body: () => Generator<Eff, AEff, never>,
+>body : Symbol(body, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 10, 57))
+>Generator : Symbol(Generator, Decl(lib.es2015.generator.d.ts, --, --))
+>Eff : Symbol(Eff, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 10, 21))
+>AEff : Symbol(AEff, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 10, 50))
+
+): () => Effect<AEff, Eff extends Effect<infer _A, infer R> ? R : never>;
+>Effect : Symbol(Effect, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 0, 0))
+>AEff : Symbol(AEff, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 10, 50))
+>Eff : Symbol(Eff, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 10, 21))
+>Effect : Symbol(Effect, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 0, 0))
+>_A : Symbol(_A, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 46))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 56))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 56))
+
+interface Req { readonly url: string }
+>Req : Symbol(Req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 73))
+>url : Symbol(Req.url, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 14, 15))
+
+declare const req: Effect<Req, Req>;
+>req : Symbol(req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 15, 13))
+>Effect : Symbol(Effect, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 0, 0))
+>Req : Symbol(Req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 73))
+>Req : Symbol(Req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 73))
+
+type Make<P> = <R>(m: Effect<() => Effect<string, R>>) => [R];
+>Make : Symbol(Make, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 15, 36))
+>P : Symbol(P, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 17, 10))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 17, 16))
+>m : Symbol(m, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 17, 19))
+>Effect : Symbol(Effect, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 0, 0))
+>Effect : Symbol(Effect, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 0, 0))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 17, 16))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 17, 16))
+
+declare const make: Make<unknown>;
+>make : Symbol(make, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 18, 13))
+>Make : Symbol(Make, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 15, 36))
+
+const r1 = make(succeed(gen(function* () {
+>r1 : Symbol(r1, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 20, 5))
+>make : Symbol(make, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 18, 13))
+>succeed : Symbol(succeed, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 8, 1))
+>gen : Symbol(gen, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 9, 49))
+
+  yield* req;
+>req : Symbol(req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 15, 13))
+
+  return "";
+})));
+const check1: [Req] = r1;
+>check1 : Symbol(check1, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 5))
+>Req : Symbol(Req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 73))
+>r1 : Symbol(r1, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 20, 5))
+
+// Minimal form, with a property, a return type and a parameter type holding the inner reference
+
+interface Box<T> { value: T }
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 28, 14))
+>value : Symbol(Box.value, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 28, 18))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 28, 14))
+
+declare function boxed<T>(x: T): Box<T>;
+>boxed : Symbol(boxed, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 28, 29))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 29, 23))
+>x : Symbol(x, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 29, 26))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 29, 23))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 29, 23))
+
+declare function lazyReturn<T>(x: T): () => Box<T>;
+>lazyReturn : Symbol(lazyReturn, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 29, 40))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 30, 28))
+>x : Symbol(x, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 30, 31))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 30, 28))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 30, 28))
+
+declare function lazyProp<T>(x: T): { inner: Box<T> };
+>lazyProp : Symbol(lazyProp, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 30, 51))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 31, 26))
+>x : Symbol(x, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 31, 29))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 31, 26))
+>inner : Symbol(inner, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 31, 37))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 31, 26))
+
+declare function lazyParam<T>(x: T): (cb: Box<T>) => void;
+>lazyParam : Symbol(lazyParam, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 31, 54))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 32, 27))
+>x : Symbol(x, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 32, 30))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 32, 27))
+>cb : Symbol(cb, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 32, 38))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 32, 27))
+
+declare function lazyDeep<T>(x: T): () => Box<() => Box<T>>;
+>lazyDeep : Symbol(lazyDeep, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 32, 58))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 33, 26))
+>x : Symbol(x, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 33, 29))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 33, 26))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>T : Symbol(T, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 33, 26))
+
+interface Builder<P> {
+>Builder : Symbol(Builder, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 33, 60))
+>P : Symbol(P, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 35, 18))
+
+  fromReturn<R>(m: Box<() => Box<R>>, p: P): [R];
+>fromReturn : Symbol(Builder.fromReturn, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 35, 22))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 36, 13))
+>m : Symbol(m, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 36, 16))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 36, 13))
+>p : Symbol(p, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 36, 37))
+>P : Symbol(P, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 35, 18))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 36, 13))
+
+  fromProp<R>(m: Box<{ inner: Box<R> }>, p: P): [R];
+>fromProp : Symbol(Builder.fromProp, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 36, 49))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 37, 11))
+>m : Symbol(m, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 37, 14))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>inner : Symbol(inner, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 37, 22))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 37, 11))
+>p : Symbol(p, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 37, 40))
+>P : Symbol(P, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 35, 18))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 37, 11))
+
+  fromParam<R>(m: Box<(cb: Box<R>) => void>, p: P): [R];
+>fromParam : Symbol(Builder.fromParam, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 37, 52))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 38, 12))
+>m : Symbol(m, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 38, 15))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>cb : Symbol(cb, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 38, 23))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 38, 12))
+>p : Symbol(p, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 38, 44))
+>P : Symbol(P, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 35, 18))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 38, 12))
+
+  fromDeep<R>(m: Box<() => Box<() => Box<R>>>, p: P): [R];
+>fromDeep : Symbol(Builder.fromDeep, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 38, 56))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 39, 11))
+>m : Symbol(m, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 39, 14))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>Box : Symbol(Box, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 24, 25))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 39, 11))
+>p : Symbol(p, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 39, 46))
+>P : Symbol(P, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 35, 18))
+>R : Symbol(R, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 39, 11))
+}
+declare const b: Builder<number>;
+>b : Symbol(b, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 41, 13))
+>Builder : Symbol(Builder, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 33, 60))
+
+declare const rq: Req;
+>rq : Symbol(rq, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 42, 13))
+>Req : Symbol(Req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 73))
+
+const r2: [Req] = b.fromReturn(boxed(lazyReturn(rq)), 1);
+>r2 : Symbol(r2, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 44, 5))
+>Req : Symbol(Req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 73))
+>b.fromReturn : Symbol(Builder.fromReturn, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 35, 22))
+>b : Symbol(b, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 41, 13))
+>fromReturn : Symbol(Builder.fromReturn, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 35, 22))
+>boxed : Symbol(boxed, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 28, 29))
+>lazyReturn : Symbol(lazyReturn, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 29, 40))
+>rq : Symbol(rq, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 42, 13))
+
+const r3: [Req] = b.fromProp(boxed(lazyProp(rq)), 1);
+>r3 : Symbol(r3, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 45, 5))
+>Req : Symbol(Req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 73))
+>b.fromProp : Symbol(Builder.fromProp, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 36, 49))
+>b : Symbol(b, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 41, 13))
+>fromProp : Symbol(Builder.fromProp, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 36, 49))
+>boxed : Symbol(boxed, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 28, 29))
+>lazyProp : Symbol(lazyProp, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 30, 51))
+>rq : Symbol(rq, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 42, 13))
+
+const r4: [Req] = b.fromParam(boxed(lazyParam(rq)), 1);
+>r4 : Symbol(r4, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 46, 5))
+>Req : Symbol(Req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 73))
+>b.fromParam : Symbol(Builder.fromParam, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 37, 52))
+>b : Symbol(b, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 41, 13))
+>fromParam : Symbol(Builder.fromParam, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 37, 52))
+>boxed : Symbol(boxed, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 28, 29))
+>lazyParam : Symbol(lazyParam, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 31, 54))
+>rq : Symbol(rq, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 42, 13))
+
+const r5: [Req] = b.fromDeep(boxed(lazyDeep(rq)), 1);
+>r5 : Symbol(r5, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 47, 5))
+>Req : Symbol(Req, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 12, 73))
+>b.fromDeep : Symbol(Builder.fromDeep, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 38, 56))
+>b : Symbol(b, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 41, 13))
+>fromDeep : Symbol(Builder.fromDeep, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 38, 56))
+>boxed : Symbol(boxed, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 28, 29))
+>lazyDeep : Symbol(lazyDeep, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 32, 58))
+>rq : Symbol(rq, Decl(inferenceFromLazilyResolvedNestedTypeArguments.ts, 42, 13))
+
