@@ -15001,12 +15001,13 @@ func (c *Checker) getExternalModuleMember(node *ast.Node, specifier *ast.Node, d
 			}
 			// if symbolFromVariable is export - get its final target
 			symbolFromVariable = c.resolveSymbolEx(symbolFromVariable, dontResolveAlias)
-			exportContainer := targetSymbol
-			if moduleSymbol != nil && moduleSymbol.Exports()[ast.InternalSymbolNameExportEquals] != nil {
+			symbolFromModule := c.getExportOfModule(targetSymbol, nameText, specifier, dontResolveAlias)
+			if symbolFromModule == nil && targetSymbol != moduleSymbol {
 				// For `export =` modules, supplemental type/namespace exports live on the original module symbol.
-				exportContainer = moduleSymbol
+				// Only the requested export is resolved here, since resolving all of them eagerly can enter
+				// circularities that would otherwise not be reached.
+				symbolFromModule = c.getSupplementalExportOfExportEqualsModule(moduleSymbol, nameText, dontResolveAlias)
 			}
-			symbolFromModule := c.getExportOfModule(exportContainer, nameText, specifier, dontResolveAlias)
 			if symbolFromModule == nil && nameText == ast.InternalSymbolNameDefault {
 				file := core.Find(moduleSymbol.Declarations(), ast.IsSourceFile)
 				if c.isOnlyImportableAsDefault(moduleSpecifier, moduleSymbol, importAttributesType) || c.canHaveSyntheticDefault(file, moduleSymbol, dontResolveAlias, moduleSpecifier) {
@@ -15083,6 +15084,25 @@ func (c *Checker) combineValueAndTypeSymbols(valueSymbol *ast.Symbol, typeSymbol
 	result.SetMembers(maps.Clone(typeSymbol.Members()), &c.symbolExtraArena)
 	result.SetExports(maps.Clone(valueSymbol.Exports()), &c.symbolExtraArena)
 	return result
+}
+
+func (c *Checker) getSupplementalExportOfExportEqualsModule(moduleSymbol *ast.Symbol, nameText string, dontResolveAlias bool) *ast.Symbol {
+	if moduleSymbol == nil || moduleSymbol.Exports()[ast.InternalSymbolNameExportEquals] == nil ||
+		nameText == ast.InternalSymbolNameExportEquals || nameText == ast.InternalSymbolNameExportStar {
+		return nil
+	}
+	symbol := moduleSymbol.Exports()[nameText]
+	if symbol == nil || !c.isSupplementalExportOfExportEqualsModule(symbol) {
+		return nil
+	}
+	return c.resolveSymbolEx(symbol, dontResolveAlias)
+}
+
+// Reports whether an export declared alongside `export =` contributes to the module's exports,
+// which is the case for exports that only have a type or namespace meaning.
+func (c *Checker) isSupplementalExportOfExportEqualsModule(symbol *ast.Symbol) bool {
+	flags := c.getSymbolFlags(symbol)
+	return flags&(ast.SymbolFlagsType|ast.SymbolFlagsNamespace) != 0 && flags&ast.SymbolFlagsValue == 0
 }
 
 func (c *Checker) getExportOfModule(symbol *ast.Symbol, nameText string, specifier *ast.Node, dontResolveAlias bool) *ast.Symbol {
@@ -16622,10 +16642,7 @@ func (c *Checker) getExportsOfModuleWorker(moduleSymbol *ast.Symbol) (exports as
 			if symbol.Name() == ast.InternalSymbolNameExportEquals || symbol.Name() == ast.InternalSymbolNameExportStar {
 				continue
 			}
-			flags := c.getSymbolFlags(symbol)
-			if flags&(ast.SymbolFlagsType|ast.SymbolFlagsNamespace) != 0 &&
-				flags&ast.SymbolFlagsValue == 0 &&
-				exports[symbol.Name()] == nil {
+			if exports[symbol.Name()] == nil && c.isSupplementalExportOfExportEqualsModule(symbol) {
 				exports[symbol.Name()] = symbol
 			}
 		}

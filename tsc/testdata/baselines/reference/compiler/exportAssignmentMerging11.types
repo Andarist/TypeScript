@@ -1,0 +1,102 @@
+//// [tests/cases/compiler/exportAssignmentMerging11.ts] ////
+
+=== main.ts ===
+/// <reference path="./ambient.d.ts" />
+import type { F1 } from "mm";
+>F1 : F1
+
+export type K = F1;
+>K : F1
+
+declare const oxa: typeof import("xa");
+>oxa : O
+
+declare const oxb: typeof import("xb");
+>oxb : O
+
+declare function expand<X>(): { [K in keyof X]: X[K] };
+>expand : <X>() => { [K in keyof X]: X[K]; }
+
+export const obsA = expand<typeof oxa>();
+>obsA : { pb: 0; readonly mb: 1; v: 0; }
+>expand<typeof oxa>() : { pb: 0; readonly mb: 1; v: 0; }
+>expand : <X>() => { [K in keyof X]: X[K]; }
+>oxa : O
+
+export const obsB = expand<typeof oxb>();
+>obsB : { pa: 0; readonly ma: 1; v: 0; }
+>expand<typeof oxb>() : { pa: 0; readonly ma: 1; v: 0; }
+>expand : <X>() => { [K in keyof X]: X[K]; }
+>oxb : O
+
+=== ambient.d.ts ===
+declare module "ma" { export { v as pa } from "xa"; export const ma: 1; }
+>"ma" : typeof import("ma")
+>v : 0
+>pa : 0
+>ma : 1
+
+declare module "mb" { export { v as pb } from "xb"; export const mb: 1; }
+>"mb" : typeof import("mb")
+>v : 0
+>pb : 0
+>mb : 1
+
+declare module "xa" { type T = typeof import("mb"); interface O extends T { v: 0 } const o: O; export = o; }
+>"xa" : typeof import("xa")
+>T : typeof import("mb")
+>v : 0
+>o : O
+>o : O
+
+declare module "xb" { type T = typeof import("ma"); interface O extends T { v: 0 } const o: O; export = o; }
+>"xb" : typeof import("xb")
+>T : typeof import("ma")
+>v : 0
+>o : O
+>o : O
+
+declare module "ia" { type T = typeof import("ma"); interface O extends T { v: 0 } const o: O; export = o; }
+>"ia" : typeof import("ia")
+>T : typeof import("ma")
+>v : 0
+>o : O
+>o : O
+
+declare module "ib" { type T = typeof import("mb"); interface O extends T { v: 0 } const o: O; export = o; }
+>"ib" : typeof import("ib")
+>T : typeof import("mb")
+>v : 0
+>o : O
+>o : O
+
+declare module "mm" {
+>"mm" : typeof import("mm")
+
+    const o: { x: 1 };
+>o : { x: 1; }
+>x : 1
+
+    export = o;
+>o : { x: 1; }
+
+    export { v as a } from "ia";
+>v : 0
+>a : 0
+
+    export { v as b } from "ib";
+>v : 0
+>b : 0
+
+    export interface F1 {}
+    export interface F2 {}
+    export interface F3 {}
+    export interface F4 {}
+    export interface F5 {}
+    export interface F6 {}
+    export interface F7 {}
+    export interface F8 {}
+    export interface F9 {}
+    export interface F10 {}
+}
+
