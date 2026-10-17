@@ -1,0 +1,26 @@
+/a.js(7,11): error TS7022: 'x' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+/a.js(7,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ skip: any; }'.
+/a.js(7,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ skip: boolean; }'.
+/a.js(8,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ skip: any; }'.
+
+
+==== /a.js (4 errors) ====
+    /**
+     * @param {any} a
+     * @param {any} b
+     */
+    export function f(a, b) {
+        const properties = {};
+        const x = properties[a] = 1;
+              ~
+!!! error TS7022: 'x' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+                  ~~~~~~~~~~~~~
+!!! error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ skip: any; }'.
+                  ~~~~~~~~~~~~~
+!!! error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ skip: boolean; }'.
+        const y = properties[b] = 1;
+                  ~~~~~~~~~~~~~
+!!! error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ skip: any; }'.
+        properties.skip = isNaN(x) || isNaN(y);
+    }
+    

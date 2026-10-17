@@ -7725,9 +7725,15 @@ func (c *Checker) checkExpressionCachedEx(node *ast.Node, checkMode CheckMode) *
 		saveFlowTypeCache := c.flowTypeCache
 		c.flowLoopStack = nil
 		c.flowTypeCache = nil
-		links.resolvedType = c.checkExpressionEx(node, checkMode)
+		t := c.checkExpressionEx(node, checkMode)
 		c.flowTypeCache = saveFlowTypeCache
 		c.flowLoopStack = saveFlowLoopStack
+		// Diagnostics are discarded at the maximum TypeToString recursion level, so don't cache
+		// the result there. Otherwise the expression would never be checked again to report them
+		if c.serializationLevel >= maxSerializationLevel {
+			return t
+		}
+		links.resolvedType = t
 	}
 	return links.resolvedType
 }
