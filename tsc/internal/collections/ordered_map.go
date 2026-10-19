@@ -13,11 +13,17 @@ import (
 )
 
 // OrderedMap is an insertion ordered map.
+//
+// The entries are kept in insertion order in one slice. Most maps are small, so a map is searched linearly until it
+// has more than orderedMapLinearMax entries, and only then gets an index of entry positions by key.
 type OrderedMap[K comparable, V any] struct {
-	_    noCopy
-	keys []K
-	mp   map[K]V
+	_       noCopy
+	entries []MapEntry[K, V]
+	index   map[K]int32
 }
+
+// orderedMapLinearMax is the size up to which a map is searched linearly instead of through its index.
+const orderedMapLinearMax = 8
 
 // noCopy may be embedded into structs which must not be copied
 // after the first use.
@@ -37,10 +43,11 @@ func NewOrderedMapWithSizeHint[K comparable, V any](hint int) *OrderedMap[K, V] 
 }
 
 func newMapWithSizeHint[K comparable, V any](hint int) OrderedMap[K, V] {
-	return OrderedMap[K, V]{
-		keys: make([]K, 0, hint),
-		mp:   make(map[K]V, hint),
+	var index map[K]int32
+	if hint > orderedMapLinearMax {
+		index = make(map[K]int32, hint)
 	}
+	return OrderedMap[K, V]{entries: make([]MapEntry[K, V], 0, hint), index: index}
 }
 
 type MapEntry[K comparable, V any] struct {
@@ -56,71 +63,102 @@ func NewOrderedMapFromList[K comparable, V any](items []MapEntry[K, V]) *Ordered
 	return mp
 }
 
+func (m *OrderedMap[K, V]) find(key K) int {
+	if m == nil {
+		return -1
+	}
+	if m.index != nil {
+		if i, ok := m.index[key]; ok {
+			return int(i)
+		}
+		return -1
+	}
+	for i := range m.entries {
+		if m.entries[i].Key == key {
+			return i
+		}
+	}
+	return -1
+}
+
+func (m *OrderedMap[K, V]) buildIndex() {
+	m.index = make(map[K]int32, len(m.entries))
+	for i := range m.entries {
+		m.index[m.entries[i].Key] = int32(i)
+	}
+}
+
 // Set sets a key-value pair in the map.
 func (m *OrderedMap[K, V]) Set(key K, value V) {
-	if m.mp == nil {
-		m.mp = make(map[K]V)
+	if i := m.find(key); i >= 0 {
+		m.entries[i].Value = value
+		return
 	}
-
-	if _, ok := m.mp[key]; !ok {
-		m.keys = append(m.keys, key)
+	m.entries = append(m.entries, MapEntry[K, V]{key, value})
+	if m.index != nil {
+		m.index[key] = int32(len(m.entries) - 1)
+	} else if len(m.entries) > orderedMapLinearMax {
+		m.buildIndex()
 	}
-	m.mp[key] = value
 }
 
 // Get retrieves a value from the map.
 func (m *OrderedMap[K, V]) Get(key K) (V, bool) {
-	v, ok := m.mp[key]
-	return v, ok
+	if i := m.find(key); i >= 0 {
+		return m.entries[i].Value, true
+	}
+	var zero V
+	return zero, false
 }
 
 // GetOrZero retrieves a value from the map, or returns the zero value of the value type if the key is not present.
 func (m *OrderedMap[K, V]) GetOrZero(key K) V {
-	return m.mp[key]
+	v, _ := m.Get(key)
+	return v
 }
 
 // EntryAt retrieves the key-value pair at the specified index.
 func (m *OrderedMap[K, V]) EntryAt(index int) (K, V, bool) {
-	if index < 0 || index >= len(m.keys) {
+	if m == nil || index < 0 || index >= len(m.entries) {
 		var zero K
 		var zeroV V
 		return zero, zeroV, false
 	}
-
-	key := m.keys[index]
-	value := m.mp[key]
-	return key, value, true
+	return m.entries[index].Key, m.entries[index].Value, true
 }
 
 // Has returns true if the map contains the key.
 func (m *OrderedMap[K, V]) Has(key K) bool {
-	_, ok := m.mp[key]
-	return ok
+	return m.find(key) >= 0
 }
 
 // Delete removes a key-value pair from the map.
 func (m *OrderedMap[K, V]) Delete(key K) (V, bool) {
-	v, ok := m.mp[key]
-	if !ok {
+	i := m.find(key)
+	if i < 0 {
 		var zero V
 		return zero, false
 	}
-
-	delete(m.mp, key)
-	i := slices.Index(m.keys, key)
-	// If we're just removing the first or last element, avoid shifting everything around.
+	v := m.entries[i].Value
+	// If we're just removing the first element, avoid shifting everything around.
 	if i == 0 {
-		var zero K
-		m.keys[0] = zero
-		m.keys = m.keys[1:]
-	} else if end := len(m.keys) - 1; i == end {
-		var zero K
-		m.keys[end] = zero
-		m.keys = m.keys[:end]
+		m.entries[0] = MapEntry[K, V]{}
+		m.entries = m.entries[1:]
 	} else {
-		m.keys = slices.Delete(m.keys, i, i+1)
+		m.entries = slices.Delete(m.entries, i, i+1)
 	}
-
+	if m.index != nil {
+		delete(m.index, key)
+		if i == 0 {
+			for j := range m.entries {
+				m.index[m.entries[j].Key] = int32(j)
+			}
+		} else {
+			for j := i; j < len(m.entries); j++ {
+				m.index[m.entries[j].Key] = int32(j)
+			}
+		}
+	}
 	return v, true
 }
 
@@ -131,11 +169,10 @@ func (m *OrderedMap[K, V]) Keys() iter.Seq[K] {
 		if m == nil {
 			return
 		}
-
 		// We use a for loop here to ensure we enumerate new items added during iteration.
 		//nolint:intrange
-		for i := 0; i < len(m.keys); i++ {
-			if !yield(m.keys[i]) {
+		for i := 0; i < len(m.entries); i++ {
+			if !yield(m.entries[i].Key) {
 				break
 			}
 		}
@@ -149,11 +186,10 @@ func (m *OrderedMap[K, V]) Values() iter.Seq[V] {
 		if m == nil {
 			return
 		}
-
 		// We use a for loop here to ensure we enumerate new items added during iteration.
 		//nolint:intrange
-		for i := 0; i < len(m.keys); i++ {
-			if !yield(m.mp[m.keys[i]]) {
+		for i := 0; i < len(m.entries); i++ {
+			if !yield(m.entries[i].Value) {
 				break
 			}
 		}
@@ -166,12 +202,10 @@ func (m *OrderedMap[K, V]) Entries() iter.Seq2[K, V] {
 		if m == nil {
 			return
 		}
-
 		// We use a for loop here to ensure we enumerate new items added during iteration.
 		//nolint:intrange
-		for i := 0; i < len(m.keys); i++ {
-			key := m.keys[i]
-			if !yield(key, m.mp[key]) {
+		for i := 0; i < len(m.entries); i++ {
+			if !yield(m.entries[i].Key, m.entries[i].Value) {
 				break
 			}
 		}
@@ -181,9 +215,9 @@ func (m *OrderedMap[K, V]) Entries() iter.Seq2[K, V] {
 // Clear removes all key-value pairs from the map.
 // The space allocated for the map will be reused.
 func (m *OrderedMap[K, V]) Clear() {
-	clear(m.keys)
-	m.keys = m.keys[:0]
-	clear(m.mp)
+	clear(m.entries)
+	m.entries = m.entries[:0]
+	clear(m.index)
 }
 
 // Size returns the number of key-value pairs in the map.
@@ -191,8 +225,7 @@ func (m *OrderedMap[K, V]) Size() int {
 	if m == nil {
 		return 0
 	}
-
-	return len(m.keys)
+	return len(m.entries)
 }
 
 // Clone returns a shallow copy of the map.
@@ -200,15 +233,14 @@ func (m *OrderedMap[K, V]) Clone() *OrderedMap[K, V] {
 	if m == nil {
 		return nil
 	}
-
 	m2 := m.clone()
 	return &m2
 }
 
 func (m *OrderedMap[K, V]) clone() OrderedMap[K, V] {
 	return OrderedMap[K, V]{
-		keys: slices.Clone(m.keys),
-		mp:   maps.Clone(m.mp),
+		entries: slices.Clone(m.entries),
+		index:   maps.Clone(m.index),
 	}
 }
 
@@ -221,8 +253,9 @@ func (m *OrderedMap[K, V]) EqualFunc(other *OrderedMap[K, V], equal func(V, V) b
 	if m == nil || other == nil {
 		return false
 	}
-	return slices.Equal(m.keys, other.keys) &&
-		maps.EqualFunc(m.mp, other.mp, equal)
+	return slices.EqualFunc(m.entries, other.entries, func(a, b MapEntry[K, V]) bool {
+		return a.Key == b.Key && equal(a.Value, b.Value)
+	})
 }
 
 var _ json.MarshalerTo = (*OrderedMap[string, string])(nil)
@@ -232,7 +265,8 @@ func (m *OrderedMap[K, V]) MarshalJSONTo(enc *json.Encoder) error {
 		return err
 	}
 
-	for _, k := range m.keys {
+	for _, entry := range m.entries {
+		k := entry.Key
 		// TODO: is this needed? Can we just MarshalEncode k directly?
 		keyString, err := resolveKeyName(reflect.ValueOf(k))
 		if err != nil {
@@ -243,7 +277,7 @@ func (m *OrderedMap[K, V]) MarshalJSONTo(enc *json.Encoder) error {
 			return err
 		}
 
-		if err := json.MarshalEncode(enc, m.mp[k]); err != nil {
+		if err := json.MarshalEncode(enc, entry.Value); err != nil {
 			return err
 		}
 	}
