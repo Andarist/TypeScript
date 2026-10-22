@@ -250,10 +250,12 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 		c.inferToUnionOrIntersectionType(n, source, target)
 	case source.flags&TypeFlagsUnion != 0:
 		sources := source.Types()
-		if discriminants := c.getInferenceDiscriminants(source, target); len(discriminants) != 0 {
-			discriminator := &TypeDiscriminator{c: c, props: discriminants, reverse: true, isRelatedTo: c.compareTypesComparableSimple}
-			if filtered := c.discriminateTypesByDiscriminableItems(source, discriminator); filtered != nil {
-				sources = filtered
+		if isDiscriminableUnion(source) {
+			if discriminants := c.getInferenceDiscriminants(source, target); len(discriminants) != 0 {
+				discriminator := &TypeDiscriminator{c: c, props: discriminants, reverse: true, isRelatedTo: c.compareTypesComparableSimple}
+				if filtered := c.discriminateTypesByDiscriminableItems(source, discriminator); filtered != nil {
+					sources = filtered
+				}
 			}
 		}
 		for _, sourceType := range sources {
@@ -466,19 +468,39 @@ func (c *Checker) inferToUnionOrIntersectionType(n *InferenceState, source *Type
 	// Each entry contains the remaining allowed targets for the corresponding source constituent.
 	// A nil entry means unrestricted.
 	var filteredTargetsBySource [][]*Type
-	if target.flags&TypeFlagsUnion != 0 {
+	if target.flags&TypeFlagsUnion != 0 && isDiscriminableUnion(target) {
 		sources := source.Distributed()
-		filteredTargetsBySource = make([][]*Type, len(sources))
 		for i, s := range sources {
 			if discriminants := c.getInferenceDiscriminants(target, s); len(discriminants) != 0 {
 				discriminator := &TypeDiscriminator{c: c, props: discriminants, isRelatedTo: c.compareTypesComparableSimple}
 				if filtered := c.discriminateTypesByDiscriminableItems(target, discriminator); filtered != nil {
+					if filteredTargetsBySource == nil {
+						filteredTargetsBySource = make([][]*Type, len(sources))
+					}
 					filteredTargetsBySource[i] = filtered
 				}
 			}
 		}
 	}
 	c.inferToMultipleTypes(n, source, target.Types(), target.flags, filteredTargetsBySource)
+}
+
+// A union can only be narrowed by discriminants when it has at least two non-primitive constituents to
+// tell apart. This rules out the very common `T | undefined` shaped targets before any property work.
+func isDiscriminableUnion(t *Type) bool {
+	if t.objectFlags&ObjectFlagsPrimitiveUnion != 0 {
+		return false
+	}
+	count := 0
+	for _, s := range t.Types() {
+		if s.flags&TypeFlagsPrimitive == 0 {
+			count++
+			if count == 2 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets []*Type, targetFlags TypeFlags, filteredTargetsBySource [][]*Type) {
