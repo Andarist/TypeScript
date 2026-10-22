@@ -111,6 +111,19 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 		if len(targets) == 0 {
 			return
 		}
+		// Object and type parameter constituents need no union reduction. When the
+		// source needs no substitution processing, infer directly to the target slice.
+		if len(sources) != 0 && len(targets) > 1 && core.Every(targets, func(t *Type) bool { return t.flags&(TypeFlagsObject|TypeFlagsTypeParameter) != 0 }) {
+			if core.Every(sources, func(t *Type) bool { return t.flags&TypeFlagsObject != 0 }) {
+				c.inferToMultipleTypesWithSources(n, nil, sources, targets, TypeFlagsUnion)
+				return
+			}
+			reducedSource := c.getUnionType(sources)
+			if reducedSource.flags&TypeFlagsSubstitution == 0 {
+				c.inferToMultipleTypes(n, reducedSource, targets, TypeFlagsUnion)
+				return
+			}
+		}
 		target = c.getUnionType(targets)
 		if len(sources) == 0 {
 			// All source constituents have been matched and there is nothing further to infer from.
@@ -119,6 +132,14 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 			// the full source to whatever remains in the target. For example, when inferring from
 			// string to 'string | T', make a lower priority inference of string for T.
 			c.inferWithPriority(n, source, target, InferencePriorityNakedTypeVariable)
+			return
+		}
+		// An object target distributes inference over the remaining object sources.
+		// These sources need no union reduction, so avoid interning a union just to enumerate it.
+		if len(sources) > 1 && target.flags&TypeFlagsObject != 0 && core.Every(sources, func(t *Type) bool { return t.flags&TypeFlagsObject != 0 }) {
+			for _, sourceType := range sources {
+				c.inferFromTypes(n, sourceType, target)
+			}
 			return
 		}
 		source = c.getUnionType(sources)
@@ -457,14 +478,20 @@ func getTypeListDepth(types []*Type, maxDepth int) int {
 }
 
 func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets []*Type, targetFlags TypeFlags) {
+	c.inferToMultipleTypesWithSources(n, source, nil, targets, targetFlags)
+}
+
+// A nil source defers construction of the union of the supplied source constituents.
+func (c *Checker) inferToMultipleTypesWithSources(n *InferenceState, source *Type, sources []*Type, targets []*Type, targetFlags TypeFlags) {
 	typeVariableCount := 0
 	if targetFlags&TypeFlagsUnion != 0 {
 		var nakedTypeVariable *Type
-		var sources []*Type
-		if source.flags&TypeFlagsUnion != 0 {
-			sources = source.Types()
-		} else {
-			sources = []*Type{source}
+		if sources == nil {
+			if source.flags&TypeFlagsUnion != 0 {
+				sources = source.Types()
+			} else {
+				sources = []*Type{source}
+			}
 		}
 		matched := make([]bool, len(sources))
 		inferenceCircularity := false
@@ -495,6 +522,9 @@ func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets 
 			// 'A | B' to 'T & (X | Y)' where we want to infer 'A | B' for T.
 			intersectionTypeVariable := getSingleTypeVariableFromIntersectionTypes(n, targets)
 			if intersectionTypeVariable != nil {
+				if source == nil {
+					source = c.getUnionType(sources)
+				}
 				c.inferWithPriority(n, source, intersectionTypeVariable, InferencePriorityNakedTypeVariable)
 			}
 			return
@@ -532,6 +562,9 @@ func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets 
 	// we want to infer string for T, not Promise<string> | string. For intersection types
 	// we only infer to single naked type variables.
 	if targetFlags&TypeFlagsIntersection != 0 && typeVariableCount == 1 || targetFlags&TypeFlagsIntersection == 0 && typeVariableCount > 0 {
+		if source == nil {
+			source = c.getUnionType(sources)
+		}
 		for _, t := range targets {
 			if getInferenceInfoForType(n, t) != nil {
 				c.inferWithPriority(n, source, t, InferencePriorityNakedTypeVariable)

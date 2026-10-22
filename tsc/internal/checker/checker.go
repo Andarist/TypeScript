@@ -18231,18 +18231,38 @@ func (c *Checker) getRestType(source *Type, properties []*ast.Node, symbol *ast.
 			return c.getRestType(t, properties, symbol)
 		})
 	}
-	omitKeyType := c.getUnionType(core.Map(properties, c.getLiteralTypeFromPropertyName))
+	omitKeyTypes := core.Map(properties, c.getLiteralTypeFromPropertyName)
+	useKeySlice := !c.isGenericObjectType(source) && core.Every(omitKeyTypes, isRegularLiteralPropertyKey)
+	var omitKeyType *Type
+	if useKeySlice {
+		slices.SortFunc(omitKeyTypes, CompareTypes)
+	} else {
+		omitKeyType = c.getUnionType(omitKeyTypes)
+	}
 	var spreadableProperties []*ast.Symbol
 	var unspreadableToRestKeys []*Type
 	for _, prop := range c.getPropertiesOfType(source) {
 		literalTypeFromProperty := c.getLiteralTypeFromProperty(prop, TypeFlagsStringOrNumberLiteralOrUnique, false)
-		if !c.isTypeAssignableTo(literalTypeFromProperty, omitKeyType) && getDeclarationModifierFlagsFromSymbol(prop)&(ast.ModifierFlagsPrivate|ast.ModifierFlagsProtected) == 0 && c.isSpreadableProperty(prop) {
+		var omitted bool
+		switch {
+		case omitKeyType != nil:
+			omitted = c.isTypeAssignableTo(literalTypeFromProperty, omitKeyType)
+		case literalTypeFromProperty.flags&TypeFlagsNever != 0:
+			omitted = true
+		case isRegularLiteralPropertyKey(literalTypeFromProperty):
+			omitted = containsType(omitKeyTypes, literalTypeFromProperty)
+		default:
+			// Preserve union-source relation semantics for unusual property name types.
+			omitKeyType = c.getUnionType(omitKeyTypes)
+			omitted = c.isTypeAssignableTo(literalTypeFromProperty, omitKeyType)
+		}
+		if !omitted && getDeclarationModifierFlagsFromSymbol(prop)&(ast.ModifierFlagsPrivate|ast.ModifierFlagsProtected) == 0 && c.isSpreadableProperty(prop) {
 			spreadableProperties = append(spreadableProperties, prop)
 		} else {
 			unspreadableToRestKeys = append(unspreadableToRestKeys, literalTypeFromProperty)
 		}
 	}
-	if c.isGenericObjectType(source) || c.isGenericIndexType(omitKeyType) {
+	if !useKeySlice && (c.isGenericObjectType(source) || c.isGenericIndexType(omitKeyType)) {
 		if len(unspreadableToRestKeys) != 0 {
 			// If the type we're spreading from has properties that cannot
 			// be spread into the rest type (e.g. getters, methods), ensure
@@ -21332,9 +21352,15 @@ func (c *Checker) getDefaultConstructSignatures(classType *Type) []*Signature {
 	return result
 }
 
+func isRegularLiteralPropertyKey(t *Type) bool {
+	return t.flags&TypeFlagsStringOrNumberLiteralOrUnique != 0 && t.flags&TypeFlagsEnumLike == 0 && !isFreshLiteralType(t)
+}
+
 func (c *Checker) resolveMappedTypeMembers(t *Type) {
 	members := make(ast.SymbolTable)
 	var indexInfos []*IndexInfo
+	var pendingKeyTypes map[*ast.Symbol][]*Type
+	var pendingKeySymbols []*ast.Symbol
 	// Resolve upfront such that recursive references see an empty object type.
 	c.setStructuredTypeMembers(t, nil, nil, nil, nil)
 	// In { [P in K]: T }, we refer to P as the type parameter type, K as the constraint type,
@@ -21361,7 +21387,22 @@ func (c *Checker) resolveMappedTypeMembers(t *Type) {
 				valueLinks := c.valueSymbolLinks.Get(existingProp)
 				valueLinks.setNameType(c, c.getUnionType([]*Type{valueLinks.getNameType(), propNameType}))
 				mappedLinks := c.mappedSymbolLinks.Get(existingProp)
-				mappedLinks.keyType = c.getUnionType([]*Type{mappedLinks.keyType, keyType})
+				keys, pending := pendingKeyTypes[existingProp]
+				if pending && keys != nil && isRegularLiteralPropertyKey(keyType) {
+					pendingKeyTypes[existingProp] = append(keys, keyType)
+				} else if !pending && isRegularLiteralPropertyKey(mappedLinks.keyType) && isRegularLiteralPropertyKey(keyType) {
+					if pendingKeyTypes == nil {
+						pendingKeyTypes = make(map[*ast.Symbol][]*Type)
+					}
+					pendingKeyTypes[existingProp] = []*Type{mappedLinks.keyType, keyType}
+					pendingKeySymbols = append(pendingKeySymbols, existingProp)
+				} else {
+					if keys != nil {
+						mappedLinks.keyType = c.getUnionType(keys)
+						pendingKeyTypes[existingProp] = nil
+					}
+					mappedLinks.keyType = c.getUnionType([]*Type{mappedLinks.keyType, keyType})
+				}
 			} else {
 				var modifiersProp *ast.Symbol
 				if isTypeUsableAsPropertyName(keyType) {
@@ -21418,6 +21459,12 @@ func (c *Checker) resolveMappedTypeMembers(t *Type) {
 		c.forEachMappedTypePropertyKeyTypeAndIndexSignatureKeyType(modifiersType, include, false /*stringsOnly*/, addMemberForKeyType)
 	} else {
 		forEachType(c.getLowerBoundOfKeyType(constraintType), addMemberForKeyType)
+	}
+	// Publish one key union per collided property, in first-collision order.
+	for _, prop := range pendingKeySymbols {
+		if keys := pendingKeyTypes[prop]; keys != nil {
+			c.mappedSymbolLinks.Get(prop).keyType = c.getUnionType(keys)
+		}
 	}
 	c.setStructuredTypeMembers(t, members, nil, nil, indexInfos)
 }
@@ -26102,6 +26149,19 @@ func (c *Checker) getWidenedUniqueESSymbolType(t *Type) *Type {
 
 func (c *Checker) getWidenedLiteralLikeTypeForContextualType(t *Type, contextualType *Type) *Type {
 	if !c.isLiteralOfContextualType(t, contextualType) {
+		// Fuse constituent transformations to avoid publishing intermediate unions.
+		// Keep the staged mapping for unions with origins to preserve their structure.
+		if t.flags&TypeFlagsUnion != 0 && t.AsUnionType().origin == nil {
+			return c.mapType(t, func(t *Type) *Type {
+				if t.flags&TypeFlagsUniqueESSymbol != 0 {
+					return c.esSymbolType
+				}
+				if t.flags&TypeFlagsFreshable != 0 {
+					return c.getRegularTypeOfLiteralType(c.getWidenedLiteralType(t))
+				}
+				return t
+			})
+		}
 		t = c.getWidenedUniqueESSymbolType(c.getWidenedLiteralType(t))
 	}
 	return c.getRegularTypeOfLiteralType(t)
