@@ -1258,10 +1258,100 @@ func (c *Checker) getInferenceDiscriminants(source *Type, target *Type) []*ast.S
 	if target.flags&TypeFlagsObject == 0 {
 		return nil
 	}
-	literalProps := core.Filter(c.getPropertiesOfType(target), func(prop *ast.Symbol) bool {
-		return isLiteralType(c.getNonMissingTypeOfSymbol(prop))
-	})
-	return c.findDiscriminantProperties(literalProps, source)
+	if source.flags&TypeFlagsUnion == 0 {
+		return nil
+	}
+	var result []*ast.Symbol
+	unionProps := source.AsUnionOrIntersectionType().propertyCache
+	for _, prop := range c.getDiscriminantCandidatesOfType(target) {
+		name := prop.Name()
+		if unionProps[name] != nil {
+			// The union already knows this property, so asking whether it discriminates is cheap and avoids
+			// resolving the candidate's type when it does not.
+			if c.isDiscriminantProperty(source, name) && isLiteralType(c.getNonMissingTypeOfSymbol(prop)) {
+				result = append(result, prop)
+			}
+		} else if c.someConstituentHasProperty(source, name) && isLiteralType(c.getNonMissingTypeOfSymbol(prop)) && c.isDiscriminantProperty(source, name) {
+			// Otherwise skip names the union does not have at all, and resolve the candidate before asking the
+			// union, so that its synthetic property is only built for unit-typed candidates.
+			result = append(result, prop)
+		}
+	}
+	return result
+}
+
+// A property can only discriminate a union when some constituent declares it, and the discriminant check
+// returns false otherwise, so this cheap lookup avoids resolving candidate types for names the union lacks.
+func (c *Checker) someConstituentHasProperty(union *Type, name string) bool {
+	for _, t := range union.Types() {
+		if t.flags&TypeFlagsPrimitive == 0 && c.getPropertyOfType(t, name) != nil {
+			return true
+		}
+	}
+	return false
+}
+
+// Returns the properties of an object type whose declared type may be a unit type or a union of unit types,
+// judged syntactically without resolving any types. Only such properties can discriminate a union. The same
+// object types take part in inference over and over, so the result is cached per type.
+func (c *Checker) getDiscriminantCandidatesOfType(t *Type) []*ast.Symbol {
+	if props, ok := c.literalPropertiesCache[t]; ok {
+		return props
+	}
+	var props []*ast.Symbol
+	for _, prop := range c.getPropertiesOfType(t) {
+		if mayHaveUnitType(prop) {
+			props = append(props, prop)
+		}
+	}
+	c.literalPropertiesCache[t] = props
+	return props
+}
+
+// A syntactic pre-check that rules out properties whose declared type cannot be a unit type, so that
+// their types need not be resolved just to find out. Anything uncertain reports true.
+func mayHaveUnitType(prop *ast.Symbol) bool {
+	// Methods have function types.
+	if prop.Flags()&ast.SymbolFlagsMethod != 0 {
+		return false
+	}
+	decl := prop.ValueDeclaration()
+	if decl == nil {
+		return true
+	}
+	switch decl.Kind {
+	case ast.KindPropertySignature, ast.KindPropertyDeclaration, ast.KindParameter:
+		typeNode := decl.Type()
+		if typeNode == nil {
+			// Without an annotation the type comes from an initializer, or is implicitly any.
+			return decl.Initializer() != nil
+		}
+		// An optional property of type `never` ends up typed as just `undefined`, which is a unit type.
+		return mayBeUnitTypeNode(typeNode, prop.Flags()&ast.SymbolFlagsOptional != 0)
+	}
+	return true
+}
+
+func mayBeUnitTypeNode(node *ast.Node, isOptional bool) bool {
+	switch node.Kind {
+	case ast.KindNeverKeyword:
+		return isOptional
+	case ast.KindStringKeyword, ast.KindNumberKeyword, ast.KindBigIntKeyword, ast.KindSymbolKeyword, ast.KindObjectKeyword,
+		ast.KindAnyKeyword, ast.KindUnknownKeyword, ast.KindVoidKeyword,
+		ast.KindArrayType, ast.KindTupleType, ast.KindFunctionType, ast.KindConstructorType, ast.KindTypeLiteral,
+		ast.KindTemplateLiteralType, ast.KindMappedType, ast.KindThisType, ast.KindOptionalType, ast.KindRestType:
+		return false
+	case ast.KindParenthesizedType:
+		return mayBeUnitTypeNode(node.Type(), isOptional)
+	case ast.KindUnionType:
+		for _, t := range node.AsUnionTypeNode().Types.Nodes {
+			if mayBeUnitTypeNode(t, isOptional) {
+				return true
+			}
+		}
+		return false
+	}
+	return true
 }
 
 func (c *Checker) typesDefinitelyUnrelated(source *Type, target *Type) bool {

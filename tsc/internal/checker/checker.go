@@ -643,6 +643,7 @@ type Checker struct {
 	narrowedTypes                               map[NarrowedTypeKey]*Type
 	assignmentReducedTypes                      map[AssignmentReducedKey]*Type
 	discriminatedContextualTypes                map[DiscriminatedContextualTypeKey]*Type
+	literalPropertiesCache                      map[*Type][]*ast.Symbol
 	instantiationExpressionTypes                map[InstantiationExpressionKey]*Type
 	substitutionTypes                           map[SubstitutionTypeKey]*Type
 	reverseMappedCache                          map[ReverseMappedTypeKey]*Type
@@ -981,6 +982,7 @@ func NewChecker(program Program, tracer *Tracer) (*Checker, *sync.Mutex) {
 	c.narrowedTypes = make(map[NarrowedTypeKey]*Type)
 	c.assignmentReducedTypes = make(map[AssignmentReducedKey]*Type)
 	c.discriminatedContextualTypes = make(map[DiscriminatedContextualTypeKey]*Type)
+	c.literalPropertiesCache = make(map[*Type][]*ast.Symbol)
 	c.instantiationExpressionTypes = make(map[InstantiationExpressionKey]*Type)
 	c.substitutionTypes = make(map[SubstitutionTypeKey]*Type)
 	c.reverseMappedCache = make(map[ReverseMappedTypeKey]*Type)
