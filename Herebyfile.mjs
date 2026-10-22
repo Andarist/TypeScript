@@ -93,6 +93,7 @@ const { values: rawOptions } = parseArgs({
         race: { type: "boolean", default: parseEnvBoolean("RACE") },
         noembed: { type: "boolean", default: parseEnvBoolean("NOEMBED") },
         concurrentTestPrograms: { type: "boolean", default: parseEnvBoolean("CONCURRENT_TEST_PROGRAMS") },
+        randomTestCheckers: { type: "boolean", default: parseEnvBoolean("RANDOM_TEST_CHECKERS") },
         coverage: { type: "boolean", default: parseEnvBoolean("COVERAGE") },
     },
     strict: false,
@@ -825,6 +826,7 @@ function getGODEBUG() {
 const goTestEnv = {
     GODEBUG: getGODEBUG(),
     ...(options.concurrentTestPrograms ? { TS_TEST_PROGRAM_SINGLE_THREADED: "false" } : {}),
+    ...(options.randomTestCheckers ? { TS_TEST_PROGRAM_CHECKERS: "random" } : {}),
     // Go test caching takes a long time on Windows.
     // https://github.com/golang/go/issues/72992
     ...(process.platform === "win32" ? { GOFLAGS: "-count=1" } : {}),
@@ -834,6 +836,7 @@ const baselineTrackingEnabled = false && ![
     options.tests,
     options.noembed,
     options.concurrentTestPrograms,
+    options.randomTestCheckers,
     options.race,
     options.dirty,
 ].some(Boolean);

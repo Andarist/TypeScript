@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"os"
 	"reflect"
 	"runtime/debug"
@@ -49,6 +50,26 @@ var testProgramIsSingleThreaded = sync.OnceValue(func() bool {
 
 func TestProgramIsSingleThreaded() bool {
 	return testProgramIsSingleThreaded()
+}
+
+var testProgramCheckers = sync.OnceValue(func() string {
+	return os.Getenv("TS_TEST_PROGRAM_CHECKERS")
+})
+
+// TestProgramCheckers returns the number of checkers for a multi-threaded test program that does not set one, or false
+// to leave the default. TS_TEST_PROGRAM_CHECKERS sets the number, or "random" picks one between 2 and 8 on each call.
+func TestProgramCheckers() (int, bool) {
+	if TestProgramIsSingleThreaded() {
+		return 0, false
+	}
+	v := testProgramCheckers()
+	if v == "random" {
+		return 2 + rand.IntN(7), true
+	}
+	if n, err := strconv.Atoi(v); err == nil && n > 0 {
+		return n, true
+	}
+	return 0, false
 }
 
 // CheckDataOnly rejects opaque references except within explicitly allowed leaf types.

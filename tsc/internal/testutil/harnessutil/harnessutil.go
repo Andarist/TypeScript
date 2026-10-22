@@ -122,6 +122,12 @@ func CompileFilesEx(
 	symlinks map[string]string,
 	tsconfig *tsoptions.ParsedCommandLine,
 ) *CompilationResult {
+	if checkers, ok := testutil.TestProgramCheckers(); ok && compilerOptions.Checkers == nil {
+		compilerOptions = compilerOptions.Clone()
+		compilerOptions.Checkers = &checkers
+		t.Logf("Compiled with %d checkers, set TS_TEST_PROGRAM_CHECKERS=%d to reproduce", checkers, checkers)
+	}
+
 	var programFileNames []tspath.RootedFilePath
 	for _, file := range inputFiles {
 		fileName := tspath.ToRootedFilePath(file.UnitName, currentDirectory)

@@ -111,6 +111,7 @@ jobs:
             os: linux
             name: 'race mode'
             race: true
+            random-test-checkers: true
             skip: ${{ github.event_name == 'merge_group' || github.repository != 'microsoft/TypeScript' }}
           - runner: ubuntu-latest
             os: linux
@@ -120,6 +121,7 @@ jobs:
             os: linux
             name: 'concurrent test programs'
             concurrent-test-programs: true
+            random-test-checkers: true
             coverage: true
             skip: ${{ github.event_name == 'merge_group' }}
         exclude:
@@ -135,6 +137,7 @@ jobs:
       TSGO_HEREBY_RACE: ${{ (matrix.config.race && 'true') || 'false' }}
       TSGO_HEREBY_NOEMBED: ${{ (matrix.config.noembed && 'true') || 'false' }}
       TSGO_HEREBY_CONCURRENT_TEST_PROGRAMS: ${{ (matrix.config.concurrent-test-programs && 'true') || 'false' }}
+      TSGO_HEREBY_RANDOM_TEST_CHECKERS: ${{ (matrix.config.random-test-checkers && 'true') || 'false' }}
       TSGO_HEREBY_COVERAGE: ${{ (matrix.config.coverage && github.event_name != 'merge_group' && 'true') || 'false' }}
     steps:
       - run: git config --system core.longpaths true
