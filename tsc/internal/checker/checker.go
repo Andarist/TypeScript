@@ -21874,17 +21874,24 @@ func (c *Checker) getUnionOrIntersectionProperty(t *Type, name string, skipObjec
 		cache = ast.GetSymbolTable(&t.AsUnionOrIntersectionType().propertyCache)
 	}
 	if prop := cache[name]; prop != nil {
+		if prop == c.unknownSymbol {
+			return nil
+		}
 		return prop
 	}
 	prop := c.createUnionOrIntersectionProperty(t, name, skipObjectFunctionPropertyAugment)
-	if prop != nil {
-		cache[name] = prop
-		// Propagate an entry from the non-augmented cache to the augmented cache unless the property is partial.
-		if skipObjectFunctionPropertyAugment && prop.CheckFlags()&ast.CheckFlagsPartial == 0 {
-			augmentedCache := ast.GetSymbolTable(&t.AsUnionOrIntersectionType().propertyCache)
-			if augmentedCache[name] == nil {
-				augmentedCache[name] = prop
-			}
+	if prop == nil {
+		// Remember misses too. Names absent from a union get looked up repeatedly, for instance by excess
+		// property checks and discriminant searches, and each miss otherwise rescans every constituent.
+		cache[name] = c.unknownSymbol
+		return nil
+	}
+	cache[name] = prop
+	// Propagate an entry from the non-augmented cache to the augmented cache unless the property is partial.
+	if skipObjectFunctionPropertyAugment && prop.CheckFlags()&ast.CheckFlagsPartial == 0 {
+		augmentedCache := ast.GetSymbolTable(&t.AsUnionOrIntersectionType().propertyCache)
+		if augmentedCache[name] == nil {
+			augmentedCache[name] = prop
 		}
 	}
 	return prop
