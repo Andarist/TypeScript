@@ -1,0 +1,59 @@
+//// [tests/cases/compiler/circularVarianceWitnessedThroughOtherType.ts] ////
+
+=== circularVarianceWitnessedThroughOtherType.ts ===
+interface Method<T, K extends keyof T, S> {
+>Method : Symbol(Method, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 0))
+>T : Symbol(T, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 17))
+>K : Symbol(K, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 19))
+>T : Symbol(T, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 17))
+>S : Symbol(S, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 38))
+
+    (): Builder<T, S | K>
+>Builder : Symbol(Builder, Decl(circularVarianceWitnessedThroughOtherType.ts, 3, 1))
+>T : Symbol(T, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 17))
+>S : Symbol(S, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 38))
+>K : Symbol(K, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 19))
+
+    readonly selected: S
+>selected : Symbol(Method.selected, Decl(circularVarianceWitnessedThroughOtherType.ts, 1, 25))
+>S : Symbol(S, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 38))
+}
+type Builder<T, S = never> = { [K in keyof T]-?: Method<T, K, S> }
+>Builder : Symbol(Builder, Decl(circularVarianceWitnessedThroughOtherType.ts, 3, 1))
+>T : Symbol(T, Decl(circularVarianceWitnessedThroughOtherType.ts, 4, 13))
+>S : Symbol(S, Decl(circularVarianceWitnessedThroughOtherType.ts, 4, 15))
+>K : Symbol(K, Decl(circularVarianceWitnessedThroughOtherType.ts, 4, 32))
+>T : Symbol(T, Decl(circularVarianceWitnessedThroughOtherType.ts, 4, 13))
+>Method : Symbol(Method, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 0))
+>T : Symbol(T, Decl(circularVarianceWitnessedThroughOtherType.ts, 4, 13))
+>K : Symbol(K, Decl(circularVarianceWitnessedThroughOtherType.ts, 4, 32))
+>S : Symbol(S, Decl(circularVarianceWitnessedThroughOtherType.ts, 4, 15))
+
+declare let x: Builder<{ a: string }, 'a'>
+>x : Symbol(x, Decl(circularVarianceWitnessedThroughOtherType.ts, 6, 11))
+>Builder : Symbol(Builder, Decl(circularVarianceWitnessedThroughOtherType.ts, 3, 1))
+>a : Symbol(a, Decl(circularVarianceWitnessedThroughOtherType.ts, 6, 24))
+
+declare let y: Builder<{ a: string }, 'b'>
+>y : Symbol(y, Decl(circularVarianceWitnessedThroughOtherType.ts, 7, 11))
+>Builder : Symbol(Builder, Decl(circularVarianceWitnessedThroughOtherType.ts, 3, 1))
+>a : Symbol(a, Decl(circularVarianceWitnessedThroughOtherType.ts, 7, 24))
+
+y = x // error
+>y : Symbol(y, Decl(circularVarianceWitnessedThroughOtherType.ts, 7, 11))
+>x : Symbol(x, Decl(circularVarianceWitnessedThroughOtherType.ts, 6, 11))
+
+declare let m1: Method<{ a: string }, 'a', 'a'>
+>m1 : Symbol(m1, Decl(circularVarianceWitnessedThroughOtherType.ts, 10, 11))
+>Method : Symbol(Method, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 0))
+>a : Symbol(a, Decl(circularVarianceWitnessedThroughOtherType.ts, 10, 24))
+
+declare let m2: Method<{ a: string }, 'a', 'b'>
+>m2 : Symbol(m2, Decl(circularVarianceWitnessedThroughOtherType.ts, 11, 11))
+>Method : Symbol(Method, Decl(circularVarianceWitnessedThroughOtherType.ts, 0, 0))
+>a : Symbol(a, Decl(circularVarianceWitnessedThroughOtherType.ts, 11, 24))
+
+m2 = m1 // error
+>m2 : Symbol(m2, Decl(circularVarianceWitnessedThroughOtherType.ts, 11, 11))
+>m1 : Symbol(m1, Decl(circularVarianceWitnessedThroughOtherType.ts, 10, 11))
+

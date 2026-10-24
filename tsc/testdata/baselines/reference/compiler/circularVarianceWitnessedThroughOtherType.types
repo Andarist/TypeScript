@@ -1,0 +1,37 @@
+//// [tests/cases/compiler/circularVarianceWitnessedThroughOtherType.ts] ////
+
+=== circularVarianceWitnessedThroughOtherType.ts ===
+interface Method<T, K extends keyof T, S> {
+    (): Builder<T, S | K>
+    readonly selected: S
+>selected : S
+}
+type Builder<T, S = never> = { [K in keyof T]-?: Method<T, K, S> }
+>Builder : Builder<T, S>
+
+declare let x: Builder<{ a: string }, 'a'>
+>x : Builder<{ a: string; }, "a">
+>a : string
+
+declare let y: Builder<{ a: string }, 'b'>
+>y : Builder<{ a: string; }, "b">
+>a : string
+
+y = x // error
+>y = x : Builder<{ a: string; }, "a">
+>y : Builder<{ a: string; }, "b">
+>x : Builder<{ a: string; }, "a">
+
+declare let m1: Method<{ a: string }, 'a', 'a'>
+>m1 : Method<{ a: string; }, "a", "a">
+>a : string
+
+declare let m2: Method<{ a: string }, 'a', 'b'>
+>m2 : Method<{ a: string; }, "a", "b">
+>a : string
+
+m2 = m1 // error
+>m2 = m1 : Method<{ a: string; }, "a", "a">
+>m2 : Method<{ a: string; }, "a", "b">
+>m1 : Method<{ a: string; }, "a", "a">
+

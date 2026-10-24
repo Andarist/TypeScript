@@ -1,7 +1,13 @@
 circularVariance2.ts(17,1): error TS2322: Type 'Bar<string>' is not assignable to type 'Bar<unknown>'.
-  Type 'unknown' is not assignable to type 'string'.
+  Types of parameters 'x' and 'x' are incompatible.
+    Type 'Baz<unknown[]>' is not assignable to type 'Baz<string[]>'.
+      The types of 'value.x' are incompatible between these types.
+        Type 'unknown[][]' is not assignable to type 'string[][]'.
+          Type 'unknown[]' is not assignable to type 'string[]'.
+            Type 'unknown' is not assignable to type 'string'.
 circularVariance2.ts(24,1): error TS2322: Type 'Foo<unknown>' is not assignable to type 'Foo<string>'.
-  Type 'unknown' is not assignable to type 'string'.
+  Types of property 'x' are incompatible.
+    Type 'unknown' is not assignable to type 'string'.
 
 
 ==== circularVariance2.ts (2 errors) ====
@@ -24,7 +30,12 @@ circularVariance2.ts(24,1): error TS2322: Type 'Foo<unknown>' is not assignable 
     bar1 = bar2;  // Error
     ~~~~
 !!! error TS2322: Type 'Bar<string>' is not assignable to type 'Bar<unknown>'.
-!!! error TS2322:   Type 'unknown' is not assignable to type 'string'.
+!!! error TS2322:   Types of parameters 'x' and 'x' are incompatible.
+!!! error TS2322:     Type 'Baz<unknown[]>' is not assignable to type 'Baz<string[]>'.
+!!! error TS2322:       The types of 'value.x' are incompatible between these types.
+!!! error TS2322:         Type 'unknown[][]' is not assignable to type 'string[][]'.
+!!! error TS2322:           Type 'unknown[]' is not assignable to type 'string[]'.
+!!! error TS2322:             Type 'unknown' is not assignable to type 'string'.
     bar2 = bar1;
     
     declare let foo1: Foo<unknown>;
@@ -34,5 +45,6 @@ circularVariance2.ts(24,1): error TS2322: Type 'Foo<unknown>' is not assignable 
     foo2 = foo1;  // Error
     ~~~~
 !!! error TS2322: Type 'Foo<unknown>' is not assignable to type 'Foo<string>'.
-!!! error TS2322:   Type 'unknown' is not assignable to type 'string'.
+!!! error TS2322:   Types of property 'x' are incompatible.
+!!! error TS2322:     Type 'unknown' is not assignable to type 'string'.
     

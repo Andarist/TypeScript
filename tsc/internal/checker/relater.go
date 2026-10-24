@@ -3428,6 +3428,7 @@ func (r *Relater) structuredTypeRelatedToWorker(source *Type, target *Type, repo
 		target.alias != nil && source.alias.symbol == target.alias.symbol && !(r.c.isMarkerType(source) || r.c.isMarkerType(target)) {
 		variances := r.c.getAliasVariances(source.alias.symbol)
 		if len(variances) == 0 {
+			r.reportUnknownVariances(source.alias.symbol)
 			return TernaryUnknown
 		}
 		params := r.c.typeAliasLinks.Get(source.alias.symbol).typeParameters
@@ -3867,6 +3868,7 @@ func (r *Relater) structuredTypeRelatedToWorker(source *Type, target *Type, repo
 			// effectively means we measure variance only from type parameter occurrences that aren't nested in
 			// recursive instantiations of the generic type.
 			if len(variances) == 0 {
+				r.reportUnknownVariances(source.Target().symbol)
 				return TernaryUnknown
 			}
 			varianceResult, ok := relateVariances(r.c.getTypeArguments(source), r.c.getTypeArguments(target), variances, intersectionState)
@@ -3935,6 +3937,20 @@ func (r *Relater) structuredTypeRelatedToWorker(source *Type, target *Type, repo
 	return TernaryFalse
 }
 
+// Called when a comparison of two instantiations of a generic type is short-circuited to TernaryUnknown because
+// that type's variances are being computed further up the variance stack. A variance measured through such a
+// comparison treats the circular occurrence as related in both directions, so it is marked unreliable.
+//
+// A recursive occurrence of the generic type currently being measured is fine: its variance is then measured from
+// the non-recursive occurrences only, which is the usual coinductive treatment. An occurrence of some other generic
+// type further up the variance stack is different, because that type's instantiations are treated as related as a
+// whole, including any positions in which they witness the type parameter being measured.
+func (r *Relater) reportUnknownVariances(symbol *ast.Symbol) {
+	if n := len(r.c.varianceStack); n != 0 && r.c.varianceStack[n-1].symbol != symbol {
+		r.c.reliabilityFlags |= RelationComparisonResultReportsUnreliable
+	}
+}
+
 func (r *Relater) typeArgumentsRelatedTo(sources []*Type, targets []*Type, variances []VarianceFlags, reportErrors bool, intersectionState IntersectionState) Ternary {
 	if len(sources) != len(targets) && r.relation == r.c.identityRelation {
 		return TernaryFalse
@@ -3950,6 +3966,12 @@ func (r *Relater) typeArgumentsRelatedTo(sources []*Type, targets []*Type, varia
 			varianceFlags = variances[i]
 		}
 		variance := varianceFlags & VarianceFlagsVarianceMask
+		// An independent result that was measured while a circularly dependent generic type was itself still being
+		// measured (and so was treated as related, see reportUnknownVariances) may only mean that the parameter was
+		// never witnessed outside of that type. We compare such arguments bivariantly and allow the structural fallback.
+		if variance == VarianceFlagsIndependent && varianceFlags&VarianceFlagsUnreliable != 0 {
+			variance = VarianceFlagsBivariant
+		}
 		// We ignore arguments for independent type parameters (because they're never witnessed).
 		if variance != VarianceFlagsIndependent {
 			s := sources[i]
@@ -4001,6 +4023,49 @@ func (r *Relater) typeArgumentsRelatedTo(sources []*Type, targets []*Type, varia
 	return result
 }
 
+// The -? modifier makes the relation between instantiations of a mapped type non-linear in the modifiers
+// type: when a property is optional in the modifiers type, 'undefined' is removed from its type, so
+// T1 <: T2 doesn't imply { [K in keyof T1]-?: T1[K] } <: { [K in keyof T2]-?: T2[K] } (for example
+// T1 = { a: string | undefined } and T2 = { a?: string }). That removal is a no-op when the template type is
+// an object type, because an instantiation of an object type never contains 'undefined', so the -? modifier
+// then only makes every property required and the relation is as reliable as that of any homomorphic mapped type.
+// This only applies to the mapped type's own -? modifier. When optionality is stripped by a mapped type nested
+// in the modifiers type (as in { [K in keyof Required<T>]: Box<Required<T>[K]> }), indexed accesses into that
+// inner mapped type are simplified away in the template and never compared, so the combined optionality is
+// the only signal left and we must keep reporting it as unmeasurable.
+//
+// Even for the own modifier we additionally require the template to be a type reference whose arguments are
+// type parameters or non-generic types. Instantiating such a template never involves simplification of indexed
+// access or conditional types, so the relation between instantiations is fully described by the (measured)
+// variances of the referenced generic type.
+func (c *Checker) isMappedTypeOptionalityUnmeasurable(t *Type) bool {
+	if getMappedTypeOptionality(t) < 0 {
+		return !c.isTypeReferenceOverTypeParameters(c.getTemplateTypeFromMappedType(t))
+	}
+	return c.getCombinedMappedTypeOptionality(t) < 0
+}
+
+func (c *Checker) isTypeReferenceOverTypeParameters(t *Type) bool {
+	if t.flags&TypeFlagsObject == 0 {
+		return false
+	}
+	var args []*Type
+	switch {
+	case t.objectFlags&ObjectFlagsReference != 0 && t.AsTypeReference().node == nil:
+		args = c.getTypeArguments(t)
+	case t.alias != nil:
+		args = t.alias.typeArguments
+	default:
+		return false
+	}
+	for _, arg := range args {
+		if arg.flags&TypeFlagsTypeParameter == 0 && c.couldContainTypeVariables(arg) && !c.isTypeReferenceOverTypeParameters(arg) {
+			return false
+		}
+	}
+	return true
+}
+
 // A type [P in S]: X is related to a type [Q in T]: Y if T is related to S and X' is
 // related to Y, where X' is an instantiation of X in which P is replaced with Q. Notice
 // that S and T are contra-variant whereas X and Y are co-variant.
@@ -4010,7 +4075,7 @@ func (r *Relater) mappedTypeRelatedTo(source *Type, target *Type, reportErrors b
 		r.relation != r.c.identityRelation && r.c.getCombinedMappedTypeOptionality(source) <= r.c.getCombinedMappedTypeOptionality(target)
 	if modifiersRelated {
 		targetConstraint := r.c.getConstraintTypeFromMappedType(target)
-		sourceConstraint := r.c.instantiateType(r.c.getConstraintTypeFromMappedType(source), core.IfElse(r.c.getCombinedMappedTypeOptionality(source) < 0, r.c.reportUnmeasurableMapper, r.c.reportUnreliableMapper))
+		sourceConstraint := r.c.instantiateType(r.c.getConstraintTypeFromMappedType(source), core.IfElse(r.c.isMappedTypeOptionalityUnmeasurable(source), r.c.reportUnmeasurableMapper, r.c.reportUnreliableMapper))
 		if result := r.isRelatedTo(targetConstraint, sourceConstraint, RecursionFlagsBoth, reportErrors); result != TernaryFalse {
 			mapper := newSimpleTypeMapper(r.c.getTypeParameterFromMappedType(source), r.c.getTypeParameterFromMappedType(target))
 			if r.c.instantiateType(r.c.getNameTypeFromMappedType(source), mapper) == r.c.instantiateType(r.c.getNameTypeFromMappedType(target), mapper) {

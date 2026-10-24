@@ -1,0 +1,22 @@
+//// [tests/cases/compiler/requiredMappedTypeRecursiveVariancePerformance.ts] ////
+
+=== requiredMappedTypeRecursiveVariancePerformance.ts ===
+type D = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+>D : D
+
+type Entity = Record<`f${'0' | '1' | '2' | '3' | '4'}${D}${D}`, string> // 500 properties
+>Entity : Entity
+
+interface Method<T, K extends keyof T, S> {
+    (): Builder<T, S | K>
+}
+type Builder<T, S = never> = { [K in keyof T]-?: Method<T, K, S> }
+>Builder : Builder<T, S>
+
+declare const builder: Builder<Entity>
+>builder : Builder<Entity, never>
+
+export const widened: Builder<Entity & object> = builder
+>widened : Builder<Entity & object, never>
+>builder : Builder<Entity, never>
+
