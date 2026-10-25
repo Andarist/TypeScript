@@ -12259,6 +12259,28 @@ func getThisParameterFromNodeContext(node *ast.Node) *ast.Node {
 	return nil
 }
 
+// Contextual types of awaited positions (async return expressions, await operands) are unions
+// of the form T | PromiseLike<T>. An object literal without a 'then' member can't be a constituent
+// that requires a callable 'then', so such constituents are removed from the contextual 'this' type.
+func (c *Checker) removeThenableConstituentsForObjectLiteral(literal *ast.Node, t *Type) *Type {
+	if t.flags&TypeFlagsUnion == 0 || literal.Symbol().Members()["then"] != nil {
+		return t
+	}
+	for _, p := range literal.Properties() {
+		if ast.IsSpreadAssignment(p) || p.Name() != nil && ast.IsComputedPropertyName(p.Name()) {
+			return t
+		}
+	}
+	filtered := c.filterType(t, func(t *Type) bool {
+		then := c.getPropertyOfType(t, "then")
+		return then == nil || then.Flags()&ast.SymbolFlagsOptional != 0 || !c.isThenableType(t)
+	})
+	if filtered.flags&TypeFlagsNever != 0 {
+		return t
+	}
+	return filtered
+}
+
 func (c *Checker) getContextualThisParameterType(fn *ast.Node) *Type {
 	if ast.IsArrowFunction(fn) {
 		return nil
@@ -12288,7 +12310,7 @@ func (c *Checker) getContextualThisParameterType(fn *ast.Node) *Type {
 			// for 'this' is the non-null form of the contextual type for the containing object literal or
 			// the type of the object literal itself.
 			if contextualType != nil {
-				thisType = c.GetNonNullableType(contextualType)
+				thisType = c.removeThenableConstituentsForObjectLiteral(containingLiteral, c.GetNonNullableType(contextualType))
 			} else {
 				thisType = c.checkExpressionCached(containingLiteral)
 			}

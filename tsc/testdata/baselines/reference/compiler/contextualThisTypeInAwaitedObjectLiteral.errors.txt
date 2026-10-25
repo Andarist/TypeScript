@@ -1,0 +1,75 @@
+contextualThisTypeInAwaitedObjectLiteral.ts(33,14): error TS2339: Property 'value' does not exist on type 'O | PromiseLike<O>'.
+  Property 'value' does not exist on type 'PromiseLike<O>'.
+contextualThisTypeInAwaitedObjectLiteral.ts(45,14): error TS2339: Property 'value' does not exist on type 'MaybeThenable | O'.
+  Property 'value' does not exist on type 'MaybeThenable'.
+contextualThisTypeInAwaitedObjectLiteral.ts(54,14): error TS2339: Property 'value' does not exist on type 'O | PromiseLike<O>'.
+  Property 'value' does not exist on type 'PromiseLike<O>'.
+
+
+==== contextualThisTypeInAwaitedObjectLiteral.ts (3 errors) ====
+    type O = { value: number; method(): void };
+    
+    const asyncReturn: () => Promise<O> = async () => {
+        return {
+            value: 5,
+            method() {
+                this satisfies O;
+                this.value;
+            },
+        };
+    };
+    
+    async function awaitOperand() {
+        const x: O = await {
+            value: 5,
+            method() {
+                this.value;
+            },
+        };
+    }
+    
+    const explicitUnion: O | PromiseLike<O> = {
+        value: 5,
+        method() {
+            this.value;
+        },
+    };
+    
+    // The literal has a 'then' member, so it may be a thenable and 'this' keeps the PromiseLike constituent
+    const withThen: O | PromiseLike<O> = {
+        value: 5,
+        method() {
+            this.value; // error
+                 ~~~~~
+!!! error TS2339: Property 'value' does not exist on type 'O | PromiseLike<O>'.
+!!! error TS2339:   Property 'value' does not exist on type 'PromiseLike<O>'.
+        },
+        then() {
+            return this as any;
+        },
+    };
+    
+    // An optional 'then' doesn't require the literal to be a thenable
+    type MaybeThenable = { then?(): void; other: string };
+    const optionalThen: O | MaybeThenable = {
+        value: 5,
+        method() {
+            this.value; // error
+                 ~~~~~
+!!! error TS2339: Property 'value' does not exist on type 'MaybeThenable | O'.
+!!! error TS2339:   Property 'value' does not exist on type 'MaybeThenable'.
+        },
+    };
+    
+    declare const spread: {};
+    const withSpread: O | PromiseLike<O> = {
+        ...spread,
+        value: 5,
+        method() {
+            this.value; // error
+                 ~~~~~
+!!! error TS2339: Property 'value' does not exist on type 'O | PromiseLike<O>'.
+!!! error TS2339:   Property 'value' does not exist on type 'PromiseLike<O>'.
+        },
+    };
+    

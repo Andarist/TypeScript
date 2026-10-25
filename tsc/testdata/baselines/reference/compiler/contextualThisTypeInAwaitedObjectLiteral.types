@@ -1,0 +1,156 @@
+//// [tests/cases/compiler/contextualThisTypeInAwaitedObjectLiteral.ts] ////
+
+=== contextualThisTypeInAwaitedObjectLiteral.ts ===
+type O = { value: number; method(): void };
+>O : O
+>value : number
+>method : () => void
+
+const asyncReturn: () => Promise<O> = async () => {
+>asyncReturn : () => Promise<O>
+>async () => {    return {        value: 5,        method() {            this satisfies O;            this.value;        },    };} : () => Promise<{ value: number; method(): void; }>
+
+    return {
+>{        value: 5,        method() {            this satisfies O;            this.value;        },    } : { value: number; method(): void; }
+
+        value: 5,
+>value : number
+>5 : 5
+
+        method() {
+>method : () => void
+
+            this satisfies O;
+>this satisfies O : O
+>this : O
+
+            this.value;
+>this.value : number
+>this : O
+>value : number
+
+        },
+    };
+};
+
+async function awaitOperand() {
+>awaitOperand : () => Promise<void>
+
+    const x: O = await {
+>x : O
+>await {        value: 5,        method() {            this.value;        },    } : { value: number; method(): void; }
+>{        value: 5,        method() {            this.value;        },    } : { value: number; method(): void; }
+
+        value: 5,
+>value : number
+>5 : 5
+
+        method() {
+>method : () => void
+
+            this.value;
+>this.value : number
+>this : O
+>value : number
+
+        },
+    };
+}
+
+const explicitUnion: O | PromiseLike<O> = {
+>explicitUnion : O | PromiseLike<O>
+>{    value: 5,    method() {        this.value;    },} : { value: number; method(): void; }
+
+    value: 5,
+>value : number
+>5 : 5
+
+    method() {
+>method : () => void
+
+        this.value;
+>this.value : number
+>this : O
+>value : number
+
+    },
+};
+
+// The literal has a 'then' member, so it may be a thenable and 'this' keeps the PromiseLike constituent
+const withThen: O | PromiseLike<O> = {
+>withThen : O | PromiseLike<O>
+>{    value: 5,    method() {        this.value; // error    },    then() {        return this as any;    },} : { value: number; method(): void; then<TResult1 = O, TResult2 = never>(): any; }
+
+    value: 5,
+>value : number
+>5 : 5
+
+    method() {
+>method : () => void
+
+        this.value; // error
+>this.value : any
+>this : O | PromiseLike<O>
+>value : any
+
+    },
+    then() {
+>then : <TResult1 = O, TResult2 = never>() => any
+
+        return this as any;
+>this as any : any
+>this : O | PromiseLike<O>
+
+    },
+};
+
+// An optional 'then' doesn't require the literal to be a thenable
+type MaybeThenable = { then?(): void; other: string };
+>MaybeThenable : MaybeThenable
+>then : (() => void) | undefined
+>other : string
+
+const optionalThen: O | MaybeThenable = {
+>optionalThen : MaybeThenable | O
+>{    value: 5,    method() {        this.value; // error    },} : { value: number; method(): void; }
+
+    value: 5,
+>value : number
+>5 : 5
+
+    method() {
+>method : () => void
+
+        this.value; // error
+>this.value : any
+>this : MaybeThenable | O
+>value : any
+
+    },
+};
+
+declare const spread: {};
+>spread : {}
+
+const withSpread: O | PromiseLike<O> = {
+>withSpread : O | PromiseLike<O>
+>{    ...spread,    value: 5,    method() {        this.value; // error    },} : { value: number; method(): void; }
+
+    ...spread,
+>spread : {}
+
+    value: 5,
+>value : number
+>5 : 5
+
+    method() {
+>method : () => void
+
+        this.value; // error
+>this.value : any
+>this : O | PromiseLike<O>
+>value : any
+
+    },
+};
+

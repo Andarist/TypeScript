@@ -1,0 +1,140 @@
+//// [tests/cases/compiler/contextualThisTypeInAwaitedObjectLiteral.ts] ////
+
+=== contextualThisTypeInAwaitedObjectLiteral.ts ===
+type O = { value: number; method(): void };
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 10))
+>method : Symbol(method, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 25))
+
+const asyncReturn: () => Promise<O> = async () => {
+>asyncReturn : Symbol(asyncReturn, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 2, 5))
+>Promise : Symbol(Promise, Decl(lib.es5.d.ts, --, --), Decl(lib.es2015.iterable.d.ts, --, --), Decl(lib.es2015.promise.d.ts, --, --), Decl(lib.es2015.symbol.wellknown.d.ts, --, --), Decl(lib.es2018.promise.d.ts, --, --))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+
+    return {
+        value: 5,
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 3, 12))
+
+        method() {
+>method : Symbol(method, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 4, 17))
+
+            this satisfies O;
+>this : Symbol(__type, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 8))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+
+            this.value;
+>this.value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 10))
+>this : Symbol(__type, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 8))
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 10))
+
+        },
+    };
+};
+
+async function awaitOperand() {
+>awaitOperand : Symbol(awaitOperand, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 10, 2))
+
+    const x: O = await {
+>x : Symbol(x, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 13, 9))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+
+        value: 5,
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 13, 24))
+
+        method() {
+>method : Symbol(method, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 14, 17))
+
+            this.value;
+>this.value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 10))
+>this : Symbol(__type, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 8))
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 10))
+
+        },
+    };
+}
+
+const explicitUnion: O | PromiseLike<O> = {
+>explicitUnion : Symbol(explicitUnion, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 21, 5))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+>PromiseLike : Symbol(PromiseLike, Decl(lib.es5.d.ts, --, --))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+
+    value: 5,
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 21, 43))
+
+    method() {
+>method : Symbol(method, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 22, 13))
+
+        this.value;
+>this.value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 10))
+>this : Symbol(__type, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 8))
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 10))
+
+    },
+};
+
+// The literal has a 'then' member, so it may be a thenable and 'this' keeps the PromiseLike constituent
+const withThen: O | PromiseLike<O> = {
+>withThen : Symbol(withThen, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 29, 5))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+>PromiseLike : Symbol(PromiseLike, Decl(lib.es5.d.ts, --, --))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+
+    value: 5,
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 29, 38))
+
+    method() {
+>method : Symbol(method, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 30, 13))
+
+        this.value; // error
+    },
+    then() {
+>then : Symbol(then, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 33, 6))
+
+        return this as any;
+    },
+};
+
+// An optional 'then' doesn't require the literal to be a thenable
+type MaybeThenable = { then?(): void; other: string };
+>MaybeThenable : Symbol(MaybeThenable, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 37, 2))
+>then : Symbol(then, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 40, 22))
+>other : Symbol(other, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 40, 37))
+
+const optionalThen: O | MaybeThenable = {
+>optionalThen : Symbol(optionalThen, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 41, 5))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+>MaybeThenable : Symbol(MaybeThenable, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 37, 2))
+
+    value: 5,
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 41, 41))
+
+    method() {
+>method : Symbol(method, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 42, 13))
+
+        this.value; // error
+    },
+};
+
+declare const spread: {};
+>spread : Symbol(spread, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 48, 13))
+
+const withSpread: O | PromiseLike<O> = {
+>withSpread : Symbol(withSpread, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 49, 5))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+>PromiseLike : Symbol(PromiseLike, Decl(lib.es5.d.ts, --, --))
+>O : Symbol(O, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 0, 0))
+
+    ...spread,
+>spread : Symbol(spread, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 48, 13))
+
+    value: 5,
+>value : Symbol(value, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 50, 14))
+
+    method() {
+>method : Symbol(method, Decl(contextualThisTypeInAwaitedObjectLiteral.ts, 51, 13))
+
+        this.value; // error
+    },
+};
+
