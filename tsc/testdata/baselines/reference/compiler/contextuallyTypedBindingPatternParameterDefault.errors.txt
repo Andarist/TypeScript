@@ -1,0 +1,52 @@
+contextuallyTypedBindingPatternParameterDefault.ts(2,38): error TS7031: Binding element 'channel' implicitly has an 'any' type.
+contextuallyTypedBindingPatternParameterDefault.ts(2,47): error TS7031: Binding element 'minutes' implicitly has an 'any' type.
+contextuallyTypedBindingPatternParameterDefault.ts(5,54): error TS7031: Binding element 'channel' implicitly has an 'any' type.
+contextuallyTypedBindingPatternParameterDefault.ts(8,35): error TS7031: Binding element 'channel' implicitly has an 'any' type.
+contextuallyTypedBindingPatternParameterDefault.ts(8,44): error TS7031: Binding element 'minutes' implicitly has an 'any' type.
+contextuallyTypedBindingPatternParameterDefault.ts(11,51): error TS7031: Binding element 'channel' implicitly has an 'any' type.
+contextuallyTypedBindingPatternParameterDefault.ts(14,9): error TS7031: Binding element 'channel' implicitly has an 'any' type.
+contextuallyTypedBindingPatternParameterDefault.ts(14,26): error TS7031: Binding element 'first' implicitly has an 'any' type.
+contextuallyTypedBindingPatternParameterDefault.ts(17,38): error TS7031: Binding element 'channel' implicitly has an 'any' type.
+contextuallyTypedBindingPatternParameterDefault.ts(18,36): error TS7031: Binding element 'channel' implicitly has an 'any' type.
+
+
+==== contextuallyTypedBindingPatternParameterDefault.ts (10 errors) ====
+    type ObjectFn = (input?: { channel?: string; minutes?: number }) => number;
+    export const objectFn: ObjectFn = ({ channel, minutes } = {}) => (channel ? 1 : 0) + (minutes ?? 0);
+                                         ~~~~~~~
+!!! error TS7031: Binding element 'channel' implicitly has an 'any' type.
+                                                  ~~~~~~~
+!!! error TS7031: Binding element 'minutes' implicitly has an 'any' type.
+    
+    type RequiredObjectFn = (input: { channel?: string }) => number;
+    export const requiredObjectFn: RequiredObjectFn = ({ channel } = {}) => (channel ? 1 : 0);
+                                                         ~~~~~~~
+!!! error TS7031: Binding element 'channel' implicitly has an 'any' type.
+    
+    type TupleFn = (input?: [string?, number?]) => number;
+    export const tupleFn: TupleFn = ([channel, minutes] = []) => (channel ? 1 : 0) + (minutes ?? 0);
+                                      ~~~~~~~
+!!! error TS7031: Binding element 'channel' implicitly has an 'any' type.
+                                               ~~~~~~~
+!!! error TS7031: Binding element 'minutes' implicitly has an 'any' type.
+    
+    type RequiredTupleFn = (input: [string?]) => number;
+    export const requiredTupleFn: RequiredTupleFn = ([channel] = []) => (channel ? 1 : 0);
+                                                      ~~~~~~~
+!!! error TS7031: Binding element 'channel' implicitly has an 'any' type.
+    
+    declare function call<T>(cb: (input?: { channel?: string }, tuple?: [string?]) => T): T;
+    call(({ channel } = {}, [first] = []) => channel ?? first);
+            ~~~~~~~
+!!! error TS7031: Binding element 'channel' implicitly has an 'any' type.
+                             ~~~~~
+!!! error TS7031: Binding element 'first' implicitly has an 'any' type.
+    
+    // Not contextually typed, these should still be reported
+    export const uncontextualObject = ({ channel } = {}) => channel;
+                                         ~~~~~~~
+!!! error TS7031: Binding element 'channel' implicitly has an 'any' type.
+    export const uncontextualTuple = ([channel] = []) => channel;
+                                       ~~~~~~~
+!!! error TS7031: Binding element 'channel' implicitly has an 'any' type.
+    

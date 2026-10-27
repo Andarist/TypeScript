@@ -1,0 +1,78 @@
+//// [tests/cases/compiler/contextuallyTypedBindingPatternParameterDefault.ts] ////
+
+=== contextuallyTypedBindingPatternParameterDefault.ts ===
+type ObjectFn = (input?: { channel?: string; minutes?: number }) => number;
+>ObjectFn : Symbol(ObjectFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 0, 0))
+>input : Symbol(input, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 0, 17))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 0, 26))
+>minutes : Symbol(minutes, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 0, 44))
+
+export const objectFn: ObjectFn = ({ channel, minutes } = {}) => (channel ? 1 : 0) + (minutes ?? 0);
+>objectFn : Symbol(objectFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 1, 12))
+>ObjectFn : Symbol(ObjectFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 0, 0))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 1, 36))
+>minutes : Symbol(minutes, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 1, 45))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 1, 36))
+>minutes : Symbol(minutes, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 1, 45))
+
+type RequiredObjectFn = (input: { channel?: string }) => number;
+>RequiredObjectFn : Symbol(RequiredObjectFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 1, 100))
+>input : Symbol(input, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 3, 25))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 3, 33))
+
+export const requiredObjectFn: RequiredObjectFn = ({ channel } = {}) => (channel ? 1 : 0);
+>requiredObjectFn : Symbol(requiredObjectFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 4, 12))
+>RequiredObjectFn : Symbol(RequiredObjectFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 1, 100))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 4, 52))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 4, 52))
+
+type TupleFn = (input?: [string?, number?]) => number;
+>TupleFn : Symbol(TupleFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 4, 90))
+>input : Symbol(input, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 6, 16))
+
+export const tupleFn: TupleFn = ([channel, minutes] = []) => (channel ? 1 : 0) + (minutes ?? 0);
+>tupleFn : Symbol(tupleFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 7, 12))
+>TupleFn : Symbol(TupleFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 4, 90))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 7, 34))
+>minutes : Symbol(minutes, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 7, 42))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 7, 34))
+>minutes : Symbol(minutes, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 7, 42))
+
+type RequiredTupleFn = (input: [string?]) => number;
+>RequiredTupleFn : Symbol(RequiredTupleFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 7, 96))
+>input : Symbol(input, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 9, 24))
+
+export const requiredTupleFn: RequiredTupleFn = ([channel] = []) => (channel ? 1 : 0);
+>requiredTupleFn : Symbol(requiredTupleFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 10, 12))
+>RequiredTupleFn : Symbol(RequiredTupleFn, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 7, 96))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 10, 50))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 10, 50))
+
+declare function call<T>(cb: (input?: { channel?: string }, tuple?: [string?]) => T): T;
+>call : Symbol(call, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 10, 86))
+>T : Symbol(T, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 12, 22))
+>cb : Symbol(cb, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 12, 25))
+>input : Symbol(input, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 12, 30))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 12, 39))
+>tuple : Symbol(tuple, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 12, 59))
+>T : Symbol(T, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 12, 22))
+>T : Symbol(T, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 12, 22))
+
+call(({ channel } = {}, [first] = []) => channel ?? first);
+>call : Symbol(call, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 10, 86))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 13, 7))
+>first : Symbol(first, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 13, 25))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 13, 7))
+>first : Symbol(first, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 13, 25))
+
+// Not contextually typed, these should still be reported
+export const uncontextualObject = ({ channel } = {}) => channel;
+>uncontextualObject : Symbol(uncontextualObject, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 16, 12))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 16, 36))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 16, 36))
+
+export const uncontextualTuple = ([channel] = []) => channel;
+>uncontextualTuple : Symbol(uncontextualTuple, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 17, 12))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 17, 35))
+>channel : Symbol(channel, Decl(contextuallyTypedBindingPatternParameterDefault.ts, 17, 35))
+

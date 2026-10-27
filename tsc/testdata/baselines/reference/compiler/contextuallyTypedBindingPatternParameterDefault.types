@@ -1,0 +1,112 @@
+//// [tests/cases/compiler/contextuallyTypedBindingPatternParameterDefault.ts] ////
+
+=== contextuallyTypedBindingPatternParameterDefault.ts ===
+type ObjectFn = (input?: { channel?: string; minutes?: number }) => number;
+>ObjectFn : ObjectFn
+>input : { channel?: string; minutes?: number; } | undefined
+>channel : string | undefined
+>minutes : number | undefined
+
+export const objectFn: ObjectFn = ({ channel, minutes } = {}) => (channel ? 1 : 0) + (minutes ?? 0);
+>objectFn : ObjectFn
+>({ channel, minutes } = {}) => (channel ? 1 : 0) + (minutes ?? 0) : ({ channel, minutes }?: { channel?: string; minutes?: number; } | undefined) => number
+>channel : string | undefined
+>minutes : number | undefined
+>{} : {}
+>(channel ? 1 : 0) + (minutes ?? 0) : number
+>(channel ? 1 : 0) : 0 | 1
+>channel ? 1 : 0 : 0 | 1
+>channel : string | undefined
+>1 : 1
+>0 : 0
+>(minutes ?? 0) : number
+>minutes ?? 0 : number
+>minutes : number | undefined
+>0 : 0
+
+type RequiredObjectFn = (input: { channel?: string }) => number;
+>RequiredObjectFn : RequiredObjectFn
+>input : { channel?: string; }
+>channel : string | undefined
+
+export const requiredObjectFn: RequiredObjectFn = ({ channel } = {}) => (channel ? 1 : 0);
+>requiredObjectFn : RequiredObjectFn
+>({ channel } = {}) => (channel ? 1 : 0) : ({ channel }?: { channel?: string; }) => 0 | 1
+>channel : string | undefined
+>{} : {}
+>(channel ? 1 : 0) : 0 | 1
+>channel ? 1 : 0 : 0 | 1
+>channel : string | undefined
+>1 : 1
+>0 : 0
+
+type TupleFn = (input?: [string?, number?]) => number;
+>TupleFn : TupleFn
+>input : [(string | undefined)?, (number | undefined)?] | undefined
+
+export const tupleFn: TupleFn = ([channel, minutes] = []) => (channel ? 1 : 0) + (minutes ?? 0);
+>tupleFn : TupleFn
+>([channel, minutes] = []) => (channel ? 1 : 0) + (minutes ?? 0) : ([channel, minutes]?: [(string | undefined)?, (number | undefined)?] | undefined) => number
+>channel : string | undefined
+>minutes : number | undefined
+>[] : []
+>(channel ? 1 : 0) + (minutes ?? 0) : number
+>(channel ? 1 : 0) : 0 | 1
+>channel ? 1 : 0 : 0 | 1
+>channel : string | undefined
+>1 : 1
+>0 : 0
+>(minutes ?? 0) : number
+>minutes ?? 0 : number
+>minutes : number | undefined
+>0 : 0
+
+type RequiredTupleFn = (input: [string?]) => number;
+>RequiredTupleFn : RequiredTupleFn
+>input : [(string | undefined)?]
+
+export const requiredTupleFn: RequiredTupleFn = ([channel] = []) => (channel ? 1 : 0);
+>requiredTupleFn : RequiredTupleFn
+>([channel] = []) => (channel ? 1 : 0) : ([channel]?: [(string | undefined)?]) => 0 | 1
+>channel : string | undefined
+>[] : []
+>(channel ? 1 : 0) : 0 | 1
+>channel ? 1 : 0 : 0 | 1
+>channel : string | undefined
+>1 : 1
+>0 : 0
+
+declare function call<T>(cb: (input?: { channel?: string }, tuple?: [string?]) => T): T;
+>call : <T>(cb: (input?: { channel?: string; }, tuple?: [string?]) => T) => T
+>cb : (input?: { channel?: string; }, tuple?: [string?]) => T
+>input : { channel?: string; } | undefined
+>channel : string | undefined
+>tuple : [(string | undefined)?] | undefined
+
+call(({ channel } = {}, [first] = []) => channel ?? first);
+>call(({ channel } = {}, [first] = []) => channel ?? first) : string | undefined
+>call : <T>(cb: (input?: { channel?: string; }, tuple?: [string?]) => T) => T
+>({ channel } = {}, [first] = []) => channel ?? first : ({ channel }?: { channel?: string; } | undefined, [first]?: [(string | undefined)?] | undefined) => string | undefined
+>channel : string | undefined
+>{} : {}
+>first : string | undefined
+>[] : []
+>channel ?? first : string | undefined
+>channel : string | undefined
+>first : string | undefined
+
+// Not contextually typed, these should still be reported
+export const uncontextualObject = ({ channel } = {}) => channel;
+>uncontextualObject : ({ channel }?: { channel?: any; }) => any
+>({ channel } = {}) => channel : ({ channel }?: { channel?: any; }) => any
+>channel : any
+>{} : {}
+>channel : any
+
+export const uncontextualTuple = ([channel] = []) => channel;
+>uncontextualTuple : ([channel]?: [any?]) => any
+>([channel] = []) => channel : ([channel]?: [any?]) => any
+>channel : any
+>[] : []
+>channel : any
+
