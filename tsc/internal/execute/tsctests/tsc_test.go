@@ -2599,6 +2599,60 @@ func TestTscIncremental(t *testing.T) {
 				},
 			},
 		},
+		{
+			// Emitting a file drives the checker, and the checker resolves these cyclic object spreads differently
+			// depending on which file it reaches first, so the declarations depend on the order files are emitted in
+			subScenario:     "declaration emit does not depend on map order with single threaded",
+			commandLineArgs: []string{"--singleThreaded"},
+			files: FileMap{
+				"/home/src/workspaces/project/tsconfig.json": `{"compilerOptions": {"incremental": true, "noCheck": true, "module": "commonjs", "allowJs": true, "declaration": true, "outDir": "out", "types": []}}`,
+				"/home/src/workspaces/project/ma.js": stringtestutil.Dedent(`
+					export { v as pa } from "./xa";
+					export const ma = 1;
+				`),
+				"/home/src/workspaces/project/mb.js": stringtestutil.Dedent(`
+					export { v as pb } from "./xb";
+					export const mb = 1;
+				`),
+				"/home/src/workspaces/project/xa.js": stringtestutil.Dedent(`
+					/** @type {typeof import("./mb")} */
+					const M = /** @type {any} */ (null);
+					const o = { v: { ...M } };
+					module.exports = o;
+				`),
+				"/home/src/workspaces/project/xb.js": stringtestutil.Dedent(`
+					/** @type {typeof import("./ma")} */
+					const M = /** @type {any} */ (null);
+					const o = { v: { ...M } };
+					module.exports = o;
+				`),
+				"/home/src/workspaces/project/a.ts": stringtestutil.Dedent(`
+					import * as MA from "./ma";
+					export const fromA = MA.pa;
+				`),
+				"/home/src/workspaces/project/b.ts": stringtestutil.Dedent(`
+					import * as MB from "./mb";
+					export const fromB = MB.pb;
+				`),
+				"/home/src/workspaces/project/c.ts": `export const c = 1;`,
+			},
+			edits: []*tscEdit{
+				{
+					caption: "change exports of ma",
+					edit: func(sys *TestSys) {
+						sys.appendFile("/home/src/workspaces/project/ma.js", "export const ma2 = 2;\n")
+					},
+					expectedDiff: "The rebuild computes signatures of the changed file and the files referencing it before emitting, so the checker resolves the cyclic spreads in another order than a clean build.",
+				},
+				{
+					caption: "change exports of mb",
+					edit: func(sys *TestSys) {
+						sys.appendFile("/home/src/workspaces/project/mb.js", "export const mb2 = 2;\n")
+					},
+					expectedDiff: "The rebuild computes signatures of the changed file and the files referencing it before emitting, so the checker resolves the cyclic spreads in another order than a clean build.",
+				},
+			},
+		},
 	}
 
 	for _, test := range testCases {
@@ -5301,6 +5355,56 @@ func TestGenerateTrace(t *testing.T) {
 				import { Container, Nullable } from "./types";
 				const c: Container<number> = { value: 42, map: (fn) => ({ value: fn(42), map: c.map }) };
 				const n: Nullable<string> = "hello";
+				`),
+			},
+			commandLineArgs: []string{"--generateTrace", "/home/src/workspaces/project/trace", "--singleThreaded"},
+		},
+		{
+			// A removed option is an options error, so the build skips checking and declaration emit is what creates
+			// the types. The type ids in the trace then follow the order the files are emitted in.
+			subScenario: "generateTrace type ids do not depend on map order in incremental builds",
+			files: FileMap{
+				"/home/src/workspaces/project/tsconfig.json": stringtestutil.Dedent(`
+				{
+					"compilerOptions": {
+						"incremental": true,
+						"declaration": true,
+						"downlevelIteration": true,
+						"outDir": "out",
+						"types": []
+					}
+				}`),
+				"/home/src/workspaces/project/option.ts": stringtestutil.Dedent(`
+				export function some<T>(value: T) {
+					return { _tag: "Some" as const, value };
+				}
+				export function none() {
+					return { _tag: "None" as const };
+				}
+				`),
+				"/home/src/workspaces/project/either.ts": stringtestutil.Dedent(`
+				export function right<R>(right: R) {
+					return { _tag: "Right" as const, right };
+				}
+				export function left<L>(left: L) {
+					return { _tag: "Left" as const, left };
+				}
+				`),
+				"/home/src/workspaces/project/effect.ts": stringtestutil.Dedent(`
+				import { some } from "./option";
+				import { right } from "./either";
+				export function succeed<A>(value: A) {
+					return { option: some(value), either: right(value) };
+				}
+				`),
+				"/home/src/workspaces/project/stream.ts": stringtestutil.Dedent(`
+				import { succeed } from "./effect";
+				import { none } from "./option";
+				export const fromValue = <A>(value: A) => [succeed(value), none()] as const;
+				`),
+				"/home/src/workspaces/project/schedule.ts": stringtestutil.Dedent(`
+				import { left } from "./either";
+				export const fail = <E>(error: E) => ({ attempts: 1, last: left(error) });
 				`),
 			},
 			commandLineArgs: []string{"--generateTrace", "/home/src/workspaces/project/trace", "--singleThreaded"},
