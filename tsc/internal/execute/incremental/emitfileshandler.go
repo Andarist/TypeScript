@@ -121,12 +121,26 @@ func (h *emitFilesHandler) emitFilesIncremental(options compiler.EmitOptions) []
 		return nil
 	}
 
-	wg := core.NewWorkGroup(h.program.program.SingleThreaded())
-	h.program.snapshot.affectedFilesPendingEmit.Range(func(path tspath.PathKey, emitKind FileEmitKind) bool {
-		affectedFile := h.program.program.GetSourceFileByPath(path)
-		if affectedFile == nil || !h.program.program.SourceFileMayBeEmitted(affectedFile, false) {
+	// Pending emits of files that are no longer in the program are dropped
+	h.program.snapshot.affectedFilesPendingEmit.Range(func(path tspath.PathKey, _ FileEmitKind) bool {
+		if h.program.program.GetSourceFileByPath(path) == nil {
 			h.deletedPendingKinds.Add(path)
-			return true
+		}
+		return true
+	})
+
+	// Emit in program order, like a non-incremental emit. Emitting a file drives the checker, so the order decides
+	// which types and symbols are created first.
+	wg := core.NewWorkGroup(h.program.program.SingleThreaded())
+	for _, affectedFile := range h.program.program.GetSourceFiles() {
+		path := affectedFile.PathKey()
+		emitKind, ok := h.program.snapshot.affectedFilesPendingEmit.Load(path)
+		if !ok {
+			continue
+		}
+		if !h.program.program.SourceFileMayBeEmitted(affectedFile, false) {
+			h.deletedPendingKinds.Add(path)
+			continue
 		}
 		pendingKind := h.getPendingEmitKindForEmitOptions(emitKind, options)
 		if pendingKind != 0 {
@@ -162,8 +176,7 @@ func (h *emitFilesHandler) emitFilesIncremental(options compiler.EmitOptions) []
 				h.emitUpdates.Store(path, &emitUpdate{pendingKind: getPendingEmitKind(emitKind, pendingKind), result: result})
 			})
 		}
-		return true
-	})
+	}
 	wg.RunAndWait()
 	if h.ctx.Err() != nil {
 		return nil

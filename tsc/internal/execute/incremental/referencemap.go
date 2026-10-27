@@ -2,7 +2,6 @@ package incremental
 
 import (
 	"iter"
-	"maps"
 	"slices"
 	"sync"
 
@@ -12,7 +11,7 @@ import (
 
 type referenceMap struct {
 	references   collections.SyncMap[tspath.PathKey, *collections.Set[tspath.PathKey]]
-	referencedBy map[tspath.PathKey]*collections.Set[tspath.PathKey]
+	referencedBy map[tspath.PathKey][]tspath.PathKey
 	referenceBy  sync.Once
 }
 
@@ -31,22 +30,18 @@ func (r *referenceMap) getPathsWithReferences() []tspath.PathKey {
 
 func (r *referenceMap) getReferencedBy(path tspath.PathKey) iter.Seq[tspath.PathKey] {
 	r.referenceBy.Do(func() {
-		r.referencedBy = make(map[tspath.PathKey]*collections.Set[tspath.PathKey])
+		r.referencedBy = make(map[tspath.PathKey][]tspath.PathKey)
 		r.references.Range(func(key tspath.PathKey, value *collections.Set[tspath.PathKey]) bool {
 			for ref := range value.Keys() {
-				set, ok := r.referencedBy[ref]
-				if !ok {
-					set = &collections.Set[tspath.PathKey]{}
-					r.referencedBy[ref] = set
-				}
-				set.Add(key)
+				r.referencedBy[ref] = append(r.referencedBy[ref], key)
 			}
 			return true
 		})
+		// Callers compute signatures of the referencing files, which drives the checker, so they must visit them in
+		// a stable order
+		for _, refs := range r.referencedBy {
+			slices.Sort(refs)
+		}
 	})
-	refs, ok := r.referencedBy[path]
-	if ok {
-		return maps.Keys(refs.Keys())
-	}
-	return func(yield func(tspath.PathKey) bool) {}
+	return slices.Values(r.referencedBy[path])
 }

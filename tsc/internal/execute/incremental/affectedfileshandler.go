@@ -364,14 +364,17 @@ func collectAllAffectedFiles(ctx context.Context, program *Program) {
 	handler := affectedFilesHandler{ctx: ctx, program: program}
 	wg := core.NewWorkGroup(handler.program.program.SingleThreaded())
 	var result collections.SyncSet[*ast.SourceFile]
-	program.snapshot.changedFilesSet.Range(func(file tspath.PathKey) bool {
-		wg.Queue(func() {
-			for _, affectedFile := range handler.getFilesAffectedBy(file) {
-				result.Add(affectedFile)
-			}
-		})
-		return true
-	})
+	// Visit files in program order, since computing their signatures drives the checker. Changed files that are no
+	// longer in the program affect nothing.
+	for _, file := range program.program.GetSourceFiles() {
+		if program.snapshot.changedFilesSet.Has(file.PathKey()) {
+			wg.Queue(func() {
+				for _, affectedFile := range handler.getFilesAffectedBy(file.PathKey()) {
+					result.Add(affectedFile)
+				}
+			})
+		}
+	}
 	wg.RunAndWait()
 
 	if ctx.Err() != nil {
@@ -382,14 +385,16 @@ func collectAllAffectedFiles(ctx context.Context, program *Program) {
 	// update their diagnostics
 	wg = core.NewWorkGroup(program.program.SingleThreaded())
 	emitKind := GetFileEmitKind(program.snapshot.options)
-	result.Range(func(file *ast.SourceFile) bool {
+	for _, file := range program.program.GetSourceFiles() {
+		if !result.Has(file) {
+			continue
+		}
 		// remove the cached semantic diagnostics and handle dts emit and js emit if needed
 		dtsMayChange := handler.getDtsMayChange(file.PathKey(), emitKind)
 		wg.Queue(func() {
 			handler.handleDtsMayChangeOfAffectedFile(dtsMayChange, file)
 		})
-		return true
-	})
+	}
 	wg.RunAndWait()
 
 	// Update the snapshot with the new state
