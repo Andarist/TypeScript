@@ -10603,7 +10603,8 @@ func (c *Checker) assignContextualParameterTypes(sig *Signature, context *Signat
 		if declaration.Type() == nil {
 			t := c.tryGetTypeAtPosition(context, i)
 			if t != nil && declaration.Initializer() != nil {
-				initializerType := c.checkDeclarationInitializer(declaration, CheckModeNormal, nil)
+				// Binding elements get their types from the contextual type, so implicit any errors from padding don't apply
+				initializerType := c.checkDeclarationInitializerEx(declaration, CheckModeNormal, nil, false /*reportErrors*/)
 				if !c.isTypeAssignableTo(initializerType, t) {
 					initializerType = c.widenTypeInferredFromInitializer(declaration, initializerType)
 					if c.isTypeAssignableTo(t, initializerType) {
@@ -17210,6 +17211,10 @@ func (c *Checker) getTypeForVariableLikeDeclaration(declaration *ast.Node, inclu
 }
 
 func (c *Checker) checkDeclarationInitializer(declaration *ast.Node, checkMode CheckMode, contextualType *Type) *Type {
+	return c.checkDeclarationInitializerEx(declaration, checkMode, contextualType, true /*reportErrors*/)
+}
+
+func (c *Checker) checkDeclarationInitializerEx(declaration *ast.Node, checkMode CheckMode, contextualType *Type, reportErrors bool) *Type {
 	initializer := declaration.Initializer()
 	t := c.getQuickTypeOfExpression(initializer)
 	if t == nil {
@@ -17224,18 +17229,18 @@ func (c *Checker) checkDeclarationInitializer(declaration *ast.Node, checkMode C
 		switch name.Kind {
 		case ast.KindObjectBindingPattern:
 			if isObjectLiteralType(t) {
-				return c.padObjectLiteralType(t, name)
+				return c.padObjectLiteralType(t, name, reportErrors)
 			}
 		case ast.KindArrayBindingPattern:
 			if isTupleType(t) {
-				return c.padTupleType(t, name)
+				return c.padTupleType(t, name, reportErrors)
 			}
 		}
 	}
 	return t
 }
 
-func (c *Checker) padObjectLiteralType(t *Type, pattern *ast.Node) *Type {
+func (c *Checker) padObjectLiteralType(t *Type, pattern *ast.Node, reportErrors bool) *Type {
 	var missingElements []*ast.Node
 	for _, e := range pattern.Elements() {
 		if hasDotDotDotToken(e) {
@@ -17255,7 +17260,7 @@ func (c *Checker) padObjectLiteralType(t *Type, pattern *ast.Node) *Type {
 	}
 	for _, e := range missingElements {
 		symbol := c.newSymbol(ast.SymbolFlagsProperty|ast.SymbolFlagsOptional, c.getPropertyNameFromBindingElement(e))
-		c.valueSymbolLinks.Get(symbol).resolvedType = c.getTypeFromBindingElement(e, false /*includePatternInType*/, true /*reportErrors*/)
+		c.valueSymbolLinks.Get(symbol).resolvedType = c.getTypeFromBindingElement(e, false /*includePatternInType*/, reportErrors)
 		members[symbol.Name()] = symbol
 	}
 	result := c.newAnonymousType(t.symbol, members, nil, nil, c.getIndexInfosOfType(t))
@@ -17271,7 +17276,7 @@ func (c *Checker) getPropertyNameFromBindingElement(e *ast.Node) string {
 	return ast.InternalSymbolNameMissing
 }
 
-func (c *Checker) padTupleType(t *Type, pattern *ast.Node) *Type {
+func (c *Checker) padTupleType(t *Type, pattern *ast.Node, reportErrors bool) *Type {
 	patternElements := pattern.Elements()
 	if t.TargetTupleType().combinedFlags&ElementFlagsVariable != 0 || c.getTypeReferenceArity(t) >= len(patternElements) {
 		return t
@@ -17287,7 +17292,7 @@ func (c *Checker) padTupleType(t *Type, pattern *ast.Node) *Type {
 			}
 			elementTypes = append(elementTypes, elementType)
 			elementInfos = append(elementInfos, TupleElementInfo{flags: ElementFlagsOptional})
-			if !ast.IsOmittedExpression(e) && !c.hasDefaultValue(e) {
+			if reportErrors && !ast.IsOmittedExpression(e) && !c.hasDefaultValue(e) {
 				c.reportImplicitAny(e, c.anyType, WideningKindNormal)
 			}
 		}
