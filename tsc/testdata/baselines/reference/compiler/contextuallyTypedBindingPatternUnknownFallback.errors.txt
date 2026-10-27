@@ -3,9 +3,11 @@ contextuallyTypedBindingPatternUnknownFallback.ts(4,43): error TS7031: Binding e
 contextuallyTypedBindingPatternUnknownFallback.ts(5,43): error TS7031: Binding element 'second' implicitly has an 'any' type.
 contextuallyTypedBindingPatternUnknownFallback.ts(6,41): error TS7031: Binding element 'first' implicitly has an 'any' type.
 contextuallyTypedBindingPatternUnknownFallback.ts(8,56): error TS2493: Tuple type '[number]' of length '1' has no element at index '1'.
+contextuallyTypedBindingPatternUnknownFallback.ts(11,45): error TS7031: Binding element 'a' implicitly has an 'any' type.
+contextuallyTypedBindingPatternUnknownFallback.ts(11,48): error TS7031: Binding element 'b' implicitly has an 'any' type.
 
 
-==== contextuallyTypedBindingPatternUnknownFallback.ts (5 errors) ====
+==== contextuallyTypedBindingPatternUnknownFallback.ts (7 errors) ====
     declare function unknownRest<T extends unknown[]>(cb: (...args: T) => void): T;
     
     export const object = unknownRest(({ a, b } = { a: 1 }) => {});
@@ -27,6 +29,10 @@ contextuallyTypedBindingPatternUnknownFallback.ts(8,56): error TS2493: Tuple typ
     
     // Without an initializer, the binding pattern is used
     export const noInitializer = unknownRest(({ a, b }) => {});
+                                                ~
+!!! error TS7031: Binding element 'a' implicitly has an 'any' type.
+                                                   ~
+!!! error TS7031: Binding element 'b' implicitly has an 'any' type.
     
     // An any contextual type is used as is
     declare function anyRest<T extends any[]>(cb: (...args: T) => void): T;

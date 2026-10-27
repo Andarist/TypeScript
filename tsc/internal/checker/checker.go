@@ -10657,7 +10657,7 @@ func (c *Checker) assignParameterType(parameter *ast.Symbol, contextualType *Typ
 				patternType := c.getTypeFromBindingPattern(declaration.Name(), true /*includePatternInType*/, false /*reportErrors*/)
 				links.resolvedType = c.widenTypeInferredFromInitializer(declaration, c.checkDeclarationInitializer(declaration, CheckModeNormal, patternType))
 			} else {
-				links.resolvedType = c.getTypeFromBindingPattern(declaration.Name(), false, false)
+				links.resolvedType = c.getTypeFromBindingPattern(declaration.Name(), false /*includePatternInType*/, true /*reportErrors*/)
 			}
 		}
 		c.assignBindingElementTypes(declaration.Name(), links.resolvedType)
