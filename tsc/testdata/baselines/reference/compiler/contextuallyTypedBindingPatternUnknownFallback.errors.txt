@@ -1,0 +1,34 @@
+contextuallyTypedBindingPatternUnknownFallback.ts(3,41): error TS7031: Binding element 'b' implicitly has an 'any' type.
+contextuallyTypedBindingPatternUnknownFallback.ts(4,43): error TS7031: Binding element 'a' implicitly has an 'any' type.
+contextuallyTypedBindingPatternUnknownFallback.ts(5,43): error TS7031: Binding element 'second' implicitly has an 'any' type.
+contextuallyTypedBindingPatternUnknownFallback.ts(6,41): error TS7031: Binding element 'first' implicitly has an 'any' type.
+contextuallyTypedBindingPatternUnknownFallback.ts(8,56): error TS2493: Tuple type '[number]' of length '1' has no element at index '1'.
+
+
+==== contextuallyTypedBindingPatternUnknownFallback.ts (5 errors) ====
+    declare function unknownRest<T extends unknown[]>(cb: (...args: T) => void): T;
+    
+    export const object = unknownRest(({ a, b } = { a: 1 }) => {});
+                                            ~
+!!! error TS7031: Binding element 'b' implicitly has an 'any' type.
+    export const emptyObject = unknownRest(({ a } = {}) => {});
+                                              ~
+!!! error TS7031: Binding element 'a' implicitly has an 'any' type.
+    export const tuple = unknownRest(([first, second] = ["x"]) => {});
+                                              ~~~~~~
+!!! error TS7031: Binding element 'second' implicitly has an 'any' type.
+    export const emptyTuple = unknownRest(([first] = []) => {});
+                                            ~~~~~
+!!! error TS7031: Binding element 'first' implicitly has an 'any' type.
+    export const nestedDefault = unknownRest(({ a, b = "x" } = { a: 1 }) => {});
+    export const nestedPattern = unknownRest(({ a: [first, second] } = { a: [1] }) => {});
+                                                           ~~~~~~
+!!! error TS2493: Tuple type '[number]' of length '1' has no element at index '1'.
+    
+    // Without an initializer, the binding pattern is used
+    export const noInitializer = unknownRest(({ a, b }) => {});
+    
+    // An any contextual type is used as is
+    declare function anyRest<T extends any[]>(cb: (...args: T) => void): T;
+    export const anyContext = anyRest(({ a, b } = { a: 1 }) => {});
+    

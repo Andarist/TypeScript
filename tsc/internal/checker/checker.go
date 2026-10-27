@@ -10653,7 +10653,12 @@ func (c *Checker) assignParameterType(parameter *ast.Symbol, contextualType *Typ
 	if declaration != nil && !ast.IsIdentifier(declaration.Name()) {
 		// if inference didn't come up with anything but unknown, fall back to the binding pattern if present.
 		if links.resolvedType == c.unknownType {
-			links.resolvedType = c.getTypeFromBindingPattern(declaration.Name(), false, false)
+			if declaration.Initializer() != nil {
+				patternType := c.getTypeFromBindingPattern(declaration.Name(), true /*includePatternInType*/, false /*reportErrors*/)
+				links.resolvedType = c.widenTypeInferredFromInitializer(declaration, c.checkDeclarationInitializer(declaration, CheckModeNormal, patternType))
+			} else {
+				links.resolvedType = c.getTypeFromBindingPattern(declaration.Name(), false, false)
+			}
 		}
 		c.assignBindingElementTypes(declaration.Name(), links.resolvedType)
 	}

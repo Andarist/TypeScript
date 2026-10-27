@@ -1,0 +1,96 @@
+//// [tests/cases/compiler/contextuallyTypedBindingPatternUnknownFallback.ts] ////
+
+=== contextuallyTypedBindingPatternUnknownFallback.ts ===
+declare function unknownRest<T extends unknown[]>(cb: (...args: T) => void): T;
+>unknownRest : <T extends unknown[]>(cb: (...args: T) => void) => T
+>cb : (...args: T) => void
+>args : T
+
+export const object = unknownRest(({ a, b } = { a: 1 }) => {});
+>object : [({ a: number; b?: any; } | undefined)?]
+>unknownRest(({ a, b } = { a: 1 }) => {}) : [({ a: number; b?: any; } | undefined)?]
+>unknownRest : <T extends unknown[]>(cb: (...args: T) => void) => T
+>({ a, b } = { a: 1 }) => {} : ({ a, b }?: { a: number; b?: any; }) => void
+>a : number
+>b : any
+>{ a: 1 } : { a: number; }
+>a : number
+>1 : 1
+
+export const emptyObject = unknownRest(({ a } = {}) => {});
+>emptyObject : [({ a?: any; } | undefined)?]
+>unknownRest(({ a } = {}) => {}) : [({ a?: any; } | undefined)?]
+>unknownRest : <T extends unknown[]>(cb: (...args: T) => void) => T
+>({ a } = {}) => {} : ({ a }?: { a?: any; }) => void
+>a : any
+>{} : {}
+
+export const tuple = unknownRest(([first, second] = ["x"]) => {});
+>tuple : [([string, any?] | undefined)?]
+>unknownRest(([first, second] = ["x"]) => {}) : [([string, any?] | undefined)?]
+>unknownRest : <T extends unknown[]>(cb: (...args: T) => void) => T
+>([first, second] = ["x"]) => {} : ([first, second]?: [string, any?]) => void
+>first : string
+>second : any
+>["x"] : [string]
+>"x" : "x"
+
+export const emptyTuple = unknownRest(([first] = []) => {});
+>emptyTuple : [([any?] | undefined)?]
+>unknownRest(([first] = []) => {}) : [([any?] | undefined)?]
+>unknownRest : <T extends unknown[]>(cb: (...args: T) => void) => T
+>([first] = []) => {} : ([first]?: [any?]) => void
+>first : any
+>[] : []
+
+export const nestedDefault = unknownRest(({ a, b = "x" } = { a: 1 }) => {});
+>nestedDefault : [({ a: number; b?: string | undefined; } | undefined)?]
+>unknownRest(({ a, b = "x" } = { a: 1 }) => {}) : [({ a: number; b?: string | undefined; } | undefined)?]
+>unknownRest : <T extends unknown[]>(cb: (...args: T) => void) => T
+>({ a, b = "x" } = { a: 1 }) => {} : ({ a, b }?: { a: number; b?: string | undefined; }) => void
+>a : number
+>b : string
+>"x" : "x"
+>{ a: 1 } : { a: number; }
+>a : number
+>1 : 1
+
+export const nestedPattern = unknownRest(({ a: [first, second] } = { a: [1] }) => {});
+>nestedPattern : [({ a: [number]; } | undefined)?]
+>unknownRest(({ a: [first, second] } = { a: [1] }) => {}) : [({ a: [number]; } | undefined)?]
+>unknownRest : <T extends unknown[]>(cb: (...args: T) => void) => T
+>({ a: [first, second] } = { a: [1] }) => {} : ({ a: [first, second] }?: { a: [number]; }) => void
+>a : any
+>first : number
+>second : undefined
+>{ a: [1] } : { a: [number]; }
+>a : [number]
+>[1] : [number]
+>1 : 1
+
+// Without an initializer, the binding pattern is used
+export const noInitializer = unknownRest(({ a, b }) => {});
+>noInitializer : [{ a: any; b: any; }]
+>unknownRest(({ a, b }) => {}) : [{ a: any; b: any; }]
+>unknownRest : <T extends unknown[]>(cb: (...args: T) => void) => T
+>({ a, b }) => {} : ({ a, b }: { a: any; b: any; }) => void
+>a : any
+>b : any
+
+// An any contextual type is used as is
+declare function anyRest<T extends any[]>(cb: (...args: T) => void): T;
+>anyRest : <T extends any[]>(cb: (...args: T) => void) => T
+>cb : (...args: T) => void
+>args : T
+
+export const anyContext = anyRest(({ a, b } = { a: 1 }) => {});
+>anyContext : [any?]
+>anyRest(({ a, b } = { a: 1 }) => {}) : [any?]
+>anyRest : <T extends any[]>(cb: (...args: T) => void) => T
+>({ a, b } = { a: 1 }) => {} : ({ a, b }?: any) => void
+>a : any
+>b : any
+>{ a: 1 } : { a: number; }
+>a : number
+>1 : 1
+
