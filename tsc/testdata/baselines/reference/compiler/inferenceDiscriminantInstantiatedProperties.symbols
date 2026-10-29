@@ -1,0 +1,123 @@
+//// [tests/cases/compiler/inferenceDiscriminantInstantiatedProperties.ts] ////
+
+=== inferenceDiscriminantInstantiatedProperties.ts ===
+// Discriminants whose types come from instantiating a type parameter or a mapped type template still
+// discriminate when inferring, while instantiated properties of object types are never treated as ones.
+
+interface Box<K, V> {
+>Box : Symbol(Box, Decl(inferenceDiscriminantInstantiatedProperties.ts, 0, 0))
+>K : Symbol(K, Decl(inferenceDiscriminantInstantiatedProperties.ts, 3, 14))
+>V : Symbol(V, Decl(inferenceDiscriminantInstantiatedProperties.ts, 3, 16))
+
+    kind: K;
+>kind : Symbol(Box.kind, Decl(inferenceDiscriminantInstantiatedProperties.ts, 3, 21))
+>K : Symbol(K, Decl(inferenceDiscriminantInstantiatedProperties.ts, 3, 14))
+
+    value: V;
+>value : Symbol(Box.value, Decl(inferenceDiscriminantInstantiatedProperties.ts, 4, 12))
+>V : Symbol(V, Decl(inferenceDiscriminantInstantiatedProperties.ts, 3, 16))
+}
+
+type Boxes<T> = Box<"a", T> | Box<"b", { inner: T }>;
+>Boxes : Symbol(Boxes, Decl(inferenceDiscriminantInstantiatedProperties.ts, 6, 1))
+>T : Symbol(T, Decl(inferenceDiscriminantInstantiatedProperties.ts, 8, 11))
+>Box : Symbol(Box, Decl(inferenceDiscriminantInstantiatedProperties.ts, 0, 0))
+>T : Symbol(T, Decl(inferenceDiscriminantInstantiatedProperties.ts, 8, 11))
+>Box : Symbol(Box, Decl(inferenceDiscriminantInstantiatedProperties.ts, 0, 0))
+>inner : Symbol(inner, Decl(inferenceDiscriminantInstantiatedProperties.ts, 8, 40))
+>T : Symbol(T, Decl(inferenceDiscriminantInstantiatedProperties.ts, 8, 11))
+
+declare function fromBoxes<T>(boxes: Boxes<T>): T;
+>fromBoxes : Symbol(fromBoxes, Decl(inferenceDiscriminantInstantiatedProperties.ts, 8, 53))
+>T : Symbol(T, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 27))
+>boxes : Symbol(boxes, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 30))
+>Boxes : Symbol(Boxes, Decl(inferenceDiscriminantInstantiatedProperties.ts, 6, 1))
+>T : Symbol(T, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 27))
+>T : Symbol(T, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 27))
+
+interface Carrier<K, V> {
+>Carrier : Symbol(Carrier, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 50))
+>K : Symbol(K, Decl(inferenceDiscriminantInstantiatedProperties.ts, 11, 18))
+>V : Symbol(V, Decl(inferenceDiscriminantInstantiatedProperties.ts, 11, 20))
+
+    kind: K;
+>kind : Symbol(Carrier.kind, Decl(inferenceDiscriminantInstantiatedProperties.ts, 11, 25))
+>K : Symbol(K, Decl(inferenceDiscriminantInstantiatedProperties.ts, 11, 18))
+
+    value: V;
+>value : Symbol(Carrier.value, Decl(inferenceDiscriminantInstantiatedProperties.ts, 12, 12))
+>V : Symbol(V, Decl(inferenceDiscriminantInstantiatedProperties.ts, 11, 20))
+
+    next: Carrier<K, V> | undefined;
+>next : Symbol(Carrier.next, Decl(inferenceDiscriminantInstantiatedProperties.ts, 13, 13))
+>Carrier : Symbol(Carrier, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 50))
+>K : Symbol(K, Decl(inferenceDiscriminantInstantiatedProperties.ts, 11, 18))
+>V : Symbol(V, Decl(inferenceDiscriminantInstantiatedProperties.ts, 11, 20))
+
+    describe(): string;
+>describe : Symbol(Carrier.describe, Decl(inferenceDiscriminantInstantiatedProperties.ts, 14, 36))
+}
+
+declare const carrierA: Carrier<"a", string>;
+>carrierA : Symbol(carrierA, Decl(inferenceDiscriminantInstantiatedProperties.ts, 18, 13))
+>Carrier : Symbol(Carrier, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 50))
+
+const fromInstantiatedA = fromBoxes(carrierA);
+>fromInstantiatedA : Symbol(fromInstantiatedA, Decl(inferenceDiscriminantInstantiatedProperties.ts, 19, 5))
+>fromBoxes : Symbol(fromBoxes, Decl(inferenceDiscriminantInstantiatedProperties.ts, 8, 53))
+>carrierA : Symbol(carrierA, Decl(inferenceDiscriminantInstantiatedProperties.ts, 18, 13))
+
+declare const carrierB: Carrier<"b", { inner: number }>;
+>carrierB : Symbol(carrierB, Decl(inferenceDiscriminantInstantiatedProperties.ts, 21, 13))
+>Carrier : Symbol(Carrier, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 50))
+>inner : Symbol(inner, Decl(inferenceDiscriminantInstantiatedProperties.ts, 21, 38))
+
+const fromInstantiatedB = fromBoxes(carrierB);
+>fromInstantiatedB : Symbol(fromInstantiatedB, Decl(inferenceDiscriminantInstantiatedProperties.ts, 22, 5))
+>fromBoxes : Symbol(fromBoxes, Decl(inferenceDiscriminantInstantiatedProperties.ts, 8, 53))
+>carrierB : Symbol(carrierB, Decl(inferenceDiscriminantInstantiatedProperties.ts, 21, 13))
+
+declare const readonlyB: Readonly<{ kind: "b"; value: { inner: boolean } }>;
+>readonlyB : Symbol(readonlyB, Decl(inferenceDiscriminantInstantiatedProperties.ts, 24, 13))
+>Readonly : Symbol(Readonly, Decl(lib.es5.d.ts, --, --))
+>kind : Symbol(kind, Decl(inferenceDiscriminantInstantiatedProperties.ts, 24, 35))
+>value : Symbol(value, Decl(inferenceDiscriminantInstantiatedProperties.ts, 24, 46))
+>inner : Symbol(inner, Decl(inferenceDiscriminantInstantiatedProperties.ts, 24, 55))
+
+const fromMappedB = fromBoxes(readonlyB);
+>fromMappedB : Symbol(fromMappedB, Decl(inferenceDiscriminantInstantiatedProperties.ts, 25, 5))
+>fromBoxes : Symbol(fromBoxes, Decl(inferenceDiscriminantInstantiatedProperties.ts, 8, 53))
+>readonlyB : Symbol(readonlyB, Decl(inferenceDiscriminantInstantiatedProperties.ts, 24, 13))
+
+declare const pickedB: Pick<{ kind: "b"; value: { inner: bigint }; extra: number }, "kind" | "value">;
+>pickedB : Symbol(pickedB, Decl(inferenceDiscriminantInstantiatedProperties.ts, 27, 13))
+>Pick : Symbol(Pick, Decl(lib.es5.d.ts, --, --))
+>kind : Symbol(kind, Decl(inferenceDiscriminantInstantiatedProperties.ts, 27, 29))
+>value : Symbol(value, Decl(inferenceDiscriminantInstantiatedProperties.ts, 27, 40))
+>inner : Symbol(inner, Decl(inferenceDiscriminantInstantiatedProperties.ts, 27, 49))
+>extra : Symbol(extra, Decl(inferenceDiscriminantInstantiatedProperties.ts, 27, 66))
+
+const fromPickedB = fromBoxes(pickedB);
+>fromPickedB : Symbol(fromPickedB, Decl(inferenceDiscriminantInstantiatedProperties.ts, 28, 5))
+>fromBoxes : Symbol(fromBoxes, Decl(inferenceDiscriminantInstantiatedProperties.ts, 8, 53))
+>pickedB : Symbol(pickedB, Decl(inferenceDiscriminantInstantiatedProperties.ts, 27, 13))
+
+declare function fromBox<T>(box: { kind: "a"; value: T }): T;
+>fromBox : Symbol(fromBox, Decl(inferenceDiscriminantInstantiatedProperties.ts, 28, 39))
+>T : Symbol(T, Decl(inferenceDiscriminantInstantiatedProperties.ts, 30, 25))
+>box : Symbol(box, Decl(inferenceDiscriminantInstantiatedProperties.ts, 30, 28))
+>kind : Symbol(kind, Decl(inferenceDiscriminantInstantiatedProperties.ts, 30, 34))
+>value : Symbol(value, Decl(inferenceDiscriminantInstantiatedProperties.ts, 30, 45))
+>T : Symbol(T, Decl(inferenceDiscriminantInstantiatedProperties.ts, 30, 25))
+>T : Symbol(T, Decl(inferenceDiscriminantInstantiatedProperties.ts, 30, 25))
+
+declare const unionOfCarriers: Carrier<"a", string> | Carrier<"b", number>;
+>unionOfCarriers : Symbol(unionOfCarriers, Decl(inferenceDiscriminantInstantiatedProperties.ts, 31, 13))
+>Carrier : Symbol(Carrier, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 50))
+>Carrier : Symbol(Carrier, Decl(inferenceDiscriminantInstantiatedProperties.ts, 9, 50))
+
+const fromUnionOfCarriers = fromBox(unionOfCarriers); // error
+>fromUnionOfCarriers : Symbol(fromUnionOfCarriers, Decl(inferenceDiscriminantInstantiatedProperties.ts, 32, 5))
+>fromBox : Symbol(fromBox, Decl(inferenceDiscriminantInstantiatedProperties.ts, 28, 39))
+>unionOfCarriers : Symbol(unionOfCarriers, Decl(inferenceDiscriminantInstantiatedProperties.ts, 31, 13))
+

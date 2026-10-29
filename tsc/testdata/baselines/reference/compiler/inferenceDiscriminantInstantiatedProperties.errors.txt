@@ -1,0 +1,46 @@
+inferenceDiscriminantInstantiatedProperties.ts(33,37): error TS2345: Argument of type 'Carrier<"a", string> | Carrier<"b", number>' is not assignable to parameter of type '{ kind: "a"; value: string; }'.
+  Type 'Carrier<"b", number>' is not assignable to type '{ kind: "a"; value: string; }'.
+    Types of property 'kind' are incompatible.
+      Type '"b"' is not assignable to type '"a"'.
+
+
+==== inferenceDiscriminantInstantiatedProperties.ts (1 errors) ====
+    // Discriminants whose types come from instantiating a type parameter or a mapped type template still
+    // discriminate when inferring, while instantiated properties of object types are never treated as ones.
+    
+    interface Box<K, V> {
+        kind: K;
+        value: V;
+    }
+    
+    type Boxes<T> = Box<"a", T> | Box<"b", { inner: T }>;
+    declare function fromBoxes<T>(boxes: Boxes<T>): T;
+    
+    interface Carrier<K, V> {
+        kind: K;
+        value: V;
+        next: Carrier<K, V> | undefined;
+        describe(): string;
+    }
+    
+    declare const carrierA: Carrier<"a", string>;
+    const fromInstantiatedA = fromBoxes(carrierA);
+    
+    declare const carrierB: Carrier<"b", { inner: number }>;
+    const fromInstantiatedB = fromBoxes(carrierB);
+    
+    declare const readonlyB: Readonly<{ kind: "b"; value: { inner: boolean } }>;
+    const fromMappedB = fromBoxes(readonlyB);
+    
+    declare const pickedB: Pick<{ kind: "b"; value: { inner: bigint }; extra: number }, "kind" | "value">;
+    const fromPickedB = fromBoxes(pickedB);
+    
+    declare function fromBox<T>(box: { kind: "a"; value: T }): T;
+    declare const unionOfCarriers: Carrier<"a", string> | Carrier<"b", number>;
+    const fromUnionOfCarriers = fromBox(unionOfCarriers); // error
+                                        ~~~~~~~~~~~~~~~
+!!! error TS2345: Argument of type 'Carrier<"a", string> | Carrier<"b", number>' is not assignable to parameter of type '{ kind: "a"; value: string; }'.
+!!! error TS2345:   Type 'Carrier<"b", number>' is not assignable to type '{ kind: "a"; value: string; }'.
+!!! error TS2345:     Types of property 'kind' are incompatible.
+!!! error TS2345:       Type '"b"' is not assignable to type '"a"'.
+    

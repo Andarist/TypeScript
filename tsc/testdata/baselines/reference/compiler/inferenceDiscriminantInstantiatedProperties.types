@@ -1,0 +1,95 @@
+//// [tests/cases/compiler/inferenceDiscriminantInstantiatedProperties.ts] ////
+
+=== inferenceDiscriminantInstantiatedProperties.ts ===
+// Discriminants whose types come from instantiating a type parameter or a mapped type template still
+// discriminate when inferring, while instantiated properties of object types are never treated as ones.
+
+interface Box<K, V> {
+    kind: K;
+>kind : K
+
+    value: V;
+>value : V
+}
+
+type Boxes<T> = Box<"a", T> | Box<"b", { inner: T }>;
+>Boxes : Boxes<T>
+>inner : T
+
+declare function fromBoxes<T>(boxes: Boxes<T>): T;
+>fromBoxes : <T>(boxes: Boxes<T>) => T
+>boxes : Boxes<T>
+
+interface Carrier<K, V> {
+    kind: K;
+>kind : K
+
+    value: V;
+>value : V
+
+    next: Carrier<K, V> | undefined;
+>next : Carrier<K, V> | undefined
+
+    describe(): string;
+>describe : () => string
+}
+
+declare const carrierA: Carrier<"a", string>;
+>carrierA : Carrier<"a", string>
+
+const fromInstantiatedA = fromBoxes(carrierA);
+>fromInstantiatedA : string
+>fromBoxes(carrierA) : string
+>fromBoxes : <T>(boxes: Boxes<T>) => T
+>carrierA : Carrier<"a", string>
+
+declare const carrierB: Carrier<"b", { inner: number }>;
+>carrierB : Carrier<"b", { inner: number; }>
+>inner : number
+
+const fromInstantiatedB = fromBoxes(carrierB);
+>fromInstantiatedB : number
+>fromBoxes(carrierB) : number
+>fromBoxes : <T>(boxes: Boxes<T>) => T
+>carrierB : Carrier<"b", { inner: number; }>
+
+declare const readonlyB: Readonly<{ kind: "b"; value: { inner: boolean } }>;
+>readonlyB : Readonly<{ kind: "b"; value: { inner: boolean; }; }>
+>kind : "b"
+>value : { inner: boolean; }
+>inner : boolean
+
+const fromMappedB = fromBoxes(readonlyB);
+>fromMappedB : boolean
+>fromBoxes(readonlyB) : boolean
+>fromBoxes : <T>(boxes: Boxes<T>) => T
+>readonlyB : Readonly<{ kind: "b"; value: { inner: boolean; }; }>
+
+declare const pickedB: Pick<{ kind: "b"; value: { inner: bigint }; extra: number }, "kind" | "value">;
+>pickedB : Pick<{ kind: "b"; value: { inner: bigint; }; extra: number; }, "kind" | "value">
+>kind : "b"
+>value : { inner: bigint; }
+>inner : bigint
+>extra : number
+
+const fromPickedB = fromBoxes(pickedB);
+>fromPickedB : bigint
+>fromBoxes(pickedB) : bigint
+>fromBoxes : <T>(boxes: Boxes<T>) => T
+>pickedB : Pick<{ kind: "b"; value: { inner: bigint; }; extra: number; }, "kind" | "value">
+
+declare function fromBox<T>(box: { kind: "a"; value: T }): T;
+>fromBox : <T>(box: { kind: "a"; value: T; }) => T
+>box : { kind: "a"; value: T; }
+>kind : "a"
+>value : T
+
+declare const unionOfCarriers: Carrier<"a", string> | Carrier<"b", number>;
+>unionOfCarriers : Carrier<"a", string> | Carrier<"b", number>
+
+const fromUnionOfCarriers = fromBox(unionOfCarriers); // error
+>fromUnionOfCarriers : string
+>fromBox(unionOfCarriers) : string
+>fromBox : <T>(box: { kind: "a"; value: T; }) => T
+>unionOfCarriers : Carrier<"a", string> | Carrier<"b", number>
+

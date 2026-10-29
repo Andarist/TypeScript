@@ -484,9 +484,7 @@ func (c *Checker) getInferenceDiscriminatedTypes(union *Type, object *Type, reve
 	if match := c.getMatchingUnionConstituentForType(union, object); match != nil {
 		return match.Distributed()
 	}
-	literalProps := core.Filter(c.getPropertiesOfType(object), func(prop *ast.Symbol) bool {
-		return isLiteralType(c.getNonMissingTypeOfSymbol(prop))
-	})
+	literalProps := core.Filter(c.getPropertiesOfType(object), c.isPropertyOfLiteralType)
 	discriminants := c.findDiscriminantProperties(literalProps, union)
 	if len(discriminants) == 0 {
 		return nil
@@ -1249,6 +1247,54 @@ func (c *Checker) replaceIndexedAccess(instantiable *Type, t *Type, replacement 
 	// map type.objectType to `[TReplacement]`
 	// thus making the indexed access `[TReplacement][0]` or `TReplacement`
 	return c.instantiateType(instantiable, newTypeMapper([]*Type{t.AsIndexedAccessType().indexType, t.AsIndexedAccessType().objectType}, []*Type{c.getNumberLiteralType(0), c.createTupleType([]*Type{replacement})}))
+}
+
+// Reports whether a property has a unit type or a union of unit types, the only kind of property that can
+// discriminate a union. Methods have function types. An instantiated or mapped property whose type is not resolved
+// yet is first judged by the type it would be instantiated from, so that looking for discriminants does not
+// instantiate property types that nothing else needs.
+func (c *Checker) isPropertyOfLiteralType(prop *ast.Symbol) bool {
+	if prop.Flags()&ast.SymbolFlagsMethod != 0 {
+		return false
+	}
+	if uninstantiated := c.getUninstantiatedTypeOfProperty(prop); uninstantiated != nil && !couldInstantiateToLiteralType(uninstantiated) {
+		return false
+	}
+	return isLiteralType(c.getNonMissingTypeOfSymbol(prop))
+}
+
+// Returns the type an instantiated or mapped property's type would be instantiated from, or nil when the property
+// is of another kind or its type is already resolved.
+func (c *Checker) getUninstantiatedTypeOfProperty(prop *ast.Symbol) *Type {
+	checkFlags := prop.CheckFlags()
+	if checkFlags&ast.CheckFlagsDeferredType != 0 {
+		return nil
+	}
+	switch {
+	case checkFlags&ast.CheckFlagsInstantiated != 0:
+		if links := c.valueSymbolLinks.Get(prop); links.resolvedType == nil {
+			return c.getTypeOfSymbol(links.target)
+		}
+	case checkFlags&ast.CheckFlagsMapped != 0:
+		if links := c.valueSymbolLinks.Get(prop); links.resolvedType == nil {
+			mappedType := links.getContainingType()
+			return c.getTemplateTypeFromMappedType(core.OrElse(mappedType.AsMappedType().target, mappedType))
+		}
+	}
+	return nil
+}
+
+// Reports whether instantiating a type could produce a unit type or a union of unit types. An object type other
+// than a mapped type is instantiated to an object type, so neither it nor a union containing one can.
+func couldInstantiateToLiteralType(t *Type) bool {
+	if t.flags&TypeFlagsUnion != 0 {
+		return !core.Some(t.Types(), isNonMappedObjectType)
+	}
+	return !isNonMappedObjectType(t)
+}
+
+func isNonMappedObjectType(t *Type) bool {
+	return t.flags&TypeFlagsObject != 0 && t.objectFlags&ObjectFlagsMapped == 0
 }
 
 func (c *Checker) typesDefinitelyUnrelated(source *Type, target *Type) bool {
