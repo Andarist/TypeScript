@@ -13,10 +13,21 @@ func shouldRescanLessThanLessThanToken(s *scanner.Scanner, containingNode *ast.N
 	return token == ast.KindLessThanLessThanToken && ast.IsJsxChild(containingNode)
 }
 
-func scanNavigationToken(s *scanner.Scanner, containingNode *ast.Node) ast.Kind {
+// scanNavigationToken returns the current token, rescanned the way the parser saw it.
+// `end` is the start of the next AST child, which a scanned token must not cross.
+func scanNavigationToken(s *scanner.Scanner, containingNode *ast.Node, end int) ast.Kind {
 	token := s.Token()
 	if shouldRescanLessThanLessThanToken(s, containingNode, token) {
 		return s.ReScanJsxToken(true /*allowMultilineJsxText*/)
+	}
+	return rescanLessThanLessThanAtChildBoundary(s, token, end)
+}
+
+// The parser rescans `<<` as `<` when type arguments begin with `<` (as in `f<<T>(x: T) => T>()`),
+// so the combined token crosses into the next child. Split it the same way.
+func rescanLessThanLessThanAtChildBoundary(s *scanner.Scanner, token ast.Kind, end int) ast.Kind {
+	if token == ast.KindLessThanLessThanToken && s.TokenStart() < end && s.TokenEnd() > end {
+		return s.ReScanLessThanToken()
 	}
 	return token
 }
@@ -238,7 +249,7 @@ func getTokenAtPosition(
 				end = nodeAfterLeft.Pos()
 			}
 			for left < end {
-				token := scanNavigationToken(scanner, current)
+				token := scanNavigationToken(scanner, current, end)
 				tokenFullStart := scanner.TokenFullStart()
 				tokenStart := core.IfElse(allowPositionInLeadingTrivia, tokenFullStart, scanner.TokenStart())
 				tokenEnd := scanner.TokenEnd()
@@ -562,7 +573,7 @@ func findRightmostValidToken(endPos int, sourceFile *ast.SourceFile, containingN
 			for _, visitedNode := range rightmostVisitedNodes {
 				// Trailing tokens that occur before this node.
 				for startPos < min(visitedNode.Pos(), position) {
-					token := scanNavigationToken(scanner, n)
+					token := scanNavigationToken(scanner, n, visitedNode.Pos())
 					tokenStart := scanner.TokenStart()
 					if tokenStart >= min(visitedNode.Pos(), position) {
 						break
@@ -580,7 +591,7 @@ func findRightmostValidToken(endPos int, sourceFile *ast.SourceFile, containingN
 			}
 			// Trailing tokens after last visited node.
 			for startPos < min(endPos, position) {
-				token := scanNavigationToken(scanner, n)
+				token := scanNavigationToken(scanner, n, endPos)
 				tokenStart := scanner.TokenStart()
 				if tokenStart >= min(endPos, position) {
 					break
@@ -748,7 +759,7 @@ func FindChildOfKind(containingNode *ast.Node, kind ast.Kind, sourceFile *ast.So
 		// Look for child in preceding tokens.
 		startPos := lastNodePos
 		for startPos < node.Pos() {
-			tokenKind := scan.Token()
+			tokenKind := rescanLessThanLessThanAtChildBoundary(scan, scan.Token(), node.Pos())
 			tokenEnd := scan.TokenEnd()
 			if tokenKind == kind {
 				tokenFullStart := scan.TokenFullStart()

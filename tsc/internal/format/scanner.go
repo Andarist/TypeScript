@@ -156,6 +156,11 @@ func shouldRescanLessThanSlashToken(container *ast.Node) bool {
 	return container.Kind == ast.KindJsxClosingElement || container.Kind == ast.KindJsxClosingFragment
 }
 
+// The parser rescans `<<` as `<` when type arguments begin with `<` (as in `f<<T>(x: T) => T>()`).
+func shouldRescanLessThanToken(container *ast.Node) bool {
+	return ast.HasTypeArguments(container) && container.TypeArgumentList() != nil
+}
+
 func shouldRescanSlashToken(container *ast.Node) bool {
 	return container.Kind == ast.KindRegularExpressionLiteral
 }
@@ -184,6 +189,7 @@ const (
 	actionRescanJsxText
 	actionRescanJsxAttributeValue
 	actionRescanLessThanSlashToken
+	actionRescanLessThanToken
 )
 
 func fixTokenKind(tokenInfo tokenInfo, container *ast.Node) tokenInfo {
@@ -214,6 +220,8 @@ func (s *formattingScanner) readTokenInfo(n *ast.Node) tokenInfo {
 		expectedScanAction = actionRescanJsxAttributeValue
 	} else if shouldRescanLessThanSlashToken(n) {
 		expectedScanAction = actionRescanLessThanSlashToken
+	} else if shouldRescanLessThanToken(n) {
+		expectedScanAction = actionRescanLessThanToken
 	} else {
 		expectedScanAction = actionScan
 	}
@@ -313,6 +321,12 @@ func (s *formattingScanner) getNextToken(n *ast.Node, expectedScanAction scanAct
 			// The parser scans `</` of a closing tag as one token, so a `/*` right after `<` isn't a comment
 			s.lastScanAction = actionRescanLessThanSlashToken
 			return s.s.ReScanJsxToken( /*allowMultilineJsxText*/ false)
+		}
+	case actionRescanLessThanToken:
+		typeArgumentsPos := n.TypeArgumentList().Pos()
+		if token == ast.KindLessThanLessThanToken && s.s.TokenStart() < typeArgumentsPos && s.s.TokenEnd() > typeArgumentsPos {
+			s.lastScanAction = actionRescanLessThanToken
+			return s.s.ReScanLessThanToken()
 		}
 	case actionScan:
 		// no rescan needed; the token was already produced by the normal scan

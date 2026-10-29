@@ -293,7 +293,7 @@ func getAllRules() []ruleSpec {
 
 		rule("NoSpaceBeforeNonNullAssertionOperator", anyToken, ast.KindExclamationToken, []contextPredicate{isNonJsxSameLineTokenContext, isNonNullAssertionContext}, ruleActionDeleteSpace),
 		rule("NoSpaceAfterNewKeywordOnConstructorSignature", ast.KindNewKeyword, ast.KindOpenParenToken, []contextPredicate{isNonJsxSameLineTokenContext, isConstructorSignatureContext}, ruleActionDeleteSpace),
-		rule("SpaceLessThanAndNonJSXTypeAnnotation", ast.KindLessThanToken, ast.KindLessThanToken, []contextPredicate{isNonJsxSameLineTokenContext}, ruleActionInsertSpace),
+		rule("SpaceLessThanAndNonJSXTypeAnnotation", ast.KindLessThanToken, ast.KindLessThanToken, []contextPredicate{isNonJsxSameLineTokenContext, isBinaryOpContext}, ruleActionInsertSpace),
 	}
 
 	// These rules are applied after high priority
