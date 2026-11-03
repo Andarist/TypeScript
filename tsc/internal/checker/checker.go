@@ -122,7 +122,6 @@ const (
 	CachedTypeKindIndexType
 	CachedTypeKindStringIndexType
 	CachedTypeKindEquivalentBaseType
-	CachedTypeKindApparentType
 	CachedTypeKindAwaitedType
 	CachedTypeKindEvolvingArrayType
 	CachedTypeKindArrayLiteralType
@@ -22403,13 +22402,27 @@ func (c *Checker) isMappedTypeGenericIndexedAccess(t *Type) bool {
  * type itself.
  */
 func (c *Checker) getApparentType(t *Type) *Type {
-	originalType := t
 	if t.flags&TypeFlagsInstantiable != 0 {
-		t = c.getBaseConstraintOfType(t)
-		if t == nil {
-			t = c.unknownType
+		d := t.AsInstantiableType()
+		if d.resolvedApparentType != nil {
+			return d.resolvedApparentType
 		}
+		constraint := c.getBaseConstraintOfType(t)
+		if constraint == nil {
+			constraint = c.unknownType
+		}
+		result := c.getApparentTypeOfConstraint(constraint, t)
+		// A base constraint that is still being resolved is reported as circular without being
+		// recorded, so only a recorded base constraint gives an apparent type that can be cached.
+		if d.resolvedBaseConstraint != nil {
+			d.resolvedApparentType = result
+		}
+		return result
 	}
+	return c.getApparentTypeOfConstraint(t, t)
+}
+
+func (c *Checker) getApparentTypeOfConstraint(t *Type, originalType *Type) *Type {
 	switch {
 	case t.objectFlags&ObjectFlagsMapped != 0:
 		return c.getApparentTypeOfMappedType(t)
@@ -22477,13 +22490,8 @@ func (c *Checker) getApparentTypeOfIntersectionType(t *Type, thisArgument *Type)
 		}
 		return d.resolvedApparentType
 	}
-	key := CachedTypeKey{kind: CachedTypeKindApparentType, typeId: thisArgument.id}
-	result := c.cachedTypes[key]
-	if result == nil {
-		result = c.getTypeWithThisArgument(t, thisArgument, true /*needApparentType*/)
-		c.cachedTypes[key] = result
-	}
-	return result
+	// The result is cached by getApparentType on the instantiable thisArgument.
+	return c.getTypeWithThisArgument(t, thisArgument, true /*needApparentType*/)
 }
 
 /**

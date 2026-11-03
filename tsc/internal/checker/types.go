@@ -896,6 +896,14 @@ func (t *Type) AsConstrainedType() *ConstrainedType {
 	return nil
 }
 
+func (t *Type) AsInstantiableType() *InstantiableType {
+	if t.kind >= typeKindTypeParameter && t.kind <= typeKindConditional {
+		// SAFETY: Types of these kinds are structs that embed InstantiableType at offset zero.
+		return (*InstantiableType)(unsafe.Pointer(t))
+	}
+	return nil
+}
+
 func (t *Type) AsStructuredType() *StructuredType {
 	if t.kind >= typeKindObject && t.kind <= typeKindIntersection {
 		// SAFETY: Types of these kinds are structs that embed StructuredType at offset zero.
@@ -1117,6 +1125,13 @@ type ConstrainedType struct {
 }
 
 func (t *ConstrainedType) AsConstrainedType() *ConstrainedType { return t }
+
+// InstantiableType (base of all instantiable types)
+
+type InstantiableType struct {
+	ConstrainedType
+	resolvedApparentType *Type
+}
 
 // StructuredType (base of all types with members)
 
@@ -1500,7 +1515,7 @@ type IntersectionType struct {
 // TypeParameter
 
 type TypeParameter struct {
-	ConstrainedType
+	InstantiableType
 	constraint          *Type
 	target              *Type
 	mapper              *TypeMapper
@@ -1526,7 +1541,7 @@ const (
 // IndexType
 
 type IndexType struct {
-	ConstrainedType
+	InstantiableType
 	target     *Type
 	indexFlags IndexFlags
 }
@@ -1536,7 +1551,7 @@ func (t *IndexType) Target() *Type { return t.target }
 // IndexedAccessType
 
 type IndexedAccessType struct {
-	ConstrainedType
+	InstantiableType
 	objectType  *Type
 	indexType   *Type
 	accessFlags AccessFlags // Only includes AccessFlags.Persistent
@@ -1546,7 +1561,7 @@ func (t *IndexedAccessType) ObjectType() *Type { return t.objectType }
 func (t *IndexedAccessType) IndexType() *Type  { return t.indexType }
 
 type TemplateLiteralType struct {
-	ConstrainedType
+	InstantiableType
 	texts []string // Always one element longer than types
 	types []*Type  // Always at least one element
 }
@@ -1555,14 +1570,14 @@ func (t *TemplateLiteralType) Texts() []string { return t.texts }
 func (t *TemplateLiteralType) Types() []*Type  { return t.types }
 
 type StringMappingType struct {
-	ConstrainedType
+	InstantiableType
 	target *Type
 }
 
 func (t *StringMappingType) Target() *Type { return t.target }
 
 type SubstitutionType struct {
-	ConstrainedType
+	InstantiableType
 	baseType   *Type // Target type
 	constraint *Type // Constraint that target type is known to satisfy
 }
@@ -1582,7 +1597,7 @@ type ConditionalRoot struct {
 }
 
 type ConditionalType struct {
-	ConstrainedType
+	InstantiableType
 	root                             *ConditionalRoot
 	checkType                        *Type
 	extendsType                      *Type
