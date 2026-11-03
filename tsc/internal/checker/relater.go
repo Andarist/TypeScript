@@ -1300,9 +1300,23 @@ func (c *Checker) discriminateTypeByDiscriminableItems(target *Type, discriminat
 	return target
 }
 
+// Caches the discriminant property types of the constituents of a union, by property name and constituent index,
+// so that discriminating the same union by several discriminators looks up each property only once.
+type discriminantPropertyCache map[string][]discriminantProperty
+
+type discriminantProperty struct {
+	t          *Type
+	isOptional bool
+	resolved   bool
+}
+
 // Returns the constituents of the union target that are not ruled out by the discriminator, in union order,
 // or nil when the discriminator rules out nothing (or everything, which is treated the same way).
 func (c *Checker) discriminateTypesByDiscriminableItems(target *Type, discriminator Discriminator) []*Type {
+	return c.discriminateTypesByDiscriminableItemsEx(target, discriminator, nil)
+}
+
+func (c *Checker) discriminateTypesByDiscriminableItemsEx(target *Type, discriminator Discriminator, cache discriminantPropertyCache) []*Type {
 	types := target.Types()
 	include := make([]Ternary, len(types))
 	for i, t := range types {
@@ -1311,20 +1325,31 @@ func (c *Checker) discriminateTypesByDiscriminableItems(target *Type, discrimina
 		}
 	}
 	for n := range discriminator.len() {
+		name := discriminator.name(n)
+		var cached []discriminantProperty
+		if cache != nil {
+			cached = cache[name]
+			if cached == nil {
+				cached = make([]discriminantProperty, len(types))
+				cache[name] = cached
+			}
+		}
 		// If the remaining target types include at least one with a matching discriminant, eliminate those that
 		// have non-matching discriminants. This ensures that we ignore erroneous discriminators and gradually
 		// refine the target set without eliminating every constituent (which would lead to `never`).
 		matched := false
 		for i := range types {
 			if include[i] != TernaryFalse {
-				name := discriminator.name(n)
 				var targetType *Type
-				isOptional := false
-				if prop := c.getPropertyOfType(types[i], name); prop != nil {
-					targetType = c.getTypeOfSymbol(prop)
-					isOptional = prop.Flags()&ast.SymbolFlagsOptional != 0
-				} else if indexInfo := c.getApplicableIndexInfoForName(types[i], name); indexInfo != nil {
-					targetType = c.addOptionalityEx(indexInfo.valueType, true /*isProperty*/, true /*isOptional*/)
+				var isOptional bool
+				if cached != nil {
+					if !cached[i].resolved {
+						cached[i].t, cached[i].isOptional = c.getDiscriminantPropertyTypeOfType(types[i], name)
+						cached[i].resolved = true
+					}
+					targetType, isOptional = cached[i].t, cached[i].isOptional
+				} else {
+					targetType, isOptional = c.getDiscriminantPropertyTypeOfType(types[i], name)
 				}
 				if targetType != nil {
 					if discriminator.matches(n, targetType, isOptional) {
@@ -1358,6 +1383,16 @@ func (c *Checker) discriminateTypesByDiscriminableItems(target *Type, discrimina
 		}
 	}
 	return nil
+}
+
+func (c *Checker) getDiscriminantPropertyTypeOfType(t *Type, name string) (*Type, bool) {
+	if prop := c.getPropertyOfType(t, name); prop != nil {
+		return c.getTypeOfSymbol(prop), prop.Flags()&ast.SymbolFlagsOptional != 0
+	}
+	if indexInfo := c.getApplicableIndexInfoForName(t, name); indexInfo != nil {
+		return c.addOptionalityEx(indexInfo.valueType, true /*isProperty*/, true /*isOptional*/), false
+	}
+	return nil, false
 }
 
 func (c *Checker) filterPrimitivesIfContainsNonPrimitive(unionType *Type) *Type {

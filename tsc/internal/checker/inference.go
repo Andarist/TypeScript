@@ -250,7 +250,7 @@ func (c *Checker) inferFromTypes(n *InferenceState, source *Type, target *Type) 
 		c.inferToUnionOrIntersectionType(n, source, target)
 	case source.flags&TypeFlagsUnion != 0:
 		sources := source.Types()
-		if filtered := c.getInferenceDiscriminatedTypes(source, target, true /*reverse*/); filtered != nil {
+		if filtered := c.getInferenceDiscriminatedTypes(source, target, true /*reverse*/, nil); filtered != nil {
 			sources = filtered
 		}
 		for _, sourceType := range sources {
@@ -465,8 +465,13 @@ func (c *Checker) inferToUnionOrIntersectionType(n *InferenceState, source *Type
 	var filteredTargetsBySource [][]*Type
 	if target.flags&TypeFlagsUnion != 0 && isDiscriminableUnion(target) {
 		sources := source.Distributed()
+		// The source constituents are discriminated against the same target, so they can share its property lookups.
+		var cache discriminantPropertyCache
+		if len(sources) > 1 {
+			cache = make(discriminantPropertyCache)
+		}
 		for i, s := range sources {
-			if filtered := c.getInferenceDiscriminatedTypes(target, s, false /*reverse*/); filtered != nil {
+			if filtered := c.getInferenceDiscriminatedTypes(target, s, false /*reverse*/, cache); filtered != nil {
 				if filteredTargetsBySource == nil {
 					filteredTargetsBySource = make([][]*Type, len(sources))
 				}
@@ -477,7 +482,7 @@ func (c *Checker) inferToUnionOrIntersectionType(n *InferenceState, source *Type
 	c.inferToMultipleTypes(n, source, target.Types(), target.flags, filteredTargetsBySource)
 }
 
-func (c *Checker) getInferenceDiscriminatedTypes(union *Type, object *Type, reverse bool) []*Type {
+func (c *Checker) getInferenceDiscriminatedTypes(union *Type, object *Type, reverse bool, cache discriminantPropertyCache) []*Type {
 	if object.flags&TypeFlagsObject == 0 || !isDiscriminableUnion(union) {
 		return nil
 	}
@@ -492,7 +497,7 @@ func (c *Checker) getInferenceDiscriminatedTypes(union *Type, object *Type, reve
 		return nil
 	}
 	discriminator := &TypeDiscriminator{c: c, props: discriminants, reverse: reverse, isRelatedTo: c.compareTypesComparableSimple}
-	return c.discriminateTypesByDiscriminableItems(union, discriminator)
+	return c.discriminateTypesByDiscriminableItemsEx(union, discriminator, cache)
 }
 
 func (c *Checker) inferToMultipleTypes(n *InferenceState, source *Type, targets []*Type, targetFlags TypeFlags, filteredTargetsBySource [][]*Type) {
