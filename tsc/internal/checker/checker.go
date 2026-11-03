@@ -707,25 +707,25 @@ type Checker struct {
 	mergedSymbols                               symbolLinkStore[*ast.Symbol]
 	mergedExportsChecked                        collections.Set[*ast.Symbol]
 	factory                                     ast.NodeFactory
-	nodeLinks                                   core.LinkStore[*ast.Node, NodeLinks]
+	nodeLinks                                   nodeLinkStore[NodeLinks]
 	signatureLinks                              nodeLinkStore[SignatureLinks]
 	symbolNodeLinks                             nodeLinkStore[SymbolNodeLinks]
 	typeNodeLinks                               nodeLinkStore[TypeNodeLinks]
 	enumMemberLinks                             core.LinkStore[*ast.Node, EnumMemberLinks]
 	assertionLinks                              core.LinkStore[*ast.Node, AssertionLinks]
-	arrayLiteralLinks                           core.LinkStore[*ast.Node, ArrayLiteralLinks]
+	arrayLiteralLinks                           nodeLinkStore[ArrayLiteralLinks]
 	switchStatementLinks                        core.LinkStore[*ast.Node, SwitchStatementLinks]
 	jsxElementLinks                             core.LinkStore[*ast.Node, JsxElementLinks]
 	computedNameLinks                           core.LinkStore[*ast.Node, ComputedNameNodeLinks]
-	symbolReferenceLinks                        core.LinkStore[*ast.Symbol, SymbolReferenceLinks]
+	symbolReferenceLinks                        symbolLinkStore[SymbolReferenceLinks]
 	valueSymbolLinks                            symbolLinkStore[ValueSymbolLinks]
-	mappedSymbolLinks                           core.LinkStore[*ast.Symbol, MappedSymbolLinks]
+	mappedSymbolLinks                           symbolLinkStore[MappedSymbolLinks]
 	deferredSymbolLinks                         core.LinkStore[*ast.Symbol, DeferredSymbolLinks]
-	aliasSymbolLinks                            core.LinkStore[*ast.Symbol, AliasSymbolLinks]
+	aliasSymbolLinks                            symbolLinkStore[AliasSymbolLinks]
 	moduleSymbolLinks                           core.LinkStore[*ast.Symbol, ModuleSymbolLinks]
 	lateBoundLinks                              core.LinkStore[*ast.Symbol, LateBoundLinks]
 	exportTypeLinks                             core.LinkStore[*ast.Symbol, ExportTypeLinks]
-	membersAndExportsLinks                      core.LinkStore[*ast.Symbol, MembersAndExportsLinks]
+	membersAndExportsLinks                      symbolLinkStore[MembersAndExportsLinks]
 	typeAliasLinks                              core.LinkStore[*ast.Symbol, TypeAliasLinks]
 	declaredTypeLinks                           core.LinkStore[*ast.Symbol, DeclaredTypeLinks]
 	spreadLinks                                 core.LinkStore[*ast.Symbol, SpreadLinks]
@@ -7287,7 +7287,14 @@ func (c *Checker) checkUnusedIdentifiers(potentiallyUnusedIdentifiers []*ast.Nod
 }
 
 func (c *Checker) isReferenced(symbol *ast.Symbol) bool {
-	return c.symbolReferenceLinks.Get(symbol).referenceKinds != 0
+	return c.getReferenceKinds(symbol) != 0
+}
+
+func (c *Checker) getReferenceKinds(symbol *ast.Symbol) ast.SymbolFlags {
+	if links := c.symbolReferenceLinks.TryGet(symbol); links != nil {
+		return links.referenceKinds
+	}
+	return ast.SymbolFlagsNone
 }
 
 type UnusedKind int32
@@ -7357,7 +7364,7 @@ func (c *Checker) checkUnusedLocalsAndParameters(node *ast.Node) {
 	var variableParents collections.Set[*ast.Node]
 	var importClauses map[*ast.Node][]*ast.Node
 	for _, local := range node.Locals().All() {
-		referenceKinds := c.symbolReferenceLinks.Get(local).referenceKinds
+		referenceKinds := c.getReferenceKinds(local)
 		if local.Flags()&ast.SymbolFlagsTypeParameter != 0 && (local.Flags()&ast.SymbolFlagsVariable == 0 || referenceKinds&ast.SymbolFlagsVariable != 0) ||
 			local.Flags()&ast.SymbolFlagsTypeParameter == 0 && (referenceKinds != 0 || local.ExportSymbol() != nil ||
 				local.Flags()&ast.SymbolFlagsModuleExports != 0) {
@@ -7442,7 +7449,7 @@ func (c *Checker) isUnreferencedVariableDeclaration(node *ast.Node) bool {
 	if ast.IsBindingPattern(name) {
 		return core.Every(node.Name().Elements(), c.isUnreferencedVariableDeclaration)
 	}
-	if c.symbolReferenceLinks.Get(c.getSymbolOfDeclaration(node)).referenceKinds&ast.SymbolFlagsVariable != 0 {
+	if c.getReferenceKinds(c.getSymbolOfDeclaration(node))&ast.SymbolFlagsVariable != 0 {
 		return false
 	}
 	if ast.IsBindingElement(node) && ast.IsObjectBindingPattern(node.Parent) {
@@ -7524,12 +7531,12 @@ func (c *Checker) checkUnusedTypeParameters(node *ast.Node) {
 }
 
 func (c *Checker) isUnreferencedTypeParameter(typeParameter *ast.Node) bool {
-	return c.symbolReferenceLinks.Get(c.getMergedSymbol(typeParameter.Symbol())).referenceKinds&ast.SymbolFlagsTypeParameter == 0 && !isIdentifierThatStartsWithUnderscore(typeParameter.Name())
+	return c.getReferenceKinds(c.getMergedSymbol(typeParameter.Symbol()))&ast.SymbolFlagsTypeParameter == 0 && !isIdentifierThatStartsWithUnderscore(typeParameter.Name())
 }
 
 func (c *Checker) checkUnusedRenamedBindingElements() {
 	for _, node := range c.renamedBindingElementsInTypes {
-		if c.symbolReferenceLinks.Get(c.getSymbolOfDeclaration(node)).referenceKinds == 0 {
+		if c.getReferenceKinds(c.getSymbolOfDeclaration(node)) == 0 {
 			wrappingDeclaration := ast.WalkUpBindingElementsAndPatterns(node)
 			debug.Assert(ast.IsPartOfParameterDeclaration(wrappingDeclaration), "Only parameter declaration should be checked here")
 			diagnostic := NewDiagnosticForNode(node.Name(), diagnostics.X_0_is_an_unused_renaming_of_1_Did_you_intend_to_use_it_as_a_type_annotation, scanner.DeclarationNameToString(node.Name()), scanner.DeclarationNameToString(node.PropertyName()))
