@@ -1,0 +1,107 @@
+//// [tests/cases/compiler/distributedMappedTypeEnclosingDistribution.ts] ////
+
+=== distributedMappedTypeEnclosingDistribution.ts ===
+type Show<A, B extends A> = [A, B];
+>Show : Symbol(Show, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 0))
+>A : Symbol(A, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 10))
+>B : Symbol(B, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 12))
+>A : Symbol(A, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 10))
+>A : Symbol(A, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 10))
+>B : Symbol(B, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 12))
+
+type Check<X, Y extends X> = Y;
+>Check : Symbol(Check, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 35))
+>X : Symbol(X, Decl(distributedMappedTypeEnclosingDistribution.ts, 1, 11))
+>Y : Symbol(Y, Decl(distributedMappedTypeEnclosingDistribution.ts, 1, 13))
+>X : Symbol(X, Decl(distributedMappedTypeEnclosingDistribution.ts, 1, 11))
+>Y : Symbol(Y, Decl(distributedMappedTypeEnclosingDistribution.ts, 1, 13))
+
+// Generic mapped types declared over a type variable distributed by an enclosing distributive context
+
+type InMapped1<T> = { [K in keyof T]: Check<{ [P in keyof T]: T }, { [Q in keyof T]: T }> };
+>InMapped1 : Symbol(InMapped1, Decl(distributedMappedTypeEnclosingDistribution.ts, 1, 31))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 15))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 23))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 15))
+>Check : Symbol(Check, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 35))
+>P : Symbol(P, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 47))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 15))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 15))
+>Q : Symbol(Q, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 70))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 15))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 15))
+
+type InMapped2<T> = { [K in keyof T]: Check<{ [P in keyof T]: T[P] }, { [Q in keyof T]: T[Q] }> };
+>InMapped2 : Symbol(InMapped2, Decl(distributedMappedTypeEnclosingDistribution.ts, 5, 92))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 15))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 23))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 15))
+>Check : Symbol(Check, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 35))
+>P : Symbol(P, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 47))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 15))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 15))
+>P : Symbol(P, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 47))
+>Q : Symbol(Q, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 73))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 15))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 15))
+>Q : Symbol(Q, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 73))
+
+type InCond1<T> = T extends unknown ? Check<{ [P in keyof T]: T }, { [Q in keyof T]: T }> : never;
+>InCond1 : Symbol(InCond1, Decl(distributedMappedTypeEnclosingDistribution.ts, 6, 98))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 7, 13))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 7, 13))
+>Check : Symbol(Check, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 35))
+>P : Symbol(P, Decl(distributedMappedTypeEnclosingDistribution.ts, 7, 47))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 7, 13))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 7, 13))
+>Q : Symbol(Q, Decl(distributedMappedTypeEnclosingDistribution.ts, 7, 70))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 7, 13))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 7, 13))
+
+type InCond2<T> = T extends unknown ? Check<{ [P in keyof T]: T[P] }, { [Q in keyof T]: T[Q] }> : never;
+>InCond2 : Symbol(InCond2, Decl(distributedMappedTypeEnclosingDistribution.ts, 7, 98))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 13))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 13))
+>Check : Symbol(Check, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 35))
+>P : Symbol(P, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 47))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 13))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 13))
+>P : Symbol(P, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 47))
+>Q : Symbol(Q, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 73))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 13))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 13))
+>Q : Symbol(Q, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 73))
+
+type InMapped3<T, U extends T> = { [P in keyof T]: Show<{ [K in keyof T]: T[K] }, { [K in keyof T]: U[K] }> };  // Error
+>InMapped3 : Symbol(InMapped3, Decl(distributedMappedTypeEnclosingDistribution.ts, 8, 104))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 15))
+>U : Symbol(U, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 17))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 15))
+>P : Symbol(P, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 36))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 15))
+>Show : Symbol(Show, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 0))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 59))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 15))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 15))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 59))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 85))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 15))
+>U : Symbol(U, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 17))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 85))
+
+type InCond3<T, U extends T> = T extends unknown ? Show<{ [K in keyof T]: T[K] }, { [K in keyof T]: U[K] }> : never;  // Error
+>InCond3 : Symbol(InCond3, Decl(distributedMappedTypeEnclosingDistribution.ts, 10, 110))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 13))
+>U : Symbol(U, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 15))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 13))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 13))
+>Show : Symbol(Show, Decl(distributedMappedTypeEnclosingDistribution.ts, 0, 0))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 59))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 13))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 13))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 59))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 85))
+>T : Symbol(T, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 13))
+>U : Symbol(U, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 15))
+>K : Symbol(K, Decl(distributedMappedTypeEnclosingDistribution.ts, 11, 85))
+
