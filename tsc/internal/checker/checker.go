@@ -17803,7 +17803,15 @@ func (c *Checker) getConstraintOfDistributiveConditionalType(t *Type) *Type {
 				constraint = c.getConstraintOfType(constraint)
 			}
 			if constraint != nil && constraint != d.checkType {
-				instantiated := c.getConditionalTypeInstantiation(t, prependTypeMapping(d.root.checkType, constraint, d.mapper), true /*forConstraint*/, nil)
+				var mapper *TypeMapper
+				if constraint == getNonDistributedTypeParameter(d.checkType) {
+					// The constraint of a distributed type parameter is its non-distributed form, which the
+					// distributed form is only kept apart from by an explicit mapping.
+					mapper = mergeTypeMappers(d.mapper, newSimpleTypeMapper(d.checkType, constraint))
+				} else {
+					mapper = prependTypeMapping(d.root.checkType, constraint, d.mapper)
+				}
+				instantiated := c.getConditionalTypeInstantiation(t, mapper, true /*forConstraint*/, nil)
 				if instantiated.flags&TypeFlagsNever == 0 {
 					d.resolvedConstraintOfDistributive = instantiated
 					return instantiated
@@ -21701,7 +21709,7 @@ func (c *Checker) resolveMappedTypeMembers(t *Type) {
 			case propNameType.flags&(TypeFlagsNumber|TypeFlagsEnum) != 0:
 				indexKeyType = c.numberType
 			}
-			propType := c.instantiateType(templateType, appendTypeMapping(t.AsMappedType().mapper, typeParameter, keyType))
+			propType := c.instantiateType(templateType, c.getMappedTypePropertyMapper(t, keyType))
 			modifiersIndexInfo := c.getApplicableIndexInfo(modifiersType, propNameType)
 			isReadonly := templateModifiers&MappedTypeModifiersIncludeReadonly != 0 || templateModifiers&MappedTypeModifiersExcludeReadonly == 0 && modifiersIndexInfo != nil && modifiersIndexInfo.isReadonly
 			indexInfo := c.newIndexInfo(indexKeyType, propType, isReadonly, nil, nil)
@@ -21735,8 +21743,7 @@ func (c *Checker) getTypeOfMappedSymbol(symbol *ast.Symbol) *Type {
 			return c.errorType
 		}
 		templateType := c.getTemplateTypeFromMappedType(core.OrElse(mappedType.AsMappedType().target, mappedType))
-		mapper := appendTypeMapping(mappedType.AsMappedType().mapper, c.getTypeParameterFromMappedType(mappedType), c.mappedSymbolLinks.Get(symbol).keyType)
-		propType := c.instantiateType(templateType, mapper)
+		propType := c.instantiateType(templateType, c.getMappedTypePropertyMapper(mappedType, c.mappedSymbolLinks.Get(symbol).keyType))
 		// When creating an optional property in strictNullChecks mode, if 'undefined' isn't assignable to the
 		// type, we include 'undefined' in the type. Similarly, when creating a non-optional property in strictNullChecks
 		// mode, if the underlying property is optional we remove 'undefined' from the type.
@@ -23194,6 +23201,7 @@ func (c *Checker) getObjectTypeInstantiation(t *Type, m *TypeMapper, alias *Type
 				})
 			}
 		}
+		typeParameters = c.appendDistributedTypeParameters(typeParameters, declaration)
 		if typeParameters == nil {
 			typeParameters = []*Type{}
 		}
@@ -23217,12 +23225,7 @@ func (c *Checker) getObjectTypeInstantiation(t *Type, m *TypeMapper, alias *Type
 	key := getTypeInstantiationKey(typeArguments, newAlias, t.objectFlags&ObjectFlagsSingleSignatureType != 0)
 	if data.instantiations == nil {
 		data.instantiations = make(map[CacheHashKey]*Type)
-		// The identity instantiation isn't the declared type itself when the type is declared in a
-		// distributive context, as instantiation maps distributed type parameters back to their
-		// non-distributed form.
-		if !c.isInDistributiveContext(declaration, nil /*symbol*/) {
-			data.instantiations[getTypeInstantiationKey(typeParameters, target.alias, false)] = target
-		}
+		data.instantiations[getTypeInstantiationKey(typeParameters, target.alias, false)] = target
 	}
 	result := data.instantiations[key]
 	if result == nil {
@@ -23345,7 +23348,7 @@ func (c *Checker) getConditionalTypeInstantiation(t *Type, mapper *TypeMapper, f
 		// We are instantiating a conditional type that has one or more type parameters in scope. Apply the
 		// mapper to the type parameters to produce the effective list of type arguments, and compute the
 		// instantiation cache key from the type IDs of the type arguments.
-		typeArguments := core.Map(root.outerTypeParameters, mapper.Map)
+		typeArguments := core.Map(root.outerTypeParameters, func(tp *Type) *Type { return getMappedType(tp, mapper) })
 		key := getConditionalTypeKey(typeArguments, alias, forConstraint)
 		result := root.instantiations[key]
 		if result == nil {
@@ -23446,7 +23449,7 @@ func (c *Checker) getMappedTypeConstituentInstantiation(t *Type, typeParameters 
 		return c.instantiateAnonymousType(t, mapper, nil)
 	}
 	alias := c.instantiateTypeAlias(t.alias, mapper)
-	key := getTypeInstantiationKey(core.Map(typeParameters, mapper.Map), alias, false /*singleSignature*/)
+	key := getTypeInstantiationKey(core.Map(typeParameters, func(tp *Type) *Type { return getMappedType(tp, mapper) }), alias, false /*singleSignature*/)
 	data := t.AsObjectType()
 	result := data.instantiations[key]
 	if result == nil {
@@ -23909,8 +23912,7 @@ func (c *Checker) getDistributedTypeParameter(node *ast.Node, t *Type) *Type {
 // symbol, or for any type parameter when symbol is nil. A distributive context is a distributive conditional
 // type 'T extends U ? X : Y' or the template of a homomorphic mapped type '{ [K in keyof T]: X }', both of
 // which distribute over union types for T. Types declared in such a context may reference distributed type
-// parameters, so their identity instantiation isn't the declared type itself (instantiation maps distributed
-// type parameters back to their non-distributed form).
+// parameters.
 func (c *Checker) isInDistributiveContext(node *ast.Node, symbol *ast.Symbol) bool {
 	var child *ast.Node
 	for n := node; n != nil && !ast.IsStatement(n); child, n = n, n.Parent {
@@ -23940,6 +23942,20 @@ func (c *Checker) isInDistributiveContext(node *ast.Node, symbol *ast.Symbol) bo
 	return false
 }
 
+// Appends the distributed forms of the given type parameters for which the node is in a distributive
+// context. Including them in the outer type parameters of a type makes its instantiation cache key
+// reflect what distributed type parameters map to, so an instantiation that keeps them apart from
+// their non-distributed forms isn't confused with one that maps them back.
+func (c *Checker) appendDistributedTypeParameters(typeParameters []*Type, node *ast.Node) []*Type {
+	result := typeParameters
+	for _, tp := range typeParameters {
+		if c.isInDistributiveContext(node, tp.symbol) {
+			result = append(slices.Clip(result), c.getDistributedTypeFromTypeParameter(tp))
+		}
+	}
+	return result
+}
+
 func (c *Checker) getDistributedTypeFromTypeParameter(t *Type) *Type {
 	tp := t.AsTypeParameter()
 	if tp.distributedType == nil {
@@ -23958,23 +23974,41 @@ func (c *Checker) getNonDistributedConditionalType(t *Type) *Type {
 	return result
 }
 
-// Returns the given generic mapped type with references to the distributed form of its homomorphic type
-// variable mapped back to the non-distributed form. Only declared mapped types need this, as instantiation
-// already maps distributed type parameters back to their non-distributed form. A type variable that is itself
-// distributed comes from an enclosing distributive context and must keep its distributed form.
-func (c *Checker) getNonDistributedMappedType(t *Type) *Type {
-	if t.AsMappedType().target != nil {
-		return t
+// Returns the mapper that instantiates the template of the given mapped type for a property with the given
+// key type. A property of a homomorphic mapped type is outside the distributive context of the template,
+// so the distributed form of a non-distributed homomorphic type variable is mapped back to that variable.
+func (c *Checker) getMappedTypePropertyMapper(t *Type, keyType *Type) *TypeMapper {
+	mapper := appendTypeMapping(t.AsMappedType().mapper, c.getTypeParameterFromMappedType(t), keyType)
+	if typeVariable := c.getNonDistributedHomomorphicTypeVariable(t); typeVariable != nil {
+		mapper = newMergedTypeMapper(mapper, newSimpleTypeMapper(c.getDistributedTypeFromTypeParameter(typeVariable), typeVariable))
 	}
+	return mapper
+}
+
+// Returns the type variable T of a mapped type '{ [P in keyof T]: X }' when T is a type parameter that isn't
+// itself distributed. A distributed T comes from an enclosing distributive context.
+func (c *Checker) getNonDistributedHomomorphicTypeVariable(t *Type) *Type {
 	constraintType := c.getConstraintTypeFromMappedType(t)
 	if constraintType.flags&TypeFlagsIndex == 0 {
-		return t
+		return nil
 	}
 	typeVariable := constraintType.AsIndexType().target
 	if typeVariable.flags&TypeFlagsSubstitution != 0 {
 		typeVariable = typeVariable.AsSubstitutionType().baseType
 	}
 	if typeVariable.flags&TypeFlagsTypeParameter == 0 || typeVariable.AsTypeParameter().isDistributed {
+		return nil
+	}
+	return typeVariable
+}
+
+// Returns the given generic mapped type with references to the distributed form of its homomorphic type
+// variable mapped back to the non-distributed form. Instantiated mapped types need this too, as instantiation
+// keeps distributed type parameters whose non-distributed form it doesn't map. A type variable that is itself
+// distributed comes from an enclosing distributive context and must keep its distributed form.
+func (c *Checker) getNonDistributedMappedType(t *Type) *Type {
+	typeVariable := c.getNonDistributedHomomorphicTypeVariable(t)
+	if typeVariable == nil {
 		return t
 	}
 	result := c.getNonDistributedType(t, c.getDistributedTypeFromTypeParameter(typeVariable))
@@ -23982,10 +24016,10 @@ func (c *Checker) getNonDistributedMappedType(t *Type) *Type {
 	return result
 }
 
-// Returns the identity instantiation of the given type for the non-distributed form of the given type
-// variable if it is a distributed type parameter, and otherwise the type itself. Instantiation maps all
-// occurrences of distributed type parameters back to their non-distributed form, so the result is the
-// given type with distributed type parameters replaced by their non-distributed form.
+// Returns the given type with references to the given type variable mapped to its non-distributed form
+// if it is a distributed type parameter, and otherwise the type itself. Distributed type parameters from
+// enclosing distributive contexts are kept, as only an explicit mapping replaces a distributed type
+// parameter whose non-distributed form isn't mapped.
 func (c *Checker) getNonDistributedType(t *Type, typeVariable *Type) *Type {
 	typeParameter := getNonDistributedTypeParameter(typeVariable)
 	if typeParameter == typeVariable {
@@ -23995,7 +24029,7 @@ func (c *Checker) getNonDistributedType(t *Type, typeVariable *Type) *Type {
 	if cached := c.cachedTypes[key]; cached != nil {
 		return cached
 	}
-	result := c.instantiateType(t, newSimpleTypeMapper(typeParameter, typeParameter))
+	result := c.instantiateType(t, newSimpleTypeMapper(typeVariable, typeParameter))
 	c.cachedTypes[key] = result
 	return result
 }
@@ -25295,6 +25329,7 @@ func (c *Checker) getTypeFromConditionalTypeNode(node *ast.Node) *Type {
 		} else {
 			outerTypeParameters = core.Filter(allOuterTypeParameters, func(tp *Type) bool { return c.isTypeParameterPossiblyReferenced(tp, node) })
 		}
+		outerTypeParameters = c.appendDistributedTypeParameters(outerTypeParameters, node)
 		root := &ConditionalRoot{
 			node:                node.AsConditionalTypeNode(),
 			checkType:           checkType,
@@ -25308,12 +25343,7 @@ func (c *Checker) getTypeFromConditionalTypeNode(node *ast.Node) *Type {
 		links.resolvedType = c.getConditionalType(root, nil /*mapper*/, false /*forConstraint*/, nil)
 		if outerTypeParameters != nil {
 			root.instantiations = make(map[CacheHashKey]*Type)
-			// The identity instantiation isn't the declared type itself when the type is declared in a
-			// distributive context, as instantiation maps distributed type parameters back to their
-			// non-distributed form.
-			if !c.isInDistributiveContext(node, nil /*symbol*/) {
-				root.instantiations[getConditionalTypeKey(outerTypeParameters, nil /*alias*/, false /*forConstraint*/)] = links.resolvedType
-			}
+			root.instantiations[getConditionalTypeKey(outerTypeParameters, nil /*alias*/, false /*forConstraint*/)] = links.resolvedType
 		}
 	}
 	return links.resolvedType
@@ -25474,7 +25504,7 @@ func (c *Checker) getTailRecursionRoot(newType *Type, newMapper *TypeMapper) (*C
 		newRoot := newType.AsConditionalType().root
 		if len(newRoot.outerTypeParameters) != 0 {
 			typeParamMapper := c.combineTypeMappers(newType.AsConditionalType().mapper, newMapper)
-			typeArguments := core.Map(newRoot.outerTypeParameters, typeParamMapper.Map)
+			typeArguments := core.Map(newRoot.outerTypeParameters, func(tp *Type) *Type { return getMappedType(tp, typeParamMapper) })
 			newRootMapper := newTypeMapper(newRoot.outerTypeParameters, typeArguments)
 			var newCheckType *Type
 			if newRoot.isDistributive {
@@ -30412,6 +30442,8 @@ func (c *Checker) getStringMappingTypeForGenericType(symbol *ast.Symbol, t *Type
 // are optional. If the modifiers type is generic, conservatively estimate optionality by recursively looking for
 // mapped types that include '?' modifiers.
 func (c *Checker) substituteIndexedMappedType(objectType *Type, index *Type) *Type {
+	// Accessing a property of a homomorphic mapped type leaves the distributive context of its template.
+	objectType = c.getNonDistributedMappedType(objectType)
 	mapper := newSimpleTypeMapper(c.getTypeParameterFromMappedType(objectType), index)
 	templateMapper := c.combineTypeMappers(objectType.AsMappedType().mapper, mapper)
 	instantiatedTemplateType := c.instantiateType(c.getTemplateTypeFromMappedType(core.OrElse(objectType.AsMappedType().target, objectType)), templateMapper)

@@ -92,7 +92,17 @@ func (m *TypeMapper) MapsThisOnly() bool {
 // Factory functions
 
 func getMappedType(t *Type, mapper *TypeMapper) *Type {
-	return mapper.Map(getNonDistributedTypeParameter(t))
+	if t.flags&TypeFlagsTypeParameter != 0 && t.AsTypeParameter().isDistributed {
+		// A distributed type parameter is replaced by whatever its non-distributed form maps to. Otherwise
+		// the mapper may map the distributed form itself, as when erasing it. When neither is mapped, the
+		// distributed form is kept, since the instantiation doesn't leave its distributive context.
+		typeParameter := t.AsTypeParameter().constraint
+		if result := mapper.Map(typeParameter); result != typeParameter {
+			return result
+		}
+		return mapper.Map(t)
+	}
+	return mapper.Map(t)
 }
 
 func newTypeMapper(sources []*Type, targets []*Type) *TypeMapper {

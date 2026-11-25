@@ -1,21 +1,29 @@
 distributedTypeParameterErasure.ts(5,57): error TS2344: Type 'U' does not satisfy the constraint 'T'.
   'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
-distributedTypeParameterErasure.ts(14,64): error TS2344: Type '{ [Q in keyof T]: T; }' does not satisfy the constraint '{ [P in keyof T]: T; }'.
-  Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-    Type 'string | number | symbol' is not assignable to type 'keyof T'.
-      Type 'string' is not assignable to type 'keyof T'.
-distributedTypeParameterErasure.ts(16,44): error TS2344: Type 'T' does not satisfy the constraint 'T'.
-  'T' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
-distributedTypeParameterErasure.ts(17,78): error TS2344: Type '(x: T) => void' does not satisfy the constraint '(x: T) => void'.
-  Types of parameters 'x' and 'x' are incompatible.
-    Type 'T' is not assignable to type 'T'. Two different types with this name exist, but they are unrelated.
-      'T' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
-distributedTypeParameterErasure.ts(18,85): error TS2344: Type '<R>(x: X extends unknown ? R : never) => R' does not satisfy the constraint '(x: X extends unknown ? T : never) => T'.
-  Type 'T' is not assignable to type 'T'. Two different types with this name exist, but they are unrelated.
-    'T' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
+distributedTypeParameterErasure.ts(6,88): error TS2344: Type 'X extends unknown ? U : never' does not satisfy the constraint 'X extends unknown ? T : never'.
+  Type 'U' is not assignable to type 'X extends unknown ? T : never'.
+    Type 'T' is not assignable to type 'X extends unknown ? T : never'.
+      Type 'U' is not assignable to type 'T'.
+        'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
+distributedTypeParameterErasure.ts(7,80): error TS2344: Type '{ [K in keyof X]: U; }' does not satisfy the constraint '{ [K in keyof X]: T; }'.
+  Type 'U' is not assignable to type 'T'.
+    'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
+distributedTypeParameterErasure.ts(8,73): error TS2344: Type '{ a: U; }' does not satisfy the constraint '{ a: T; }'.
+  Types of property 'a' are incompatible.
+    Type 'U' is not assignable to type 'T'.
+      'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
+distributedTypeParameterErasure.ts(9,78): error TS2344: Type 'U' does not satisfy the constraint 'T'.
+  'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
+distributedTypeParameterErasure.ts(10,70): error TS2344: Type '<Z>(z: Z) => U' does not satisfy the constraint '<Z>(z: Z) => T'.
+  Type 'U' is not assignable to type 'T'.
+    'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
+distributedTypeParameterErasure.ts(11,73): error TS2344: Type '{ m<Z>(z: Z): U; }' does not satisfy the constraint '{ m<Z>(z: Z): T; }'.
+  The types returned by 'm(...)' are incompatible between these types.
+    Type 'U' is not assignable to type 'T'.
+      'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
 
 
-==== distributedTypeParameterErasure.ts (5 errors) ====
+==== distributedTypeParameterErasure.ts (7 errors) ====
     type Show<A, B extends A> = [A, B];
     type Check<X, Y extends X> = Y;
     
@@ -25,34 +33,44 @@ distributedTypeParameterErasure.ts(18,85): error TS2344: Type '<R>(x: X extends 
 !!! error TS2344: Type 'U' does not satisfy the constraint 'T'.
 !!! error TS2344:   'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     type Bad2<T, U extends T, X> = T extends unknown ? Show<X extends unknown ? T : never, X extends unknown ? U : never> : never;
+                                                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type 'X extends unknown ? U : never' does not satisfy the constraint 'X extends unknown ? T : never'.
+!!! error TS2344:   Type 'U' is not assignable to type 'X extends unknown ? T : never'.
+!!! error TS2344:     Type 'T' is not assignable to type 'X extends unknown ? T : never'.
+!!! error TS2344:       Type 'U' is not assignable to type 'T'.
+!!! error TS2344:         'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     type Bad3<T, U extends T, X> = T extends unknown ? Show<{ [K in keyof X]: T }, { [K in keyof X]: U }> : never;
+                                                                                   ~~~~~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '{ [K in keyof X]: U; }' does not satisfy the constraint '{ [K in keyof X]: T; }'.
+!!! error TS2344:   Type 'U' is not assignable to type 'T'.
+!!! error TS2344:     'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     type Bad4<T, U extends T> = T extends unknown ? Show<{ [K in "a"]: T }, { [K in "a"]: U }> : never;
+                                                                            ~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '{ a: U; }' does not satisfy the constraint '{ a: T; }'.
+!!! error TS2344:   Types of property 'a' are incompatible.
+!!! error TS2344:     Type 'U' is not assignable to type 'T'.
+!!! error TS2344:       'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     type Bad5<T, U extends T> = T extends unknown ? Show<{ [K in "a"]: T }["a"], U> : never;
+                                                                                 ~
+!!! error TS2344: Type 'U' does not satisfy the constraint 'T'.
+!!! error TS2344:   'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     type Bad6<T, U extends T> = T extends unknown ? Show<<Z>(z: Z) => T, <Z>(z: Z) => U> : never;
+                                                                         ~~~~~~~~~~~~~~
+!!! error TS2344: Type '<Z>(z: Z) => U' does not satisfy the constraint '<Z>(z: Z) => T'.
+!!! error TS2344:   Type 'U' is not assignable to type 'T'.
+!!! error TS2344:     'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     type Bad7<T, U extends T> = T extends unknown ? Show<{ m<Z>(z: Z): T }, { m<Z>(z: Z): U }> : never;
+                                                                            ~~~~~~~~~~~~~~~~~
+!!! error TS2344: Type '{ m<Z>(z: Z): U; }' does not satisfy the constraint '{ m<Z>(z: Z): T; }'.
+!!! error TS2344:   The types returned by 'm(...)' are incompatible between these types.
+!!! error TS2344:     Type 'U' is not assignable to type 'T'.
+!!! error TS2344:       'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     
     // No errors
     type Ok1<T> = T extends unknown ? Check<{ [P in keyof T]: T }, { [Q in keyof T]: T }> : never;
-                                                                   ~~~~~~~~~~~~~~~~~~~~~
-!!! error TS2344: Type '{ [Q in keyof T]: T; }' does not satisfy the constraint '{ [P in keyof T]: T; }'.
-!!! error TS2344:   Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-!!! error TS2344:     Type 'string | number | symbol' is not assignable to type 'keyof T'.
-!!! error TS2344:       Type 'string' is not assignable to type 'keyof T'.
     type Ok2<T, X> = T extends unknown ? Check<{ [K in keyof X]: T }, { [K in keyof X]: T }> : never;
     type Ok3<T> = T extends unknown ? Check<T, { [K in "a"]: T }["a"]> : never;
-                                               ~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS2344: Type 'T' does not satisfy the constraint 'T'.
-!!! error TS2344:   'T' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     type Ok4<T> = T extends unknown ? Check<(x: { [K in "a"]: T }["a"]) => void, (x: T) => void> : never;
-                                                                                 ~~~~~~~~~~~~~~
-!!! error TS2344: Type '(x: T) => void' does not satisfy the constraint '(x: T) => void'.
-!!! error TS2344:   Types of parameters 'x' and 'x' are incompatible.
-!!! error TS2344:     Type 'T' is not assignable to type 'T'. Two different types with this name exist, but they are unrelated.
-!!! error TS2344:       'T' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     type Ok5<T, X> = T extends unknown ? Check<(x: X extends unknown ? T : never) => T, <R>(x: X extends unknown ? R : never) => R> : never;
-                                                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS2344: Type '<R>(x: X extends unknown ? R : never) => R' does not satisfy the constraint '(x: X extends unknown ? T : never) => T'.
-!!! error TS2344:   Type 'T' is not assignable to type 'T'. Two different types with this name exist, but they are unrelated.
-!!! error TS2344:     'T' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
     type Ok6<T, X> = T extends unknown ? Check<T, X extends unknown ? T : never> : never;
     
