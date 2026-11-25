@@ -23966,20 +23966,31 @@ func (c *Checker) getNonDistributedMappedType(t *Type) *Type {
 	if t.AsMappedType().target != nil {
 		return t
 	}
-	constraintType := c.getConstraintTypeFromMappedType(t)
-	if constraintType.flags&TypeFlagsIndex == 0 {
-		return t
-	}
-	typeVariable := constraintType.AsIndexType().target
-	if typeVariable.flags&TypeFlagsSubstitution != 0 {
-		typeVariable = typeVariable.AsSubstitutionType().baseType
-	}
-	if typeVariable.flags&TypeFlagsTypeParameter == 0 || typeVariable.AsTypeParameter().isDistributed {
+	typeVariable := c.getDeclaredHomomorphicTypeVariable(t)
+	if typeVariable == nil || typeVariable.AsTypeParameter().isDistributed {
 		return t
 	}
 	result := c.getNonDistributedType(t, c.getDistributedTypeFromTypeParameter(typeVariable))
 	debug.Assert(result.objectFlags&ObjectFlagsMapped != 0, "Identity instantiation of a generic mapped type should remain a mapped type")
 	return result
+}
+
+// Returns the type parameter T of a homomorphic mapped type { [P in keyof T]: X } as referenced by its
+// constraint, which is the distributed form of T when the mapped type is declared in a distributive context
+// for T.
+func (c *Checker) getDeclaredHomomorphicTypeVariable(t *Type) *Type {
+	constraintType := c.getConstraintTypeFromMappedType(t)
+	if constraintType.flags&TypeFlagsIndex == 0 {
+		return nil
+	}
+	typeVariable := constraintType.AsIndexType().target
+	if typeVariable.flags&TypeFlagsSubstitution != 0 {
+		typeVariable = typeVariable.AsSubstitutionType().baseType
+	}
+	if typeVariable.flags&TypeFlagsTypeParameter == 0 {
+		return nil
+	}
+	return typeVariable
 }
 
 // Returns the identity instantiation of the given type for the non-distributed form of the given type

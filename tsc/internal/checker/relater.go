@@ -4049,9 +4049,19 @@ func (r *Relater) mappedTypeRelatedTo(source *Type, target *Type, reportErrors b
 		// depend on whether it has been instantiated.
 		target := r.c.getNonDistributedMappedType(target)
 		targetConstraint := r.c.getConstraintTypeFromMappedType(target)
-		sourceConstraint := r.c.instantiateType(r.c.getConstraintTypeFromMappedType(source), core.IfElse(r.c.getCombinedMappedTypeOptionality(source) < 0, r.c.reportUnmeasurableMapper, r.c.reportUnreliableMapper))
+		sourceConstraint := r.c.getConstraintTypeFromMappedType(source)
+		// Instantiation maps all distributed type parameters back to their non-distributed form. When the source
+		// is declared over a type variable distributed by an enclosing distributive context, every reference to
+		// that type parameter in the source is to its distributed form, so map them back to it.
+		constraintMapper := core.IfElse(r.c.getCombinedMappedTypeOptionality(source) < 0, r.c.reportUnmeasurableMapper, r.c.reportUnreliableMapper)
+		mapper := newSimpleTypeMapper(r.c.getTypeParameterFromMappedType(source), r.c.getTypeParameterFromMappedType(target))
+		if typeVariable := r.c.getDeclaredHomomorphicTypeVariable(source); typeVariable != nil && typeVariable.AsTypeParameter().isDistributed {
+			distributedMapper := newSimpleTypeMapper(getNonDistributedTypeParameter(typeVariable), typeVariable)
+			constraintMapper = newMergedTypeMapper(constraintMapper, distributedMapper)
+			mapper = newMergedTypeMapper(mapper, distributedMapper)
+		}
+		sourceConstraint = r.c.instantiateType(sourceConstraint, constraintMapper)
 		if result := r.isRelatedTo(targetConstraint, sourceConstraint, RecursionFlagsBoth, reportErrors); result != TernaryFalse {
-			mapper := newSimpleTypeMapper(r.c.getTypeParameterFromMappedType(source), r.c.getTypeParameterFromMappedType(target))
 			if r.c.instantiateType(r.c.getNameTypeFromMappedType(source), mapper) == r.c.instantiateType(r.c.getNameTypeFromMappedType(target), mapper) {
 				return result & r.isRelatedTo(r.c.instantiateType(r.c.getTemplateTypeFromMappedType(source), mapper), r.c.getTemplateTypeFromMappedType(target), RecursionFlagsBoth, reportErrors)
 			}

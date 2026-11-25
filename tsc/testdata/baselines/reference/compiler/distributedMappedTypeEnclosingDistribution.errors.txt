@@ -1,76 +1,40 @@
-distributedMappedTypeEnclosingDistribution.ts(6,68): error TS2344: Type '{ [Q in keyof T]: T; }' does not satisfy the constraint '{ [P in keyof T]: T; }'.
-  Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-    Type 'string | number | symbol' is not assignable to type 'keyof T'.
-      Type 'string' is not assignable to type 'keyof T'.
-distributedMappedTypeEnclosingDistribution.ts(7,71): error TS2344: Type '{ [Q in keyof T]: T[Q]; }' does not satisfy the constraint '{ [P in keyof T]: T[P]; }'.
-  Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-    Type 'string | number | symbol' is not assignable to type 'keyof T'.
-      Type 'string' is not assignable to type 'keyof T'.
-distributedMappedTypeEnclosingDistribution.ts(8,68): error TS2344: Type '{ [Q in keyof T]: T; }' does not satisfy the constraint '{ [P in keyof T]: T; }'.
-  Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-    Type 'string | number | symbol' is not assignable to type 'keyof T'.
-      Type 'string' is not assignable to type 'keyof T'.
-distributedMappedTypeEnclosingDistribution.ts(9,71): error TS2344: Type '{ [Q in keyof T]: T[Q]; }' does not satisfy the constraint '{ [P in keyof T]: T[P]; }'.
-  Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-    Type 'string | number | symbol' is not assignable to type 'keyof T'.
-      Type 'string' is not assignable to type 'keyof T'.
 distributedMappedTypeEnclosingDistribution.ts(11,83): error TS2344: Type '{ [K in keyof T]: U[K]; }' does not satisfy the constraint '{ [K in keyof T]: T[K]; }'.
-  Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-    Type 'string | number | symbol' is not assignable to type 'keyof T'.
-      Type 'string' is not assignable to type 'keyof T'.
+  Type 'U[K]' is not assignable to type 'T[K]'.
+    Type 'U' is not assignable to type 'T'.
+      'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
 distributedMappedTypeEnclosingDistribution.ts(11,101): error TS2536: Type 'K' cannot be used to index type 'U'.
 distributedMappedTypeEnclosingDistribution.ts(12,83): error TS2344: Type '{ [K in keyof T]: U[K]; }' does not satisfy the constraint '{ [K in keyof T]: T[K]; }'.
-  Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-    Type 'string | number | symbol' is not assignable to type 'keyof T'.
-      Type 'string' is not assignable to type 'keyof T'.
+  Type 'U[K]' is not assignable to type 'T[K]'.
+    Type 'U' is not assignable to type 'T'.
+      'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
 distributedMappedTypeEnclosingDistribution.ts(12,101): error TS2536: Type 'K' cannot be used to index type 'U'.
 
 
-==== distributedMappedTypeEnclosingDistribution.ts (8 errors) ====
+==== distributedMappedTypeEnclosingDistribution.ts (4 errors) ====
     type Show<A, B extends A> = [A, B];
     type Check<X, Y extends X> = Y;
     
     // Generic mapped types declared over a type variable distributed by an enclosing distributive context
     
     type InMapped1<T> = { [K in keyof T]: Check<{ [P in keyof T]: T }, { [Q in keyof T]: T }> };
-                                                                       ~~~~~~~~~~~~~~~~~~~~~
-!!! error TS2344: Type '{ [Q in keyof T]: T; }' does not satisfy the constraint '{ [P in keyof T]: T; }'.
-!!! error TS2344:   Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-!!! error TS2344:     Type 'string | number | symbol' is not assignable to type 'keyof T'.
-!!! error TS2344:       Type 'string' is not assignable to type 'keyof T'.
     type InMapped2<T> = { [K in keyof T]: Check<{ [P in keyof T]: T[P] }, { [Q in keyof T]: T[Q] }> };
-                                                                          ~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS2344: Type '{ [Q in keyof T]: T[Q]; }' does not satisfy the constraint '{ [P in keyof T]: T[P]; }'.
-!!! error TS2344:   Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-!!! error TS2344:     Type 'string | number | symbol' is not assignable to type 'keyof T'.
-!!! error TS2344:       Type 'string' is not assignable to type 'keyof T'.
     type InCond1<T> = T extends unknown ? Check<{ [P in keyof T]: T }, { [Q in keyof T]: T }> : never;
-                                                                       ~~~~~~~~~~~~~~~~~~~~~
-!!! error TS2344: Type '{ [Q in keyof T]: T; }' does not satisfy the constraint '{ [P in keyof T]: T; }'.
-!!! error TS2344:   Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-!!! error TS2344:     Type 'string | number | symbol' is not assignable to type 'keyof T'.
-!!! error TS2344:       Type 'string' is not assignable to type 'keyof T'.
     type InCond2<T> = T extends unknown ? Check<{ [P in keyof T]: T[P] }, { [Q in keyof T]: T[Q] }> : never;
-                                                                          ~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS2344: Type '{ [Q in keyof T]: T[Q]; }' does not satisfy the constraint '{ [P in keyof T]: T[P]; }'.
-!!! error TS2344:   Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-!!! error TS2344:     Type 'string | number | symbol' is not assignable to type 'keyof T'.
-!!! error TS2344:       Type 'string' is not assignable to type 'keyof T'.
     
     type InMapped3<T, U extends T> = { [P in keyof T]: Show<{ [K in keyof T]: T[K] }, { [K in keyof T]: U[K] }> };  // Error
                                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~
 !!! error TS2344: Type '{ [K in keyof T]: U[K]; }' does not satisfy the constraint '{ [K in keyof T]: T[K]; }'.
-!!! error TS2344:   Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-!!! error TS2344:     Type 'string | number | symbol' is not assignable to type 'keyof T'.
-!!! error TS2344:       Type 'string' is not assignable to type 'keyof T'.
+!!! error TS2344:   Type 'U[K]' is not assignable to type 'T[K]'.
+!!! error TS2344:     Type 'U' is not assignable to type 'T'.
+!!! error TS2344:       'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
                                                                                                         ~~~~
 !!! error TS2536: Type 'K' cannot be used to index type 'U'.
     type InCond3<T, U extends T> = T extends unknown ? Show<{ [K in keyof T]: T[K] }, { [K in keyof T]: U[K] }> : never;  // Error
                                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~
 !!! error TS2344: Type '{ [K in keyof T]: U[K]; }' does not satisfy the constraint '{ [K in keyof T]: T[K]; }'.
-!!! error TS2344:   Type 'keyof T' is not assignable to type 'keyof T'. Two different types with this name exist, but they are unrelated.
-!!! error TS2344:     Type 'string | number | symbol' is not assignable to type 'keyof T'.
-!!! error TS2344:       Type 'string' is not assignable to type 'keyof T'.
+!!! error TS2344:   Type 'U[K]' is not assignable to type 'T[K]'.
+!!! error TS2344:     Type 'U' is not assignable to type 'T'.
+!!! error TS2344:       'U' is only assignable to the non-distributed 'T', but 'T' has been distributed here.
                                                                                                         ~~~~
 !!! error TS2536: Type 'K' cannot be used to index type 'U'.
     
