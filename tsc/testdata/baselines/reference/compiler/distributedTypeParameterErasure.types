@@ -1,0 +1,60 @@
+//// [tests/cases/compiler/distributedTypeParameterErasure.ts] ////
+
+=== distributedTypeParameterErasure.ts ===
+type Show<A, B extends A> = [A, B];
+>Show : Show<A, B>
+
+type Check<X, Y extends X> = Y;
+>Check : Y
+
+// Errors, U is only assignable to the non-distributed T
+type Bad1<T, U extends T> = T extends unknown ? Show<T, U> : never;
+>Bad1 : Bad1<T, U>
+
+type Bad2<T, U extends T, X> = T extends unknown ? Show<X extends unknown ? T : never, X extends unknown ? U : never> : never;
+>Bad2 : Bad2<T, U, X>
+
+type Bad3<T, U extends T, X> = T extends unknown ? Show<{ [K in keyof X]: T }, { [K in keyof X]: U }> : never;
+>Bad3 : Bad3<T, U, X>
+
+type Bad4<T, U extends T> = T extends unknown ? Show<{ [K in "a"]: T }, { [K in "a"]: U }> : never;
+>Bad4 : Bad4<T, U>
+
+type Bad5<T, U extends T> = T extends unknown ? Show<{ [K in "a"]: T }["a"], U> : never;
+>Bad5 : Bad5<T, U>
+
+type Bad6<T, U extends T> = T extends unknown ? Show<<Z>(z: Z) => T, <Z>(z: Z) => U> : never;
+>Bad6 : Bad6<T, U>
+>z : Z
+>z : Z
+
+type Bad7<T, U extends T> = T extends unknown ? Show<{ m<Z>(z: Z): T }, { m<Z>(z: Z): U }> : never;
+>Bad7 : Bad7<T, U>
+>m : <Z>(z: Z) => T
+>z : Z
+>m : <Z>(z: Z) => U
+>z : Z
+
+// No errors
+type Ok1<T> = T extends unknown ? Check<{ [P in keyof T]: T }, { [Q in keyof T]: T }> : never;
+>Ok1 : Ok1<T>
+
+type Ok2<T, X> = T extends unknown ? Check<{ [K in keyof X]: T }, { [K in keyof X]: T }> : never;
+>Ok2 : Ok2<T, X>
+
+type Ok3<T> = T extends unknown ? Check<T, { [K in "a"]: T }["a"]> : never;
+>Ok3 : Ok3<T>
+
+type Ok4<T> = T extends unknown ? Check<(x: { [K in "a"]: T }["a"]) => void, (x: T) => void> : never;
+>Ok4 : Ok4<T>
+>x : T
+>x : T
+
+type Ok5<T, X> = T extends unknown ? Check<(x: X extends unknown ? T : never) => T, <R>(x: X extends unknown ? R : never) => R> : never;
+>Ok5 : Ok5<T, X>
+>x : X extends unknown ? T : never
+>x : X extends unknown ? R : never
+
+type Ok6<T, X> = T extends unknown ? Check<T, X extends unknown ? T : never> : never;
+>Ok6 : Ok6<T, X>
+
